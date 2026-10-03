@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute"><_Parameter1>windows</_Parameter1></AssemblyAttribute>
+    <ProjectReference Include="../AutumnOS.Launcher/AutumnOS.Launcher.csproj" />
+    <ProjectReference Include="../AutumnOS.UpdateProtocol/AutumnOS.UpdateProtocol.csproj" />
+    <EmbeddedResource Include="$(SetupPayloadPath)" LogicalName="AutumnOS.Setup.payload.zip" Condition="'$(SetupPayloadPath)' != ''" />
+    <AssemblyMetadata Include="SetupPayloadSha256" Value="$(SetupPayloadSha256)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AutumnOS independent Native identity sample public configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "Authority", "MetadataAddress", "ClientId", "RedirectUri", "Resource", "RequiredScope"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "Authority": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+    "MetadataAddress": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+    "ClientId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^\\S+$", "$comment": "Runtime rejects the host ClientId loaded from the build-linked sole logto.public.json source." },
+    "RedirectUri": { "const": "http://127.0.0.1:17854/callback/" },
+    "Resource": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2048 },
+    "RequiredScope": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^\\S+$", "not": { "enum": ["openid", "profile", "offline_access"] } }
+  }
+}

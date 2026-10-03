@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "display_version": "meta0.0.1-20261001",
+  "internal_version": "0.5.1-local.4",
+  "build_id": "T06-20261003-single001-03",
+  "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+  "exe_name": "AutumnOS.exe",
+  "exe_bytes": 488573230,
+  "exe_sha256": "d6fe6e54b20ed76f2829573de877585c60cc8696b56fb36a79033f5e447f3381",
+  "authenticode": "not_signed",
+  "production_update_trust": "not_configured",
+  "release_kind": "preview",
+  "full_T06": "in_progress",
+  "installer": "deferred_by_user",
+  "native_single_file_runs": {
+    "assertions_each": 41,
+    "passed": 2
+  },
+  "negative_controls": {
+    "passed": 3
+  },
+  "test_counts": {
+    "csharp": 595,
+    "cli": 12,
+    "backend_http_negative": 7,
+    "dom_simulation": 6,
+    "machine_contracts": 358,
+    "sdk": 22,
+    "synthetic_identity": 21
+  },
+  "current_full_ab": "not_run",
+  "clean_environment_and_offline_first": "not_run",
+  "producer_candidate_review": "not_run",
+  "private_data_included": false
+}

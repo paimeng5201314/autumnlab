@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1, "appId": "cn.labchronicles.sample.desktop", "name": "桌面扩展样例", "version": "0.1.0", "runtime": "web", "entry": "index.html",
+  "permissions": ["notifications", "shortcuts", "widgets", "links"],
+  "permissionPurposes": {"notifications":"由你发送一条站内通知和角标", "shortcuts":"为图标增加回到当前页操作", "widgets":"显示你填写的纯文本小组件", "links":"把声明的focus动作投递给本实例"},
+  "desktop": {"shortcuts":[{"id":"focus","title":"回到我的笔记","action":"focus"}], "links":["focus"], "widgets":[{"id":"note","title":"我的笔记"}]}
+}

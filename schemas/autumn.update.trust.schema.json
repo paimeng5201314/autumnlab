@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:autumn.update.trust:1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "version", "purpose", "keys"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "version": { "type": "integer", "minimum": 1 },
+    "purpose": { "enum": ["production", "local-test"] },
+    "keys": {
+      "type": "array", "maxItems": 16,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["keyId", "publicKeyPem"],
+        "properties": {
+          "keyId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9_.-]+$" },
+          "publicKeyPem": { "type": "string", "maxLength": 8191, "pattern": "^-----BEGIN PUBLIC KEY-----" },
+          "revoked": { "type": "boolean", "default": false }
+        }
+      }
+    }
+  }
+}

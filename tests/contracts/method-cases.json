@@ -1,0 +1,334 @@
+{
+  "schemaVersion": 1,
+  "description": "Explicit protocol fixtures; no user identity or real credentials. Structural validation does not execute host methods.",
+  "cases": [
+    {
+      "method": "platform.getCapabilities",
+      "params": {},
+      "resultSchema": "capabilities",
+      "result": {
+        "protocolVersion": 1,
+        "capabilities": [
+          "lifecycle",
+          "permissions",
+          "identity.profile",
+          "saves",
+          "storage",
+          "preferences",
+          "files.open",
+          "files.save",
+          "appearance",
+          "notifications",
+          "shortcuts",
+          "widgets",
+          "links.internal"
+        ],
+        "accountMode": "guest",
+        "networkSandboxVerified": false,
+        "limits": {
+          "maximumMessageBytes": 32768,
+          "maximumPendingRequests": 16,
+          "maximumRequestsPerMinute": 120,
+          "requestTimeoutMs": 30000,
+          "maximumRememberedRequestIds": 2048,
+          "deduplicationWindowMs": 600000
+        }
+      }
+    },
+    {
+      "method": "lifecycle.getState",
+      "params": {},
+      "resultSchema": "lifecycleSnapshot",
+      "result": {
+        "state": "foreground",
+        "blocksMaintenance": true
+      }
+    },
+    {
+      "method": "permissions.query",
+      "params": {
+        "name": "saves"
+      },
+      "resultSchema": "permissionState",
+      "result": {
+        "name": "saves",
+        "state": "prompt"
+      }
+    },
+    {
+      "method": "permissions.request",
+      "params": {
+        "name": "saves"
+      },
+      "resultSchema": "permissionState",
+      "result": {
+        "name": "saves",
+        "state": "granted"
+      }
+    },
+    {
+      "method": "identity.getProfile",
+      "params": {},
+      "resultSchema": "profile",
+      "result": {
+        "appScopedUserId": "au1_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "displayName": "示例昵称",
+        "avatarUrl": null,
+        "isCached": false
+      }
+    },
+    {
+      "method": "identity.requestProfile",
+      "params": {},
+      "resultSchema": "profile",
+      "result": {
+        "appScopedUserId": "au1_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "displayName": "示例昵称",
+        "avatarUrl": null,
+        "isCached": false
+      }
+    },
+    {
+      "method": "saves.list",
+      "params": {},
+      "resultSchema": "saveListResult",
+      "result": {
+        "slots": [
+          {
+            "slot": "game",
+            "formatVersion": 2,
+            "revision": 3,
+            "bytes": 300,
+            "hasBackup": true
+          }
+        ]
+      }
+    },
+    {
+      "method": "saves.read",
+      "params": {
+        "slot": "game"
+      },
+      "resultSchema": "saveReadResult",
+      "result": {
+        "exists": false,
+        "value": null
+      }
+    },
+    {
+      "method": "saves.write",
+      "params": {
+        "slot": "game",
+        "value": {
+          "round": 2
+        },
+        "formatVersion": 2
+      },
+      "resultSchema": "saveWriteResult",
+      "result": {
+        "saved": true
+      }
+    },
+    {
+      "method": "saves.restore",
+      "params": {
+        "slot": "game"
+      },
+      "resultSchema": "saveRestoreResult",
+      "result": {
+        "restored": true
+      }
+    },
+    {
+      "method": "storage.read",
+      "params": {
+        "key": "note"
+      },
+      "resultSchema": "privateReadResult",
+      "result": {
+        "exists": false,
+        "data": null,
+        "encoding": "base64"
+      }
+    },
+    {
+      "method": "storage.write",
+      "params": {
+        "key": "note",
+        "data": "YQ=="
+      },
+      "resultSchema": "privateWriteResult",
+      "result": {
+        "written": true
+      }
+    },
+    {
+      "method": "storage.delete",
+      "params": {
+        "key": "note"
+      },
+      "resultSchema": "privateDeleteResult",
+      "result": {
+        "deleted": false
+      }
+    },
+    {
+      "method": "preferences.get",
+      "params": {
+        "key": "theme"
+      },
+      "resultSchema": "saveReadResult",
+      "result": {
+        "exists": true,
+        "value": "dark"
+      }
+    },
+    {
+      "method": "preferences.set",
+      "params": {
+        "key": "theme",
+        "value": "dark"
+      },
+      "resultSchema": "saveWriteResult",
+      "result": {
+        "saved": true
+      }
+    },
+    {
+      "method": "files.pickOpen",
+      "params": {},
+      "resultSchema": "fileCapability",
+      "result": {
+        "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "note.txt",
+        "bytes": 12,
+        "expiresUtc": "2026-10-02T12:00:00Z"
+      }
+    },
+    {
+      "method": "files.pickSave",
+      "params": {},
+      "resultSchema": "fileCapability",
+      "result": {
+        "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "note.txt",
+        "bytes": 12,
+        "expiresUtc": "2026-10-02T12:00:00Z"
+      }
+    },
+    {
+      "method": "files.read",
+      "params": {
+        "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "resultSchema": "fileReadResult",
+      "result": {
+        "data": "YQ==",
+        "encoding": "base64"
+      }
+    },
+    {
+      "method": "files.write",
+      "params": {
+        "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "data": "YQ=="
+      },
+      "resultSchema": "fileWriteResult",
+      "result": {
+        "bytes": 1,
+        "backupRetained": true
+      }
+    },
+    {
+      "method": "files.close",
+      "params": {
+        "handle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "resultSchema": "fileCloseResult",
+      "result": {
+        "closed": true
+      }
+    },
+    {
+      "method": "appearance.get",
+      "params": {},
+      "resultSchema": "appearance",
+      "result": {
+        "theme": "dark",
+        "language": "zh-CN",
+        "scale": 1.5,
+        "reduceMotion": true
+      }
+    },
+    {
+      "method": "notifications.show",
+      "params": {
+        "id": "note",
+        "title": "标题",
+        "body": "内容",
+        "action": null
+      },
+      "resultSchema": "notificationResult",
+      "result": {
+        "shown": false,
+        "reason": "muted"
+      }
+    },
+    {
+      "method": "notifications.setBadge",
+      "params": {
+        "count": 1
+      },
+      "resultSchema": "badgeParams",
+      "result": {
+        "count": 1
+      }
+    },
+    {
+      "method": "shortcuts.register",
+      "params": {
+        "ids": [
+          "focus"
+        ]
+      },
+      "resultSchema": "shortcutResult",
+      "result": {
+        "shortcuts": [
+          {
+            "id": "focus",
+            "title": "回到笔记",
+            "action": "focus"
+          }
+        ]
+      }
+    },
+    {
+      "method": "widgets.update",
+      "params": {
+        "id": "note",
+        "lines": [
+          "文字"
+        ]
+      },
+      "resultSchema": "widgetResult",
+      "result": {
+        "updated": true,
+        "id": "note"
+      }
+    },
+    {
+      "method": "links.openInternal",
+      "params": {
+        "action": "focus",
+        "arguments": {
+          "origin": "button"
+        }
+      },
+      "resultSchema": "linkResult",
+      "result": {
+        "delivered": true,
+        "action": "focus"
+      }
+    }
+  ]
+}

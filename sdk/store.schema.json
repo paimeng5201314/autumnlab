@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:schema:store:1",
+  "title": "AutumnOS repository display metadata, schema 1",
+  "description": "Root autumn.store.json on the repository's actual default branch. Duplicate JSON keys are forbidden. Topics determine the visible classification; category is only checked for disagreement.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "appId", "name", "description", "category", "developer", "screenshots", "offlineCapable"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "appId": { "$ref": "urn:autumnos:schema:manifest:1#/properties/appId" },
+    "name": { "$ref": "urn:autumnos:schema:manifest:1#/properties/name" },
+    "description": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "^(?!\\s*$)[^\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f-\\u009f]+$" },
+    "category": { "enum": ["pm", "sq", "unclassified"] },
+    "developer": {
+      "type": "object", "additionalProperties": false, "required": ["name"],
+      "properties": {
+        "name": { "$ref": "urn:autumnos:schema:manifest:1#/properties/name" },
+        "url": { "type": ["string", "null"], "format": "uri", "description": "Optional HTTPS public DNS URL without credentials, query or fragment. Never automatically executed." }
+      }
+    },
+    "screenshots": { "type": "array", "maxItems": 6, "items": { "type": "string", "format": "uri" }, "description": "HTTPS URLs. Rendering supports only same-repository github.com/owner/repo/blob/ref/path or raw.githubusercontent.com/owner/repo/ref/path PNG/JPEG through the GitHub Contents API; 2 MiB and bounded pixel dimensions. No SVG/HTML/external content is executed." },
+    "offlineCapable": { "type": "boolean", "description": "Developer declaration, not an independent verification or permission grant." }
+  }
+}

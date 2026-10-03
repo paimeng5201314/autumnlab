@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <SelfContained>true</SelfContained>
+    <AssemblyName>AutumnOS.NativeIdentity.Sample</AssemblyName>
+    <RootNamespace>AutumnOS.NativeIdentity.Sample</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/AutumnOS.Identity/AutumnOS.Identity.csproj" />
+    <Compile Include="../server-identity/ServerTokenVerifier.cs" Link="Fixtures/ServerTokenVerifier.cs" />
+    <None Include="config.example.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../autumnos-spec/config/logto.public.json" Link="config/logto.public.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

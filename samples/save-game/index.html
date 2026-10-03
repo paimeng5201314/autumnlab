@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>元素配对 · Lab Chronicles</title>
+  <link rel="stylesheet" href="game.css">
+  <link rel="stylesheet" href="sample-ui.css">
+  <script src="autumn-sdk.js" defer></script>
+  <script src="save-model.js" defer></script>
+  <script src="game.js" defer></script>
+
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><div><p class="eyebrow">LAB CHRONICLES · MINI LAB</p><h1>元素配对<span class="title-dot">.</span></h1></div></div>
+      <div class="runtime-pill"><span class="status-dot" aria-hidden="true"></span><span id="runtime-status">正在连接</span></div>
+    </header>
+    <div class="play-layout">
+      <section class="play-panel" aria-label="配对游戏">
+        <div class="board-header"><div><h2 id="board-title">让相同的元素相遇</h2><p id="board-hint">翻开两张卡片，找到 6 组相同符号。</p></div><div class="stats"><div><strong id="pairs-count">0<span>/6</span></strong><span>已配对</span></div><div><strong id="moves-count">0</strong><span>翻牌次数</span></div></div></div>
+        <div id="board" class="board" aria-label="十二张元素卡片"></div>
+        <div class="board-footer"><span id="round-status" role="status" aria-live="polite">慢慢来，记住每一次相遇。</span><button id="restart-button" class="text-button" type="button">重新开始 ↻</button></div>
+      </section>
+      <aside class="journal" aria-label="玩家与存档">
+        <div><p class="eyebrow">YOUR FIELD NOTES</p><h2>这一次的发现</h2><p class="journal-intro">每次翻牌，都是一点新的记忆。</p></div>
+        <div class="player-field"><label for="nickname">玩家昵称</label><input id="nickname" type="text" maxlength="24" placeholder="给这段旅程起个名字" autocomplete="off" spellcheck="false"><span class="input-note">支持中文输入 · 最多 24 个字符</span></div>
+        <div class="save-actions"><button id="save-button" class="primary-button" type="button" disabled>保存进度</button><button id="load-button" class="secondary-button" type="button" disabled>读取存档</button></div>
+        <p id="save-status" class="save-status" role="status" aria-live="polite">存档只保存在这台设备。首次保存或读取时，由你决定是否授权。</p>
+        <details class="connection-details"><summary>运行信息</summary><p id="capability-status">正在查询 AutumnOS 能力…</p><p id="permission-status">尚未申请存档权限</p></details>
+      </aside>
+    </div>
+    <section class="panel"><h2>存档格式、备份与失败保护</h2><p>格式 2 使用 player/turns；只读旧格式 1 后显式转换，宿主原子写入并保留上一版本。应用版本与存档格式分开。</p><div class="actions"><button id="legacy-save-button">以旧格式 1 保存当前牌局（演练）</button><button id="migrate-button">迁移已保存的格式 1 → 2</button><button id="restore-button">恢复上一份备份并读取</button><button id="invalid-button">验证损坏内容被拒绝（不写盘）</button></div><label><input type="checkbox" id="autosave"> 允许在完成一对后自动保存（需先明确保存一次并获授权）</label><p>返回桌面保留实例和未保存输入。结束前请先保存；超时或取消后先读回核对，不能把停止等待当成回滚。自动保存不会自动申请权限。</p></section>
+    <footer class="page-footer"><span>原创知识小游戏 · 制作人：派蒙</span><span>鼠标 / 触控翻牌 · Tab 选择 · Enter 翻开</span></footer>
+  </main>
+</body>
+</html>

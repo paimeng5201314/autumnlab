@@ -1,0 +1,8 @@
+{
+  "public_config_structure": "passed",
+  "checks_are_specific_to_this_handoff": true,
+  "remote_logto_contacted_by_this_script": false,
+  "application_registration_verified_by_this_script": false,
+  "login_test_executed_by_this_script": false,
+  "meaning": "Only static field consistency was checked; registration and real login remain unverified."
+}

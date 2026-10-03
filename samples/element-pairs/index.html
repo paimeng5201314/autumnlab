@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>元素配对 · Lab Chronicles</title>
+  <link rel="stylesheet" href="game.css">
+  <link rel="stylesheet" href="t03-features.css">
+  <script src="autumn-sdk.js" defer></script>
+  <script src="game.js" defer></script>
+  <script src="t03-features.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><div><p class="eyebrow">LAB CHRONICLES · MINI LAB</p><h1>元素配对<span class="title-dot">.</span></h1></div></div>
+      <div class="runtime-pill"><span class="status-dot" aria-hidden="true"></span><span id="runtime-status">正在连接</span></div>
+    </header>
+    <div class="play-layout">
+      <section class="play-panel" aria-label="配对游戏">
+        <div class="board-header"><div><h2 id="board-title">让相同的元素相遇</h2><p id="board-hint">翻开两张卡片，找到 6 组相同符号。</p></div><div class="stats"><div><strong id="pairs-count">0<span>/6</span></strong><span>已配对</span></div><div><strong id="moves-count">0</strong><span>翻牌次数</span></div></div></div>
+        <div id="board" class="board" aria-label="十二张元素卡片"></div>
+        <div class="board-footer"><span id="round-status" role="status" aria-live="polite">慢慢来，记住每一次相遇。</span><button id="restart-button" class="text-button" type="button">重新开始 ↻</button></div>
+      </section>
+      <aside class="journal" aria-label="玩家与存档">
+        <div><p class="eyebrow">YOUR FIELD NOTES</p><h2>这一次的发现</h2><p class="journal-intro">每次翻牌，都是一点新的记忆。</p></div>
+        <div class="player-field"><label for="nickname">玩家昵称</label><input id="nickname" type="text" maxlength="24" placeholder="给这段旅程起个名字" autocomplete="off" spellcheck="false"><span class="input-note">支持中文输入 · 最多 24 个字符</span></div>
+        <div class="save-actions"><button id="save-button" class="primary-button" type="button" disabled>保存进度</button><button id="load-button" class="secondary-button" type="button" disabled>读取存档</button></div>
+        <p id="save-status" class="save-status" role="status" aria-live="polite">存档只保存在这台设备。首次保存或读取时，由你决定是否授权。</p>
+        <details class="connection-details"><summary>运行信息</summary><p id="capability-status">正在查询 AutumnOS 能力…</p><p id="permission-status">尚未申请存档权限</p></details>
+      </aside>
+    </div>
+    <details id="t03-features" class="t03-features">
+      <summary>账号、文件与桌面联动</summary>
+      <p class="t03-intro">这些操作连接 AutumnOS 的真实服务。先申请对应权限，再点击操作；拒绝授权也可以继续配对游戏。</p>
+      <p id="t03-appearance" class="t03-note" role="status">正在读取外观快照…</p>
+      <div class="t03-grid">
+        <section aria-labelledby="t03-profile-heading">
+          <h2 id="t03-profile-heading">最小账号资料</h2>
+          <p>登录和资料授权是两件事。本应用不接收登录令牌。</p>
+          <div class="t03-actions"><button id="t03-profile-request" data-capability="identity.profile" type="button" disabled>申请并读取资料</button><button id="t03-profile-read" data-capability="identity.profile" type="button" disabled>读取已授权资料</button></div>
+          <p id="t03-profile-result" class="t03-result" role="status">尚未读取资料；游客可继续游戏。</p>
+        </section>
+        <section aria-labelledby="t03-notifications-heading">
+          <h2 id="t03-notifications-heading">通知与角标</h2>
+          <div class="t03-actions"><button id="t03-notifications-permit" data-permission="notifications" data-capability="notifications" type="button" disabled>申请通知权限</button><button id="t03-notify" data-capability="notifications" type="button" disabled>发送配对进度</button><button id="t03-notify-duplicate" data-capability="notifications" type="button" disabled>重试上一条通知</button><button id="t03-badge" data-capability="notifications" type="button" disabled>设置进度角标</button><button id="t03-badge-clear" data-capability="notifications" type="button" disabled>清除角标</button></div>
+          <p id="t03-notifications-result" class="t03-result" role="status">未申请通知权限。静音或去重结果会如实显示。</p>
+        </section>
+        <section aria-labelledby="t03-desktop-heading">
+          <h2 id="t03-desktop-heading">桌面扩展</h2>
+          <div class="t03-actions"><button id="t03-widgets-permit" data-permission="widgets" data-capability="widgets" type="button" disabled>申请小组件权限</button><button id="t03-widget" data-capability="widgets" type="button" disabled>更新配对进度小组件</button></div>
+          <div class="t03-actions"><button id="t03-shortcuts-permit" data-permission="shortcuts" data-capability="shortcuts" type="button" disabled>申请快捷操作权限</button><button id="t03-shortcut" data-capability="shortcuts" type="button" disabled>登记回到配对操作</button><button id="t03-shortcut-clear" data-capability="shortcuts" type="button" disabled>撤下快捷操作</button></div>
+          <div class="t03-actions"><button id="t03-links-permit" data-permission="links" data-capability="links.internal" type="button" disabled>申请内部链接权限</button><button id="t03-link" data-capability="links.internal" type="button" disabled>打开内部回到配对链接</button></div>
+          <p id="t03-desktop-result" class="t03-result" role="status">只使用清单声明的 resume 动作和 progress 小组件。</p>
+        </section>
+        <section aria-labelledby="t03-storage-heading">
+          <h2 id="t03-storage-heading">本账号的私有笔记</h2>
+          <label for="t03-note">笔记内容（最多 240 字符）</label><textarea id="t03-note" maxlength="240" rows="3" placeholder="记录本次发现，不影响游戏存档"></textarea>
+          <div class="t03-actions"><button id="t03-storage-permit" data-permission="storage" data-capability="storage" type="button" disabled>申请私有存储权限</button><button id="t03-preference-save" data-capability="preferences" type="button" disabled>保存笔记设置</button><button id="t03-preference-read" data-capability="preferences" type="button" disabled>读取笔记设置</button><button id="t03-private-save" data-capability="storage" type="button" disabled>写入私有文件</button><button id="t03-private-read" data-capability="storage" type="button" disabled>读取私有文件</button></div>
+          <p id="t03-storage-result" class="t03-result" role="status">游客和各账号的笔记默认分开；不会自动迁移。</p>
+        </section>
+        <section aria-labelledby="t03-files-heading">
+          <h2 id="t03-files-heading">系统文件选择器</h2>
+          <p>此演示最多读取 4 KiB 文本、导出上方笔记。每次选择均由系统界面确认，不接收磁盘路径。</p>
+          <div class="t03-actions"><button id="t03-open-permit" data-permission="files.open" data-capability="files.open" type="button" disabled>申请选择读取权限</button><button id="t03-file-pick" data-capability="files.open" type="button" disabled>选择文本文件</button><button id="t03-file-read" data-capability="files.open" type="button" disabled>读取已选文件</button><button id="t03-file-close" data-capability="files.open" type="button" disabled>释放读取句柄</button></div>
+          <div class="t03-actions"><button id="t03-save-permit" data-permission="files.save" data-capability="files.save" type="button" disabled>申请选择保存权限</button><button id="t03-file-save-pick" data-capability="files.save" type="button" disabled>选择笔记导出位置</button><button id="t03-file-export" data-capability="files.save" type="button" disabled>导出到已选位置</button></div>
+          <p id="t03-files-result" class="t03-result" role="status">尚未选择文件；不显示或保存真实磁盘路径。</p>
+          <pre id="t03-file-preview" class="t03-file-preview" aria-label="已选择文本预览"></pre>
+        </section>
+      </div>
+      <p id="t03-events" class="t03-note" role="status">等待真实权限、外观和桌面操作事件。</p>
+    </details>
+    <footer class="page-footer"><span>原创知识小游戏 · 制作人：派蒙</span><span>鼠标 / 触控翻牌 · Tab 选择 · Enter 翻开</span></footer>
+  </main>
+</body>
+</html>

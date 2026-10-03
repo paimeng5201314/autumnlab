@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1",
+  "tasks": [
+    {
+      "id": "T00",
+      "title": "工程起点与构建基线",
+      "depends_on": [],
+      "path": "tasks/T00.md",
+      "requirement_ids": [
+        "R001",
+        "R002",
+        "R003",
+        "R004",
+        "R053",
+        "R057"
+      ],
+      "status": "verified"
+    },
+    {
+      "id": "T01",
+      "title": "内部应用和 SDK 验证",
+      "depends_on": [
+        "T00"
+      ],
+      "path": "tasks/T01.md",
+      "requirement_ids": [
+        "R005",
+        "R006",
+        "R032",
+        "R035",
+        "R036"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "T02",
+      "title": "桌面系统与个性化",
+      "depends_on": [
+        "T01"
+      ],
+      "path": "tasks/T02.md",
+      "requirement_ids": [
+        "R007",
+        "R008",
+        "R009",
+        "R010",
+        "R011",
+        "R012",
+        "R013",
+        "R014",
+        "R015",
+        "R016",
+        "R017",
+        "R018",
+        "R019",
+        "R058"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "T03",
+      "title": "账号权限数据与开发者能力",
+      "depends_on": [
+        "T01"
+      ],
+      "path": "tasks/T03.md",
+      "requirement_ids": [
+        "R030",
+        "R031",
+        "R033",
+        "R034",
+        "R037",
+        "R038",
+        "R039",
+        "R040"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "T04",
+      "title": "GitHub Store 下载与安装",
+      "depends_on": [
+        "T01"
+      ],
+      "path": "tasks/T04.md",
+      "requirement_ids": [
+        "R020",
+        "R021",
+        "R022",
+        "R023",
+        "R024",
+        "R025",
+        "R026",
+        "R027",
+        "R028",
+        "R029",
+        "R054"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "T05",
+      "title": "安全更新与发行工程",
+      "depends_on": [
+        "T01",
+        "T03",
+        "T04"
+      ],
+      "path": "tasks/T05.md",
+      "requirement_ids": [
+        "R044",
+        "R045",
+        "R046",
+        "R047",
+        "R055"
+      ],
+      "status": "in_progress"
+    },
+    {
+      "id": "T06",
+      "title": "全量验收与候选交付",
+      "depends_on": [
+        "T02",
+        "T03",
+        "T04",
+        "T05"
+      ],
+      "path": "tasks/T06.md",
+      "requirement_ids": [
+        "R041",
+        "R042",
+        "R043",
+        "R048",
+        "R049",
+        "R050",
+        "R051",
+        "R052",
+        "R056"
+      ],
+      "status": "in_progress"
+    }
+  ],
+  "pack_version": "0.3"
+}

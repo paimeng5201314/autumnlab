@@ -1,0 +1,3187 @@
+{
+  "schema_version": "0.1",
+  "meaning": "验收定义，不是已执行结果",
+  "tests": [
+    {
+      "id": "A001",
+      "requirement_ids": [
+        "R001"
+      ],
+      "title": "品牌与制作人",
+      "status": "not_run",
+      "assertions": [
+        "制作人：派蒙集中配置",
+        "启动/关于/安装/README/Release署名一致",
+        "不篡改第三方版权"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A002",
+      "requirement_ids": [
+        "R002"
+      ],
+      "title": "Windows 平台与工具链",
+      "status": "passed",
+      "assertions": [
+        "目标win-x64及Windows 10 22H2/Windows 11",
+        "锁定依赖",
+        "记录实际系统和SDK版本"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        }
+      ],
+      "verification_scope": "Assertions verified for local Windows 11 increment; Windows 10/clean machine/IME/touch remain not_run in their own tests."
+    },
+    {
+      "id": "A003",
+      "requirement_ids": [
+        "R003"
+      ],
+      "title": "原生可构建发行基础",
+      "status": "not_run",
+      "assertions": [
+        "真实.NET/WinUI工程可编译",
+        "处理.NET与Windows App SDK自包含",
+        "无预装.NET的标准用户实测"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A004",
+      "requirement_ids": [
+        "R004"
+      ],
+      "title": "数据目录规则",
+      "status": "passed",
+      "assertions": [
+        "以入口目录创建AutumnOS_Data",
+        "二次启动不覆盖数据",
+        "中文空格和只读路径处理"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A005",
+      "requirement_ids": [
+        "R005"
+      ],
+      "title": "内部 Web/WASM 运行基线",
+      "status": "passed",
+      "assertions": [
+        "真实应用在主窗口内部运行",
+        "不以外部EXE/网页标签代替",
+        "输入图形和缩放验证"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A006",
+      "requirement_ids": [
+        "R006"
+      ],
+      "title": "仅允许 .autumn 应用",
+      "status": "passed",
+      "assertions": [
+        "清单和入口校验",
+        "不导入任意EXE或宿主DLL",
+        "无任意安装脚本"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A007",
+      "requirement_ids": [
+        "R007"
+      ],
+      "title": "首次启动与品牌过渡",
+      "status": "not_run",
+      "assertions": [
+        "hello/AutumnOS/初始化到桌面可操作",
+        "中断恢复",
+        "普通启动不重复首次配置"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A008",
+      "requirement_ids": [
+        "R008"
+      ],
+      "title": "窗口与返回导航",
+      "status": "not_run",
+      "assertions": [
+        "默认普通窗口可最大化",
+        "全屏可退出",
+        "返回桌面与关闭游戏语义不同"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A009",
+      "requirement_ids": [
+        "R009"
+      ],
+      "title": "统一原创视觉体系",
+      "status": "not_run",
+      "assertions": [
+        "统一材质控件动画",
+        "不复制受保护素材",
+        "关键界面由派蒙审阅"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A010",
+      "requirement_ids": [
+        "R010"
+      ],
+      "title": "多页桌面与 Dock",
+      "status": "in_progress",
+      "assertions": [
+        "真实显示安装应用",
+        "持久化页面与Dock布局",
+        "重启后恢复"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "pending_increment": {
+        "status": "passed",
+        "definition": [
+          "2026-10-02 派蒙新决定：单击图标打开或恢复同实例，双击桌面空白处调出实际运行应用卡片；长按/右键仍可继续和结束。",
+          "桌面网格图标可拖动重排，原子保存独立desktop-layout.json，取消恢复且重启还原；不以此替代跨页/文件夹/Dock完整验收。"
+        ],
+        "test": "DesktopLayoutTests + Test-DesktopInteractionSmoke + Test-T04StoreSmoke",
+        "prior_evidence": "preserved; old icon double-click behavior superseded",
+        "evidence_path": "artifacts/builds/T04-20261002-desktop-02/desktop-increment.json",
+        "scope": "Only current desktop gesture/reorder increment; original full-stage assertions remain outstanding where not covered",
+        "not_run": [
+          "physical_touch_pen_mouse",
+          "multi_monitor_dpi_matrix",
+          "windows10_clean_machine",
+          "dock_reordering",
+          "cross_page_folder_jiggle_editing",
+          "full_single_instance_fault_matrix_this_build",
+          "real_logto_login_this_increment",
+          "real_public_github_release_install",
+          "full_T03_closeout_user_deferred",
+          "T05"
+        ]
+      }
+    },
+    {
+      "id": "A011",
+      "requirement_ids": [
+        "R011"
+      ],
+      "title": "长按菜单与右键",
+      "status": "in_progress",
+      "assertions": [
+        "菜单动作依据应用能力",
+        "鼠标右键等价",
+        "拖动不误触且ESC可取消"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "pending_increment": {
+        "status": "passed",
+        "definition": [
+          "2026-10-02 派蒙新决定：单击图标打开或恢复同实例，双击桌面空白处调出实际运行应用卡片；长按/右键仍可继续和结束。",
+          "桌面网格图标可拖动重排，原子保存独立desktop-layout.json，取消恢复且重启还原；不以此替代跨页/文件夹/Dock完整验收。"
+        ],
+        "test": "DesktopLayoutTests + Test-DesktopInteractionSmoke + Test-T04StoreSmoke",
+        "prior_evidence": "preserved; old icon double-click behavior superseded",
+        "evidence_path": "artifacts/builds/T04-20261002-desktop-02/desktop-increment.json",
+        "scope": "Only current desktop gesture/reorder increment; original full-stage assertions remain outstanding where not covered",
+        "not_run": [
+          "physical_touch_pen_mouse",
+          "multi_monitor_dpi_matrix",
+          "windows10_clean_machine",
+          "dock_reordering",
+          "cross_page_folder_jiggle_editing",
+          "full_single_instance_fault_matrix_this_build",
+          "real_logto_login_this_increment",
+          "real_public_github_release_install",
+          "full_T03_closeout_user_deferred",
+          "T05"
+        ]
+      }
+    },
+    {
+      "id": "A012",
+      "requirement_ids": [
+        "R012"
+      ],
+      "title": "桌面编辑与拖放",
+      "status": "in_progress",
+      "assertions": [
+        "编辑模式重排跨页",
+        "取消恢复原位置",
+        "删除图标不等于卸载"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [],
+      "pending_increment": {
+        "status": "passed",
+        "definition": [
+          "2026-10-02 派蒙新决定：单击图标打开或恢复同实例，双击桌面空白处调出实际运行应用卡片；长按/右键仍可继续和结束。",
+          "桌面网格图标可拖动重排，原子保存独立desktop-layout.json，取消恢复且重启还原；不以此替代跨页/文件夹/Dock完整验收。"
+        ],
+        "test": "DesktopLayoutTests + Test-DesktopInteractionSmoke + Test-T04StoreSmoke",
+        "prior_evidence": "preserved; old icon double-click behavior superseded",
+        "evidence_path": "artifacts/builds/T04-20261002-desktop-02/desktop-increment.json",
+        "scope": "Only current desktop gesture/reorder increment; original full-stage assertions remain outstanding where not covered",
+        "not_run": [
+          "physical_touch_pen_mouse",
+          "multi_monitor_dpi_matrix",
+          "windows10_clean_machine",
+          "dock_reordering",
+          "cross_page_folder_jiggle_editing",
+          "full_single_instance_fault_matrix_this_build",
+          "real_logto_login_this_increment",
+          "real_public_github_release_install",
+          "full_T03_closeout_user_deferred",
+          "T05"
+        ]
+      }
+    },
+    {
+      "id": "A013",
+      "requirement_ids": [
+        "R013"
+      ],
+      "title": "文件夹与应用整理",
+      "status": "not_run",
+      "assertions": [
+        "进出文件夹和命名",
+        "Dock拖放",
+        "关键系统应用始终有可达入口"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A014",
+      "requirement_ids": [
+        "R014"
+      ],
+      "title": "搜索与应用库",
+      "status": "not_run",
+      "assertions": [
+        "搜索已安装应用与设置",
+        "过滤状态正确",
+        "不存在内容不能生成假结果"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A015",
+      "requirement_ids": [
+        "R015"
+      ],
+      "title": "多任务与运行卡片",
+      "status": "in_progress",
+      "assertions": [
+        "卡片关联真实实例",
+        "后台仍算运行",
+        "关闭进行生命周期处理"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "pending_increment": {
+        "status": "passed",
+        "definition": [
+          "2026-10-02 派蒙新决定：单击图标打开或恢复同实例，双击桌面空白处调出实际运行应用卡片；长按/右键仍可继续和结束。",
+          "桌面网格图标可拖动重排，原子保存独立desktop-layout.json，取消恢复且重启还原；不以此替代跨页/文件夹/Dock完整验收。"
+        ],
+        "test": "DesktopLayoutTests + Test-DesktopInteractionSmoke + Test-T04StoreSmoke",
+        "prior_evidence": "preserved; old icon double-click behavior superseded",
+        "evidence_path": "artifacts/builds/T04-20261002-desktop-02/desktop-increment.json",
+        "scope": "Only current desktop gesture/reorder increment; original full-stage assertions remain outstanding where not covered",
+        "not_run": [
+          "physical_touch_pen_mouse",
+          "multi_monitor_dpi_matrix",
+          "windows10_clean_machine",
+          "dock_reordering",
+          "cross_page_folder_jiggle_editing",
+          "full_single_instance_fault_matrix_this_build",
+          "real_logto_login_this_increment",
+          "real_public_github_release_install",
+          "full_T03_closeout_user_deferred",
+          "T05"
+        ]
+      }
+    },
+    {
+      "id": "A016",
+      "requirement_ids": [
+        "R016"
+      ],
+      "title": "控制中心与通知中心",
+      "status": "not_run",
+      "assertions": [
+        "显示真实状态",
+        "只提供实现的控制",
+        "静音和点击来源正确"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A017",
+      "requirement_ids": [
+        "R017"
+      ],
+      "title": "自带系统应用",
+      "status": "not_run",
+      "assertions": [
+        "设置商店下载账号存档等从桌面使用",
+        "服务失败可恢复",
+        "不放空白占位应用"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A018",
+      "requirement_ids": [
+        "R018"
+      ],
+      "title": "完整个性化",
+      "status": "not_run",
+      "assertions": [
+        "壁纸/动态壁纸/主题/图标/网格/Dock/材质/声音/动画可设置",
+        "布局备份",
+        "恢复默认"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A019",
+      "requirement_ids": [
+        "R019"
+      ],
+      "title": "易用性与性能",
+      "status": "not_run",
+      "assertions": [
+        "键盘/触控/鼠标与输入法",
+        "缩放和减少动态效果",
+        "记录参考硬件与性能测量"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T02-20261001-interactions-01",
+          "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-interactions-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopInteractionSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered Windows interaction checks 80/80; 21 real screenshots; 554 ZIP files byte-verified; delivered EXE normal-window launch passed",
+          "evidence_path": "artifacts/builds/T02-20261001-interactions-01",
+          "scope": "Only T02 two-column settings and background game actions; actual persistence and same/new instance evidence. T03 not entered; full T01/T02 acceptance remains incomplete."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A020",
+      "requirement_ids": [
+        "R020"
+      ],
+      "title": "GitHub 直接发现",
+      "status": "in_progress",
+      "assertions": [
+        "使用topic:autumnos-app公开查询",
+        "分页缓存去重",
+        "无安装包显示明确状态"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Production GitHub HTTP200 with 0 repos; native empty state. Bounded paging/cache/dedup and missing attachment tests passed.",
+          "not_run_or_limit": "Live nonempty/multi-page repository results not_run: unavailable public source.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Production GitHub HTTP200 with 0 repos; native empty state. Bounded paging/cache/dedup and missing attachment tests passed. Live nonempty/multi-page repository results not_run: unavailable public source."
+    },
+    {
+      "id": "A021",
+      "requirement_ids": [
+        "R021"
+      ],
+      "title": "PM/SQ 自标分类",
+      "status": "in_progress",
+      "assertions": [
+        "pm/sq按仓库标签展示",
+        "不建设认可名单",
+        "未核验说明与冲突状态"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "PM/SQ/unclassified/conflict parser tests; native SQ fixture/source labeling; PM conveys no privilege.",
+          "not_run_or_limit": "Real public PM/SQ repository matrix not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "PM/SQ/unclassified/conflict parser tests; native SQ fixture/source labeling; PM conveys no privilege. Real public PM/SQ repository matrix not_run."
+    },
+    {
+      "id": "A022",
+      "requirement_ids": [
+        "R022"
+      ],
+      "title": "三层清单与 Release",
+      "status": "in_progress",
+      "assertions": [
+        "store/release/manifest相互核对",
+        "下载.autumn附件非源码ZIP",
+        "记录来源身份"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Three-layer consistency, immutable source, .autumn-only validation, real local HTTP download/install and negative hash tests.",
+          "not_run_or_limit": "Real public Release install not_run because query returned 0 repositories.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Three-layer consistency, immutable source, .autumn-only validation, real local HTTP download/install and negative hash tests. Real public Release install not_run because query returned 0 repositories."
+    },
+    {
+      "id": "A023",
+      "requirement_ids": [
+        "R023"
+      ],
+      "title": "版本选择与筛选",
+      "status": "in_progress",
+      "assertions": [
+        "版本历史/稳定预览/兼容/来源/类别等可用",
+        "结果范围明确",
+        "空结果处理"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Native stable version selection; catalog history/filter/compatibility tests and bounded release paging.",
+          "not_run_or_limit": "All native filter combinations and live historical repository matrix not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Native stable version selection; catalog history/filter/compatibility tests and bounded release paging. All native filter combinations and live historical repository matrix not_run."
+    },
+    {
+      "id": "A024",
+      "requirement_ids": [
+        "R024"
+      ],
+      "title": "应用版本控制",
+      "status": "in_progress",
+      "assertions": [
+        "支持固定版本",
+        "应用预览开关独立",
+        "降级先检查存档格式并备份"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Native pin/preview save and restart restore; service downgrade save compatibility/backup and busy lease tests.",
+          "not_run_or_limit": "Native downgrade interaction matrix not_run; module coverage does not claim that UI execution.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Native pin/preview save and restart restore; service downgrade save compatibility/backup and busy lease tests. Native downgrade interaction matrix not_run; module coverage does not claim that UI execution."
+    },
+    {
+      "id": "A025",
+      "requirement_ids": [
+        "R025"
+      ],
+      "title": "下载引擎",
+      "status": "in_progress",
+      "assertions": [
+        "真实进度并发限速暂停重试",
+        "Range失效安全重下",
+        "空间校验与失败清理"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "22 download/transport tests cover resume/Range/cancel/retry/concurrency/limits/errors; native real byte progress, install retry and retained history.",
+          "not_run_or_limit": "Native pause/resume/cancel matrix and real GitHub asset/CDN interruption not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "22 download/transport tests cover resume/Range/cancel/retry/concurrency/limits/errors; native real byte progress, install retry and retained history. Native pause/resume/cancel matrix and real GitHub asset/CDN interruption not_run."
+    },
+    {
+      "id": "A026",
+      "requirement_ids": [
+        "R026"
+      ],
+      "title": "GitHub 代理",
+      "status": "in_progress",
+      "assertions": [
+        "系统代理与URL加速分开",
+        "直连回退与测试",
+        "不代理Logto或向新主机泄露认证"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Separated system proxy/API/asset templates, validation, no credential forwarding, fallback tests; native settings save/restart and real direct API connection.",
+          "not_run_or_limit": "Third-party acceleration service connection and live attachment acceleration not_run; no real service configured.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Separated system proxy/API/asset templates, validation, no credential forwarding, fallback tests; native settings save/restart and real direct API connection. Third-party acceleration service connection and live attachment acceleration not_run; no real service configured."
+    },
+    {
+      "id": "A027",
+      "requirement_ids": [
+        "R027"
+      ],
+      "title": "安装包安全检查",
+      "status": "in_progress",
+      "assertions": [
+        "越界路径与链接绕过拒绝",
+        "解包大小数量限制",
+        "验证失败不执行"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Package path/link/size/count/native-payload rejection retained; three-layer mismatch and bad hash prevented commit; existing installed content remained.",
+          "not_run_or_limit": "Arbitrary community runtime network isolation remains blocked by T01, not bypassed by package validation.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Package path/link/size/count/native-payload rejection retained; three-layer mismatch and bad hash prevented commit; existing installed content remained. Arbitrary community runtime network isolation remains blocked by T01, not bypassed by package validation."
+    },
+    {
+      "id": "A028",
+      "requirement_ids": [
+        "R028"
+      ],
+      "title": "安装注册事务",
+      "status": "in_progress",
+      "assertions": [
+        "安装提交后才注册图标",
+        "失败可恢复",
+        "重复请求不重复安装"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "24 installer and 14 download/install coordinator checks, native one icon/notice, idempotence and commit receipt recovery; durable registry.",
+          "not_run_or_limit": "Actual machine power loss during install not_run; service fault injection is labeled controlled.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "24 installer and 14 download/install coordinator checks, native one icon/notice, idempotence and commit receipt recovery; durable registry. Actual machine power loss during install not_run; service fault injection is labeled controlled."
+    },
+    {
+      "id": "A029",
+      "requirement_ids": [
+        "R029"
+      ],
+      "title": "应用修复更新卸载",
+      "status": "in_progress",
+      "assertions": [
+        "运行中不替换资源",
+        "修复依据文件清单",
+        "卸载与删除存档分开"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Native running/background update blocks, explicit End then retry commits 1.1.0, repair keeps exact version/source, uninstall removes icon and keeps save bytes.",
+          "not_run_or_limit": "Live public app update/repair unavailable; whole-disk cache reclamation not implemented or claimed.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Native running/background update blocks, explicit End then retry commits 1.1.0, repair keeps exact version/source, uninstall removes icon and keeps save bytes. Live public app update/repair unavailable; whole-disk cache reclamation not implemented or claimed."
+    },
+    {
+      "id": "A030",
+      "requirement_ids": [
+        "R030"
+      ],
+      "title": "Logto 真实登录",
+      "status": "in_progress",
+      "assertions": [
+        "Native系统浏览器OIDC/PKCE",
+        "真实回调取消退出",
+        "无配置不假登录",
+        "真实Client ID、Native类型与已登记回调在测试记录中匹配",
+        "拒绝错误state/nonce/issuer/audience/签名和重复过期回调",
+        "回环端口占用、发现地址不可达、取消、超时给出真实错误并清理监听",
+        "记住登录和刷新失效按实际授权处理，凭据不进入第三方SDK与日志",
+        "区分本地退出和Logto浏览器会话退出，失败不能伪称成功",
+        "关闭窗口与主动退出账号语义分离；选择保持登录后关闭重开恢复，取消保持或主动退出后不恢复",
+        "已登录时开关保持立即保存或清理；迟到刷新不恢复已取消持久化，DPAPI与暂时网络故障不伪造认证失效"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T03-20261002-session-fix-02",
+          "source_snapshot_id": "sha256:8db871fd6f75683d410277c2d7b2a7ded325344a9c754c254ae667d886bcd359",
+          "environment": "Windows 11 10.0.26200; standard user; local .NET SDK 10.0.401",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1; ./scripts/Test-T03AccountSmoke.ps1; ./artifacts/reports/t03-session-fix/Test-SessionPersistenceSmoke.ps1 -IncludeLocalLogout; ./scripts/Test-DeliveredLauncher.ps1",
+          "observed_result": "365 C# passed; 32 native account UI checks; 37 real Logto SSO/session close-restart/local logout checks; 13 actual delivery-path launcher checks. Native login validates real provider callback; no browser credential entry/profile/token reads by test driver.",
+          "evidence_path": "artifacts/builds/T03-20261002-session-fix-02",
+          "scope": "2026-10-02 session persistence fix only. Full A030/T03 not verified. Provider logout, second account, long-term real refresh/expiry, machine portability remain not_run."
+        },
+        {
+          "build_id": "T03-20261002-callback-ui-01",
+          "source_snapshot_id": "sha256:f8f17cb61e99ccf50d74528137c18067e758dee13189aa7ddd132958d44e0517",
+          "environment": "Windows 11 10.0.26200; standard user; local .NET SDK 10.0.401; isolated Chromium 151.0.7922.34 visual check",
+          "command": "./scripts/Build.ps1 -BuildId T03-20261002-callback-ui-01; ./scripts/Test.ps1; ./scripts/Test-DeliveredLauncher.ps1; ./scripts/Test-T03AccountSmoke.ps1; ./artifacts/reports/t03-session-fix/Test-SessionPersistenceSmoke.ps1 -IncludeLocalLogout; node artifacts/reports/t03-callback-page/render-preview.cjs",
+          "observed_result": "370 C# passed including 5 new callback page/HTTP/CSP tests; 32 native account UI checks; 37 real Logto SSO/persistence/local logout checks; 13 final-path launcher checks. Light/dark/narrow/motion/reduced-motion actual browser render passed without external requests. Fixed neutral page does not claim authentication success or reflect callback secrets.",
+          "evidence_path": "artifacts/builds/T03-20261002-callback-ui-01",
+          "scope": "Callback appearance and animation increment with related regression only. Full T03 remains in_progress; prior unexecuted and blocked acceptance retained."
+        }
+      ]
+    },
+    {
+      "id": "A031",
+      "requirement_ids": [
+        "R031"
+      ],
+      "title": "最小权限授权",
+      "status": "not_run",
+      "assertions": [
+        "安装声明/使用申请/设置撤销",
+        "拒绝和新增权限",
+        "不向应用提供宿主令牌"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A032",
+      "requirement_ids": [
+        "R032"
+      ],
+      "title": "运行隔离和网关",
+      "status": "not_run",
+      "assertions": [
+        "验证来源/消息/实例",
+        "隔离数据和浏览器能力",
+        "无任意宿主代理"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A033",
+      "requirement_ids": [
+        "R033"
+      ],
+      "title": "账号切换隔离",
+      "status": "not_run",
+      "assertions": [
+        "会话代次废弃旧请求",
+        "用户命名空间分离",
+        "授权与旧订阅同步失效"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A034",
+      "requirement_ids": [
+        "R034"
+      ],
+      "title": "开发者服务端身份对接",
+      "status": "not_run",
+      "assertions": [
+        "冻结真实身份方案",
+        "服务器验证凭证对象有效期等",
+        "昵称ID不充当证明"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A035",
+      "requirement_ids": [
+        "R035"
+      ],
+      "title": "公开 SDK 合同",
+      "status": "not_run",
+      "assertions": [
+        "能力/方法/事件/错误统一",
+        "公开SDK不暴露内部服务",
+        "类型与schema测试"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run."
+    },
+    {
+      "id": "A036",
+      "requirement_ids": [
+        "R036"
+      ],
+      "title": "生命周期与保存协作",
+      "status": "not_run",
+      "assertions": [
+        "前后台挂起恢复退出都有状态",
+        "保存超时有规则",
+        "崩溃可报告与恢复"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        }
+      ],
+      "verification_scope": "Partial evidence only; full assertions remain not_run."
+    },
+    {
+      "id": "A037",
+      "requirement_ids": [
+        "R037"
+      ],
+      "title": "私有文件与存档",
+      "status": "not_run",
+      "assertions": [
+        "文件能力句柄和配额",
+        "原子存档/备份/迁移",
+        "中断不破坏旧数据"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A038",
+      "requirement_ids": [
+        "R038"
+      ],
+      "title": "配置与数据迁移",
+      "status": "not_run",
+      "assertions": [
+        "版本化配置",
+        "损坏可恢复",
+        "升级不覆盖用户目录"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A039",
+      "requirement_ids": [
+        "R039"
+      ],
+      "title": "通知及桌面扩展接口",
+      "status": "not_run",
+      "assertions": [
+        "授权通知角标",
+        "受限快捷操作/深链/小组件",
+        "外观变化事件"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A040",
+      "requirement_ids": [
+        "R040"
+      ],
+      "title": "开发者模式",
+      "status": "not_run",
+      "assertions": [
+        "设置开启显示开发者应用",
+        "日志/权限/生命周期调试",
+        "关闭不泄露调试能力"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "A041",
+      "requirement_ids": [
+        "R041"
+      ],
+      "title": "模板工具与样例",
+      "status": "in_progress",
+      "assertions": [
+        "创建/检查/预览/打包/发布检查可用",
+        "五类样例可运行",
+        "生产禁用测试替身"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "current_verification_scope": "五类真实样例、创建/校验/预览/打包/发布资料检查已接通；本版CLI20、原生115通过；实际Logto和独立新人not_run。"
+    },
+    {
+      "id": "A042",
+      "requirement_ids": [
+        "R042"
+      ],
+      "title": "按版本对接文档",
+      "status": "in_progress",
+      "assertions": [
+        "每公开接口完整说明",
+        "与当前代码版本对应",
+        "新人无需口头补充可接入"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "current_verification_scope": "17份按版本文档已交付；全新中文目录仅依据文档/SDK自测通过；外部新人not_run。"
+    },
+    {
+      "id": "A043",
+      "requirement_ids": [
+        "R043"
+      ],
+      "title": "机器可读合同",
+      "status": "in_progress",
+      "assertions": [
+        "schema正反例",
+        "SDK类型",
+        "服务端OpenAPI",
+        "接口变更自动检查（本地可执行）"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "current_verification_scope": "26方法/6事件、9 Schema、SDK类型及真实后端OpenAPI；本版机器合同358通过。完整公开接口逐项人工审阅未完成。"
+    },
+    {
+      "id": "A044",
+      "requirement_ids": [
+        "R044"
+      ],
+      "title": "主程序渠道选择",
+      "status": "in_progress",
+      "assertions": [
+        "仅官方仓库",
+        "plus/meta按开关匹配",
+        "版本规范比较且无静默降级"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "受控 Release 列表、SemVer数值顺序、仅plus/meta、无降级、分页/草稿/标签/预发布/架构/兼容/资产绑定、切渠道废弃候选。实际固定生产仓库只读HTTP200/0Release。",
+          "not_run_or_limit": "真实生产签名Release选择/下载 not_run：源无Release、公钥未配置。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "current_verification_scope": "本版C#规范版本/渠道/签名源测试、真实最终EXE更新页通过；默认paimeng5201314/autumnlab，生产信任根未配置，不允许未签名安装。"
+    },
+    {
+      "id": "A045",
+      "requirement_ids": [
+        "R045"
+      ],
+      "title": "空闲更新维护锁",
+      "status": "in_progress",
+      "assertions": [
+        "所有游戏状态阻塞",
+        "关键写入阻塞",
+        "检查和启动竞争被统一锁控制"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "真实游戏Foreground/Background各35秒阻止提交并保留未保存输入；实际资源释放后才推进。协调夹具覆盖全部状态及Closed但资源租约未释放。 实际存档提交排空、配置/迁移/恢复/桌面写入保护；身份登录/刷新/凭据关键事务合成协议及真实临时DPAPI夹具。最终包商店安装与存档回归。 160次并发准入竞态、准备态拒绝新launch/write、已有写入排空、超时与取消恢复均由协调fixture实际执行。",
+          "not_run_or_limit": "Starting/Suspended/Closing实机竞态、物理最小化矩阵 not_run；与协调夹具分开。 真实账号、实际UI并发覆盖所有关键操作的全排列 not_run。 多Session/多用户实机压力矩阵 not_run。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "本版协调夹具与原生后台/存档/结束资源回归通过；最新完整A/B维护提交竞态not_run；旧drill03仅历史。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A046",
+      "requirement_ids": [
+        "R046"
+      ],
+      "title": "发布签名与更新器",
+      "status": "in_progress",
+      "assertions": [
+        "更新清单和payload可信验证",
+        "独立更新器交接",
+        "私钥不进入客户端"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "RSA-PSS原始清单字节、可信根/撤销/有效期/序号/严格格式/负载大小与路径负面夹具；实际A拒绝篡改签名。 独立更新器期间原入口重复启动安全拒绝；真实旧T04副本在applying启动，仅一个业务实例，随后安全回退A且两根数据不混用。 协议/路径fixture验证错误根、过期/重放交接、维护互斥、越界/链接/保留路径及旧元数据拒绝；未知改动文件与坏备份保留。 最终普通DLL和Updater bundle无测试根/feed，真实FromEmbedded拒绝演练签名；测试公钥仅独立正控制。ZIP白名单逐字节读回、私钥临时文件已删除。",
+          "not_run_or_limit": "公网代理篡改及完整恶意压缩矩阵 not_run；不凭测试名称扩展到未构造的断言。 旧v1赢得业务锁间隙时此次结果为安全回退，并非B升级成功；跨Session not_run。 不宣称对同用户恶意本机进程的完整沙箱/所有竞态证明。 生产公钥/AuthentiCode/真实发布签名blocked，未退回unsigned安装。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "独立更新器/签名/事务实现保留；本版自动回归通过、正常payload1700项已生成；生产签名blocked，本版完整健康失败回退not_run。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A047",
+      "requirement_ids": [
+        "R047"
+      ],
+      "title": "更新失败恢复",
+      "status": "in_progress",
+      "assertions": [
+        "中断日志/健康确认/旧版恢复",
+        "数据迁移兼容",
+        "故障不无限循环"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "真实Bad核心健康失败恢复A，实际程序和6份数据保留、读档和原入口重开；坏构建隔离，显式检查不重新暂存，20秒无循环。 真正独立Updater在applying和health阶段精确进程终止；原快捷方式恢复A、数据、SDK读档、坏版本隔离、再次重开均通过。协议fixture覆盖更多日志边界。 真实App.xbf占用导致替换前aborted并自动重开A；持锁35秒、释放并显式check后20秒均无自动重启，合法B不入黑名单。受控空间/只读/运输HTML/续传变化另在模块测试中。 同用户同物理根真实升级/回退保留guest游戏和配置；身份关键写入由协议替身+临时DPAPI夹具回归。",
+          "not_run_or_limit": "非物理断电；观察窗口明确有界。 物理断电、真实下载/解包/每个写日志/迁移子边界中断未全部注入，保持not_run。 真实磁盘填满、公网断网/代理全组合 not_run。 真实Logto会话、第二账号、长期刷新升级验证not_run；T03收尾由用户暂缓。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "原数据保护实现与本版存档/测试数据按SHA保留通过；全迁移/磁盘满/物理断电及本版升级恢复not_run。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A048",
+      "requirement_ids": [
+        "R048"
+      ],
+      "title": "便携版与安装版",
+      "status": "in_progress",
+      "assertions": [
+        "同版本双包",
+        "标准用户和依赖缺失验证",
+        "卸载不默认删存档"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "本版便携EXE及1703项ZIP实际中文路径启动通过；安装包由派蒙明确暂缓，干净OS无SDK/离线首启not_run，不改原双包条件。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A049",
+      "requirement_ids": [
+        "R049"
+      ],
+      "title": "构建测试和发布证据",
+      "status": "in_progress",
+      "assertions": [
+        "构建关联源文件快照/内容哈希（commit可选）",
+        "真实测试记录",
+        "不把Linux静态检查当Windows实测"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "verification_scope": "Partial evidence only; full assertions remain not_run.",
+      "current_verification_scope": "本版Build/Prepare/Test/Finalize、源348文件快照、ZIP/EXE哈希和对应真实原生报告齐备；源/SDK/审阅包已交付。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A050",
+      "requirement_ids": [
+        "R050"
+      ],
+      "title": "脱敏与安全排错",
+      "status": "in_progress",
+      "assertions": [
+        "日志容量/脱敏/请求关联",
+        "故障包无令牌",
+        "扫描无机密泄漏"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "current_verification_scope": "支持导出实现与本版C#相关正反例保留；审阅ZIP只收明确测试截图/白名单报告摘要，不收原始日志；全部秘密内容审计未完成。"
+    },
+    {
+      "id": "A051",
+      "requirement_ids": [
+        "R051"
+      ],
+      "title": "完整 Windows 与视觉验收",
+      "status": "in_progress",
+      "assertions": [
+        "两目标系统/DPI/输入法",
+        "覆盖层和菜单实测",
+        "制作者审阅关键UI"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "本版Win11标准用户96DPI桌面122/原生WebView33及8张审阅截图已跑；Win10/DPI/输入法/触屏及派蒙审阅not_run。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A052",
+      "requirement_ids": [
+        "R052"
+      ],
+      "title": "范围和真实完成状态",
+      "status": "in_progress",
+      "assertions": [
+        "每已确认需求有证据",
+        "meta不绕过安全",
+        "范围变化先由派蒙同意"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "58需求/66验收/218断言/14门禁原文保留，不自动通过；本版局部验证、旧证据及blocked/not_run分开，仍不可公开发布。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A053",
+      "requirement_ids": [
+        "R053"
+      ],
+      "title": "多人协作基础",
+      "status": "not_run",
+      "assertions": [
+        "模块分工与公共协议",
+        "共享文件协调",
+        "变更日志和PR模板"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        }
+      ],
+      "verification_scope": "Partial evidence only; full assertions remain not_run."
+    },
+    {
+      "id": "A054",
+      "requirement_ids": [
+        "R054"
+      ],
+      "title": "本地 .autumn 安装入口",
+      "status": "in_progress",
+      "assertions": [
+        "本地选择/拖入遵守同一包检查",
+        "文件关联按安装方式可选",
+        "不导入EXE"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Native file picker and drop handlers share installer; local-source ownership and EXE/path rejection tested in services/CLI.",
+          "not_run_or_limit": "Physical file picker/drag-drop matrix and Windows file association not_run; portable package does not register association.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        }
+      ],
+      "verification_scope": "Native file picker and drop handlers share installer; local-source ownership and EXE/path rejection tested in services/CLI. Physical file picker/drag-drop matrix and Windows file association not_run; portable package does not register association."
+    },
+    {
+      "id": "A055",
+      "requirement_ids": [
+        "R055"
+      ],
+      "title": "首版更新演练",
+      "status": "in_progress",
+      "assertions": [
+        "用两个测试版本验证升级",
+        "签名错误和中断恢复",
+        "不向正式feed投放假版本"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "真实发行A->B，848受管文件/实际程序集身份/核心健康/稳定EXE及原快捷方式；6份原数据hash、真实SDK读档、原快捷方式重开。 真实Bad核心健康失败恢复A，实际程序和6份数据保留、读档和原入口重开；坏构建隔离，显式检查不重新暂存，20秒无循环。 真正独立Updater在applying和health阶段精确进程终止；原快捷方式恢复A、数据、SDK读档、坏版本隔离、再次重开均通过。协议fixture覆盖更多日志边界。",
+          "not_run_or_limit": "隔离FileStream测试源+仅测试签名；不是公网GitHub更新。 非物理断电；观察窗口明确有界。 物理断电、真实下载/解包/每个写日志/迁移子边界中断未全部注入，保持not_run。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "drill03旧真实A/B/Bad升级链102和四故障142保留为历史；drill04首次链实际失败/未完成；当前meta完整A/Bnot_run，未投放正式feed。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A056",
+      "requirement_ids": [
+        "R056"
+      ],
+      "title": "来源与依赖声明",
+      "status": "in_progress",
+      "assertions": [
+        "保留LICENSE",
+        "第三方组件与素材来源",
+        "制作人不伪装证书主体"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "current_verification_scope": "依赖锁与随包.NET10.0.12/WinAppSDK1.8/WebView2固定154.0.4258.53、ThirdPartyLicenses/PRI/XBF/deps保留；根LICENSE和部分归属缺项，Authenticode未签名。",
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "X01",
+      "title": "安装到安全更新完整路径",
+      "requirement_ids": [
+        "R005",
+        "R020",
+        "R028",
+        "R030",
+        "R037",
+        "R045",
+        "R047"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "真实包从GitHub安装后内部运行",
+        "授权和存档保存后后台阻止更新",
+        "真正退出后升级并恢复数据"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Controlled real HTTP -> install -> WebView -> SDK save -> background blocks update -> End -> update -> restore passed.",
+          "not_run_or_limit": "Real GitHub Release leg unavailable; T05 main-program security update and full T03 not promoted.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        },
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "真实游戏Foreground/Background各35秒阻止提交并保留未保存输入；实际资源释放后才推进。协调夹具覆盖全部状态及Closed但资源租约未释放。 真实发行A->B，848受管文件/实际程序集身份/核心健康/稳定EXE及原快捷方式；6份原数据hash、真实SDK读档、原快捷方式重开。",
+          "not_run_or_limit": "Starting/Suspended/Closing实机竞态、物理最小化矩阵 not_run；与协调夹具分开。 隔离FileStream测试源+仅测试签名；不是公网GitHub更新。 X01真实GitHub应用安装仍未覆盖，不改变T04历史缺项。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "verification_scope": "Controlled real HTTP -> install -> WebView -> SDK save -> background blocks update -> End -> update -> restore passed. Real GitHub Release leg unavailable; T05 main-program security update and full T03 not promoted.",
+      "current_assertion_verification": [
+        {
+          "id": "X01",
+          "assertion_index": 1,
+          "original_assertion": "真实包从GitHub安装后内部运行",
+          "status": "partial",
+          "current_scope": "受控真实HTTP商店安装75通过；真实GitHub合规包安装not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X01",
+          "assertion_index": 2,
+          "original_assertion": "授权和存档保存后后台阻止更新",
+          "status": "partial",
+          "current_scope": "本版授权/真实SDK存档/后台继续与资源释放已验证；本版安全更新提交全链not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X01",
+          "assertion_index": 3,
+          "original_assertion": "真正退出后升级并恢复数据",
+          "status": "partial",
+          "current_scope": "本版完整A/B升级恢复not_run；drill03仅历史，drill04实际失败未完成。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ],
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "X02",
+      "title": "账号切换中的异步响应",
+      "requirement_ids": [
+        "R031",
+        "R032",
+        "R033",
+        "R037"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "旧账号请求延迟返回时不得写入新账号",
+        "旧订阅和浏览器持久化状态失效",
+        "资料和存档不跨用户泄漏"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "current_assertion_verification": [
+        {
+          "id": "X02",
+          "assertion_index": 1,
+          "original_assertion": "旧账号请求延迟返回时不得写入新账号",
+          "status": "partial",
+          "current_scope": "本版延迟/epoch协调夹具和preview账号模拟115通过；真实第二账号/T03收尾暂缓。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X02",
+          "assertion_index": 2,
+          "original_assertion": "旧订阅和浏览器持久化状态失效",
+          "status": "partial",
+          "current_scope": "preview切换会话失效与本版C#夹具通过；真实浏览器退出/长期刷新暂缓。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X02",
+          "assertion_index": 3,
+          "original_assertion": "资料和存档不跨用户泄漏",
+          "status": "partial",
+          "current_scope": "本版真实guest权限/存档隔离及preview模拟通过；真实Logto多账号not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ]
+    },
+    {
+      "id": "X03",
+      "title": "安装崩溃与重新启动",
+      "requirement_ids": [
+        "R004",
+        "R027",
+        "R028",
+        "R029"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "提交前中断不得注册假图标",
+        "提交后重启可以恢复一致记录",
+        "已有应用和存档保持可用"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Before/after commit fault injection and reconstruction tests; actual normal restart preserves installed policy and saves.",
+          "not_run_or_limit": "Real power failure/installation crash matrix not_run; historical launcher crash evidence not reused as this build coverage.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "verification_scope": "Before/after commit fault injection and reconstruction tests; actual normal restart preserves installed policy and saves. Real power failure/installation crash matrix not_run; historical launcher crash evidence not reused as this build coverage.",
+      "current_assertion_verification": [
+        {
+          "id": "X03",
+          "assertion_index": 1,
+          "original_assertion": "提交前中断不得注册假图标",
+          "status": "partial",
+          "current_scope": "本版C#安装事务故障夹具通过；所有实际安装中断边界not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X03",
+          "assertion_index": 2,
+          "original_assertion": "提交后重启可以恢复一致记录",
+          "status": "partial",
+          "current_scope": "本版安装记录/重开回归通过；每个提交边界真实中断矩阵not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X03",
+          "assertion_index": 3,
+          "original_assertion": "已有应用和存档保持可用",
+          "status": "partial",
+          "current_scope": "本版商店75/桌面122含已有应用及存档保持可用；物理断电矩阵not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ]
+    },
+    {
+      "id": "X04",
+      "title": "代理和来源篡改",
+      "requirement_ids": [
+        "R021",
+        "R022",
+        "R026",
+        "R046"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "pm标签不获得安全徽章",
+        "代理改payload触发验证失败",
+        "代理改更新清单不得改变验证公钥"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T04-20261002-store-03",
+          "source_snapshot_id": "sha256:b0cb4218be48d064822cec188569b1575bf31d685e01afa062c5423de8e94ee0",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-03; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store",
+          "observed_result": "Release 0 warnings/errors; 463/463 C#, 22 SDK, 6 sample, 21 synthetic native identity, 7 synthetic server HTTP, 12 real local CLI, 49 static checks passed. Real GitHub GET HTTP200, 0 public repositories; real Release install not_run.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-03",
+          "scope": "T04 local module coverage. Real HTTP fixture != live GitHub. Final UI report recorded separately. General third-party execution stays gated; X01/X03/X04 other-stage clauses not promoted."
+        },
+        {
+          "build_id": "T04-20261002-store-04",
+          "source_snapshot_id": "sha256:7558aa6362f13317c6bce3f657e1e1d26539c83826e1f7107fbc012f4d703784",
+          "environment": "Windows 11 10.0.26200; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T04-20261002-store-04; ./scripts/Test.ps1; ./scripts/Test-Source.ps1; AutumnOS.Tests.dll --probe-store; ./scripts/Package.ps1 -Checkpoint T04 -Stage Full",
+          "observed_result": "Self-label never grants trust; tampered package hash rejected; HTTPS redirect/header/credential boundaries tested.",
+          "not_run_or_limit": "T05 signed update metadata/key substitution is not_run and outside this increment.",
+          "evidence_path": "artifacts/builds/T04-20261002-store-04",
+          "native_evidence": "artifacts/builds/T04-20261002-store-04/package-t04-f2c671110f404c9e9c5d691c0fd2d105",
+          "scope": "463 C# / 22 SDK / 6 sample / 21 synthetic native identity / 7 synthetic server HTTP / 12 actual CLI / 49 static; 64 Store + 81 desktop + 13 direct final path checks. Counts are report totals, not all assertions for this ID."
+        },
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "RSA-PSS原始清单字节、可信根/撤销/有效期/序号/严格格式/负载大小与路径负面夹具；实际A拒绝篡改签名。 最终普通DLL和Updater bundle无测试根/feed，真实FromEmbedded拒绝演练签名；测试公钥仅独立正控制。ZIP白名单逐字节读回、私钥临时文件已删除。",
+          "not_run_or_limit": "公网代理篡改及完整恶意压缩矩阵 not_run；不凭测试名称扩展到未构造的断言。 生产公钥/AuthentiCode/真实发布签名blocked，未退回unsigned安装。 X04 pm标签与真实代理攻击链没有因本轮签名夹具而新增通过。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "verification_scope": "Self-label never grants trust; tampered package hash rejected; HTTPS redirect/header/credential boundaries tested. T05 signed update metadata/key substitution is not_run and outside this increment.",
+      "current_assertion_verification": [
+        {
+          "id": "X04",
+          "assertion_index": 1,
+          "original_assertion": "pm标签不获得安全徽章",
+          "status": "partial",
+          "current_scope": "本版商店标签/来源测试通过，不授予pm安全徽章。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X04",
+          "assertion_index": 2,
+          "original_assertion": "代理改payload触发验证失败",
+          "status": "partial",
+          "current_scope": "本版受控商店HTTP篡改/hash失败及签名负面夹具通过；公网代理not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X04",
+          "assertion_index": 3,
+          "original_assertion": "代理改更新清单不得改变验证公钥",
+          "status": "partial",
+          "current_scope": "本版受信密钥/源/Schema/signature负面夹具通过；正式公钥缺失，公网代理not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ],
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "X05",
+      "title": "游戏启动与更新竞争",
+      "requirement_ids": [
+        "R015",
+        "R036",
+        "R045"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "Starting和Suspended仍阻塞更新",
+        "取得维护锁时新的launch被延后",
+        "更新器交接期间重复打开客户端不破坏锁"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T05-20261002-portable-05",
+          "source_snapshot_id": "sha256:e8455e0aa53be5864c361a62795996e544c579faf15435d3fadfba31b56a1a1b",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build/Test/Package-T05 Finalize; Test-T05UpdateSmoke; artifact native fault drivers (see per-report exact input/hash)",
+          "observed_result": "真实游戏Foreground/Background各35秒阻止提交并保留未保存输入；实际资源释放后才推进。协调夹具覆盖全部状态及Closed但资源租约未释放。 160次并发准入竞态、准备态拒绝新launch/write、已有写入排空、超时与取消恢复均由协调fixture实际执行。 独立更新器期间原入口重复启动安全拒绝；真实旧T04副本在applying启动，仅一个业务实例，随后安全回退A且两根数据不混用。",
+          "not_run_or_limit": "Starting/Suspended/Closing实机竞态、物理最小化矩阵 not_run；与协调夹具分开。 多Session/多用户实机压力矩阵 not_run。 旧v1赢得业务锁间隙时此次结果为安全回退，并非B升级成功；跨Session not_run。",
+          "evidence_path": "artifacts/builds/T05-20261002-portable-05/acceptance-coverage.json",
+          "native_evidence": [
+            "artifacts/t05-drill/20261002-drill03/native-retry-06/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-applying-04/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u09-health-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u06-legacy-v1-01/update-smoke.json",
+            "artifacts/t05-drill/20261002-drill03/fault-u10-busy-file-01/update-smoke.json"
+          ],
+          "scope": "Current local portable assertions only; retain original definitions and all historical evidence."
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "current_assertion_verification": [
+        {
+          "id": "X05",
+          "assertion_index": 1,
+          "original_assertion": "Starting和Suspended仍阻塞更新",
+          "status": "partial",
+          "current_scope": "本版Starting/Suspended等全部状态协调夹具通过；真实Starting/Suspended/Closing竞态not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X05",
+          "assertion_index": 2,
+          "original_assertion": "取得维护锁时新的launch被延后",
+          "status": "partial",
+          "current_scope": "本版维护/launch竞争夹具通过；当前完整独立更新器真实交接竞态not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X05",
+          "assertion_index": 3,
+          "original_assertion": "更新器交接期间重复打开客户端不破坏锁",
+          "status": "partial",
+          "current_scope": "本版通常二次启动18保持原窗；更新器交接重复启动本版not_run，旧drill03为历史。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ],
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "X06",
+      "title": "干净系统双包离线启动",
+      "requirement_ids": [
+        "R002",
+        "R003",
+        "R004",
+        "R048",
+        "R051"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "无开发环境的标准用户可以启动",
+        "依赖策略与发行说明一致",
+        "中文路径与离线内容正常运行"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "current_assertion_verification": [
+        {
+          "id": "X06",
+          "assertion_index": 1,
+          "original_assertion": "无开发环境的标准用户可以启动",
+          "status": "partial",
+          "current_scope": "本版Win11标准用户最终EXE18/ZIP18通过；本机已有SDK，干净OS无开发环境not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X06",
+          "assertion_index": 2,
+          "original_assertion": "依赖策略与发行说明一致",
+          "status": "partial",
+          "current_scope": "实际随包依赖/PRI/XBF/deps记录保留；离线首次运行和完整许可证归属未完成。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X06",
+          "assertion_index": 3,
+          "original_assertion": "中文路径与离线内容正常运行",
+          "status": "partial",
+          "current_scope": "本版中文空格路径实际ZIP启动及本地内容运行通过；干净系统离线首启not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ],
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "X07",
+      "title": "独立开发者接入",
+      "requirement_ids": [
+        "R034",
+        "R035",
+        "R040",
+        "R041",
+        "R042",
+        "R043"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "仅依据文档从空项目打包安装",
+        "资料授权与存档正反例通过",
+        "后端拒绝伪造或过期凭证"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "current_assertion_verification": [
+        {
+          "id": "X07",
+          "assertion_index": 1,
+          "original_assertion": "仅依据文档从空项目打包安装",
+          "status": "partial",
+          "current_scope": "本版交付SDK全新中文目录CLI20/contracts358，原生创建/预览/打包115通过；外部新人not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X07",
+          "assertion_index": 2,
+          "original_assertion": "资料授权与存档正反例通过",
+          "status": "partial",
+          "current_scope": "本版真实preview/guest存档与权限正反例115通过；真实Logto资料授权not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X07",
+          "assertion_index": 3,
+          "original_assertion": "后端拒绝伪造或过期凭证",
+          "status": "partial",
+          "current_scope": "本版真实后端C#及合成签名/JWT正反例、独立合成客户端21与实际后端负面HTTP7通过；真实Logto后端集成not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ]
+    },
+    {
+      "id": "X08",
+      "title": "视觉与真实行为一致",
+      "requirement_ids": [
+        "R007",
+        "R011",
+        "R012",
+        "R015",
+        "R017",
+        "R018",
+        "R019",
+        "R051"
+      ],
+      "status": "in_progress",
+      "assertions": [
+        "每个展示按钮都有真实结果和失败状态",
+        "WebView画面上系统遮罩可见可点",
+        "减少动态效果与布局恢复覆盖所有系统应用"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "reproduction_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-desktop-01",
+          "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user",
+          "command": "./scripts/Build.ps1 -BuildId T02-20261001-desktop-01; ./scripts/Test.ps1; ./scripts/Package.ps1 (Test-DesktopSmoke.ps1 on delivered directory)",
+          "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
+          "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
+          "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "environment": "Windows11 standard user; single-file actual native",
+          "command": "Build/Test/Package-SingleFile; Test-SingleFileSmoke twice including -InPlace; artifact three owned-process negative controls",
+          "observed_result": "595C#/22SDK/358contracts/6DOM/21synthetic/7HTTP-negative/12CLI; 41+41 real native checks; 3 actual negative controls",
+          "scope": "Single-exe packaging/current named data and process assertions only; full T06 and current A/B not_run"
+        }
+      ],
+      "verification_scope": "Checkpoint assertions executed in the linked report; full cross-stage assertions are not newly marked passed. Physical touch/IME/DPI, sandbox, Windows10/clean-machine and full T02 remain not_run.",
+      "current_assertion_verification": [
+        {
+          "id": "X08",
+          "assertion_index": 1,
+          "original_assertion": "每个展示按钮都有真实结果和失败状态",
+          "status": "partial",
+          "current_scope": "本版桌面122/商店75/开发115真实控件接线通过；所有系统应用全部按钮未覆盖。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X08",
+          "assertion_index": 2,
+          "original_assertion": "WebView画面上系统遮罩可见可点",
+          "status": "partial",
+          "current_scope": "本版桌面权限覆盖层/UIA点击与WebView安全33真实回归通过；全部DPI/触屏矩阵not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        },
+        {
+          "id": "X08",
+          "assertion_index": 3,
+          "original_assertion": "减少动态效果与布局恢复覆盖所有系统应用",
+          "status": "partial",
+          "current_scope": "本版个性化/布局恢复局部122通过；所有系统应用减少动态与布局矩阵not_run。",
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "full_assertion_passed": false
+        }
+      ],
+      "single_file_verification": "Only named current 41+41/3 assertions; original assertions and previous evidence retained; old native/report scores remain old-build history"
+    },
+    {
+      "id": "A057",
+      "requirement_ids": [
+        "R057"
+      ],
+      "title": "普通本地工作区可开发并交付",
+      "status": "not_run",
+      "assertions": [
+        "当前本地文件夹开发，没有.git、GitHub授权或远端也可开工",
+        "不克隆、同步、推送、创建远端仓库或委派云端任务",
+        "Windows构建/测试/打包本地脚本可执行，不依赖云端CI",
+        "无Git时以真实源文件快照/内容哈希与构建ID关联证据",
+        "商店/更新保留GitHub读取功能，不把本地工作误改为全部离线",
+        "本地交付源码、文档、测试记录和发行候选，未经授权不上传"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T01-20261001-internal-01",
+          "source_snapshot_id": "sha256:74d4ece59f3a5e20b453f3b4987096e2a63dc7100aeb69ae2f95c4a800ee9ade",
+          "environment": "Microsoft Windows NT 10.0.26200.0",
+          "command": "./scripts/Build.ps1; ./scripts/Test.ps1 -ProbeLogto; ./scripts/Test-WindowsSmoke.ps1 -ExerciseRuntime; ./scripts/Package.ps1",
+          "observed_result": "Release: passed (0 warnings); C#: 132/132; SDK: 12/12; native smoke: 31 checks passed; ZIP: 551 matching files",
+          "evidence_path": "artifacts/builds/T01-20261001-internal-01",
+          "scope": "T00 foundation and T01 local sample increment; full product acceptance incomplete"
+        }
+      ],
+      "verification_scope": "Partial evidence only; full assertions remain not_run."
+    },
+    {
+      "id": "A058",
+      "requirement_ids": [
+        "R058"
+      ],
+      "title": "最终发行 EXE 单实例、召回与失败恢复",
+      "status": "passed",
+      "assertions": [
+        "正常重复启动保留原主 PID、窗口且转发进程退出",
+        "最小化再启动恢复原窗口；最大化后最小化再启动仍恢复最大化，窗口位置保持",
+        "游戏前台时召回仍为同一实例与 WebView、未保存输入和存档不变",
+        "游戏后台时召回保留桌面及运行标记，不绕过继续/结束面板；继续同实例、结束后再点击新实例",
+        "冷启动同时发起多次，最多一个实际业务主实例；可在 UI ready 前等待处理",
+        "不同工作目录与不同真实快捷方式均召回原实例",
+        "参与协议的不同发行目录和真实不同版本协调；次副本不存在的数据根仍不存在、既有数据字节不变",
+        "正常退出可重新启动；退出中保持互斥直至退出；初始化失败可释放所有权",
+        "只对脚本自启隔离副本注入崩溃并验证重新启动，不清理用户进程",
+        "无响应和 IPC 转发失败有界退出，无第二业务窗口/数据；超时不被视为主实例死亡",
+        "固定协议拒绝错误版本、命令、空 nonce、长度、重放响应不匹配与会话不匹配；日志固定字段及有界",
+        "保留旧测试、包和用户数据；ZIP 前验证最终交付 EXE、XBF/PRI，并关联实际构建 ID/源哈希"
+      ],
+      "evidence_required": [
+        "source_snapshot_id_or_content_hash",
+        "environment",
+        "executed_command_or_manual_steps",
+        "primary_and_forwarded_process_evidence",
+        "window_and_game_instance_evidence",
+        "observed_result",
+        "evidence_path"
+      ],
+      "evidence": [
+        {
+          "build_id": "T02-20261001-single-instance-04",
+          "source_snapshot_id": "sha256:7045aa9f8b844bb07d4aa8b1cc4bb74e9d308b262ca8507dfc680789dedc9b68",
+          "environment": "Microsoft Windows NT 10.0.26200.0; standard user; local .NET SDK 10.0.401",
+          "command": "./scripts/Build-ProtocolPeer.ps1 -BuildId T02-20261001-single-instance-peer-04; ./scripts/Build.ps1 -BuildId T02-20261001-single-instance-04; ./scripts/Test.ps1; ./scripts/Package.ps1 -PeerExecutablePath <peer-04>/distribution/AutumnOS.exe",
+          "observed_result": "Release 0 warnings/errors; C# 172/172; SDK 15/15; desktop 80/80; single-instance 132/132; actual delivered-path EXE 13/13 before ZIP; two real shortcuts and window position 29/29 after ZIP; 556 ZIP entries match actual delivered bytes; 6 WinUI PRI/XBF resources preserved.",
+          "evidence_path": "artifacts/builds/T02-20261001-single-instance-04",
+          "primary_and_forwarded_process_evidence": {
+            "primary_pid": 7708,
+            "hwnd": 18547416,
+            "repeat_secondary_pid": 22212,
+            "repeat_secondary_exit_code": 0,
+            "cross_version_secondary_pid": 13852,
+            "cross_version_secondary_exit_code": 0,
+            "cold_concurrent_winner_pid": 20964,
+            "cold_launch_count": 6,
+            "cold_launch_span_ms": 33,
+            "actual_delivered_path_primary_pid": 22404,
+            "actual_delivered_path_secondary_pid": 13660,
+            "reports": [
+              "package-single-instance/single-instance-smoke.json",
+              "delivered-executable/delivered-launcher.json"
+            ]
+          },
+          "window_and_game_instance_evidence": {
+            "game_instance_id": "1a5bcebf-186b-425c-844a-36c3f4a058d6",
+            "unsaved_input_and_committed_save_preserved": true,
+            "background_remains_background": true,
+            "window_minimize_and_maximize_restore": "passed",
+            "two_shortcuts_and_exact_window_rectangle": "shortcut-verification/shortcut-verification.json",
+            "shortcut_supplement_timing": "after ZIP; same frozen binary and ZIP hashes; foreground not_run in this supplement, attention_requested observed",
+            "foreground_activation": "passed separately in package-single-instance with actual HWND comparison before helper focus"
+          },
+          "scope": "Windows 11 10.0.26200 standard user, same user/session, compatible protocol-v1 copies. Windows 10, different users/sessions, UAC matrix, clean machine, installer and real Logto remain not_run; legacy binaries without the protocol are unsupported; full T01/T02 incomplete, T03 not entered."
+        }
+      ],
+      "verification_scope": "Windows 11 10.0.26200 standard user, same user/session, compatible protocol-v1 copies. Windows 10, different users/sessions, UAC matrix, clean machine, installer and real Logto remain not_run; legacy binaries without the protocol are unsupported; full T01/T02 incomplete, T03 not entered.",
+      "pending_increment": {
+        "status": "passed",
+        "definition": [
+          "2026-10-02 派蒙新决定：单击图标打开或恢复同实例，双击桌面空白处调出实际运行应用卡片；长按/右键仍可继续和结束。",
+          "桌面网格图标可拖动重排，原子保存独立desktop-layout.json，取消恢复且重启还原；不以此替代跨页/文件夹/Dock完整验收。"
+        ],
+        "test": "DesktopLayoutTests + Test-DesktopInteractionSmoke + Test-T04StoreSmoke",
+        "prior_evidence": "preserved; old icon double-click behavior superseded",
+        "evidence_path": "artifacts/builds/T04-20261002-desktop-02/desktop-increment.json",
+        "scope": "Only current desktop gesture/reorder increment; original full-stage assertions remain outstanding where not covered",
+        "not_run": [
+          "physical_touch_pen_mouse",
+          "multi_monitor_dpi_matrix",
+          "windows10_clean_machine",
+          "dock_reordering",
+          "cross_page_folder_jiggle_editing",
+          "full_single_instance_fault_matrix_this_build",
+          "real_logto_login_this_increment",
+          "real_public_github_release_install",
+          "full_T03_closeout_user_deferred",
+          "T05"
+        ]
+      }
+    }
+  ],
+  "pack_version": "0.3"
+}

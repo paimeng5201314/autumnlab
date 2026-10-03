@@ -1,0 +1,22 @@
+{
+  "SchemaVersion": 1,
+  "Logto": {
+    "Endpoint": "https://account.labchronicles.cn/",
+    "Authority": "https://account.labchronicles.cn/oidc",
+    "MetadataAddress": "https://account.labchronicles.cn/oidc/.well-known/openid-configuration",
+    "ClientId": "tjck5m8ohjkw272y42adv",
+    "RedirectUri": "http://127.0.0.1:17853/callback/",
+    "PostLogoutRedirectUri": "http://127.0.0.1:17853/logout-callback/",
+    "Scopes": [
+      "openid",
+      "profile"
+    ],
+    "RememberSignInAdditionalScopes": [
+      "offline_access"
+    ],
+    "ResponseType": "code",
+    "UsePkce": true,
+    "PkceMethod": "S256",
+    "ClientAuthenticationMethod": "none"
+  }
+}

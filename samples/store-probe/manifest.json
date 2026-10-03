@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "appId": "cn.labchronicles.storeprobe",
+  "name": "商店链路测试 · 本地样例",
+  "version": "1.0.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": ["saves", "identity.profile"],
+  "permissionPurposes": {
+    "saves": "仅在独立游客测试空间保存你主动输入的测试文字",
+    "identity.profile": "仅在你主动申请后读取最小资料；游客返回需要登录，不会生成模拟账号"
+  },
+  "saveFormatVersion": 1
+}

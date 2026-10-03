@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "appId": "cn.labchronicles.elementpairs",
+  "name": "元素配对",
+  "version": "0.3.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": ["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links"],
+  "permissionPurposes": {
+    "saves": "保存和读取你的配对进度",
+    "identity.profile": "由你选择在游戏中显示昵称和应用范围标识",
+    "storage": "保存此游戏的私有偏好",
+    "files.open": "读取你在系统选择器中选定的 JSON 文件",
+    "files.save": "将你选择的数据导出为 JSON 文件",
+    "notifications": "在 AutumnOS 通知中心展示你主动发送的配对提醒",
+    "shortcuts": "在图标长按菜单添加回到配对操作",
+    "widgets": "在桌面显示当前配对进度",
+    "links": "处理仅属于本游戏的回到配对动作"
+  },
+  "desktop": {
+    "shortcuts": [{ "id": "resume", "title": "回到配对", "action": "resume" }],
+    "links": ["resume"],
+    "widgets": [{ "id": "progress", "title": "配对进度" }]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "Authority": "",
+  "MetadataAddress": "",
+  "ClientId": "",
+  "RedirectUri": "http://127.0.0.1:17854/callback/",
+  "Resource": "",
+  "RequiredScope": ""
+}

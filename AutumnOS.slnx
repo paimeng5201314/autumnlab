@@ -1,0 +1,29 @@
+<Solution>
+  <Configurations><Platform Name="x64" /></Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/AutumnOS.Update/AutumnOS.Update.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.UpdateProtocol/AutumnOS.UpdateProtocol.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Updater/AutumnOS.Updater.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Bootstrap/AutumnOS.Bootstrap.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Setup/AutumnOS.Setup.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Store/AutumnOS.Store.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Launcher/AutumnOS.Launcher.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Packages/AutumnOS.Packages.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Runtime/AutumnOS.Runtime.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Contracts/AutumnOS.Contracts.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Storage/AutumnOS.Storage.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Identity/AutumnOS.Identity.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.Shell/AutumnOS.Shell.csproj"><Platform Project="x64" /></Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AutumnOS.Tests/AutumnOS.Tests.csproj"><Platform Project="x64" /></Project>
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/AutumnOS.Update.Cli/AutumnOS.Update.Cli.csproj"><Platform Project="x64" /></Project>
+    <Project Path="tools/AutumnOS.Developer.Cli/AutumnOS.Developer.Cli.csproj"><Platform Project="x64" /></Project>
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/server-identity/AutumnOS.ServerIdentity.Sample.csproj"><Platform Project="x64" /></Project>
+    <Project Path="samples/native-identity-client/AutumnOS.NativeIdentity.Sample.csproj"><Platform Project="x64" /></Project>
+  </Folder>
+</Solution>

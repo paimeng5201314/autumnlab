@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1, "appId": "cn.labchronicles.sample.savegame", "name": "存档与迁移配对游戏", "version": "0.1.0",
+  "runtime": "web", "entry": "index.html", "permissions": ["saves"],
+  "permissionPurposes": {"saves": "保存当前账号的配对游戏；由你选择恢复备份或将格式 1 显式迁移到格式 2"},
+  "saveFormatVersion": 2, "minReadableSaveFormatVersion": 1, "maxReadableSaveFormatVersion": 2
+}

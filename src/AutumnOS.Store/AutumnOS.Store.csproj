@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup><EmbeddedResource Include="../../artifacts/store-fixtures/fixture-index.json" LogicalName="AutumnOS.Store.FixtureIndex.json" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../AutumnOS.Contracts/AutumnOS.Contracts.csproj" />
+    <ProjectReference Include="../AutumnOS.Storage/AutumnOS.Storage.csproj" />
+    <ProjectReference Include="../AutumnOS.Packages/AutumnOS.Packages.csproj" />
+  </ItemGroup>
+</Project>

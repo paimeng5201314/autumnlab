@@ -1,0 +1,13 @@
+{
+  "name": "autumnos-local-contract-checks",
+  "version": "0.5.1",
+  "private": true,
+  "description": "Local developer contract verification; no product runtime dependency",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@apidevtools/swagger-parser": "12.1.0",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "typescript": "5.9.3"
+  }
+}

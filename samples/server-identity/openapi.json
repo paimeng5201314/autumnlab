@@ -1,0 +1,361 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AutumnOS Independent Server Identity Example",
+    "version": "1.0.0",
+    "description": "制作人：派蒙。适用客户端0.5.1、SDK0.3.0。独立本地服务器，未声明生产部署或真实Logto登记通过。JWT验证签名、issuer、resource audience、client_id、iat/exp及scope；裸ID/宿主资料/宿主令牌不是凭据。请求不接受查询参数。所有响应Cache-Control:no-store、X-Content-Type-Options:nosniff。取消HTTP会取消密钥获取；不自动重试POST。"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5197",
+      "description": "只绑定本机。配置不完整时退出2，不监听；生产HTTPS部署须另行授权。"
+    }
+  ],
+  "security": [
+    {
+      "resourceBearer": []
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "security": [],
+        "summary": "配置已加载，不证明真实登录",
+        "responses": {
+          "200": {
+            "description": "本机配置完成",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "getVerifiedPlayer",
+        "summary": "读取独立验证的资源用户",
+        "description": "幂等。主体键为issuer+subject。Bearer有效期内可重复请求，不承诺阻止所有Bearer重放。不创建用户档案。",
+        "responses": {
+          "200": {
+            "description": "签名及业务目标验证成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Player"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/Scope"
+          },
+          "503": {
+            "$ref": "#/components/responses/Keys"
+          }
+        }
+      }
+    },
+    "/v1/action-challenge": {
+      "post": {
+        "operationId": "issueActionChallenge",
+        "summary": "签发绑定当前验证身份的60秒挑战",
+        "description": "无业务正文，不幂等。每次产生32字节随机base64url值；最多1024个未完成挑战，重启丢弃。只在进程内存，不是生产分布式重放存储。",
+        "responses": {
+          "200": {
+            "description": "issuer/subject/client绑定挑战",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/Scope"
+          },
+          "429": {
+            "$ref": "#/components/responses/Capacity"
+          },
+          "503": {
+            "$ref": "#/components/responses/Keys"
+          }
+        }
+      }
+    },
+    "/v1/confirm-action": {
+      "post": {
+        "operationId": "confirmAction",
+        "summary": "原子消费一次挑战，不修改分数或游戏状态",
+        "description": "正文最多4096字节。正确挑战须43字符；错误长度、未知、过期、重复、跨用户/client返回409。JSON绑定失败400；不支持Content-Type415。网络中断可能发生在消费之后，不能将重试409理解为首次未执行。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {
+                  "challenge": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "上一步返回的真实值。缺失/null/错误长度返回409；非字符串JSON绑定失败400。"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "仅确认测试动作",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Confirmation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效JSON、类型错误、未知字段或缺整个正文；框架错误，不承诺JSON正文"
+          },
+          "401": {
+            "$ref": "#/components/responses/Invalid"
+          },
+          "403": {
+            "$ref": "#/components/responses/Scope"
+          },
+          "409": {
+            "$ref": "#/components/responses/ChallengeRejected"
+          },
+          "413": {
+            "description": "正文超过4096字节，框架拒绝"
+          },
+          "415": {
+            "description": "正文非application/json，框架拒绝"
+          },
+          "503": {
+            "$ref": "#/components/responses/Keys"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "resourceBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Independent Logto resource JWT",
+        "description": "只用独立授权客户端在内存持有的资源token；禁止写入URL/日志/聊天，不复制宿主token。"
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "service",
+          "producer",
+          "status",
+          "real_provider_verified"
+        ],
+        "properties": {
+          "service": {
+            "const": "AutumnOS independent identity example"
+          },
+          "producer": {
+            "const": "派蒙"
+          },
+          "status": {
+            "const": "configured"
+          },
+          "real_provider_verified": {
+            "const": false
+          }
+        }
+      },
+      "Player": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "issuer",
+          "clientId"
+        ],
+        "properties": {
+          "subject": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          }
+        }
+      },
+      "Challenge": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "challenge",
+          "expiresIn"
+        ],
+        "properties": {
+          "challenge": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "expiresIn": {
+            "const": 60
+          }
+        }
+      },
+      "Confirmation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accepted",
+          "effect"
+        ],
+        "properties": {
+          "accepted": {
+            "const": true
+          },
+          "effect": {
+            "const": "test confirmation only; no score or game state modified"
+          }
+        }
+      },
+      "InvalidCredential": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "const": "INVALID_CREDENTIAL"
+          }
+        }
+      },
+      "InsufficientScope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "const": "INSUFFICIENT_SCOPE"
+          }
+        }
+      },
+      "KeysUnavailable": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "const": "KEYS_UNAVAILABLE"
+          }
+        }
+      },
+      "CapacityReached": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "const": "CAPACITY_REACHED"
+          }
+        }
+      },
+      "ChallengeRejected": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "const": "INVALID_OR_REPLAYED_CHALLENGE"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Invalid": {
+        "description": "缺少/重复Authorization、查询串、裸身份、伪造或无效JWT；不回传原凭据",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvalidCredential"
+            }
+          }
+        }
+      },
+      "Scope": {
+        "description": "缺少要求的独立资源scope",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InsufficientScope"
+            }
+          }
+        }
+      },
+      "Keys": {
+        "description": "可信发现/JWKS不可用，不跳过签名",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/KeysUnavailable"
+            }
+          }
+        }
+      },
+      "Capacity": {
+        "description": "1024个待消费挑战上限",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CapacityReached"
+            }
+          }
+        }
+      },
+      "ChallengeRejected": {
+        "description": "挑战无效/重放/过期/身份不匹配",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ChallengeRejected"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/AutumnOS.Setup/SetupTransaction.cs" Link="Setup/SetupTransaction.cs" />
+    <ProjectReference Include="../../src/AutumnOS.Update/AutumnOS.Update.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.UpdateProtocol/AutumnOS.UpdateProtocol.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.Store/AutumnOS.Store.csproj" />
+    <Compile Include="../../samples/server-identity/ServerTokenVerifier.cs" Link="ServerSample/ServerTokenVerifier.cs" />
+    <ProjectReference Include="../../src/AutumnOS.Launcher/AutumnOS.Launcher.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.Packages/AutumnOS.Packages.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.Runtime/AutumnOS.Runtime.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.Contracts/AutumnOS.Contracts.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.Storage/AutumnOS.Storage.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.Identity/AutumnOS.Identity.csproj" />
+    <None Include="../../autumnos-spec/config/logto.public.json" Link="config/logto.public.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../autumnos-spec/config/logto.registration-status.json" Link="config/logto.registration-status.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

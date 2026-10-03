@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:autumn.update.sig:1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "algorithm", "keyId", "trustRootVersion", "signature"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "algorithm": { "const": "RSA-PSS-SHA256" },
+    "keyId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9_.-]+$" },
+    "trustRootVersion": { "type": "integer", "minimum": 1 },
+    "signature": { "type": "string", "contentEncoding": "base64", "minLength": 512, "maxLength": 2048 }
+  }
+}

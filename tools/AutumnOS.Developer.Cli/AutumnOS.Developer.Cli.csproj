@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>AutumnOS.Developer.Cli</AssemblyName>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/AutumnOS.Packages/AutumnOS.Packages.csproj" />
+    <ProjectReference Include="../../src/AutumnOS.Store/AutumnOS.Store.csproj" />
+  </ItemGroup>
+</Project>

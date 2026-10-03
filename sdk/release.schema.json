@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:schema:release:1",
+  "title": "AutumnOS release metadata, schema 1",
+  "description": "Exact existing 13-field T03 release contract. Duplicate keys and unknown fields rejected. Shared ReleaseManifestValidator performs cross-field checks.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "appId", "version", "channel", "runtime", "minHostVersion", "minSdkVersion", "entry", "asset", "bytes", "sha256", "permissions", "saveFormatVersion"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "appId": { "$ref": "urn:autumnos:schema:manifest:1#/properties/appId" },
+    "version": { "$ref": "urn:autumnos:schema:manifest:1#/properties/version" },
+    "channel": { "enum": ["stable", "preview"], "description": "preview exactly when application version has SemVer prerelease identifiers; GitHub prerelease must agree." },
+    "runtime": { "type": "string", "minLength": 1, "maxLength": 32, "pattern": "^[a-z][a-z0-9-]*$", "description": "Only web is install-compatible in this host. Native EXE payloads remain rejected." },
+    "minHostVersion": { "$ref": "urn:autumnos:schema:manifest:1#/properties/version" },
+    "minSdkVersion": { "$ref": "urn:autumnos:schema:manifest:1#/properties/version" },
+    "entry": { "allOf": [{ "$ref": "urn:autumnos:schema:manifest:1#/properties/entry" }, { "not": { "type": "string", "pattern": "\\.\\." } }], "description": "Release entry rejects any consecutive dots, matching ReleaseManifestValidator." },
+    "asset": { "type": "string", "minLength": 8, "maxLength": 160, "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*\\.autumn$", "description": "Exactly one asset of the selected release, never its source ZIP. Tag must be version or v+version." },
+    "bytes": { "type": "integer", "minimum": 1, "maximum": 20971520 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "permissions": { "$ref": "urn:autumnos:schema:manifest:1#/properties/permissions" },
+    "saveFormatVersion": { "type": "integer", "minimum": 1, "maximum": 1000000, "description": "Must equal package manifest saveFormatVersion (default 1 for old packages). Readable range is validated from the package manifest before commit." }
+  }
+}

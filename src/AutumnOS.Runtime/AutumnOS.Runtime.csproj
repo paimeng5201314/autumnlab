@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../AutumnOS.Contracts/AutumnOS.Contracts.csproj" />
+    <ProjectReference Include="../AutumnOS.Storage/AutumnOS.Storage.csproj" />
+  </ItemGroup>
+</Project>

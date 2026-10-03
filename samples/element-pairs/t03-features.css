@@ -1,0 +1,33 @@
+/* Original T03 feature panel · 制作人：派蒙. Original game stylesheet stays intact. */
+.t03-features{margin-top:16px;border:1px solid #d2ddd1;border-radius:14px;background:#f7faf5;padding:10px 14px;font-size:12px;line-height:1.65;color:#445d49}
+.t03-features>summary{cursor:pointer;font-weight:600;min-height:22px}
+.t03-intro,.t03-note{font-size:11px;color:#677d68;margin:10px 0}
+.t03-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:14px}
+.t03-grid>section{background:#fff;border:1px solid #dde6d8;border-radius:12px;padding:14px;min-width:0}
+.t03-grid h2{font-size:14px;margin-bottom:8px}
+.t03-grid p{margin:8px 0}
+.t03-actions{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0}
+.t03-actions button{min-height:34px;border:1px solid #b9cdb7;background:#edf4e8;color:#3d6248;padding:6px 10px;border-radius:9px;font-size:11px}
+.t03-actions button:disabled{opacity:.5}
+.t03-grid label{display:block;font-size:11px;margin:8px 0 5px}
+.t03-grid textarea{font:inherit;resize:vertical;max-height:160px;width:100%;color:inherit;background:#f8fbf6;border:1px solid #cbd9c7;border-radius:9px;padding:8px}
+.t03-result{font-size:11px;overflow-wrap:anywhere;white-space:pre-line;min-height:20px}
+.t03-result[data-error=true]{color:#9b493b}
+.t03-file-preview{font:11px/1.6 "Consolas","Microsoft YaHei UI",monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;margin:6px 0;color:inherit}
+:root[data-autumn-motion=reduced] *, :root[data-autumn-motion=reduced] *::before,:root[data-autumn-motion=reduced] *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+:root[data-autumn-theme=dark]{color-scheme:dark;background:#17231f;color:#e1eee5}
+:root[data-autumn-theme=dark] .play-panel,:root[data-autumn-theme=dark] .t03-grid>section{background:#1f3028;border-color:#3b5141}
+:root[data-autumn-theme=dark] .t03-features,:root[data-autumn-theme=dark] .runtime-pill{background:#21362b;border-color:#425d47;color:#d0e6cf}
+:root[data-autumn-theme=dark] .brand-mark{background:#284235;border-color:#507258;color:#bce1b5}
+:root[data-autumn-theme=dark] .card.hidden-card{background:#2e4634;border-color:#47624a;color:#c9dfbd}
+:root[data-autumn-theme=dark] .card.hidden-card:hover:not(:disabled){background:#365740}
+:root[data-autumn-theme=dark] .card.revealed{background:#554732;border-color:#94794d;color:#f2d6a4}
+:root[data-autumn-theme=dark] .card.matched{background:#284f40;border-color:#42765d;color:#c1ead3}
+:root[data-autumn-theme=dark] .player-field input,:root[data-autumn-theme=dark] .t03-grid textarea{background:#20362a;border-color:#4b6750;color:#e1eee5}
+:root[data-autumn-theme=dark] .t03-actions button,:root[data-autumn-theme=dark] .secondary-button{background:#2e4b37;border-color:#5a7e5d;color:#d3eacf}
+:root[data-autumn-theme=dark] .eyebrow,:root[data-autumn-theme=dark] .journal-intro,:root[data-autumn-theme=dark] .input-note,:root[data-autumn-theme=dark] .connection-details,:root[data-autumn-theme=dark] .board-header p,:root[data-autumn-theme=dark] .t03-note,:root[data-autumn-theme=dark] .t03-intro,:root[data-autumn-theme=dark] .player-field label{color:#a7bea6}
+:root[data-autumn-theme=dark] .save-status,:root[data-autumn-theme=dark] .board-footer,:root[data-autumn-theme=dark] .text-button{color:#aac3a6}
+:root[data-autumn-theme=dark] .save-status.success{color:#9ad1ae}
+:root[data-autumn-theme=dark] .save-status.error,:root[data-autumn-theme=dark] .t03-result[data-error=true]{color:#f0b3a6}
+@media(max-width:560px){.t03-grid{grid-template-columns:1fr}.t03-features{padding:9px 11px}}
+@media(forced-colors:active){.t03-features,.t03-grid>section,.t03-actions button{border-color:ButtonText}}

@@ -1,0 +1,4 @@
+{
+  "schemaVersion": 1, "appId": "cn.labchronicles.sample.hello", "name": "第一个 Autumn 应用", "version": "0.1.0",
+  "runtime": "web", "entry": "index.html", "permissions": []
+}

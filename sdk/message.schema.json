@@ -1,0 +1,1547 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:schema:message:1",
+  "title": "AutumnOS SDK protocol 1 · T03 extension",
+  "description": "Requests are at most 32768 UTF-8 bytes, JSON depth 32, no duplicate keys. Identity is host-bound, never a request property. Apply the method-specific parameter/result definitions in addition to the envelope.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/success"
+    },
+    {
+      "$ref": "#/$defs/failure"
+    },
+    {
+      "$ref": "#/$defs/lifecycleEvent"
+    },
+    {
+      "$ref": "#/$defs/sdkEvent"
+    }
+  ],
+  "$defs": {
+    "requestId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+    },
+    "lifecycleState": {
+      "enum": [
+        "starting",
+        "foreground",
+        "background",
+        "suspended",
+        "closing",
+        "closed",
+        "crashed"
+      ]
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "requestId",
+        "method",
+        "params"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "requestId": {
+          "$ref": "#/$defs/requestId"
+        },
+        "method": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "platform.getCapabilities"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "lifecycle.getState"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "appearance.get"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "identity.getProfile"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "identity.requestProfile"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "permissions.query"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/permissionParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "permissions.request"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/permissionParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "saves.list"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "saves.read"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/saveReadParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "saves.write"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/saveWriteParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "saves.restore"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/saveReadParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "storage.read"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/keyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "storage.write"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/privateWriteParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "storage.delete"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/keyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "preferences.get"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/preferenceReadParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "preferences.set"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/preferenceWriteParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "files.pickOpen"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "files.pickSave"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "files.read"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/handleParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "files.close"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/handleParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "files.write"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/fileWriteParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "notifications.show"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/notificationParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "notifications.setBadge"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/badgeParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "shortcuts.register"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/shortcutParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "widgets.update"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/widgetParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "links.openInternal"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/linkParams"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "success": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "ok",
+        "result"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "#/$defs/requestId"
+        },
+        "ok": {
+          "const": true
+        },
+        "result": {}
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "ok",
+        "error"
+      ],
+      "properties": {
+        "requestId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/requestId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "$ref": "#/$defs/error"
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "retryable",
+        "correlationId"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "correlationId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "lifecycleEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event",
+        "state"
+      ],
+      "properties": {
+        "event": {
+          "const": "lifecycle.stateChanged"
+        },
+        "state": {
+          "$ref": "#/$defs/lifecycleState"
+        }
+      }
+    },
+    "emptyParams": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "permissionParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/permissionName"
+        }
+      }
+    },
+    "saveReadParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot"
+      ],
+      "properties": {
+        "slot": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^(?!(?:[Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])$)[A-Za-z0-9_-]{1,64}$"
+        }
+      }
+    },
+    "saveWriteParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot",
+        "value"
+      ],
+      "properties": {
+        "slot": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^(?!(?:[Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])$)[A-Za-z0-9_-]{1,64}$"
+        },
+        "value": {},
+        "formatVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "capabilities",
+        "accountMode",
+        "networkSandboxVerified",
+        "limits"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "lifecycle",
+              "permissions",
+              "identity.profile",
+              "saves",
+              "storage",
+              "preferences",
+              "files.open",
+              "files.save",
+              "appearance",
+              "notifications",
+              "shortcuts",
+              "widgets",
+              "links.internal"
+            ]
+          },
+          "maxItems": 13,
+          "uniqueItems": true
+        },
+        "accountMode": {
+          "enum": [
+            "guest",
+            "account"
+          ]
+        },
+        "networkSandboxVerified": {
+          "const": false
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maximumMessageBytes",
+            "maximumPendingRequests",
+            "maximumRequestsPerMinute",
+            "requestTimeoutMs",
+            "maximumRememberedRequestIds",
+            "deduplicationWindowMs"
+          ],
+          "properties": {
+            "maximumMessageBytes": {
+              "const": 32768
+            },
+            "maximumPendingRequests": {
+              "const": 16
+            },
+            "maximumRequestsPerMinute": {
+              "const": 120
+            },
+            "requestTimeoutMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 120000
+            },
+            "maximumRememberedRequestIds": {
+              "const": 2048
+            },
+            "deduplicationWindowMs": {
+              "const": 600000
+            }
+          }
+        }
+      }
+    },
+    "lifecycleSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "blocksMaintenance"
+      ],
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/lifecycleState"
+        },
+        "blocksMaintenance": {
+          "type": "boolean"
+        }
+      }
+    },
+    "permissionState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "state"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/permissionName"
+        },
+        "state": {
+          "enum": [
+            "prompt",
+            "granted",
+            "denied",
+            "revoked"
+          ]
+        }
+      }
+    },
+    "saveReadResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exists",
+        "value"
+      ],
+      "properties": {
+        "exists": {
+          "type": "boolean"
+        },
+        "value": {}
+      },
+      "if": {
+        "properties": {
+          "exists": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "value": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "saveWriteResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "saved"
+      ],
+      "properties": {
+        "saved": {
+          "const": true
+        }
+      }
+    },
+    "permissionName": {
+      "enum": [
+        "saves",
+        "identity.profile",
+        "storage",
+        "files.open",
+        "files.save",
+        "notifications",
+        "shortcuts",
+        "widgets",
+        "links"
+      ]
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "appScopedUserId",
+        "displayName",
+        "avatarUrl",
+        "isCached"
+      ],
+      "properties": {
+        "appScopedUserId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 68,
+          "pattern": "^au1_[a-f0-9]{64}$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$"
+        },
+        "avatarUrl": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "isCached": {
+          "type": "boolean"
+        }
+      }
+    },
+    "appearance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "theme",
+        "language",
+        "scale",
+        "reduceMotion"
+      ],
+      "properties": {
+        "theme": {
+          "enum": [
+            "light",
+            "dark",
+            "system"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 8
+        },
+        "reduceMotion": {
+          "type": "boolean"
+        }
+      }
+    },
+    "internalArguments": {
+      "type": "object",
+      "maxProperties": 8,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256,
+        "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$"
+      }
+    },
+    "linkParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "arguments"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+        },
+        "arguments": {
+          "$ref": "#/$defs/internalArguments"
+        }
+      }
+    },
+    "notificationParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "body",
+        "action"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$"
+        },
+        "action": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "badgeParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 999
+        }
+      }
+    },
+    "shortcutParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ids"
+      ],
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+          },
+          "maxItems": 4,
+          "uniqueItems": true
+        }
+      }
+    },
+    "widgetParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "lines"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 160,
+            "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$"
+          },
+          "maxItems": 4
+        }
+      }
+    },
+    "keyParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^(?!(?:[Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])$)[A-Za-z0-9_-]{1,64}$"
+        }
+      }
+    },
+    "privateWriteParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "data"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^(?!(?:[Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])$)[A-Za-z0-9_-]{1,64}$"
+        },
+        "data": {
+          "type": "string",
+          "contentEncoding": "base64"
+        }
+      }
+    },
+    "preferenceReadParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 59,
+          "pattern": "^[A-Za-z0-9_-]{1,59}$"
+        }
+      }
+    },
+    "preferenceWriteParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 59,
+          "pattern": "^[A-Za-z0-9_-]{1,59}$"
+        },
+        "value": {}
+      }
+    },
+    "handleParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handle"
+      ],
+      "properties": {
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "fileWriteParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handle",
+        "data"
+      ],
+      "properties": {
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "string",
+          "contentEncoding": "base64"
+        }
+      }
+    },
+    "fileCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handle",
+        "name",
+        "bytes",
+        "expiresUtc"
+      ],
+      "properties": {
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expiresUtc": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "saveSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot",
+        "formatVersion",
+        "revision",
+        "bytes",
+        "hasBackup"
+      ],
+      "properties": {
+        "slot": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^(?!(?:[Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])$)[A-Za-z0-9_-]{1,64}$"
+        },
+        "formatVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hasBackup": {
+          "type": "boolean"
+        }
+      }
+    },
+    "saveListResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slots"
+      ],
+      "properties": {
+        "slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/saveSlot"
+          },
+          "maxItems": 32
+        }
+      }
+    },
+    "saveRestoreResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "restored"
+      ],
+      "properties": {
+        "restored": {
+          "const": true
+        }
+      }
+    },
+    "privateReadResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exists",
+        "data",
+        "encoding"
+      ],
+      "properties": {
+        "exists": {
+          "type": "boolean"
+        },
+        "data": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "contentEncoding": "base64"
+        },
+        "encoding": {
+          "const": "base64"
+        }
+      }
+    },
+    "privateWriteResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "written"
+      ],
+      "properties": {
+        "written": {
+          "const": true
+        }
+      }
+    },
+    "privateDeleteResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deleted"
+      ],
+      "properties": {
+        "deleted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fileReadResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "encoding"
+      ],
+      "properties": {
+        "data": {
+          "type": "string",
+          "contentEncoding": "base64"
+        },
+        "encoding": {
+          "const": "base64"
+        }
+      }
+    },
+    "fileWriteResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bytes",
+        "backupRetained"
+      ],
+      "properties": {
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "backupRetained": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fileCloseResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "closed"
+      ],
+      "properties": {
+        "closed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "shortcut": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "action"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+        }
+      }
+    },
+    "shortcutResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shortcuts"
+      ],
+      "properties": {
+        "shortcuts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/shortcut"
+          },
+          "maxItems": 4
+        }
+      }
+    },
+    "widgetResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "updated",
+        "id"
+      ],
+      "properties": {
+        "updated": {
+          "const": true
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+        }
+      }
+    },
+    "linkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "delivered",
+        "action"
+      ],
+      "properties": {
+        "delivered": {
+          "const": true
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+        }
+      }
+    },
+    "notificationResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shown",
+            "id"
+          ],
+          "properties": {
+            "shown": {
+              "const": true
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shown",
+            "reason"
+          ],
+          "properties": {
+            "shown": {
+              "const": false
+            },
+            "reason": {
+              "enum": [
+                "muted",
+                "duplicate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "sdkEvent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "data"
+          ],
+          "properties": {
+            "event": {
+              "const": "appearance.changed"
+            },
+            "data": {
+              "$ref": "#/$defs/appearance"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "data"
+          ],
+          "properties": {
+            "event": {
+              "const": "permissions.changed"
+            },
+            "data": {
+              "$ref": "#/$defs/permissionState"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "data"
+          ],
+          "properties": {
+            "event": {
+              "const": "identity.changed"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "state"
+              ],
+              "properties": {
+                "state": {
+                  "enum": [
+                    "signed_in",
+                    "offline_cached"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "data"
+          ],
+          "properties": {
+            "event": {
+              "const": "lifecycle.changed"
+            },
+            "data": {
+              "$ref": "#/$defs/lifecycleSnapshot"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "data"
+          ],
+          "properties": {
+            "event": {
+              "const": "shortcuts.invoked"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "action"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40,
+                  "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+                },
+                "action": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40,
+                  "pattern": "^[a-z][a-z0-9_-]{0,39}$"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "event",
+            "data"
+          ],
+          "properties": {
+            "event": {
+              "const": "links.opened"
+            },
+            "data": {
+              "$ref": "#/$defs/linkParams"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

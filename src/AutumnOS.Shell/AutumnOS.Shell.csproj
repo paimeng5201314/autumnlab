@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>AutumnOS.Client</AssemblyName>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../AutumnOS.Update/AutumnOS.Update.csproj" />
+    <ProjectReference Include="../AutumnOS.UpdateProtocol/AutumnOS.UpdateProtocol.csproj" />
+    <ProjectReference Include="../AutumnOS.Store/AutumnOS.Store.csproj" />
+    <ProjectReference Include="../AutumnOS.Launcher/AutumnOS.Launcher.csproj" />
+    <ProjectReference Include="../AutumnOS.Packages/AutumnOS.Packages.csproj" />
+    <ProjectReference Include="../AutumnOS.Runtime/AutumnOS.Runtime.csproj" />
+    <Content Include="../../artifacts/samples/element-pairs.autumn" Link="Samples/element-pairs.autumn" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../../artifacts/store-fixtures/*.autumn;../../artifacts/store-fixtures/*.json" Link="Samples/StoreFixture/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <ProjectReference Include="../AutumnOS.Contracts/AutumnOS.Contracts.csproj" />
+    <ProjectReference Include="../AutumnOS.Storage/AutumnOS.Storage.csproj" />
+    <ProjectReference Include="../AutumnOS.Identity/AutumnOS.Identity.csproj" />
+    <Content Include="../../autumnos-spec/config/logto.public.json" Link="config/logto.public.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../../autumnos-spec/config/logto.registration-status.json" Link="config/registration.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TestUpdateTrustFile)' != '' and '$(UpdateHealthFault)' == 'true'">
+    <DefineConstants>$(DefineConstants);AUTUMNOS_TEST_HEALTH_FAILURE</DefineConstants>
+  </PropertyGroup>
+</Project>

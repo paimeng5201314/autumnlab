@@ -1,0 +1,10 @@
+{
+  "plan_structure": "passed",
+  "requirements": 57,
+  "test_definitions": 65,
+  "task_definitions": 7,
+  "windows_build_executed": false,
+  "product_tests_executed_by_this_script": false,
+  "public_release_performed_by_this_script": false,
+  "meaning": "Only plan consistency was checked; product verification remains separate."
+}

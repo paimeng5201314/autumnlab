@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../AutumnOS.Update/AutumnOS.Update.csproj" />
+    <ProjectReference Include="../AutumnOS.Launcher/AutumnOS.Launcher.csproj" />
+    <Compile Include="../AutumnOS.Launcher/LocalPipeServer.cs" Link="LocalPipeServer.cs" />
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute"><_Parameter1>windows</_Parameter1></AssemblyAttribute>
+  </ItemGroup>
+</Project>

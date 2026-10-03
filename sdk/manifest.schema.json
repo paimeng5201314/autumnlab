@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:schema:manifest:1",
+  "title": "AutumnOS protocol 1 web application manifest with T03 capabilities",
+  "description": "Additional archive/path checks are enforced by PackageInstaller. JSON duplicate keys are forbidden before schema evaluation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "appId", "name", "version", "runtime", "entry", "permissions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "appId": {
+      "type": "string", "minLength": 3, "maxLength": 80,
+      "pattern": "^(?!(?:con|prn|aux|nul|com[1-9]|lpt[1-9])\\.)(?=[^.]{1,63}(?:\\.[^.]{1,63})+$)[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)+$"
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^(?!\\s*$)[^\\u0000-\\u001f\\u007f-\\u009f]+$" },
+    "version": {
+      "type": "string", "maxLength": 128,
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "runtime": { "const": "web" },
+    "saveFormatVersion": { "type": "integer", "minimum": 1, "maximum": 1000000, "default": 1, "description": "Current save format, independent from application SemVer." },
+    "minReadableSaveFormatVersion": { "type": "integer", "minimum": 1, "maximum": 1000000, "description": "Defaults to saveFormatVersion; must be <= saveFormatVersion." },
+    "maxReadableSaveFormatVersion": { "type": "integer", "minimum": 1, "maximum": 1000000, "description": "Defaults to saveFormatVersion; must be >= saveFormatVersion. PackageInstaller validates the range." },
+    "entry": {
+      "type": "string", "minLength": 1, "maxLength": 128,
+      "description": "Existing safe relative HTML resource. Segments cannot be Windows device names; PackageInstaller performs those checks.",
+      "pattern": "^(?:[A-Za-z0-9_-][A-Za-z0-9._-]{0,78}[A-Za-z0-9_-]/|[A-Za-z0-9_-]/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\\.[hH][tT][mM][lL]$"
+    },
+    "permissions": { "type": "array", "maxItems": 9, "uniqueItems": true, "items": { "enum": ["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links"] } },
+    "permissionPurposes": { "type": "object", "maxProperties": 9, "propertyNames": { "enum": ["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links"] }, "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 160, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$" }, "description": "Every key must also be declared in permissions; the installer enforces this cross-field rule." },
+    "desktop": {
+      "type": "object", "additionalProperties": false, "required": ["shortcuts", "links", "widgets"],
+      "description": "Nonempty sections require corresponding manifest permission. Shortcut action must be a declared link. Identifiers must be unique within each section; installer enforces these cross-field rules.",
+      "properties": {
+        "shortcuts": { "type": "array", "maxItems": 4, "items": { "type": "object", "additionalProperties": false, "required": ["id", "title", "action"], "properties": { "id": { "$ref": "#/$defs/actionId" }, "title": { "$ref": "#/$defs/desktopTitle" }, "action": { "$ref": "#/$defs/actionId" } } } },
+        "links": { "type": "array", "maxItems": 4, "uniqueItems": true, "items": { "$ref": "#/$defs/actionId" } },
+        "widgets": { "type": "array", "maxItems": 4, "items": { "type": "object", "additionalProperties": false, "required": ["id", "title"], "properties": { "id": { "$ref": "#/$defs/actionId" }, "title": { "$ref": "#/$defs/desktopTitle" } } } }
+      }
+    }
+  },
+  "$defs": {
+    "actionId": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,39}$" },
+    "desktopTitle": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$" }
+  }
+}

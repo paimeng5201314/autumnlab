@@ -1,0 +1,861 @@
+{
+  "schema_version": "0.1",
+  "product": "Lab Chronicles AutumnOS",
+  "producer": "派蒙",
+  "release_target": "用户希望当日发布；无完成时间保证",
+  "channel": null,
+  "version": "0.5.1-local.4",
+  "candidate_commit": null,
+  "repository_observation": {
+    "repo": "paimeng5201314/autumnlab",
+    "branch": "main",
+    "tree_sha": "45a26d4e43f01170f7af89fb57386c4bf2c3a6a7",
+    "files": [
+      "LICENSE",
+      "README.md"
+    ],
+    "release_list_empty": true,
+    "scope": "历史远端只读快照，不描述本地工作区；v0.3不触发远端源码读取或同步"
+  },
+  "code_implemented_by_this_pack": false,
+  "windows_build": "passed",
+  "windows_ui_tests": "not_run",
+  "logto_integration": "not_run",
+  "store_install_integration": "not_run",
+  "update_recovery_test": "not_run",
+  "release_gates": [
+    {
+      "id": "G01",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0230699+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "真实Release/快照/锁/哈希通过；根LICENSE/部分归属和全部秘密内容审计缺项。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3569134+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前单文件Build0warn/595回归/快照/逐文件hash通过；原许可证/签名缺项保留。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G02",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0276513+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "实际Win11标准用户最终EXE/ZIP通过；安装包用户暂缓；Win10/干净系统/无SDK/离线首启not_run。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3645632+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前Win11标准用户新中文目录与最终单EXE原地41/41通过；干净OS/Win10/离线首启not_run；安装器暂缓。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G03",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0276716+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "实际中文空格目录/二次启动/存档持久化通过；全部只读及路径矩阵未完成。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646042+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前只有EXE和一个Data、换工作目录、重启存档及真实Data junction拒绝通过；全部只读矩阵not_run。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G04",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0276789+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "原生桌面122/8截图通过；Dock/文件夹/多桌面/搜索等历史未验收与派蒙审阅仍缺。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646186+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前41覆盖欢迎/桌面/关于/游戏/覆盖层；旧122仅旧构建，完整UI和派蒙审阅未完成。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G05",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0276839+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "受控真实HTTP包安装/内部运行/SDK存档/卸载保留75通过；真实GitHub合规应用未完成。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646291+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前真实内置包安装/游戏/SDK保存/重启通过；最新真实受控商店下载全链not_run，旧75仅历史。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G06",
+      "status": "blocked",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.027689+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "blocked",
+          "current_scope": "真实Logto Native/回调和真实账号未验证；T03第二账号/浏览器退出/长期刷新继续暂缓。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646446+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "真实Logto及T03继续暂缓，没有用合成/preview替代。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G07",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0276938+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "SDK/五样例/CLI20/原生115/358合同及43源实际重建通过；外部新人not_run。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646526+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前SDK22/CLI12/机器合同358通过，SDK/五样例资源保留；本版完整干净开发目录复现及外部新人not_run。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G08",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0276988+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "真实GitHub读取无假商品，受控HTTP75及源/版本/限流/代理夹具通过；公网合规应用安装not_run。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646627+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前C#商店源/版本/事务/代理回归通过；本版真实GitHub商品安装及原生全商店链not_run。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G09",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0277034+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "权限/越权/原生6网络API/CSP/导航33通过；完整社区网络隔离不足，真实账号切换not_run。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646728+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前权限覆盖层和三实际启动边界负面通过；旧WebView33仅历史，完整社区网络沙箱仍不足。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G10",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0277085+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "当前渠道/签名/维护协调夹具通过；生产根缺失；本版完整A/Bnot_run，drill04失败，旧drill03仅历史。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646827+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前布局更新DataRoot/标识保护、595维护夹具及实际后台阻止维护通过；本版A/B升级回退not_run。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G11",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0277136+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "当前SDK存档/原数据保留/故障夹具通过；全迁移/磁盘满/物理断电及当前升级恢复not_run。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3646947+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前相同DataRoot存档/未保存输入/真正结束/重启及1855测试文件保留通过；全迁移/磁盘满/断电not_run。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G12",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.027718+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "17版本文档/机器合同358/真实SDK/后端OpenAPI与干净目录自测通过；独立新人及每接口人工审阅未完成。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3647022+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "新增单文件文档与真实机器合同358通过；全部接口和外部新人验收未完成。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G13",
+      "status": "in_progress",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0277229+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "in_progress",
+          "current_scope": "本版关于/包/文档制作人派蒙核对；Authenticode未签名，派蒙审阅not_run。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3647130+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "当前EXE Company派蒙与真实关于/游戏署名通过；未签名，派蒙审阅not_run。",
+      "current_build_id": "T06-20261003-single001-03"
+    },
+    {
+      "id": "G14",
+      "status": "blocked",
+      "evidence": [
+        {
+          "build_id": "T06-20261003-meta001-01",
+          "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+          "release_label": "meta0.0.1-20261001",
+          "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+          "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+          "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+          "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+          "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+        },
+        {
+          "build_id": "T06-20261003-single001-03",
+          "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+          "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+          "scope": "Only current named assertions; full gate not passed"
+        }
+      ],
+      "status_history": [
+        null,
+        {
+          "recorded_utc": "2026-10-03T11:39:00.0277272+08:00",
+          "status": "not_run",
+          "evidence": []
+        },
+        {
+          "status": "blocked",
+          "current_scope": "58需求/66验收/218原断言全部保留；局部通过不代表全量通过，真实缺项未豁免。",
+          "current_build_id": "T06-20261003-meta001-01",
+          "evidence": [
+            {
+              "build_id": "T06-20261003-meta001-01",
+              "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+              "release_label": "meta0.0.1-20261001",
+              "environment": "Windows 11 10.0.26200 x64; standard user; 96 DPI",
+              "command": "Build.ps1 -BuildId T06-20261003-meta001-01 -BuildVersion 0.5.1-local.3 -ReleaseLabel meta0.0.1-20261001; Test.ps1; Package-T05.ps1 Prepare/Finalize; Test-T06DeveloperSmoke.ps1; Test-T06WebViewSecurity.ps1; Measure-T06Performance.ps1; see exact reports",
+              "evidence_path": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+              "scope": "Only named current-build subclaims; no whole requirement/acceptance promoted; current complete A/B not_run; installer deferred_by_user",
+              "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
+            }
+          ],
+          "recorded_utc": "2026-10-03T04:45:24.3647234+00:00"
+        }
+      ],
+      "assessment": "partial",
+      "current_scope": "原58需求66验收218断言未缩减；完整验收不足，T06仍in_progress。",
+      "current_build_id": "T06-20261003-single001-03"
+    }
+  ],
+  "public_release_performed": false,
+  "artifacts": [],
+  "plan_validation_is_not_product_validation": true,
+  "pack_version": "0.3",
+  "logto_public_configuration": "transcribed_from_user_screenshot",
+  "logto_registration_checks": "unverified",
+  "logto_discovery": "public_discovery_passed_login_not_run",
+  "codex_task_submitted_by_this_pack": false,
+  "development_mode": "local_workspace",
+  "git_required": false,
+  "github_workspace_required": false,
+  "remote_ci_required": false,
+  "remote_source_sync_authorized": false,
+  "remote_write_authorized": false,
+  "candidate_source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+  "evidence_identity": "local_source_snapshot_or_content_hash; git_commit_optional",
+  "local_increment": {
+    "build_id": "T06-20261003-single001-03",
+    "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
+    "release_label": "meta0.0.1-20261001",
+    "semantic_version": "0.5.1-local.4",
+    "status": "single_exe_local_integration_delivered",
+    "entry": "D:\\特殊\\chem\\artifacts\\single-file\\T06-20261003-single001-03\\AutumnOS.exe",
+    "installer": "deferred_by_user",
+    "delivery_files": 1,
+    "first_start_adjacent_data_folders": 1,
+    "handoff": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
+    "full_t06": "in_progress",
+    "current_full_ab": "not_run",
+    "production_signing": "blocked_unconfigured",
+    "producer_review": "not_run",
+    "public_release": false
+  },
+  "local_increment_history": [
+    {
+      "build_id": "T02-20261001-desktop-01",
+      "source_snapshot_id": "sha256:eca771ab5e9345ec90bcebd2454fc53f0c9fc149aa75e14200bd8b7d9f0efcea",
+      "T00": "verified_foundation_scope",
+      "T01": "in_progress",
+      "T02": "in_progress_user_authorized_checkpoint",
+      "T03_T06": "planned",
+      "csharp_tests": "153/153 passed",
+      "sdk_tests": "15/15 passed",
+      "long_session": "SDK and host each 12000 requests passed, with bounded memory/rate/pending/replay checks",
+      "windows11_native_smoke": "47 delivered-package checks passed",
+      "screenshots": "17 real native client captures; producer approval not_run",
+      "portable_development_bundle": "artifacts/builds/T02-20261001-desktop-01/package-result.json",
+      "actual_delivered_launch": "artifacts/builds/T02-20261001-desktop-01/delivered-launch.json",
+      "release_candidate": false,
+      "public_release": false,
+      "full_acceptance": "not_run",
+      "remaining": "T01 network/IME/touch/DPI/crash/suspension; full T02; Windows10/clean systems; true Logto; store/updates/installer"
+    },
+    {
+      "build_id": "T02-20261001-interactions-01",
+      "source_snapshot_id": "sha256:4476c5657ed189206ea0df22ce41ca83fbc5921626e40f7ff835624ff172e8d3",
+      "T00": "verified_foundation_scope",
+      "T01": "in_progress",
+      "T02": "in_progress_user_authorized_two_interaction_checkpoint",
+      "T03_T06": "planned",
+      "csharp_tests": "153/153 passed",
+      "sdk_tests": "15/15 passed",
+      "long_session": "Preserved SDK and host 12000-request session tests passed again; source unchanged this increment",
+      "windows11_native_smoke": "80/80 delivered-package checks passed",
+      "screenshots": "21 real native client captures; seven requested images and two theme desktops visually inspected; producer approval not_run",
+      "portable_development_bundle": "artifacts/builds/T02-20261001-interactions-01/package-result.json",
+      "actual_delivered_launch": "artifacts/builds/T02-20261001-interactions-01/delivered-launch.json",
+      "release_candidate": false,
+      "public_release": false,
+      "full_acceptance": "not_run",
+      "remaining": "Full T01/T02, physical touch/IME/DPI/clean systems, actual Logto, T03-T06, installer; no new phase entered"
+    },
+    {
+      "build_id": "T02-20261001-single-instance-04",
+      "source_snapshot_id": "sha256:7045aa9f8b844bb07d4aa8b1cc4bb74e9d308b262ca8507dfc680789dedc9b68",
+      "version": "0.2.2-t02-single-instance",
+      "T00": "verified_foundation_scope",
+      "T01": "in_progress",
+      "T02": "in_progress_user_authorized_single_instance_checkpoint",
+      "T03_T06": "planned",
+      "R058_A058": "verified_passed_local_windows11_standard_user_scope",
+      "csharp_tests": "172/172 passed (153 preserved + 19 launcher tests)",
+      "sdk_tests": "15/15 passed; preserved 12000-request long-session coverage",
+      "windows11_desktop_regression": "80/80 passed",
+      "windows11_single_instance": "132/132 passed; 23 launches; 6 cold launches in 33ms, one owner",
+      "peer_build_id": "T02-20261001-single-instance-peer-04",
+      "peer_version": "0.2.2-t02-protocol-peer.1",
+      "actual_delivered_launch": "artifacts/builds/T02-20261001-single-instance-04/delivered-executable/delivered-launcher.json",
+      "actual_delivered_launch_result": "13/13 passed before ZIP; original PID and HWND retained on second launch",
+      "two_shortcuts_window_position": "artifacts/builds/T02-20261001-single-instance-04/shortcut-verification/shortcut-verification.json",
+      "two_shortcuts_window_position_result": "29/29 passed after ZIP; no binary/data/ZIP change; foreground not_run here",
+      "screenshots": "29 real native captures; 9 visually inspected across two review reports; producer approval not_run",
+      "portable_development_bundle": "artifacts/builds/T02-20261001-single-instance-04/package-result.json",
+      "package_verification": "artifacts/builds/T02-20261001-single-instance-04/package-verification.json",
+      "preservation": "artifacts/builds/T02-20261001-single-instance-04/preservation-check.json",
+      "release_candidate": false,
+      "public_release": false,
+      "full_acceptance": "not_run",
+      "remaining": "Windows 11 10.0.26200 standard user, same user/session, compatible protocol-v1 copies. Windows 10, different users/sessions, UAC matrix, clean machine, installer and real Logto remain not_run; legacy binaries without the protocol are unsupported; full T01/T02 incomplete, T03 not entered."
+    },
+    {
+      "build_id": "T06-20261003-meta001-01",
+      "source_snapshot_id": "sha256:c33abf1af0daf3d295475aa934465aa16d96f38b6b54dad47fbe668c2a562939",
+      "release_label": "meta0.0.1-20261001",
+      "semantic_version": "0.5.1-local.3",
+      "status": "local_integration_delivered_pending_producer_review",
+      "installer": "deferred_by_user",
+      "full_t06": "in_progress",
+      "public_release_ready": false,
+      "public_release_authorized": false,
+      "handoff": "artifacts/reports/t06-final-readiness/LOCAL_HANDOFF_META001.md",
+      "cross_assertion_map": "artifacts/reports/t06-final-status-sync-01/meta001/cross-assertions.json",
+      "current_full_ab": "not_run",
+      "historical_drill03": "passed_for_old_bytes_only",
+      "drill04": "failed_incomplete",
+      "performance": "completed_target_missed"
+    }
+  ],
+  "release_label": "meta0.0.1-20261001"
+}

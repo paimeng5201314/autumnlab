@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(TestUpdateTrustFile)' != ''">
+    <DefineConstants>$(DefineConstants);AUTUMNOS_UPDATE_TEST_BUILD</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../AutumnOS.Store/AutumnOS.Store.csproj" /></ItemGroup>
+  <ItemGroup Condition="'$(TestUpdateTrustFile)' != ''">
+    <EmbeddedResource Include="$(TestUpdateTrustFile)" LogicalName="AutumnOS.Update.TestTrust.json" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProductionUpdateTrustFile)' != '' and '$(TestUpdateTrustFile)' == ''">
+    <EmbeddedResource Include="$(ProductionUpdateTrustFile)" LogicalName="AutumnOS.Update.ProductionTrust.json" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TestUpdateFeedFile)' != '' and '$(TestUpdateTrustFile)' != ''">
+    <EmbeddedResource Include="$(TestUpdateFeedFile)" LogicalName="AutumnOS.Update.TestFeed.txt" />
+  </ItemGroup>
+  <Target Name="RejectMixedUpdateRoots" BeforeTargets="PrepareForBuild" Condition="'$(ProductionUpdateTrustFile)' != '' and '$(TestUpdateTrustFile)' != ''">
+    <Error Text="Production and test update trust roots cannot coexist." />
+  </Target>
+</Project>

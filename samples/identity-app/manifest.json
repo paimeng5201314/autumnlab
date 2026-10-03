@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1, "appId": "cn.labchronicles.sample.identity", "name": "最小资料授权", "version": "0.1.0",
+  "runtime": "web", "entry": "index.html", "permissions": ["identity.profile"],
+  "permissionPurposes": {"identity.profile": "由你点击后显示应用范围标识、昵称和资料缓存状态；不用于服务器登录"}
+}

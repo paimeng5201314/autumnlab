@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "pack_version": "0.2",
+  "application_id": "tjck5m8ohjkw272y42adv",
+  "public_values_source": "原公开值来自派蒙截图；2026-10-01 派蒙确认 Third-party app (Native app) 和精确登录回调，退出回调仍未确认；未从管理API读取",
+  "application_type_required": "Native/public client",
+  "application_type_observed": "Native/public client",
+  "redirect_uri_status": "confirmed_by_user_2026-10-01",
+  "post_logout_redirect_uri_status": "proposed_not_confirmed_registered",
+  "discovery_probe": {
+    "status": "public_discovery_passed_login_not_run",
+    "attempted_read_only": true,
+    "reason": "2026-10-01 本机真实HTTPS公开发现读取通过；见 artifacts/reports/t03-foundation/discovery-live-01.json。Native及登录回调来自派蒙确认，退出回调未确认。",
+    "product_login_test_executed": false
+  },
+  "console_changes_performed": false,
+  "contains_secrets": false,
+  "probe_history": [
+    {
+      "status": "not_verified",
+      "attempted_read_only": true,
+      "reason": "本次执行环境的公开GET请求遇到DNS解析失败；不能据此认定服务不可用",
+      "product_login_test_executed": false
+    }
+  ]
+}

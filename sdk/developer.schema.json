@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:schema:developer-host-pipe:1",
+  "title": "AutumnOS host developer pipe protocol 1",
+  "description": "Dedicated Windows current-user development IPC, not an application SDK method. Four-byte little-endian UTF-8 frame length; maximum 65536 bytes, JSON depth 8, duplicate and unknown fields rejected by runtime. Host root, current-user ACL, server process path, archive hash and native consent require runtime verification. SDK remains 0.3.0, application protocol 1. Test simulation never authenticates a real provider or modifies live account credentials.",
+  "oneOf": [
+    { "$ref": "#/$defs/request" },
+    { "$ref": "#/$defs/response" }
+  ],
+  "$defs": {
+    "sessionId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{32}$"
+    },
+    "debugCommand": {
+      "enum": [
+        "status", "trace", "clear-trace", "foreground", "background", "close",
+        "deny-permissions", "restore-permissions", "account-a", "account-b",
+        "account-guest", "offline", "online", "reset-simulation"
+      ]
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "protocolVersion", "command" ],
+      "properties": {
+        "protocolVersion": { "const": 1 },
+        "command": { "type": "string" },
+        "packagePath": { "type": [ "string", "null" ] },
+        "sha256": { "type": [ "string", "null" ] },
+        "sessionId": { "type": [ "string", "null" ] }
+      },
+      "oneOf": [
+        {
+          "required": [ "packagePath", "sha256" ],
+          "properties": {
+            "command": { "const": "preview" },
+            "packagePath": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "allOf": [
+                { "pattern": "^(?:[A-Za-z]:[/\\\\]|\\\\\\\\)" },
+                { "pattern": "^[^\\u0000-\\u001f\\u007f]*\\.[Aa][Uu][Tt][Uu][Mm][Nn]$" }
+              ]
+            },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "sessionId": { "type": "null" }
+          }
+        },
+        {
+          "required": [ "sessionId" ],
+          "properties": {
+            "command": { "$ref": "#/$defs/debugCommand" },
+            "packagePath": { "type": "null" },
+            "sha256": { "type": "null" },
+            "sessionId": { "$ref": "#/$defs/sessionId" }
+          }
+        }
+      ]
+    },
+    "simulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "isTestSimulation", "account", "permissionsDenied", "offline", "networkScope" ],
+      "properties": {
+        "isTestSimulation": { "type": "boolean" },
+        "account": { "enum": [ "live", "guest", "account-a", "account-b" ] },
+        "permissionsDenied": { "type": "boolean" },
+        "offline": { "type": "boolean" },
+        "networkScope": { "const": "preview_only_external_network_already_blocked" }
+      },
+      "if": { "properties": { "isTestSimulation": { "const": false } } },
+      "then": {
+        "properties": {
+          "account": { "const": "live" },
+          "permissionsDenied": { "const": false },
+          "offline": { "const": false }
+        }
+      }
+    },
+    "trace": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [ "timestamp", "method", "resultCode" ],
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "method": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "resultCode": { "type": "string", "pattern": "^[A-Z0-9_]{1,80}$" }
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [ "ok", "code" ],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "code": { "type": "string", "pattern": "^[A-Z0-9_]{1,80}$" },
+        "sessionId": { "oneOf": [ { "$ref": "#/$defs/sessionId" }, { "type": "null" } ] },
+        "appId": { "type": [ "string", "null" ] },
+        "state": { "enum": [ "Starting", "Foreground", "Background", "Suspended", "Closing", "Closed", "Crashed", null ] },
+        "trace": { "oneOf": [ { "$ref": "#/$defs/trace" }, { "type": "null" } ] },
+        "simulation": { "oneOf": [ { "$ref": "#/$defs/simulation" }, { "type": "null" } ] }
+      }
+    }
+  }
+}

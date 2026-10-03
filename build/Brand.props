@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <AutumnProductName>Lab Chronicles AutumnOS</AutumnProductName>
+    <AutumnDisplayName>AutumnOS</AutumnDisplayName>
+    <AutumnProducer>派蒙</AutumnProducer>
+    <AutumnProducerCredit>制作人：派蒙</AutumnProducerCredit>
+    <AutumnVersion Condition="'$(AutumnVersion)' == ''">0.5.1-local.1</AutumnVersion>
+  </PropertyGroup>
+</Project>

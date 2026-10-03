@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autumnos:autumn.update:1",
+  "title": "AutumnOS signed update manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "channel", "version", "buildId", "targetRid", "minimumUpdaterVersion", "sequence", "issuedAtUtc", "expiresAtUtc", "keyId", "trustRootVersion", "payload", "files", "removeFiles", "data", "productId", "repository"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "productId": { "const": "cn.labchronicles.autumnos" },
+    "repository": { "const": "paimeng5201314/autumnlab" },
+    "channel": { "enum": ["plus", "meta"] },
+    "version": { "$ref": "#/$defs/semver" },
+    "buildId": { "$ref": "#/$defs/identifier" },
+    "targetRid": { "const": "win-x64" },
+    "minimumUpdaterVersion": { "$ref": "#/$defs/semver" },
+    "sequence": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807 },
+    "issuedAtUtc": { "type": "string", "format": "date-time" },
+    "expiresAtUtc": { "type": "string", "format": "date-time" },
+    "keyId": { "$ref": "#/$defs/identifier" },
+    "trustRootVersion": { "type": "integer", "minimum": 1 },
+    "payload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["asset", "bytes", "sha256", "releaseId", "assetId"],
+      "properties": {
+        "asset": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,150}\\.zip$" },
+        "bytes": { "type": "integer", "minimum": 1, "maximum": 4294967296 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "releaseId": { "type": "integer", "minimum": 1 },
+        "assetId": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "files": { "type": "array", "minItems": 1, "maxItems": 20000, "items": { "$ref": "#/$defs/file" } },
+    "removeFiles": { "type": "array", "maxItems": 20000, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+    "data": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "minimumReadableVersion", "rollbackCompatible"],
+      "properties": { "schemaVersion": { "const": 1 }, "minimumReadableVersion": { "const": 1 }, "rollbackCompatible": { "const": true } }
+    }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9_.-]+$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "semver": { "type": "string", "minLength": 5, "maxLength": 128, "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$" },
+    "path": { "type": "string", "minLength": 1, "maxLength": 230, "description": "Relative forward-slash Windows managed path; UpdatePaths additionally rejects traversal, ADS, reserved names, reparse points, data, stable boot/updater, receipts and secrets." },
+    "file": {
+      "type": "object", "additionalProperties": false, "required": ["path", "bytes", "sha256"],
+      "properties": { "path": { "$ref": "#/$defs/path" }, "bytes": { "type": "integer", "minimum": 0, "maximum": 4294967296 }, "sha256": { "$ref": "#/$defs/sha256" } }
+    }
+  }
+}
