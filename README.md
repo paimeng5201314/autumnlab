@@ -2,7 +2,7 @@
 
 **制作人：派蒙。单文件预览版：meta0.0.1-20261001。**
 
-Windows 原生 .NET 10 / WinUI 3 客户端，运行内部 `.autumn` 应用。当前交付为一个 `AutumnOS.exe`，不提供安装包。
+Windows 原生 .NET 10 / WinUI 3 客户端，运行内部 `.autumn` 应用。
 
 ## 下载与运行
 
