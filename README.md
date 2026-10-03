@@ -6,7 +6,7 @@ Windows 原生 .NET 10 / WinUI 3 客户端，运行内部 `.autumn` 应用。当
 
 ## 下载与运行
 
-到 [Releases](https://github.com/paimeng5201314/autumnlab/releases) 下载 `AutumnOS.exe`，放入用户可写目录，双击即可使用。首次准备需要展开运行资源，会在 EXE 同级创建唯一的 `AutumnOS_Data` 文件夹；运行资源、配置和存档都在其中。移动程序时一起移动此文件夹可以保留数据。首次准备有进度窗口。本机普通缓存实测首次约 26.78 秒、再次约 3.94 秒，其他设备尚未验证。
+目前正确 EXE 已在制作人的 Release 草稿中，尚未公开发布。草稿发布后，到 [Releases](https://github.com/paimeng5201314/autumnlab/releases) 下载 `AutumnOS.exe`，放入用户可写目录，双击即可使用。首次准备需要展开运行资源，会在 EXE 同级创建唯一的 `AutumnOS_Data` 文件夹；运行资源、配置和存档都在其中。移动程序时一起移动此文件夹可以保留数据。首次准备有进度窗口。本机普通缓存实测首次约 26.78 秒、再次约 3.94 秒，其他设备尚未验证。
 
 本版 EXE 包含 .NET、Windows App SDK、固定 WebView2、内置游戏、开发者 SDK/模板及许可证，不需要复制旧发行目录的 DLL。准备器使用 Windows 自带 .NET Framework 4.x；干净系统和完整离线首次运行矩阵尚未执行，不承诺所有环境完全离线可用。
 
