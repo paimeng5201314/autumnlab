@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: windows-exe-${{ github.ref }}
@@ -38,6 +39,24 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
+
+      - name: Recover the previous Windows test report
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: Windows-build-evidence-37605185271-1
+          run-id: 37605185271
+          github-token: ${{ github.token }}
+          path: artifacts/previous-windows-evidence
+
+      - name: Summarize the previous test failures
+        shell: pwsh
+        run: |
+          $failures = @(Get-ChildItem artifacts/previous-windows-evidence -Recurse -Filter tests.json | ForEach-Object {
+            $report = Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json
+            $report.results | Where-Object status -eq failed | ForEach-Object { "$($_.name): $($_.detail)" }
+          }) | Select-Object -Unique
+          $summary = ($failures -join "`n").Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+          Write-Host "::warning title=Previous run 37605185271 failed tests::$summary"
 
       - name: Install Node.js
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -87,10 +106,6 @@ jobs:
             throw
           }
           if ($pipelineExit -ne 0) {
-            Get-Content -LiteralPath $launchLog -Tail 20 | ForEach-Object {
-              $line = $_.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-              if ($line.Trim()) { Write-Host "::error title=Pipeline startup or failure diagnostic::$line" }
-            }
             $reportPath = "artifacts/build-pipelines/$env:AUTUMN_BUILD_ID/pipeline.json"
             if (Test-Path -LiteralPath $reportPath) {
               $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
@@ -104,11 +119,14 @@ jobs:
             if (Test-Path -LiteralPath $buildDirectory) {
               Get-ChildItem -LiteralPath $buildDirectory -Recurse -File -Filter *.log |
                 Select-String -Pattern '^FAIL |: error | error [A-Z]+[0-9]+:' |
-                Select-Object -First 20 | ForEach-Object {
+                Select-Object -First 5 | ForEach-Object {
                   $line = $_.Line.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
                   Write-Host "::error title=Build or test diagnostic::$line"
                 }
             }
+            $tail = (Get-Content -LiteralPath $launchLog -Tail 12) -join "`n"
+            $safeTail = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Pipeline failure tail::$safeTail"
             throw "Windows EXE pipeline failed: $pipelineExit"
           }
 
