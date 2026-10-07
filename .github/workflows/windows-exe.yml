@@ -35,12 +35,12 @@ jobs:
       POWERSHELL_TELEMETRY_OPTOUT: '1'
     steps:
       - name: Check out the exact build source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
 
       - name: Install Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 24.19.0
 
@@ -48,14 +48,27 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          ./scripts/Install-LocalSdk.ps1
-          New-Item -ItemType Directory -Force .tools/nuget-feed | Out-Null
-          $env:DOTNET_ROOT = Join-Path $PWD '.tools/dotnet'
-          $env:DOTNET_CLI_HOME = Join-Path $PWD '.tools/dotnet-home'
-          $env:NUGET_PACKAGES = Join-Path $PWD '.tools/nuget/packages'
-          $env:PATH = $env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH
-          & ./.tools/dotnet/dotnet.exe tool install PowerShell --version 7.6.6 --tool-path .tools/pwsh-ci --add-source https://api.nuget.org/v3/index.json
-          if ($LASTEXITCODE -ne 0) { throw 'Pinned PowerShell installation failed.' }
+          $setupDirectory = "artifacts/actions-setup/$env:AUTUMN_BUILD_ID"
+          New-Item -ItemType Directory -Force $setupDirectory | Out-Null
+          Start-Transcript -LiteralPath "$setupDirectory/setup.log" | Out-Null
+          try {
+            ./scripts/Install-LocalSdk.ps1
+            New-Item -ItemType Directory -Force .tools/nuget-feed | Out-Null
+            $env:DOTNET_ROOT = Join-Path $PWD '.tools/dotnet'
+            $env:DOTNET_CLI_HOME = Join-Path $PWD '.tools/dotnet-home'
+            $env:NUGET_PACKAGES = Join-Path $PWD '.tools/nuget/packages'
+            $env:PATH = $env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH
+            $toolOutput = & ./.tools/dotnet/dotnet.exe tool install PowerShell --version 7.6.6 --tool-path .tools/pwsh-ci --configfile NuGet.Config 2>&1
+            $toolExit = $LASTEXITCODE
+            $toolOutput | Out-Host
+            if ($toolExit -ne 0) { throw ('Pinned PowerShell installation failed: ' + ($toolOutput -join ' ')) }
+          } catch {
+            $failure = $_.Exception.Message
+            $safeAnnotation = $failure.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Toolchain preparation failed::$safeAnnotation"
+            "Toolchain preparation failed: $failure" | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            throw
+          } finally { Stop-Transcript | Out-Null }
 
       - name: Build, test and package the single EXE
         shell: pwsh
@@ -64,10 +77,31 @@ jobs:
           $env:DOTNET_ROOT = Join-Path $PWD '.tools/dotnet'
           $env:PATH = $env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH
           & ./.tools/pwsh-ci/pwsh.exe -NoLogo -NoProfile -NonInteractive -File ./scripts/Build-SingleFile.ps1 -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL -SkipNativeSmoke
-          if ($LASTEXITCODE -ne 0) { throw "Windows EXE pipeline failed: $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) {
+            $pipelineExit = $LASTEXITCODE
+            $reportPath = "artifacts/build-pipelines/$env:AUTUMN_BUILD_ID/pipeline.json"
+            if (Test-Path -LiteralPath $reportPath) {
+              $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
+              $failure = [string]$report.failure
+              if ($failure) {
+                $safeFailure = $failure.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+                Write-Host "::error title=EXE pipeline failed::$safeFailure"
+              }
+            }
+            $buildDirectory = "artifacts/builds/$env:AUTUMN_BUILD_ID"
+            if (Test-Path -LiteralPath $buildDirectory) {
+              Get-ChildItem -LiteralPath $buildDirectory -Recurse -File -Filter *.log |
+                Select-String -Pattern '^FAIL |: error | error [A-Z]+[0-9]+:' |
+                Select-Object -First 20 | ForEach-Object {
+                  $line = $_.Line.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+                  Write-Host "::error title=Build or test diagnostic::$line"
+                }
+            }
+            throw "Windows EXE pipeline failed: $pipelineExit"
+          }
 
       - name: Upload the EXE and its identity
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: AutumnOS-${{ env.AUTUMN_RELEASE_LABEL }}-win-x64
           path: |
@@ -81,10 +115,11 @@ jobs:
 
       - name: Preserve build and test evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: Windows-build-evidence-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            artifacts/actions-setup/${{ env.AUTUMN_BUILD_ID }}/**/*.log
             artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/**/*.json
             artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/**/*.log
             artifacts/build-pipelines/${{ env.AUTUMN_BUILD_ID }}/**/*.json
