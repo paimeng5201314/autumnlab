@@ -81,7 +81,7 @@ function Invoke-CiAcl([string[]]$Arguments) {
     if ($LASTEXITCODE -ne 0) { throw 'Could not grant the dedicated standard account access to its build inputs.' }
 }
 try {
-    $account = New-LocalUser -Name $accountName -Password $password -AccountNeverExpires -PasswordNeverExpires -Description 'Temporary AutumnOS build account on a disposable hosted runner'
+    $account = New-LocalUser -Name $accountName -Password $password -AccountNeverExpires -PasswordNeverExpires -Description 'Temporary AutumnOS CI build account'
     $sid = $account.SID.Value
     $report.user_sid = $sid
     $usersGroup = Get-LocalGroup -SID 'S-1-5-32-545'
