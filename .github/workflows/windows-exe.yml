@@ -74,11 +74,23 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
           $env:DOTNET_ROOT = Join-Path $PWD '.tools/dotnet'
           $env:PATH = $env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH
-          & ./.tools/pwsh-ci/pwsh.exe -NoLogo -NoProfile -NonInteractive -File ./scripts/Build-SingleFile.ps1 -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL -SkipNativeSmoke
-          if ($LASTEXITCODE -ne 0) {
+          $launchLog = "artifacts/actions-setup/$env:AUTUMN_BUILD_ID/pipeline-launch.log"
+          try {
+            & ./.tools/pwsh-ci/pwsh.exe -NoLogo -NoProfile -NonInteractive -File ./scripts/Build-SingleFile.ps1 -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL -SkipNativeSmoke 2>&1 | Tee-Object -FilePath $launchLog
             $pipelineExit = $LASTEXITCODE
+          } catch {
+            $safeLaunchFailure = $_.Exception.Message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Pipeline launch failed::$safeLaunchFailure"
+            throw
+          }
+          if ($pipelineExit -ne 0) {
+            Get-Content -LiteralPath $launchLog -Tail 20 | ForEach-Object {
+              $line = $_.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+              if ($line.Trim()) { Write-Host "::error title=Pipeline startup or failure diagnostic::$line" }
+            }
             $reportPath = "artifacts/build-pipelines/$env:AUTUMN_BUILD_ID/pipeline.json"
             if (Test-Path -LiteralPath $reportPath) {
               $report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
