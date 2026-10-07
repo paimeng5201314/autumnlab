@@ -41,6 +41,24 @@ try {
         }
         Write-Output ('Standard-user identity verified: user='+$identity.User.Value+'; owner='+$identity.Owner.Value)
     } finally { $identity.Dispose() }
+    # LOGON_WITH_PROFILE has now initialized and loaded this account's real profile.
+    # Resolve Windows known folders under its token rather than deriving a C:\Users path
+    # or inheriting runner-admin profile environment variables.
+    $profilePath=[Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
+    $roamingPath=[Environment]::GetFolderPath([Environment+SpecialFolder]::ApplicationData)
+    $localPath=[Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)
+    foreach($path in @($profilePath,$roamingPath,$localPath)) {
+        if([string]::IsNullOrWhiteSpace($path) -or -not [IO.Path]::IsPathFullyQualified($path) -or
+            -not (Test-Path -LiteralPath $path -PathType Container)) {
+            throw 'The standard account Windows profile or application-data folders were not loaded.'
+        }
+    }
+    $env:USERPROFILE=$profilePath
+    $env:APPDATA=$roamingPath
+    $env:LOCALAPPDATA=$localPath
+    $env:HOMEDRIVE=[IO.Path]::GetPathRoot($profilePath).TrimEnd('\')
+    $env:HOMEPATH=$profilePath.Substring([IO.Path]::GetPathRoot($profilePath).Length - 1)
+    Write-Output 'Standard-user Windows profile and known folders verified after credentialed logon.'
     Set-Location -LiteralPath $Repo
     & (Join-Path $Repo 'scripts/Build-SingleFile.ps1') -BuildId $BuildId -BuildVersion $BuildVersion -ReleaseLabel $ReleaseLabel -SkipNativeSmoke
     exit 0
@@ -50,17 +68,6 @@ try {
 }
 '@ | Set-Content -LiteralPath $bootstrap -Encoding utf8NoBOM
 
-# CreateProfile obtains the actual Windows profile path before constructing the child's
-# environment. LoadUserProfile then loads its hive for CurrentUser DPAPI and identity tests.
-Add-Type -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
-public static class AutumnCiProfile {
-    [DllImport("userenv.dll", CharSet=CharSet.Unicode, SetLastError=true)]
-    public static extern int CreateProfile(string sid, string name, StringBuilder path, uint length);
-}
-'@
 $account = $null
 $process = $null
 $stdout = $null
@@ -87,11 +94,6 @@ try {
     $usersGroup = Get-LocalGroup -SID 'S-1-5-32-545'
     try { Add-LocalGroupMember -Group $usersGroup -Member $account }
     catch { if ($_.FullyQualifiedErrorId -notlike '*MemberExists*') { throw } }
-    $profileBuffer = [Text.StringBuilder]::new(1024)
-    $profileResult = [AutumnCiProfile]::CreateProfile($sid, $accountName, $profileBuffer, 1024)
-    if ($profileResult -ne 0) { throw ('Could not create the temporary Windows profile: HRESULT 0x' + $profileResult.ToString('X8')) }
-    $profilePath = $profileBuffer.ToString()
-    if (-not $profilePath -or -not (Test-Path -LiteralPath $profilePath -PathType Container)) { throw 'The temporary Windows profile was not created.' }
     # Grant only this unique SID. Existing Users/Everyone rules and product-created ACLs
     # are not rewritten. Ancestors need read/traverse for managed-path validation.
     for ($cursor=[IO.Path]::GetDirectoryName($repo); $cursor; $cursor=[IO.Path]::GetDirectoryName($cursor)) {
@@ -105,7 +107,7 @@ try {
         $changedAncestors.Add($cursor)
     }
     Invoke-CiAcl @($nodeDirectory, '/grant', "*${sid}:(OI)(CI)RX", '/Q')
-    $taskTemp = Join-Path $profilePath 'AppData/Local/Temp/AutumnBuild'
+    $taskTemp = Join-Path $repo ('.tools/ci-temp/' + $accountName)
     New-Item -ItemType Directory -Force -Path $taskTemp | Out-Null
     Invoke-CiAcl @($taskTemp, '/grant', "*${sid}:(OI)(CI)M", '/Q')
 
@@ -124,20 +126,16 @@ try {
         $start.ArgumentList.Add($argument)
     }
     # A credentialed child must not inherit runner-admin TEMP/USERPROFILE or authentication
-    # variables. Supply only OS/toolchain values and its actual newly created profile.
+    # variables. Windows loads the real profile at logon; the child then resolves its
+    # known folders before building. TEMP is already available for process startup.
     $start.Environment.Clear()
     foreach ($name in @('SystemRoot', 'WINDIR', 'SystemDrive', 'ComSpec', 'PATHEXT', 'COMPUTERNAME', 'NUMBER_OF_PROCESSORS', 'PROCESSOR_ARCHITECTURE',
         'ProgramFiles', 'ProgramFiles(x86)', 'ProgramW6432', 'ProgramData', 'PUBLIC', 'ALLUSERSPROFILE')) {
         $value = [Environment]::GetEnvironmentVariable($name)
         if ($value) { $start.Environment[$name] = $value }
     }
-    $start.Environment['USERPROFILE'] = $profilePath
     $start.Environment['USERNAME'] = $accountName
     $start.Environment['USERDOMAIN'] = $env:COMPUTERNAME
-    $start.Environment['HOMEDRIVE'] = [IO.Path]::GetPathRoot($profilePath).TrimEnd('\')
-    $start.Environment['HOMEPATH'] = $profilePath.Substring([IO.Path]::GetPathRoot($profilePath).Length - 1)
-    $start.Environment['APPDATA'] = Join-Path $profilePath 'AppData/Roaming'
-    $start.Environment['LOCALAPPDATA'] = Join-Path $profilePath 'AppData/Local'
     $start.Environment['TEMP'] = $taskTemp
     $start.Environment['TMP'] = $taskTemp
     $start.Environment['DOTNET_ROOT'] = Split-Path $dotnet -Parent
@@ -170,6 +168,9 @@ try {
     $report.status = 'failed'
     $failure = $_.Exception.Message
     $report.failure = $failure
+    for ($cause=$_.Exception; $cause; $cause=$cause.InnerException) {
+        if ($cause -is [ComponentModel.Win32Exception]) { $report.win32_error=$cause.NativeErrorCode; break }
+    }
 } finally {
     if ($process) {
         if (-not $process.HasExited) { $process.Kill($true); $process.WaitForExit() }
