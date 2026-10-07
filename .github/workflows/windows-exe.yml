@@ -17,7 +17,6 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: windows-exe-${{ github.ref }}
@@ -39,24 +38,6 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
-
-      - name: Recover the previous Windows test report
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
-        with:
-          name: Windows-build-evidence-37605185271-1
-          run-id: 37605185271
-          github-token: ${{ github.token }}
-          path: artifacts/previous-windows-evidence
-
-      - name: Summarize the previous test failures
-        shell: pwsh
-        run: |
-          $failures = @(Get-ChildItem artifacts/previous-windows-evidence -Recurse -Filter tests.json | ForEach-Object {
-            $report = Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json
-            $report.results | Where-Object status -eq failed | ForEach-Object { "$($_.name): $($_.detail)" }
-          }) | Select-Object -Unique
-          $summary = ($failures -join "`n").Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-          Write-Host "::warning title=Previous run 37605185271 failed tests::$summary"
 
       - name: Install Node.js
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -98,7 +79,7 @@ jobs:
           $env:PATH = $env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH
           $launchLog = "artifacts/actions-setup/$env:AUTUMN_BUILD_ID/pipeline-launch.log"
           try {
-            & ./.tools/pwsh-ci/pwsh.exe -NoLogo -NoProfile -NonInteractive -File ./scripts/Build-SingleFile.ps1 -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL -SkipNativeSmoke 2>&1 | Tee-Object -FilePath $launchLog
+            & ./.tools/pwsh-ci/pwsh.exe -NoLogo -NoProfile -NonInteractive -File ./scripts/Invoke-CiBuild.ps1 -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL 2>&1 | Tee-Object -FilePath $launchLog
             $pipelineExit = $LASTEXITCODE
           } catch {
             $safeLaunchFailure = $_.Exception.Message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
@@ -150,6 +131,7 @@ jobs:
           name: Windows-build-evidence-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             artifacts/actions-setup/${{ env.AUTUMN_BUILD_ID }}/**/*.log
+            artifacts/actions-setup/${{ env.AUTUMN_BUILD_ID }}/**/*.json
             artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/**/*.json
             artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/**/*.log
             artifacts/build-pipelines/${{ env.AUTUMN_BUILD_ID }}/**/*.json
@@ -165,7 +147,8 @@ jobs:
           if (Test-Path -LiteralPath $pipelinePath) {
             $pipeline = Get-Content -LiteralPath $pipelinePath -Raw | ConvertFrom-Json
             if ($pipeline.status -eq 'packaged_native_not_run') {
-              Write-Host "::notice title=EXE packaged::Version: $env:AUTUMN_RELEASE_LABEL; SHA-256: $($pipeline.executable_sha256); native interactive UI tests not run."
+              $tests = Get-Content -LiteralPath "artifacts/builds/$env:AUTUMN_BUILD_ID/tests.json" -Raw | ConvertFrom-Json
+              Write-Host "::notice title=EXE packaged::Version: $env:AUTUMN_RELEASE_LABEL; SHA-256: $($pipeline.executable_sha256); C# tests: $($tests.total - $tests.failed)/$($tests.total); native interactive UI tests not run."
               "EXE SHA-256: $($pipeline.executable_sha256)" | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             }
           }

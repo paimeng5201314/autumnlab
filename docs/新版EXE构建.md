@@ -4,7 +4,7 @@
 
 ## GitHub Actions
 
-`.github/workflows/windows-exe.yml` 使用 `windows-2025`，固定 Node.js 24.19.0、PowerShell 7.6.6 与项目 SDK。推送 `codex/windows-exe-*` 构建分支时自动运行；工作流进入默认分支后也可从 Actions 页使用 Run workflow 手动触发并指定显示版本。无需添加发布令牌；工作流权限只有读取源码，上传产物使用 Actions 提供的运行凭据。
+`.github/workflows/windows-exe.yml` 使用 `windows-2025`，固定 Node.js 24.19.0、PowerShell 7.6.6 与项目 SDK。`Invoke-CiBuild.ps1` 在临时普通用户账户下执行构建、全部非交互测试和打包，加载该用户配置文件；仅向该账户授予工作目录权限，随机密码只保留在内存中，结束后删除临时账户。推送 `codex/windows-exe-*` 构建分支时自动运行；工作流进入默认分支后也可从 Actions 页使用 Run workflow 手动触发并指定显示版本。无需添加发布令牌；工作流权限只有读取源码，上传产物使用 Actions 提供的运行凭据。
 
 成功运行后，在该次运行的 **Artifacts** 下载 `AutumnOS-meta0.0.2-20261007-win-x64`（自定义标签时名称随之改变），其中含单文件 EXE、SHA-256 和源快照/打包记录。`Windows-build-evidence-<run>-<attempt>` 保存构建和测试报告，失败时也尝试保留日志。产物保留 14 天，未创建 Release。
 
@@ -32,7 +32,7 @@
 ./scripts/Build-SingleFile.ps1
 ```
 
-无交互桌面的 Windows CI 使用下列显式模式。它仍执行当前构建全部非交互测试，不要求管理员降权或打开桌面；只跳过原生 UI 烟测：
+无交互桌面的 Windows CI 使用下列显式模式。它仍要求普通用户身份，并执行当前构建全部非交互测试；无需打开交互桌面，只跳过原生 UI 烟测。GitHub runner 的管理员进程通过 `Invoke-CiBuild.ps1` 创建和启动专用普通用户进程：
 
 ```powershell
 ./scripts/Build-SingleFile.ps1 -SkipNativeSmoke

@@ -34,12 +34,13 @@ Add-Prerequisite 'supported Windows baseline' ([Environment]::OSVersion.Version.
 $currentProcess = [Diagnostics.Process]::GetCurrentProcess()
 $currentSession = $currentProcess.SessionId
 $currentProcess.Dispose()
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+try {
+    $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+    Add-Prerequisite 'standard user' (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) 'Use a standard account for Windows pipe ownership, private-file ACL tests and native smoke. The CI wrapper creates a temporary standard account.'
+    Add-Prerequisite 'user owns new Windows objects' ($identity.Owner.Value -eq $identity.User.Value) 'The current-user pipe and inherited Modify tests require the token default owner to be the user SID.'
+} finally { $identity.Dispose() }
 if (-not $SkipNativeSmoke) {
-    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-    try {
-        $principal = [Security.Principal.WindowsPrincipal]::new($identity)
-        Add-Prerequisite 'standard user' (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) 'Run from a normal, non-elevated PowerShell window. The native smoke rejects administrator execution.'
-    } finally { $identity.Dispose() }
     Add-Prerequisite 'interactive session' ([Environment]::UserInteractive -and $currentSession -gt 0) 'Keep the desktop unlocked during the native UI test; a service/session 0 is unsupported. CI must explicitly select -SkipNativeSmoke.'
 }
 $activeProducts = @(Get-Process -Name AutumnOS,AutumnOS.Client -ErrorAction SilentlyContinue | Where-Object SessionId -eq $currentSession)
