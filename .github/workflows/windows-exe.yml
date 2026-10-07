@@ -143,6 +143,14 @@ jobs:
         if: always()
         shell: pwsh
         run: |
+          $pipelinePath = "artifacts/build-pipelines/$env:AUTUMN_BUILD_ID/pipeline.json"
+          if (Test-Path -LiteralPath $pipelinePath) {
+            $pipeline = Get-Content -LiteralPath $pipelinePath -Raw | ConvertFrom-Json
+            if ($pipeline.status -eq 'packaged_native_not_run') {
+              Write-Host "::notice title=EXE packaged::Version: $env:AUTUMN_RELEASE_LABEL; SHA-256: $($pipeline.executable_sha256); native interactive UI tests not run."
+              "EXE SHA-256: $($pipeline.executable_sha256)" | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+            }
+          }
           @"
           Build: $env:AUTUMN_BUILD_ID
           Source commit: $env:GITHUB_SHA

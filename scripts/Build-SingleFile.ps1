@@ -70,7 +70,7 @@ foreach ($tool in @('tar.exe', 'Get-CimInstance', 'Get-AuthenticodeSignature')) 
 foreach ($relative in @('Microsoft.NET/Framework64/v4.0.30319/csc.exe', 'System32/expand.exe')) {
     Add-Prerequisite ('Windows component: ' + $relative) (Test-Path -LiteralPath (Join-Path $env:WINDIR $relative) -PathType Leaf) 'These are existing Windows components; the pipeline does not install global components.'
 }
-$node = Get-Command node -CommandType Application -ErrorAction SilentlyContinue
+$node = Get-Command node -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
 Add-Prerequisite 'Node.js available' ($null -ne $node) 'Provide Node.js >=22.9 on this process PATH before running; npm is restored separately at its locked version.'
 if ($node) {
     $nodeVersionText = (& $node.Source --version | Out-String).Trim()
