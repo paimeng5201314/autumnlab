@@ -20,6 +20,7 @@ public sealed class AccountDataStore
         ? Path.Combine(root.Directories["Saves"], scope.Identity.AppId, "guest")
         : Path.Combine(root.Directories["Saves"], SourceDirectory, scope.AccountDirectory);
     private string PrivateDirectory => Path.Combine(root.Directories["AppData"], SourceDirectory, scope.AccountDirectory);
+    private string PreferencesDirectory => Path.Combine(root.Directories["AppData"], SourceDirectory, "Preferences", scope.AccountDirectory);
 
     public AccountDataStore(InstallationRoot root, StorageScope scope, Func<StorageScope, bool> isCurrent,
         Func<IDisposable>? commitLease = null, bool allowLegacyGuest = false, StorageLimits? limits = null,
@@ -204,6 +205,7 @@ public sealed class AccountDataStore
         if (bytes.Length > limits.MaximumPrivateFileBytes) throw new DataStoreException("FILE_TOO_LARGE");
         using IDisposable critical = coordinator.EnterWrite("应用私有数据写入");
         Ensure(); using FileStream dataLock = Lock();
+        if (key.StartsWith("pref_", StringComparison.OrdinalIgnoreCase)) EnsurePreferencesMigrated(cancellationToken);
         string path = Path.Combine(PrivateDirectory, key + ".bin");
         if (!File.Exists(path) && Directory.EnumerateFiles(PrivateDirectory, "*.bin").Take(limits.MaximumPrivateFiles).Count() >= limits.MaximumPrivateFiles)
             throw new DataStoreException("STORAGE_QUOTA_EXCEEDED");
@@ -216,6 +218,7 @@ public sealed class AccountDataStore
         Check(key, cancellationToken);
         using IDisposable critical = coordinator.EnterWrite("应用私有数据删除");
         Ensure(); using FileStream dataLock = Lock();
+        if (key.StartsWith("pref_", StringComparison.OrdinalIgnoreCase)) EnsurePreferencesMigrated(cancellationToken);
         string path = Path.Combine(PrivateDirectory, key + ".bin");
         using (commitLease())
         {
@@ -225,6 +228,126 @@ public sealed class AccountDataStore
             File.Move(path, backup, overwrite: true); return true;
         }
     });
+
+    /// <summary>Preferences have their own namespace; legacy private files are copied once and retained verbatim.</summary>
+    public DataResult<JsonElement?> ReadPreference(string key, CancellationToken cancellationToken = default) => Execute(() =>
+    {
+        CheckPreference(key, cancellationToken);
+        using IDisposable critical = coordinator.EnterWrite("应用偏好迁移与读取");
+        Ensure(); using FileStream dataLock = Lock();
+        EnsurePreferencesMigrated(cancellationToken);
+        JsonElement? value = ReadPreferenceValue(PreferencePath(key));
+        using (commitLease()) { CheckCurrent(cancellationToken); return value; }
+    });
+
+    public DataResult<bool> WritePreference(string key, JsonElement value, CancellationToken cancellationToken = default) => Execute(() =>
+    {
+        CheckPreference(key, cancellationToken);
+        if (value.ValueKind == JsonValueKind.Undefined) throw new DataStoreException("INVALID_PARAMS");
+        byte[] bytes;
+        try { bytes = JsonSerializer.SerializeToUtf8Bytes(value); }
+        catch (JsonException) { throw new DataStoreException("INVALID_PARAMS"); }
+        if (bytes.Length > limits.MaximumPrivateFileBytes) throw new DataStoreException("FILE_TOO_LARGE");
+        // Use the same JSON depth limit for writes and reads; accepted data must remain readable.
+        ParsePreference(bytes, "INVALID_PARAMS");
+        using IDisposable critical = coordinator.EnterWrite("应用偏好写入");
+        Ensure(); using FileStream dataLock = Lock();
+        EnsurePreferencesMigrated(cancellationToken);
+        string path = PreferencePath(key);
+        ReadPreferenceValue(path); // Preserve a damaged record instead of silently replacing it.
+        CheckPreferenceCapacity(path);
+        Commit(path, bytes, true, cancellationToken);
+        return true;
+    });
+
+    private string PreferencePath(string key) => Path.Combine(PreferencesDirectory, "pref_" + key + ".json");
+    private void CheckPreference(string key, CancellationToken token)
+    {
+        if (!ScopedStorageSafety.IsPreferenceKey(key)) throw new DataStoreException("INVALID_PARAMS");
+        CheckCurrent(token);
+    }
+    private JsonElement? ReadPreferenceValue(string path)
+    {
+        ScopedStorageSafety.File(path);
+        if (!File.Exists(path)) return null;
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+        if (stream.Length is <= 0 || stream.Length > limits.MaximumPrivateFileBytes) throw new DataStoreException("PREFERENCE_CORRUPT");
+        var bytes = new byte[checked((int)stream.Length)]; stream.ReadExactly(bytes);
+        return ParsePreference(bytes);
+    }
+    private static JsonElement ParsePreference(byte[] bytes, string errorCode = "PREFERENCE_CORRUPT")
+    {
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 64 });
+            if (!HasUniquePreferenceProperties(document.RootElement)) throw new DataStoreException(errorCode);
+            return document.RootElement.Clone();
+        }
+        catch (JsonException) { throw new DataStoreException(errorCode); }
+    }
+    private static bool HasUniquePreferenceProperties(JsonElement value)
+    {
+        if (value.ValueKind == JsonValueKind.Object)
+        {
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            foreach (JsonProperty property in value.EnumerateObject())
+                if (!names.Add(property.Name) || !HasUniquePreferenceProperties(property.Value)) return false;
+        }
+        else if (value.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in value.EnumerateArray())
+                if (!HasUniquePreferenceProperties(item)) return false;
+        }
+        return true;
+    }
+    private void CheckPreferenceCapacity(string path)
+    {
+        if (!File.Exists(path) && Directory.EnumerateFiles(PreferencesDirectory, "*.json").Take(limits.MaximumPrivateFiles).Count() >= limits.MaximumPrivateFiles)
+            throw new DataStoreException("STORAGE_QUOTA_EXCEEDED");
+    }
+    private void EnsurePreferencesMigrated(CancellationToken token)
+    {
+        // The account lock also guards private writes/deletes, so a new pref_ key cannot race migration.
+        // Completion is durable before any new pref_ private write. Its bytes are never interpreted as a legacy preference.
+        string marker = Path.Combine(PreferencesDirectory, ".legacy-migration-complete");
+        ScopedStorageSafety.File(marker);
+        if (File.Exists(marker))
+        {
+            using var stream = new FileStream(marker, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            if (stream.Length != 1 || stream.ReadByte() != 1) throw new DataStoreException("PREFERENCE_MIGRATION_CONFLICT");
+            return;
+        }
+        int count = 0;
+        foreach (string source in Directory.EnumerateFiles(PrivateDirectory, "*.bin"))
+        {
+            CheckCurrent(token);
+            string oldKey = Path.GetFileNameWithoutExtension(source);
+            if (!oldKey.StartsWith("pref_", StringComparison.OrdinalIgnoreCase) || !ScopedStorageSafety.IsPreferenceKey(oldKey[5..])) continue;
+            if (++count > limits.MaximumPrivateFiles) throw new DataStoreException("STORAGE_QUOTA_EXCEEDED");
+            ScopedStorageSafety.File(source);
+            byte[] bytes;
+            using (var stream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+            {
+                if (stream.Length > limits.MaximumPrivateFileBytes) throw new DataStoreException("PREFERENCE_CORRUPT");
+                bytes = new byte[checked((int)stream.Length)]; stream.ReadExactly(bytes);
+            }
+            string target = PreferencePath(oldKey[5..]);
+            ScopedStorageSafety.File(target);
+            if (File.Exists(target))
+            {
+                using var existing = new FileStream(target, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                if (existing.Length != bytes.Length) throw new DataStoreException("PREFERENCE_MIGRATION_CONFLICT");
+                var copied = new byte[bytes.Length]; existing.ReadExactly(copied);
+                if (!copied.AsSpan().SequenceEqual(bytes)) throw new DataStoreException("PREFERENCE_MIGRATION_CONFLICT");
+            }
+            else
+            {
+                CheckPreferenceCapacity(target);
+                Commit(target, bytes, false, token);
+            }
+        }
+        Commit(marker, [1], false, token);
+    }
 
     private void Check(string key, CancellationToken token)
     {
@@ -241,6 +364,7 @@ public sealed class AccountDataStore
         DataRootResult result = root.EnsureCreated();
         if (!result.Success) throw new DataStoreException(result.ErrorCode);
         ScopedStorageSafety.Directory(SavesDirectory, true); ScopedStorageSafety.Directory(PrivateDirectory, true);
+        ScopedStorageSafety.Directory(PreferencesDirectory, true);
     }
     private FileStream Lock()
     {
@@ -314,7 +438,7 @@ public sealed class AccountDataStore
     private void CheckQuota(long extra)
     {
         long bytes = extra;
-        foreach (string directory in new[] { SavesDirectory, PrivateDirectory })
+        foreach (string directory in new[] { SavesDirectory, PrivateDirectory, PreferencesDirectory })
         {
             ScopedStorageSafety.Directory(directory, false);
             if (!Directory.Exists(directory)) continue;

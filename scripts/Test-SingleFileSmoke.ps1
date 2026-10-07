@@ -11,6 +11,8 @@ $desktopRuntime=Join-Path $projectRoot '.tools/dotnet/shared/Microsoft.WindowsDe
 foreach($name in @('WindowsBase.dll','UIAutomationTypes.dll','UIAutomationClient.dll','System.Drawing.Common.dll')){Add-Type -Path (Join-Path $desktopRuntime $name)}
 if(-not ('AutumnDesktopInteractionSmoke.NativeWindows' -as [type])){Add-Type -TypeDefinition $native[0].Value}
 $package=Get-Content -LiteralPath (Join-Path $projectRoot "artifacts/builds/$BuildId/package-single-file.json") -Raw|ConvertFrom-Json
+$expectedReleaseLabel=[string]$package.release_label
+if([string]::IsNullOrWhiteSpace($expectedReleaseLabel)){throw 'Package release label is missing; an exact version assertion is required.'}
 $ReportDirectory=[IO.Path]::GetFullPath($ReportDirectory)
 if(Test-Path -LiteralPath $ReportDirectory){throw 'Use a new report directory; previous evidence is immutable.'}
 New-Item -ItemType Directory -Path $ReportDirectory|Out-Null
@@ -60,7 +62,7 @@ try{
     if(@(Get-Process -Name AutumnOS,AutumnOS.Client -ErrorAction SilentlyContinue|Where-Object SessionId -eq ([Diagnostics.Process]::GetCurrentProcess().SessionId)).Count){throw 'Existing user product instance; test refuses to activate or close it.'}
     Add-SmokeCheck 'source_single_exe_hash_matches_package' ((Get-FileHash -LiteralPath $report.tested_executable).Hash.ToLowerInvariant() -eq $package.executable_sha256)
     Add-SmokeCheck 'before_first_start_only_one_exe' (@(Get-ChildItem -LiteralPath $testRoot -Force).Count -eq 1 -and !(Test-Path -LiteralPath $dataDirectory))
-    Add-SmokeCheck 'compiled_product_version_exact' ((Get-Item -LiteralPath $report.tested_executable).VersionInfo.ProductVersion -eq 'meta0.0.1-20261001')
+    Add-SmokeCheck 'compiled_product_version_exact' ((Get-Item -LiteralPath $report.tested_executable).VersionInfo.ProductVersion -eq $expectedReleaseLabel)
     $working=Join-Path $ReportDirectory 'unrelated-working-directory';New-Item -ItemType Directory -Path $working|Out-Null
     $first=Start-SmokeProduct $working
     Assert-OneDataFolder 'first_start'
@@ -84,7 +86,7 @@ try{
     $about=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'SettingsNavAbout'} 'about navigation'
     $about.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Toggle()
     $null=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'AboutVersion'} 'about version'
-    Add-SmokeCheck 'actual_about_version_exact' ((Find-SmokeElement $first.Element 'AboutVersion').Current.Name -eq 'meta0.0.1-20261001')
+    Add-SmokeCheck 'actual_about_version_exact' ((Find-SmokeElement $first.Element 'AboutVersion').Current.Name -eq $expectedReleaseLabel)
     $null=Save-SmokeScreenshot $first '02-single-file-about'
     Invoke-SmokeButton $first.Element 'SettingsHomeButton';Wait-SmokeDesktop $first
     Invoke-SmokePointer $first 'SampleButton' 'single_click'

@@ -32,6 +32,8 @@
 
 `LogtoRegistrationStatus.IsAuthenticationEvidence` 永远为 false。即使本地记录声称执行过登录测试，也不能借此授予权限或建立会话。登记文件不会被以上接口写入。人工记录的 `ProductLoginTestExecuted` 只是记录的原值。
 
+登记文件可选的 `probe_history` 必须是最多 32 条的数组；旧文件可省略，也可提供空数组。每条历史记录与 `discovery_probe` 使用同一严格结构：必需 `status`（1–128 字符，仅 ASCII 字母、数字、下划线、短横线、斜线或空格）、`attempted_read_only`（布尔）、`reason`（1–4096 字符的非空白文本，无控制字符）及 `product_login_test_executed`（布尔）。所有层级拒绝未知字段和重复键，整个文件仍受 64 KiB UTF-8 大小与深度限制。`pack_version` 和 `public_values_source` 是必需的非空白文本，无控制字符，长度分别不超过 128 和 4096；`console_changes_performed` 必须为布尔，`contains_secrets` 必须为 false。历史只参与结构校验，不覆盖当前探测状态，也不能成为认证证据。
+
 ```csharp
 var configDirectory = Path.Combine(AppContext.BaseDirectory, "config");
 var result = LogtoConfigurationLoader.Load(Path.Combine(configDirectory, "logto.public.json"));
@@ -77,7 +79,7 @@ Issue 只包含固定字段名、安全中文摘要和代码；HTTP 错误可附
 
 ## 本地验证
 
-`IdentityTests.Cases()` 是无需外部测试包的控制台 runner 用例来源，使用 example.org 合成公开配置。覆盖严格结构、未知秘密字段、重复属性、同源约束、回调精确性、范围最小化、PKCE 禁用、元数据端点/issuer/能力错误、大小限制、取消以及登记文件不能认证。单元测试不连接 Logto、不计作真实登录通过。
+`IdentityTests.Cases()` 是无需外部测试包的控制台 runner 用例来源，使用 example.org 合成公开配置，并直接读取随测试产物复制的真实公开配置与登记记录做回归。覆盖严格结构、未知秘密字段、重复属性、同源约束、回调精确性、范围最小化、PKCE 禁用、元数据端点/issuer/能力错误、大小限制、取消、登记历史条数/结构边界以及登记文件不能认证。单元测试不连接 Logto、不计作真实登录通过。
 
 可单独构建本模块：
 

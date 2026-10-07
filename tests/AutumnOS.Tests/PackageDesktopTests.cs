@@ -184,7 +184,7 @@ internal static class PackageDesktopTests
     {
         foreach (string start in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
             for (string? path = Path.GetFullPath(start); path is not null; path = Path.GetDirectoryName(path))
-                if (File.Exists(Path.Combine(path, "samples", "element-pairs", "manifest.json")) && File.Exists(Path.Combine(path, "AGENTS.md"))) return path;
+                if (File.Exists(Path.Combine(path, "samples", "element-pairs", "manifest.json")) && File.Exists(Path.Combine(path, "AutumnOS.slnx"))) return path;
         throw new InvalidOperationException("Local sample source is required; a generated fixture cannot replace the real sample test.");
     }
     private static void InTemp(Action<string> action)

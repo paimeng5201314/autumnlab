@@ -26,6 +26,18 @@ public static class ScopedStorageTests
         yield return ("storage.t03.session_guard_linearizes_before_switch", CommitGuard);
         yield return ("storage.t03.critical_operations_block_maintenance", Maintenance);
         yield return ("storage.t03.private_delete_only_changes_own_key", PrivateDelete);
+        yield return ("storage.preferences.private_keys_are_independent", PreferenceIsolation);
+        yield return ("storage.preferences.account_and_source_bindings", PreferenceBindings);
+        yield return ("storage.preferences.legacy_migration_preserves_bytes_and_backup", PreferenceLegacy);
+        yield return ("storage.preferences.corrupt_legacy_and_current_records_are_preserved", PreferenceCorruption);
+        yield return ("storage.preferences.duplicate_keys_and_excessive_depth_are_rejected", PreferenceJsonValidation);
+        yield return ("storage.preferences.migration_conflict_preserves_both_records", PreferenceMigrationConflict);
+        yield return ("storage.preferences.interrupted_migration_retries_without_losing_source", PreferenceMigrationInterrupted);
+        yield return ("storage.preferences.cancelled_write_and_stale_migration_preserve_bytes", PreferenceFailureGuards);
+        yield return ("storage.preferences.file_and_aggregate_quotas_include_migration", PreferenceQuotas);
+        yield return ("storage.preferences.logical_key_boundaries_and_device_names", PreferenceKeys);
+        yield return ("storage.preferences.account_lock_serializes_storage_and_migration", PreferenceConcurrent);
+        yield return ("storage.preferences.unsafe_paths_are_rejected", PreferenceUnsafePaths);
         yield return ("storage.t03.capability_owner_account_epoch_instance_bound", HandleOwnership);
         yield return ("storage.t03.capability_expiry_and_revocation", HandleExpiry);
         yield return ("storage.t03.capability_capacity_and_cleanup", HandleCapacity);
@@ -53,6 +65,174 @@ public static class ScopedStorageTests
     }
     private static string SavePath(InstallationRoot root, StorageScope scope, string slot = "game") =>
         Path.Combine(root.Directories["Saves"], scope.Identity.AppId, scope.SourceKey, scope.AccountDirectory, slot + ".json");
+    private static string PrivatePath(InstallationRoot root, StorageScope scope, string key) =>
+        Path.Combine(root.Directories["AppData"], scope.Identity.AppId, scope.SourceKey, scope.AccountDirectory, key + ".bin");
+    private static string PreferencePath(InstallationRoot root, StorageScope scope, string key) =>
+        Path.Combine(root.Directories["AppData"], scope.Identity.AppId, scope.SourceKey, "Preferences", scope.AccountDirectory, "pref_" + key + ".json");
+    private static void SeedLegacyPreference(InstallationRoot root, StorageScope scope, string key, byte[] bytes)
+    {
+        string path = PrivatePath(root, scope, "pref_" + key);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, bytes);
+    }
+    private static void PreferenceIsolation() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); var store = new AccountDataStore(root, scope, _ => true);
+        Assert(store.WritePreference("theme", Json("dark")).Success, "Preference write failed.");
+        Assert(store.WritePrivate("theme", [1]).Success && store.WritePrivate("pref_theme", "not-json"u8.ToArray()).Success, "Independent private keys failed.");
+        Assert(store.ReadPreference("theme").Value!.Value.GetString() == "dark", "Private write overwrote preference.");
+        Assert(store.ReadPrivate("theme").Value!.SequenceEqual(new byte[] { 1 }) && store.ReadPrivate("pref_theme").Value!.SequenceEqual("not-json"u8.ToArray()), "Preference consumed private data.");
+        Assert(store.DeletePrivate("pref_theme").Success && store.DeletePrivate("theme").Success, "Private delete failed.");
+        Assert(store.ReadPreference("theme").Value!.Value.GetString() == "dark", "Private delete removed preference.");
+        StorageScope freshScope = Scope("fresh"); var fresh = new AccountDataStore(root, freshScope, _ => true);
+        Assert(fresh.WritePrivate("pref_theme", "\"storage\""u8.ToArray()).Success, "Fresh private write failed.");
+        var restarted = new AccountDataStore(root, freshScope, _ => true);
+        Assert(restarted.ReadPreference("theme") is { Success: true, Value: null }, "New private data was mistaken for a legacy preference after restart.");
+        Assert(restarted.WritePreference("theme", Json("preference")).Success && restarted.ReadPrivate("pref_theme").Value!.SequenceEqual("\"storage\""u8.ToArray()), "Private-first ordering collided.");
+    });
+    private static void PreferenceBindings() => InTemp(root =>
+    {
+        var a = new AccountDataStore(root, Scope("account-A"), _ => true);
+        Assert(a.WritePreference("theme", Json("dark")).Success, "Initial preference failed.");
+        foreach (StorageScope scope in new[] { Scope("account-B"), Scope(), Scope("account-A", source: 999), Scope("account-A", app: "other.app") })
+            Assert(new AccountDataStore(root, scope, _ => true).ReadPreference("theme") is { Success: true, Value: null }, "Preference crossed a host binding.");
+    });
+    private static void PreferenceLegacy() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); byte[] old = "  \"旧主题 🌙\"  "u8.ToArray();
+        SeedLegacyPreference(root, scope, "theme", old);
+        SeedLegacyPreference(root, scope, "nullable", "null"u8.ToArray());
+        string source = PrivatePath(root, scope, "pref_theme"); File.WriteAllText(source + ".bak", "old-backup");
+        var store = new AccountDataStore(root, scope, _ => true);
+        Assert(store.ReadPreference("theme").Value!.Value.GetString() == "旧主题 🌙", "Legacy preference was unreadable.");
+        Assert(store.ReadPreference("nullable").Value!.Value.ValueKind == JsonValueKind.Null, "Stored JSON null became an absent preference.");
+        Assert(File.ReadAllBytes(source).SequenceEqual(old) && File.ReadAllBytes(PreferencePath(root, scope, "theme")).SequenceEqual(old)
+            && File.ReadAllText(source + ".bak") == "old-backup", "Migration did not preserve exact source and backup bytes.");
+        Assert(store.WritePrivate("pref_theme", "new raw bytes"u8.ToArray()).Success && store.ReadPreference("theme").Value!.Value.GetString() == "旧主题 🌙", "Legacy source retained authority after migration.");
+        Assert(store.WritePreference("theme", Json("light")).Success && File.ReadAllBytes(PreferencePath(root, scope, "theme") + ".bak").SequenceEqual(old), "Preference update lost its exact migrated backup.");
+        Assert(store.ReadPrivate("pref_theme").Value!.SequenceEqual("new raw bytes"u8.ToArray()), "Preference update changed raw storage.");
+    });
+    private static void PreferenceCorruption() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); byte[] broken = "not-json"u8.ToArray();
+        SeedLegacyPreference(root, scope, "broken", broken); SeedLegacyPreference(root, scope, "good", "true"u8.ToArray());
+        var store = new AccountDataStore(root, scope, _ => true);
+        Assert(store.ReadPreference("broken").ErrorCode == "PREFERENCE_CORRUPT" && store.WritePreference("broken", Json(1)).ErrorCode == "PREFERENCE_CORRUPT", "Legacy corruption was not protected.");
+        Assert(File.ReadAllBytes(PrivatePath(root, scope, "pref_broken")).SequenceEqual(broken)
+            && File.ReadAllBytes(PreferencePath(root, scope, "broken")).SequenceEqual(broken), "Corrupt legacy bytes were lost.");
+        Assert(store.ReadPreference("good").Value!.Value.GetBoolean() && store.WritePrivate("pref_other", [1]).Success, "Unrelated storage was blocked by corrupt preference.");
+        Assert(store.WritePreference("current", Json(2)).Success, "Current preference setup failed.");
+        string current = PreferencePath(root, scope, "current"); File.WriteAllBytes(current, [0xff, 0xfe]);
+        Assert(store.ReadPreference("current").ErrorCode == "PREFERENCE_CORRUPT" && store.WritePreference("current", Json(3)).ErrorCode == "PREFERENCE_CORRUPT"
+            && File.ReadAllBytes(current).SequenceEqual(new byte[] { 0xff, 0xfe }), "Damaged current preference was overwritten.");
+    });
+    private static void PreferenceMigrationConflict() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); SeedLegacyPreference(root, scope, "theme", "\"legacy\""u8.ToArray());
+        string target = PreferencePath(root, scope, "theme"); Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.WriteAllText(target, "\"existing\"");
+        var store = new AccountDataStore(root, scope, _ => true);
+        Assert(store.ReadPreference("theme").ErrorCode == "PREFERENCE_MIGRATION_CONFLICT" && store.WritePrivate("pref_theme", [1]).ErrorCode == "PREFERENCE_MIGRATION_CONFLICT", "Conflicting migration silently chose a winner.");
+        Assert(File.ReadAllText(target) == "\"existing\"" && File.ReadAllText(PrivatePath(root, scope, "pref_theme")) == "\"legacy\"", "Migration conflict lost either record.");
+    });
+    private static void PreferenceJsonValidation() => InTemp(root =>
+    {
+        int index = 0;
+        foreach (string json in new[] { "{\"theme\":1,\"theme\":2}", "{\"nested\":[{\"x\":1,\"x\":2}]}" })
+        {
+            StorageScope scope = Scope("duplicate-" + index++); byte[] old = System.Text.Encoding.UTF8.GetBytes(json);
+            SeedLegacyPreference(root, scope, "legacy", old);
+            var store = new AccountDataStore(root, scope, _ => true);
+            Assert(store.ReadPreference("legacy").ErrorCode == "PREFERENCE_CORRUPT" && store.WritePreference("legacy", Json(1)).ErrorCode == "PREFERENCE_CORRUPT", "Duplicate-key legacy preference was accepted or overwritten.");
+            Assert(File.ReadAllBytes(PrivatePath(root, scope, "pref_legacy")).SequenceEqual(old) && File.ReadAllBytes(PreferencePath(root, scope, "legacy")).SequenceEqual(old), "Duplicate-key evidence was lost.");
+            using JsonDocument duplicate = JsonDocument.Parse(json);
+            Assert(store.WritePreference("new", duplicate.RootElement).ErrorCode == "INVALID_PARAMS" && !File.Exists(PreferencePath(root, scope, "new")), "Duplicate-key input was committed.");
+        }
+        var valid = new AccountDataStore(root, Scope("depth"), _ => true);
+        Assert(valid.WritePreference("existing", Json(1)).Success, "Depth test setup failed.");
+        using JsonDocument deep = JsonDocument.Parse(new string('[', 65) + "0" + new string(']', 65), new JsonDocumentOptions { MaxDepth = 128 });
+        Assert(valid.WritePreference("existing", deep.RootElement).ErrorCode == "INVALID_PARAMS" && valid.ReadPreference("existing").Value!.Value.GetInt32() == 1, "Over-depth preference replaced readable data.");
+    });
+    private static void PreferenceMigrationInterrupted() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); byte[] old = "\"legacy\""u8.ToArray(); SeedLegacyPreference(root, scope, "theme", old); int commits = 0;
+        var interrupted = new AccountDataStore(root, scope, _ => true, testHooks: new(point =>
+        { if (point == StorageWritePoint.BeforeCommit && ++commits == 2) throw new IOException("injected migration completion failure"); }));
+        Assert(interrupted.ReadPreference("theme").ErrorCode == "STORAGE_IO_ERROR", "Interrupted migration appeared successful.");
+        Assert(File.ReadAllBytes(PrivatePath(root, scope, "pref_theme")).SequenceEqual(old) && File.ReadAllBytes(PreferencePath(root, scope, "theme")).SequenceEqual(old), "Partial migration lost data.");
+        string directory = Path.GetDirectoryName(PreferencePath(root, scope, "theme"))!;
+        Assert(!File.Exists(Path.Combine(directory, ".legacy-migration-complete")) && !Directory.EnumerateFiles(directory, ".staging-*").Any(), "Unfinished migration was marked complete or leaked staging.");
+        var retry = new AccountDataStore(root, scope, _ => true);
+        Assert(retry.ReadPreference("theme").Value!.Value.GetString() == "legacy" && retry.WritePrivate("pref_theme", [1]).Success, "Interrupted migration was not safely retryable.");
+        Assert(retry.ReadPreference("theme").Value!.Value.GetString() == "legacy", "Retry retained old namespace collision.");
+    });
+    private static void PreferenceFailureGuards() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); var original = new AccountDataStore(root, scope, _ => true); Assert(original.WritePreference("theme", Json("old")).Success, "Initial preference failed.");
+        byte[] before = File.ReadAllBytes(PreferencePath(root, scope, "theme")); using var cancellation = new CancellationTokenSource();
+        var cancelled = new AccountDataStore(root, scope, _ => true, testHooks: new(point => { if (point == StorageWritePoint.AfterStagingFlush) cancellation.Cancel(); }));
+        Assert(cancelled.WritePreference("theme", Json("new"), cancellation.Token).ErrorCode == "USER_CANCELLED"
+            && File.ReadAllBytes(PreferencePath(root, scope, "theme")).SequenceEqual(before), "Cancelled preference replaced committed bytes.");
+        StorageScope legacyScope = Scope("legacy"); SeedLegacyPreference(root, legacyScope, "theme", "1"u8.ToArray()); long epoch = legacyScope.Epoch.Value;
+        var stale = new AccountDataStore(root, legacyScope, s => s.Epoch.Value == epoch, testHooks: new(point => { if (point == StorageWritePoint.BeforeCommit) epoch++; }));
+        Assert(stale.ReadPreference("theme").ErrorCode == "SESSION_STALE" && !File.Exists(PreferencePath(root, legacyScope, "theme"))
+            && File.ReadAllText(PrivatePath(root, legacyScope, "pref_theme")) == "1", "Migration crossed an account epoch.");
+    });
+    private static void PreferenceQuotas() => InTemp(root =>
+    {
+        var store = new AccountDataStore(root, Scope(), _ => true, limits: new(MaximumPrivateFiles: 1, MaximumPrivateFileBytes: 4));
+        Assert(store.WritePreference("one", Json(1)).Success && store.WritePreference("two", Json(2)).ErrorCode == "STORAGE_QUOTA_EXCEEDED", "Preference file quota missing.");
+        Assert(store.WritePrivate("raw", [1]).Success && store.WritePrivate("second", [2]).ErrorCode == "STORAGE_QUOTA_EXCEEDED", "Private file quota changed.");
+        Assert(store.WritePreference("one", Json("long")).ErrorCode == "FILE_TOO_LARGE", "Preference byte quota missing.");
+        StorageScope smallScope = Scope("small"); var small = new AccountDataStore(root, smallScope, _ => true, limits: new(MaximumAccountBytes: 7));
+        Assert(small.WritePreference("one", Json("ab")).Success && small.WritePrivate("raw", [1, 2, 3]).ErrorCode == "STORAGE_QUOTA_EXCEEDED", "Aggregate quota omitted preferences.");
+        Assert(small.WritePreference("one", Json("cd")).ErrorCode == "STORAGE_QUOTA_EXCEEDED" && small.ReadPreference("one").Value!.Value.GetString() == "ab", "Staging and backup headroom was unaccounted.");
+        StorageScope legacyScope = Scope("legacy-quota"); SeedLegacyPreference(root, legacyScope, "one", "1234"u8.ToArray());
+        var legacy = new AccountDataStore(root, legacyScope, _ => true, limits: new(MaximumAccountBytes: 7));
+        Assert(legacy.ReadPreference("one").ErrorCode == "STORAGE_QUOTA_EXCEEDED" && File.ReadAllText(PrivatePath(root, legacyScope, "pref_one")) == "1234"
+            && !File.Exists(PreferencePath(root, legacyScope, "one")), "Migration exceeded quota or lost the source.");
+    });
+    private static void PreferenceKeys() => InTemp(root =>
+    {
+        var store = new AccountDataStore(root, Scope(), _ => true);
+        Assert(store.WritePreference(new string('k', 59), Json(true)).Success, "59-character preference key was rejected.");
+        foreach (string key in new[] { new string('k', 60), new string('k', 64), "", "a/b", "..", "主题", "a\n", "a:stream" })
+            Assert(store.ReadPreference(key).ErrorCode == "INVALID_PARAMS" && store.WritePreference(key, Json(1)).ErrorCode == "INVALID_PARAMS", "Invalid logical preference key accepted.");
+        foreach (string key in new[] { "CON", "prn", "AUX", "nul", "COM1", "LPT9" })
+            Assert(store.WritePreference(key, Json(key)).Success && store.ReadPreference(key).Value!.Value.GetString() == key
+                && store.WritePrivate(key, [1]).ErrorCode == "INVALID_PARAMS", "Safe encoded preference/device-name contract changed.");
+    });
+    private static void PreferenceConcurrent() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); SeedLegacyPreference(root, scope, "theme", "\"old\""u8.ToArray());
+        using var entered = new ManualResetEventSlim(); using var resume = new ManualResetEventSlim();
+        var migrating = new AccountDataStore(root, scope, _ => true, testHooks: new(point =>
+        {
+            if (point != StorageWritePoint.AfterStagingFlush) return;
+            entered.Set(); if (!resume.Wait(TimeSpan.FromSeconds(10))) throw new IOException("Concurrent test timeout.");
+        }));
+        Task<DataResult<JsonElement?>> reading = Task.Run(() => migrating.ReadPreference("theme"));
+        var writer = new AccountDataStore(root, scope, _ => true);
+        try
+        {
+            Assert(entered.Wait(TimeSpan.FromSeconds(10)), "Migration did not enter its critical section.");
+            Assert(!writer.WritePrivate("pref_theme", "\"new\""u8.ToArray()).Success, "Private writer bypassed migration's account lock.");
+        }
+        finally { resume.Set(); }
+        Assert(reading.GetAwaiter().GetResult().Value!.Value.GetString() == "old", "Concurrent migration lost old preference.");
+        Assert(writer.WritePrivate("pref_theme", "\"new\""u8.ToArray()).Success && writer.ReadPreference("theme").Value!.Value.GetString() == "old", "Retried private writer crossed namespaces.");
+    });
+    private static void PreferenceUnsafePaths() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); var store = new AccountDataStore(root, scope, _ => true); Assert(store.WritePreference("theme", Json(1)).Success, "Preference setup failed.");
+        string path = PreferencePath(root, scope, "theme"); File.Delete(path); Directory.CreateDirectory(path);
+        Assert(store.ReadPreference("theme").ErrorCode == "STORAGE_UNSAFE_PATH" && store.WritePreference("theme", Json(2)).ErrorCode == "STORAGE_UNSAFE_PATH", "Directory masqueraded as preference data.");
+        if (!OperatingSystem.IsWindows())
+        {
+            Directory.Delete(path); string outside = Path.Combine(root.InstallationDirectory, "external.json"); File.WriteAllText(outside, "3"); File.CreateSymbolicLink(path, outside);
+            Assert(store.ReadPreference("theme").ErrorCode == "STORAGE_UNSAFE_PATH" && store.WritePreference("theme", Json(4)).ErrorCode == "STORAGE_UNSAFE_PATH"
+                && File.ReadAllText(outside) == "3", "Preference symlink escaped the managed directory.");
+        }
+    });
     private static void Isolated() => InTemp(root =>
     {
         var a = new AccountDataStore(root, Scope("verified-issuer:subject-A"), _ => true);

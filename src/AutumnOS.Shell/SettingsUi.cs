@@ -50,6 +50,12 @@ public sealed partial class MainWindow
 
     private void RefreshSettingsState()
     {
+        var logStatus = new AutumnOS.Storage.StructuredLog(installationRoot).Status;
+        DiagnosticLogStatusText.Text = logStatus.IsRecordingStopped
+            ? $"诊断日志最近写入失败（{logStatus.LastErrorCode}），新事件可能缺失。累计失败 {logStatus.FailedWrites} 次；后续事件将自动重试。请检查数据目录写入权限与磁盘空间。"
+            : logStatus.FailedWrites > 0
+                ? $"诊断日志已恢复写入，历史失败 {logStatus.FailedWrites} 次。日志保留当前文件和两份轮转文件，每份最多 1 MiB。"
+                : "诊断日志保留当前文件和两份轮转文件，每份最多 1 MiB；诊断导出仅包含每来源最近 200 条白名单有效事件。";
         DesktopApplicationsSummary.Text = installedSample is { } installed
             ? $"设置 · 系统应用\n{installed.Manifest.Name} · {installed.Manifest.Version} · 已安装\n游戏状态：{(HasLiveGame ? "运行中" : "未运行")}"
             : "设置 · 系统应用\n当前没有已验证的游戏入口。";

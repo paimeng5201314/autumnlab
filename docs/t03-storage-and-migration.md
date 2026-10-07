@@ -8,6 +8,8 @@
 
 普通数据位置为 `AutumnOS_Data/Saves/<appId>/<sourceKey>/<account>/` 与 `AppData/<appId>/<sourceKey>/<account>/`；账号目录为稳定命名空间的 SHA-256，原始身份值不进入文件路径。WebView Cookie/localStorage/IndexedDB 等隔离由 Shell 的对应账号配置目录承担；这里的存档目录隔离不能代替浏览器隔离。
 
+偏好使用独立 `AppData/<appId>/<sourceKey>/Preferences/<account>/` 目录，逻辑键仍限 1–59 位 ASCII 字母、数字、`-`、`_`，文件名由宿主安全编码。普通 storage 的 `pref_` 前缀不再用于选择偏好目录。首次偏好访问或对 `pref_` 私有键的变更先完成旧记录迁移：逐字节复制到新目录并保留原文件，最后写完成标记；偏好读取再验证 JSON。迁移目标冲突时停止，损坏 JSON 保留副本并明确报错，不直接删除原记录；已完成迁移后两种 API 可独立使用同名 key。
+
 旧的受控样例允许由宿主明确指定 `allowLegacyGuest:true`，保留 `Saves/<appId>/guest/game.json`。v1 记录只读时不迁移、不改写；第一次实际新保存升级到 v2 并将原始 v1 字节留在 `.bak`。其他应用来源不应获得此兼容开关。
 
 每个服务固定一个实例、账号及代次。`isCurrent(scope)` 在操作开始和提交前验证。`commitLease` 必须同时覆盖 Runtime 关闭和账号代次切换的同步锁；在该租约中再次验证，然后执行原子替换。单独的布尔检查不能消除切换竞争。宿主先取消旧事务并关闭相关 WebView，再切换身份；不在锁内触发任意事件/取消回调，句柄撤销也在 Runtime 关闭锁释放后执行，避免锁顺序反转。
@@ -27,8 +29,12 @@
 | `ReadPrivate(key, ct)` | 逻辑键 → bytes/null | SDK `storage`；最多 1 MiB/文件 |
 | `WritePrivate(key, bytes, ct)` | 键、内容 → bool | SDK `storage`；有备份的原子替换 |
 | `DeletePrivate(key, ct)` | 键 → 是否存在 | 仅该键移至 `.bak`；不删除存档、凭据、浏览器缓存或应用 |
+| `ReadPreference(key, ct)` | 偏好键 → `JsonElement?` | SDK `storage`；独立目录、兼容旧记录，损坏时保留字节 |
+| `WritePreference(key, value, ct)` | 偏好键、JSON → bool | SDK `storage`；原子提交，拒绝覆盖损坏记录与迁移冲突 |
 
 槽位和私有键仅接受 1–64 个 ASCII 字母、数字、`-`、`_`，拒绝磁盘路径、斜杠、ADS 冒号、点号以及 Windows 设备名。默认每账号/来源最多 32 个槽位、128 个私有文件、总计 16 MiB。总配额包含备份、恢复记录和本次暂存所需空间，满时拒绝新写而不清理原数据。SDK 的消息大小上限仍生效，因此单次可传数据可能低于存储服务的上限。
+
+SDK 适配层对 saves.write 与 preferences.set 在提交前检查完整未来读取响应的 32768 UTF-8 字节预算，包括最坏 requestId 与 JSON 包装；超限返回 `RESPONSE_TOO_LARGE`。storage.write 解码后上限 20 KiB，与读取适配一致，超出返回 `FILE_TOO_LARGE`。这些约束不改变更高的宿主内部磁盘配额。`PREFERENCE_CORRUPT` 表示偏好 JSON 无效，`PREFERENCE_MIGRATION_CONFLICT` 表示旧记录与新目标冲突；均保留旧数据供检查，不能以空值覆盖。
 
 写入取得共享 `CriticalOperationCoordinator` 的关键写租约，并取得该账号目录的独占文件锁。先写唯一暂存文件、`Flush(true)`，再在会话租约内 `File.Replace` 或无覆盖 `File.Move` 提交。失败只清理本次未提交暂存，不删除原记录。相同 JSON 与格式版本重复保存返回成功且保留修订、备份、字节不变。并发保存可以返回 `STORAGE_BUSY`，调用者退避后重试；不要盲目循环。在途取消只在提交前有效；提交后收到取消不意味着原子提交已回滚，调用方应重新读取。
 

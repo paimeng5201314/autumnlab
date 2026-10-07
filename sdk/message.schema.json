@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:autumnos:schema:message:1",
   "title": "AutumnOS SDK protocol 1 · T03 extension",
-  "description": "Requests are at most 32768 UTF-8 bytes, JSON depth 32, no duplicate keys. Identity is host-bound, never a request property. Apply the method-specific parameter/result definitions in addition to the envelope.",
+  "description": "Requests and complete success responses are at most 32768 UTF-8 bytes, JSON depth 32, no duplicate keys. Before saves.write/preferences.set commit, the host serializes the full read response with a 64-character requestId; RESPONSE_TOO_LARGE rejects values that cannot be read back. Budgets count actual JSON escaping and UTF-8 bytes, not string length, and are enforced by the host in addition to this schema. Identity is host-bound, never a request property. Apply the method-specific parameter/result definitions in addition to the envelope.",
   "oneOf": [
     {
       "$ref": "#/$defs/request"
@@ -1014,6 +1014,7 @@
       }
     },
     "privateWriteParams": {
+      "description": "The host accepts at most 20480 decoded bytes, matching storage.read. Base64 syntax and decoded size require runtime validation; contentEncoding alone is only an annotation. Larger writes return FILE_TOO_LARGE before modifying existing data.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1034,6 +1035,7 @@
       }
     },
     "preferenceReadParams": {
+      "description": "Preferences have a separate physical namespace from storage. Logical keys remain 1–59 ASCII letters, digits, underscores or hyphens; device names such as CON are safe because filenames are host-encoded. Legacy pref_ files are preserved during one-time migration. Corrupt values fail with PREFERENCE_CORRUPT.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -1049,6 +1051,7 @@
       }
     },
     "preferenceWriteParams": {
+      "description": "The complete future read response must fit the 32768-byte UTF-8 bridge budget with a maximum-length requestId. The host checks before writing and preserves the previous value on rejection.",
       "type": "object",
       "additionalProperties": false,
       "required": [

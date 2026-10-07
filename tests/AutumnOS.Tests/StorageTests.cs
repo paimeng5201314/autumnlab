@@ -25,7 +25,12 @@ public static class StorageTests
         yield return ("storage.busy_checkpoint_is_retryable", BusyCheckpoint);
         yield return ("storage.readonly_checkpoint_preserves_bytes", ReadOnlyCheckpoint);
         yield return ("storage.diagnostics_accepts_only_known_fields", SafeDiagnostics);
-        yield return ("storage.diagnostics_capacity_preserves_existing_log", BoundedDiagnostics);
+        yield return ("storage.diagnostics_rotates_and_bounds_retained_history", BoundedDiagnostics);
+        yield return ("storage.diagnostics_failed_rotation_preserves_log_and_reports_recovery", DiagnosticFailures);
+        yield return ("storage.diagnostics_preserves_unexpected_oversized_input", OversizedDiagnostics);
+        yield return ("storage.diagnostics_serializes_concurrent_logger_instances", ConcurrentDiagnostics);
+        if (!OperatingSystem.IsWindows())
+            yield return ("storage.diagnostics_rejects_linked_rotation_target", LinkedDiagnosticRotation);
         if (OperatingSystem.IsWindows())
         {
             yield return ("storage.windows_acl_write_denial_is_recoverable", WindowsWriteDenial);
@@ -220,10 +225,74 @@ public static class StorageTests
     {
         Assert(root.EnsureCreated().Success, "Setup must initialize.");
         string path = Path.Combine(root.Directories["Logs"], "diagnostics.jsonl");
-        byte[] full = new byte[1024 * 1024];
-        File.WriteAllBytes(path, full);
-        Assert(new StructuredLog(root).Write(DiagnosticEvent.ShellOpened).ErrorCode == StorageErrors.LogFull, "Capacity limit must be explicit.");
-        Assert(File.ReadAllBytes(path).SequenceEqual(full), "Capacity rejection must preserve existing logs.");
+        StructuredLog logger = new(root);
+        for (int generation = 1; generation <= 4; generation++)
+        {
+            byte[] full = Enumerable.Repeat((byte)generation, StructuredLog.MaximumLogBytes).ToArray();
+            File.WriteAllBytes(path, full);
+            Guid correlation = Guid.NewGuid();
+            Assert(logger.Write(DiagnosticEvent.ShellOpened, correlationId: correlation).Success, "A full log must rotate and record the new event.");
+            using JsonDocument latest = JsonDocument.Parse(File.ReadAllText(path));
+            Assert(latest.RootElement.GetProperty("correlationId").GetGuid() == correlation, "The triggering event must reach the new active file.");
+            Assert(File.ReadAllBytes(Path.Combine(root.Directories["Logs"], "diagnostics.1.jsonl")).SequenceEqual(full), "The previous full log must be preserved as the newest rotation.");
+            if (generation > 1)
+                Assert(File.ReadAllBytes(Path.Combine(root.Directories["Logs"], "diagnostics.2.jsonl")).All(value => value == generation - 1), "Only the two most recent complete rotations must remain.");
+        }
+        var files = Directory.GetFiles(root.Directories["Logs"]);
+        Assert(files.Length == 3 && files.All(file => new FileInfo(file).Length <= StructuredLog.MaximumLogBytes), "Log file count and individual size must remain bounded.");
+        Assert(logger.Status.Rotations == 4 && logger.Status.FailedWrites == 0 && !logger.Status.IsRecordingStopped, "Healthy rotation must be observable.");
+    });
+
+    private static void DiagnosticFailures() => InTemp((root, _) =>
+    {
+        Assert(root.EnsureCreated().Success, "Setup must initialize.");
+        string path = Path.Combine(root.Directories["Logs"], "diagnostics.jsonl");
+        byte[] full = new byte[StructuredLog.MaximumLogBytes]; File.WriteAllBytes(path, full);
+        string conflict = Path.Combine(root.Directories["Logs"], "diagnostics.2.jsonl"); Directory.CreateDirectory(conflict);
+        StructuredLog logger = new(root);
+        Assert(logger.Write(DiagnosticEvent.ShellOpened).ErrorCode == StorageErrors.PathConflict, "Unsafe rotation target must reject the write.");
+        Assert(new StructuredLog(root).Write(DiagnosticEvent.StartupDataReady).ErrorCode == StorageErrors.PathConflict, "Failures must accumulate across short-lived logger instances.");
+        DiagnosticLogStatus stopped = new StructuredLog(root).Status;
+        Assert(stopped.FailedWrites == 2 && stopped.ConsecutiveFailures == 2 && stopped.IsRecordingStopped && stopped.LastFailureUtc is not null && stopped.LastErrorCode == StorageErrors.PathConflict,
+            "Dropped writes must report an actionable safe status.");
+        Assert(File.ReadAllBytes(path).SequenceEqual(full) && !File.Exists(Path.Combine(root.Directories["Logs"], "diagnostics.1.jsonl")), "Rejected rotation must preserve its inputs.");
+        Directory.Delete(conflict);
+        Assert(logger.Write(DiagnosticEvent.ShellOpened).Success, "Writing must recover after removing the conflict.");
+        Assert(logger.Status.FailedWrites == 2 && logger.Status.ConsecutiveFailures == 0 && !logger.Status.IsRecordingStopped && logger.Status.LastFailureUtc == stopped.LastFailureUtc,
+            "Recovery must clear the stopped state while preserving failure evidence.");
+    });
+
+    private static void OversizedDiagnostics() => InTemp((root, _) =>
+    {
+        Assert(root.EnsureCreated().Success, "Setup must initialize.");
+        string path = Path.Combine(root.Directories["Logs"], "diagnostics.jsonl");
+        byte[] oversized = new byte[StructuredLog.MaximumLogBytes + 1]; File.WriteAllBytes(path, oversized);
+        StructuredLog logger = new(root);
+        Assert(logger.Write(DiagnosticEvent.ShellOpened).ErrorCode == StorageErrors.LogFull && logger.Status.FailedWrites == 1, "Unexpected oversized input must be reported without unbounded retention.");
+        Assert(File.ReadAllBytes(path).SequenceEqual(oversized), "Unexpected oversized input must not be truncated or deleted.");
+    });
+
+    private static void ConcurrentDiagnostics() => InTemp((root, _) =>
+    {
+        Assert(root.EnsureCreated().Success, "Setup must initialize.");
+        Parallel.For(0, 64, _ => Assert(new StructuredLog(root).Write(DiagnosticEvent.ShellOpened).Success, "Concurrent diagnostic writes must serialize."));
+        string[] lines = File.ReadAllLines(Path.Combine(root.Directories["Logs"], "diagnostics.jsonl"));
+        Guid[] ids = lines.Select(line => { using JsonDocument value = JsonDocument.Parse(line); return value.RootElement.GetProperty("correlationId").GetGuid(); }).ToArray();
+        Assert(lines.Length == 64 && ids.Distinct().Count() == 64, "Concurrent writes must remain complete distinct records.");
+    });
+
+    private static void LinkedDiagnosticRotation() => InTemp((root, scope) =>
+    {
+        Assert(root.EnsureCreated().Success, "Setup must initialize.");
+        string outside = Path.Combine(scope, "outside.log"); File.WriteAllText(outside, "preserve-external-data");
+        string link = Path.Combine(root.Directories["Logs"], "diagnostics.1.jsonl"); File.CreateSymbolicLink(link, outside);
+        try
+        {
+            StructuredLog logger = new(root);
+            Assert(logger.Write(DiagnosticEvent.ShellOpened).ErrorCode == StorageErrors.UnsafePath && logger.Status.FailedWrites == 1, "Linked rotation targets must be rejected and counted.");
+            Assert(File.ReadAllText(outside) == "preserve-external-data", "Linked external data must not change.");
+        }
+        finally { File.Delete(link); }
     });
 
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]

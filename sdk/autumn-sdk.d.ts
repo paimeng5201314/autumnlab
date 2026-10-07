@@ -51,12 +51,16 @@ export interface SdkMethods {
   "identity.requestProfile": { params: Record<string, never>; result: Profile };
   "saves.list": { params: Record<string, never>; result: { slots: SaveSlot[] } };
   "saves.read": { params: { slot: string }; result: { exists: boolean; value: JsonValue } };
+  /** Host checks the complete future read response (UTF-8, 32768 bytes, 64-character requestId) before committing. */
   "saves.write": { params: { slot: string; value: JsonValue; formatVersion?: number }; result: { saved: true } };
   "saves.restore": { params: { slot: string }; result: { restored: true } };
   "storage.read": { params: { key: string }; result: { exists: boolean; data: string | null; encoding: "base64" } };
+  /** Base64 decoded bytes must be <= 20 KiB, matching storage.read; larger writes leave existing bytes intact. */
   "storage.write": { params: { key: string; data: string }; result: { written: true } };
   "storage.delete": { params: { key: string }; result: { deleted: boolean } };
+  /** Separate from storage; keys are 1–59 ASCII letters, digits, underscores or hyphens. */
   "preferences.get": { params: { key: string }; result: { exists: boolean; value: JsonValue } };
+  /** Same write-before-read response budget as saves.write; corruption is reported as PREFERENCE_CORRUPT. */
   "preferences.set": { params: { key: string; value: JsonValue }; result: { saved: true } };
   "files.pickOpen": { params: Record<string, never>; result: FileCapability };
   "files.pickSave": { params: Record<string, never>; result: FileCapability };

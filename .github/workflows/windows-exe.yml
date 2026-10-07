@@ -1,0 +1,105 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_version:
+        description: Internal build version
+        default: 0.5.1-local.5
+        required: true
+      release_label:
+        description: Version displayed in the application
+        default: meta0.0.2-20261007
+        required: true
+  push:
+    branches:
+      - 'codex/windows-exe-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-exe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 90
+    env:
+      AUTUMN_BUILD_ID: T06-actions-${{ github.run_id }}-${{ github.run_attempt }}
+      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1-local.5' }}
+      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'meta0.0.2-20261007' }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      POWERSHELL_TELEMETRY_OPTOUT: '1'
+    steps:
+      - name: Check out the exact build source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.19.0
+
+      - name: Prepare the pinned local SDK and PowerShell
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/Install-LocalSdk.ps1
+          New-Item -ItemType Directory -Force .tools/nuget-feed | Out-Null
+          $env:DOTNET_ROOT = Join-Path $PWD '.tools/dotnet'
+          $env:DOTNET_CLI_HOME = Join-Path $PWD '.tools/dotnet-home'
+          $env:NUGET_PACKAGES = Join-Path $PWD '.tools/nuget/packages'
+          $env:PATH = $env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH
+          & ./.tools/dotnet/dotnet.exe tool install PowerShell --version 7.6.6 --tool-path .tools/pwsh-ci --add-source https://api.nuget.org/v3/index.json
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned PowerShell installation failed.' }
+
+      - name: Build, test and package the single EXE
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:DOTNET_ROOT = Join-Path $PWD '.tools/dotnet'
+          $env:PATH = $env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH
+          & ./.tools/pwsh-ci/pwsh.exe -NoLogo -NoProfile -NonInteractive -File ./scripts/Build-SingleFile.ps1 -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL -SkipNativeSmoke
+          if ($LASTEXITCODE -ne 0) { throw "Windows EXE pipeline failed: $LASTEXITCODE" }
+
+      - name: Upload the EXE and its identity
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: AutumnOS-${{ env.AUTUMN_RELEASE_LABEL }}-win-x64
+          path: |
+            artifacts/single-file/${{ env.AUTUMN_BUILD_ID }}/AutumnOS.exe
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/package-single-file.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/source-snapshot.json
+            artifacts/build-pipelines/${{ env.AUTUMN_BUILD_ID }}/pipeline.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Preserve build and test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Windows-build-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/**/*.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/**/*.log
+            artifacts/build-pipelines/${{ env.AUTUMN_BUILD_ID }}/**/*.json
+            artifacts/build-pipelines/${{ env.AUTUMN_BUILD_ID }}/**/*.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Record the validation boundary
+        if: always()
+        shell: pwsh
+        run: |
+          @"
+          Build: $env:AUTUMN_BUILD_ID
+          Source commit: $env:GITHUB_SHA
+          Download the EXE from this run's Artifacts when the build job succeeds.
+          Native interactive smoke tests: not_run_ci_no_interactive_desktop.
+          This job does not publish a GitHub Release or sign the EXE with Authenticode.
+          "@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY

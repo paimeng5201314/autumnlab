@@ -45,7 +45,7 @@ if (args.Contains("--probe-logto"))
 }
 
 var cases = StorageTests.Cases().Concat(DesktopPreferencesTests.Cases()).Concat(DesktopLayoutTests.Cases()).Concat(IdentityTests.Cases()).Concat(RuntimeTests.Cases()).Concat(PackageTests.Cases()).Concat(ContractCases());
-cases = cases.Concat(ScopedStorageTests.Cases()).Concat(T03RuntimeTests.Cases());
+cases = cases.Concat(ScopedStorageTests.Cases()).Concat(T03RuntimeTests.Cases()).Concat(DataBridgeTests.Cases());
 cases = cases.Concat(MaintenanceTests.Cases());
 cases = cases.Concat(SupportBundleTests.Cases());
 cases = cases.Concat(PortableLayoutTests.Cases());
@@ -55,6 +55,20 @@ if (OperatingSystem.IsWindows()) cases = cases.Concat(UpdateProtocolTests.Cases(
 cases = cases.Concat(ServerIdentityTests.Cases()).Concat(DeveloperToolsTests.Cases()).Concat(PackageDesktopTests.Cases());
 cases = cases.Concat(StoreCatalogTests.Cases()).Concat(StoreDownloadTests.Cases()).Concat(StoreInstallTests.Cases()).Concat(StoreCoordinatorTests.Cases());
 if (OperatingSystem.IsWindows()) cases = cases.Concat(LauncherTests.Cases()).Concat(IdentitySessionTests.Cases()).Concat(IdentityProtocolTests.Cases());
+int filterIndex = Array.IndexOf(args, "--filter");
+string[] filters = [];
+if (filterIndex >= 0)
+{
+    if (filterIndex + 1 >= args.Length || args[filterIndex + 1].StartsWith("--", StringComparison.Ordinal)
+        || string.IsNullOrWhiteSpace(args[filterIndex + 1]))
+    {
+        Console.Error.WriteLine("--filter requires one or more comma-separated test-name prefixes.");
+        return 2;
+    }
+    filters = args[filterIndex + 1].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    if (filters.Length == 0) return 2;
+    cases = cases.Where(test => filters.Any(prefix => test.Name.StartsWith(prefix, StringComparison.Ordinal)));
+}
 var results = new List<object>();
 var failed = 0;
 foreach (var (name, run) in cases)
@@ -75,7 +89,7 @@ foreach (var (name, run) in cases)
 }
 var document = new { schema_version = 1, task_id = BrandInfo.BuildId.StartsWith("T06-", StringComparison.Ordinal) ? "T06" : "T05", source_snapshot_id = BrandInfo.SourceSnapshotId,
     build_id = BrandInfo.BuildId, executed_utc = DateTimeOffset.UtcNow, environment = Environment.OSVersion.VersionString,
-    status = failed == 0 ? "passed" : "failed", total = results.Count, failed, results };
+    status = failed == 0 && results.Count > 0 ? "passed" : "failed", total = results.Count, failed, filters, results };
 var outputIndex = Array.IndexOf(args, "--report");
 if (outputIndex >= 0 && outputIndex + 1 < args.Length)
 {
@@ -84,7 +98,8 @@ if (outputIndex >= 0 && outputIndex + 1 < args.Length)
     File.WriteAllText(path, JsonSerializer.Serialize(document, new JsonSerializerOptions { WriteIndented = true }));
 }
 Console.WriteLine($"{results.Count - failed}/{results.Count} passed");
-return failed == 0 ? 0 : 1;
+if (results.Count == 0) Console.Error.WriteLine("No tests matched; this run did not validate the workflow.");
+return failed == 0 && results.Count > 0 ? 0 : 1;
 
 static IEnumerable<(string Name, Action Run)> ContractCases()
 {

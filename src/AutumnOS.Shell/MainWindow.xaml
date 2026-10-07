@@ -168,7 +168,7 @@
               <TextBlock Text="你的桌面" FontSize="20" FontWeight="SemiBold"/>
               <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="18" Padding="24"><StackPanel Spacing="12"><TextBlock Text="应用" FontSize="15" FontWeight="SemiBold"/><TextBlock x:Name="DesktopApplicationsSummary" TextWrapping="Wrap" LineHeight="26" AutomationProperties.AutomationId="DesktopApplicationsSummary"/></StackPanel></Border>
               <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="18" Padding="24"><StackPanel Spacing="12"><TextBlock Text="Dock" FontSize="15" FontWeight="SemiBold"/><TextBlock x:Name="DockApplicationsSummary" TextWrapping="Wrap" LineHeight="26"/></StackPanel></Border>
-              <TextBlock Text="此检查点使用固定图标布局。运行中的游戏会显示状态标记，双击图标可继续或结束游戏。布局编辑尚未提供。" TextWrapping="Wrap" Opacity="0.65" LineHeight="24"/>
+              <TextBlock Text="拖动桌面图标可调整三列网格中的顺序，也可通过长按、右键或 Shift+F10 菜单选择向前移动／向后移动；位置保存后会在下次启动时保留。单击图标可打开或继续应用，双击桌面空白处或按 F6 可查看正在运行的应用并选择继续／结束。文件夹、多桌面、完整搜索、自定义 Dock 和抖动编辑尚未提供；拖动到边缘不会自动滚动。" TextWrapping="Wrap" Opacity="0.65" LineHeight="24"/>
             </StackPanel>
           </ScrollViewer>
           <ScrollViewer x:Name="NotificationsDetails" Visibility="Collapsed" HorizontalScrollMode="Disabled" HorizontalContentAlignment="Stretch">
@@ -203,6 +203,7 @@
               <StackPanel x:Name="RecoveryContent" Spacing="8"/>
               <Button x:Name="SupportExportButton" Content="导出脱敏诊断包" Click="OnExportSupportBundle" AutomationProperties.AutomationId="SupportExportButton"/>
               <TextBlock x:Name="SupportExportStatus" TextWrapping="Wrap" AutomationProperties.AutomationId="SupportExportStatus"/>
+              <TextBlock x:Name="DiagnosticLogStatusText" TextWrapping="Wrap" AutomationProperties.AutomationId="DiagnosticLogStatusText"/>
             <TextBlock Text="此处检查实际程序旁的数据目录与首启记录；已有应用和存档会保留。" TextWrapping="Wrap" FontSize="16" MaxWidth="690" HorizontalAlignment="Left" />
             <InfoBar x:Name="DataStatus" IsOpen="True" IsClosable="False" Title="正在检查本地数据空间" />
             <TextBlock x:Name="DataPath" FontSize="12" IsTextSelectionEnabled="True" TextWrapping="Wrap" />

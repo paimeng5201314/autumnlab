@@ -6,7 +6,7 @@
 
 只在内部受控 WebView 中调用 `window.autumn`。每条请求仅包含 protocolVersion/requestId/method/params；实例、账号、代次、安装来源由宿主绑定。禁止 appId/userId/sessionEpoch/path 等额外定位字段。所有列出的参数对象拒绝额外字段。未接入的 `identity.beginAppSession`、网络能力、外部协议等返回 CAPABILITY_UNAVAILABLE，不模拟成功。
 
-最大请求 32768 UTF-8 字节，深度 32；T03 响应也限制 32768 字节，超限 RESPONSE_TOO_LARGE。每实例最多 16 个挂起请求、滚动一分钟 120 次，默认宿主超时 30 秒；宿主可配置至 120 秒。SDK `timeoutMs` 为 1–120000，只停止调用者本地等待；AbortSignal 同样不撤销已经提交的写入。切换账号、关闭应用、宿主超时取消实际宿主工作。调用者收到 TIMEOUT/USER_CANCELLED 后要读取实际状态，不盲目重试写入。
+最大请求 32768 UTF-8 字节，深度 32；响应也限制 32768 字节，超限 RESPONSE_TOO_LARGE。本次修订的桥接 JSON 使用 UTF-8 友好编码，仅通过 PostWebMessageAsJson 发送，不拼入 HTML/可执行脚本；saves.write 与 preferences.set 在提交前按完整未来读取响应（含最坏 64 字符 requestId）预检预算，拒绝时保留旧数据。每实例最多 16 个挂起请求、滚动一分钟 120 次，默认宿主超时 30 秒；宿主可配置至 120 秒。SDK `timeoutMs` 为 1–120000，只停止调用者本地等待；AbortSignal 同样不撤销已经提交的写入。切换账号、关闭应用、宿主超时取消实际宿主工作。调用者收到 TIMEOUT/USER_CANCELLED 后要读取实际状态，不盲目重试写入。
 
 SDK 单调 BigInt ID 不设累计 4096 限制；宿主保留最多 2048 个待处理及近期已完成 ID，完成后去重十分钟，窗口到期不保证 exactly-once。保存是原子替换，不代表多次业务点击天然幂等；应用应自己保存业务操作 ID，重试前读回确认。通知另有下述有限去重。
 
@@ -54,9 +54,9 @@ try {
 | preferences.get | `{key}` | `{exists,value}` |
 | preferences.set | `{key,value}` | `{saved:true}` |
 
-saves.* 需要 saves；storage.* 与 preferences.* 需要 storage。普通逻辑键/槽位为 1–64 个英数/下划线/连字符，不允许路径或 Windows 设备名；preferences 键上限 59（宿主使用 `pref_` 前缀）。应用内容格式版本为 1–1000000，与宿主记录 schema 版本分开；应用必须检查读出的格式并显式转换，修改版本数字不会自动转换内容。宿主可信迁移 API 与备份/回退见存储文档。
+saves.* 需要 saves；storage.* 与 preferences.* 需要 storage。普通逻辑键/槽位为 1–64 个英数/下划线/连字符，不允许路径或 Windows 设备名；preferences 键上限仍为 59，使用独立物理目录与安全文件名，因此逻辑 CON 等设备名仍可作为偏好键。旧私有存储中的 `pref_` 记录一次性迁移并保留字节，之后原始存储的同名 key 不覆盖偏好；损坏记录返回 PREFERENCE_CORRUPT，迁移冲突返回 PREFERENCE_MIGRATION_CONFLICT。应用内容格式版本为 1–1000000，与宿主记录 schema 版本分开；应用必须检查读出的格式并显式转换，修改版本数字不会自动转换内容。宿主可信迁移 API 与备份/回退见存储文档。
 
-读取文件的 SDK 适配上限为 20 KiB（为 base64 和信封预留空间）。私有存储内部还有 1 MiB/文件、16 MiB/账号应用、128 文件、32 槽位、128 KiB/存档等更高内部限额；这些不是允许通过 32 KiB 网关发送超限消息。大文件/分块协议未接入时明确报错，不返回截断内容。
+读取文件的 SDK 适配上限为 20 KiB（为 base64 和信封预留空间）；storage.write 同样限制解码后 20 KiB，超出返回 FILE_TOO_LARGE 并保留旧记录。私有存储内部还有 1 MiB/文件、16 MiB/账号应用、128 文件、32 槽位、128 KiB/存档等更高内部限额；这些不是允许通过 32 KiB 网关发送超限消息。大文件/分块协议未接入时明确报错，不返回截断内容。
 
 失败保留旧提交及安全备份。跨账号写入、过期代次、撤销后排队写入在最终提交前重新检查；提交期间持有权限/实例/身份租约及关键写入协调。这个写入协调是未来更新交接输入，不等于 T05 已完成。
 
