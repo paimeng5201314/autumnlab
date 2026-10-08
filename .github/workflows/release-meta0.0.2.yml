@@ -1,0 +1,109 @@
+name: Attach verified EXE to meta0.0.2 release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/publish-meta0.0.2-20261007]
+    paths:
+      - .github/workflows/release-meta0.0.2.yml
+      - scripts/Prepare-ReleaseAssets.py
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-meta0.0.2-20261007
+  cancel-in-progress: false
+
+jobs:
+  attach:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out the release tooling
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Verify the user-authored draft and successful source build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/406973009" > "$RUNNER_TEMP/release-before.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/37608567667" > "$RUNNER_TEMP/source-run.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          release = json.loads((root / 'release-before.json').read_text())
+          build = json.loads((root / 'source-run.json').read_text())
+          expected_sha = 'f83e005388701d2438c0e3e99a7be37114e337da'
+          assert release['draft'] is True, 'Only the intended draft may receive these attachments.'
+          assert release['author']['login'] == 'paimeng5201314'
+          assert release['tag_name'] == 'meta0.0.2-20261007'
+          assert release['target_commitish'] == expected_sha
+          assert release['prerelease'] is True
+          assert build['head_sha'] == expected_sha
+          assert build['status'] == 'completed' and build['conclusion'] == 'success'
+          assert build['run_attempt'] == 1
+          print('Draft author, source commit and successful build verified.')
+          PY
+
+      - name: Download the exact completed EXE artifact
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: '11476915941'
+          run-id: 37608567667
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/completed-exe
+
+      - name: Download the matching build and test evidence
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          artifact-ids: '11477035033'
+          run-id: 37608567667
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/completed-evidence
+
+      - name: Verify the EXE bytes and test evidence
+        run: |
+          python3 scripts/Prepare-ReleaseAssets.py \
+            --artifact-dir "$RUNNER_TEMP/completed-exe" \
+            --evidence-dir "$RUNNER_TEMP/completed-evidence" \
+            --output-dir "$RUNNER_TEMP/release-assets"
+
+      - name: Attach the verified assets without replacing existing files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          repo = os.environ['GITHUB_REPOSITORY']
+          root = Path(os.environ['RUNNER_TEMP']) / 'release-assets'
+          names = ('AutumnOS.exe', 'SHA256SUMS.txt', 'build-info.json')
+          def release():
+              return json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/releases/406973009']))
+          for name in names:
+              current = release()
+              assert current['draft'] and current['tag_name'] == 'meta0.0.2-20261007'
+              assert current['author']['login'] == 'paimeng5201314'
+              path = root / name
+              with path.open('rb') as stream:
+                  digest = 'sha256:' + hashlib.file_digest(stream, 'sha256').hexdigest()
+              existing = [a for a in current['assets'] if a['name'] == name]
+              if existing:
+                  assert len(existing) == 1
+                  assert existing[0]['state'] == 'uploaded' and existing[0]['digest'] == digest
+                  assert existing[0]['size'] == path.stat().st_size
+              else:
+                  subprocess.run(['gh', 'release', 'upload', 'meta0.0.2-20261007', str(path), '--repo', repo], check=True)
+              attached = [a for a in release()['assets'] if a['name'] == name]
+              assert len(attached) == 1 and attached[0]['state'] == 'uploaded'
+              assert attached[0]['digest'] == digest and attached[0]['size'] == path.stat().st_size
+              print(f'Verified uploaded asset: {name}; {digest}; {path.stat().st_size} bytes')
+          print('::notice title=Release attachments ready::Verified EXE and checksum assets attached; user-authored release remains a draft for final publication.')
+          PY
