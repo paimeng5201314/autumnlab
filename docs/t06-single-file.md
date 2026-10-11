@@ -26,4 +26,6 @@
 
 Win10/干净 OS/离线首次运行矩阵与新布局完整 A/B 更新回退仍须各自真实执行，不能因打包成功自动通过。原 T06/T03 未完成项、生产签名/许可证门禁及制作人审阅保留。旧包和源码保留，本轮无公共发布授权。
 
+开发套件位于展开后的实际程序目录 `AutumnOS_Data/System/Product-<20位摘要>/Developer`。CLI 的 `--host` 参数必须是运行中 `AutumnOS.Client.exe` 的所在目录；外层 EXE 目录、Data 根和 Developer 本身都不是该参数。多次准备或更新后可能保留多个 Product 目录，应从当前客户端进程定位。两种交付形态的完整创建/校验/打包/预览命令见 [0.5.1 第一个应用](versions/0.5.1/first-app.md)，产品说明见 [交付形态](versions/0.5.1/product.md)。
+
 官方部署参考：[.NET 单文件提取规则](https://learn.microsoft.com/en-us/dotnet/core/deploying/single-file/overview)、[WinUI 非打包自包含应用](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/unpackage-winui-app)、[Windows 的 .NET Framework 交付方式](https://learn.microsoft.com/en-us/dotnet/framework/install/on-windows-and-server)。实际可用结论以本机最终 EXE 的报告为准。

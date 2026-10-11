@@ -52,6 +52,47 @@ public static class SupportBundleTests
             var result = new SupportBundleService(root, new()).Export(output);
             Require(result.Events == 200 && result.OmittedRecords == 400 && File.ReadAllText(log) == content, "Unbounded or modified log.");
         }));
+        yield return ("support_bundle.retains_recent_valid_records_across_rotations", () => InRoot((root, output) =>
+        {
+            Guid Id(int index) => new(index, 0, 0, new byte[8]);
+            string Records(int first, int count) => "{malformed-secret}\n" + string.Concat(Enumerable.Range(first, count)
+                .Select(index => JsonSerializer.Serialize(new { eventId = "ShellOpened", correlationId = Id(index), token = "SECRET_ROTATED_TOKEN", path = root.DataDirectory }) + "\n"));
+            File.WriteAllText(Path.Combine(root.Directories["Logs"], "diagnostics.2.jsonl"), Records(0, 100));
+            File.WriteAllText(Path.Combine(root.Directories["Logs"], "diagnostics.1.jsonl"), Records(100, 100));
+            File.WriteAllText(Path.Combine(root.Directories["Logs"], "diagnostics.jsonl"), Records(200, 50));
+            var result = new SupportBundleService(root, new()).Export(output);
+            using JsonDocument events = ReadEntry(output, "events.json");
+            var records = events.RootElement.EnumerateArray().ToArray();
+            Require(result.Events == 200 && result.OmittedRecords == 53 && records.Select(item => item.GetProperty("correlationId").GetGuid()).SequenceEqual(Enumerable.Range(50, 200).Select(Id)),
+                "Retention must select the latest 200 valid records across rotations and current log together.");
+            string text = Read(output);
+            Require(text.Contains("diagnostics.2.jsonl") && text.Contains("diagnostics.1.jsonl") && !text.Contains("SECRET_ROTATED_TOKEN") && !text.Contains("malformed-secret") && !text.Contains(root.DataDirectory),
+                "Rotation metadata must be bounded and rotated sources must retain the privacy projection.");
+        }));
+        yield return ("support_bundle.includes_safe_process_log_failure_status", () => InRoot((root, output) =>
+        {
+            string conflict = Path.Combine(root.Directories["Logs"], "diagnostics.1.jsonl"); Directory.CreateDirectory(conflict);
+            Require(!new StructuredLog(root).Write(DiagnosticEvent.ShellOpened).Success, "Fixture must fail a real write.");
+            Directory.Delete(conflict);
+            new SupportBundleService(root, new()).Export(output);
+            using JsonDocument manifest = ReadEntry(output, "support.json");
+            JsonElement status = manifest.RootElement.GetProperty("diagnosticLogStatus");
+            Require(status.GetProperty("FailedWrites").GetInt64() == 1 && status.GetProperty("IsRecordingStopped").GetBoolean()
+                && status.GetProperty("LastErrorCode").GetString() == StorageErrors.PathConflict && !Read(output).Contains(root.DataDirectory),
+                "Support manifest must expose stopped logging without leaking paths or exception messages.");
+        }));
+        if (!OperatingSystem.IsWindows())
+            yield return ("support_bundle.rejects_linked_rotation_sources", () => InRoot((root, output) =>
+            {
+                string outside = Path.Combine(Path.GetDirectoryName(output)!, "private.log"); File.WriteAllText(outside, "private-data");
+                string link = Path.Combine(root.Directories["Logs"], "diagnostics.2.jsonl"); File.CreateSymbolicLink(link, outside);
+                try
+                {
+                    Reject(() => new SupportBundleService(root, new()).Export(output));
+                    Require(!File.Exists(output) && File.ReadAllText(outside) == "private-data", "Linked rotation source must not be read or changed.");
+                }
+                finally { File.Delete(link); }
+            }));
         yield return ("support_bundle.oversized_log_is_omitted_not_copied", () => InRoot((root, output) =>
         {
             File.WriteAllText(Path.Combine(root.Directories["Logs"], "diagnostics.jsonl"), new string('x', SupportBundleService.MaximumInputBytes + 1));
@@ -101,6 +142,12 @@ public static class SupportBundleTests
     {
         using ZipArchive zip = ZipFile.OpenRead(output);
         return string.Join("\n", zip.Entries.Select(entry => { using StreamReader reader = new(entry.Open()); return reader.ReadToEnd(); }));
+    }
+    private static JsonDocument ReadEntry(string output, string name)
+    {
+        using ZipArchive zip = ZipFile.OpenRead(output);
+        using Stream stream = (zip.GetEntry(name) ?? throw new InvalidOperationException("Missing archive entry.")).Open();
+        return JsonDocument.Parse(stream);
     }
     private static void Reject(Action action) { try { action(); } catch (IOException) { return; } throw new InvalidOperationException("Expected refusal."); }
     private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }

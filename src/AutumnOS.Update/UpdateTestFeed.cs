@@ -30,7 +30,12 @@ public sealed class UpdateTestFeed : IGitHubTransport
         GitHubTransport.ValidateSource(url, kind); cancellationToken.ThrowIfCancellationRequested();
         if (kind == GitHubRequestKind.Api)
         {
-            if (url.AbsolutePath != $"/repos/{UpdateService.Repository}/releases") throw new UpdateException("UPDATE_TEST_FEED_URL_REJECTED");
+            string releasesPath = $"/repos/{UpdateService.Repository}/releases";
+            bool latest = url.AbsolutePath == releasesPath + "/latest";
+            long releaseId = 0;
+            bool byId = url.AbsolutePath.StartsWith(releasesPath + "/", StringComparison.Ordinal) &&
+                long.TryParse(url.AbsolutePath[(releasesPath.Length + 1)..], out releaseId) && releaseId > 0;
+            if (url.AbsolutePath != releasesPath && !latest && !byId) throw new UpdateException("UPDATE_TEST_FEED_URL_REJECTED");
             int page = 1;
             foreach (string pair in url.Query.TrimStart('?').Split('&')) if (pair.StartsWith("page=", StringComparison.Ordinal) && !int.TryParse(pair[5..], out page)) throw new UpdateException("UPDATE_TEST_FEED_URL_REJECTED");
             if (page < 1) throw new UpdateException("UPDATE_TEST_FEED_URL_REJECTED");
@@ -38,7 +43,20 @@ public sealed class UpdateTestFeed : IGitHubTransport
             if (!File.Exists(path)) return new(HttpStatusCode.NotFound);
             if (new FileInfo(path).Length > 4 * 1024 * 1024) throw new UpdateException("UPDATE_TEST_FEED_TOO_LARGE");
             using var json = JsonDocument.Parse(await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false));
-            byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(json.RootElement.EnumerateArray().Skip((page - 1) * 100).Take(100).ToArray());
+            byte[] bytes;
+            if (latest || byId)
+            {
+                // A fixture opts into GitHub's Latest designation explicitly. Never infer
+                // production version precedence from list order, titles or release dates.
+                var matches = json.RootElement.EnumerateArray().Where(r => byId
+                    ? r.GetProperty("id").GetInt64() == releaseId
+                    : !r.GetProperty("draft").GetBoolean() && !r.GetProperty("prerelease").GetBoolean() &&
+                      r.TryGetProperty("fixture_latest", out var marked) && marked.GetBoolean()).ToArray();
+                if (matches.Length == 0) return new(HttpStatusCode.NotFound);
+                if (matches.Length != 1) throw new UpdateException("UPDATE_TEST_FEED_LATEST_AMBIGUOUS");
+                bytes = JsonSerializer.SerializeToUtf8Bytes(matches[0]);
+            }
+            else bytes = JsonSerializer.SerializeToUtf8Bytes(json.RootElement.EnumerateArray().Skip((page - 1) * 100).Take(100).ToArray());
             return Respond(new ByteArrayContent(bytes), Convert.ToHexStringLower(SHA256.HashData(bytes)), headers);
         }
         string prefix = $"/{UpdateService.Repository}/releases/download/";

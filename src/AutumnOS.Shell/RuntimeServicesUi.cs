@@ -130,30 +130,7 @@ public sealed partial class MainWindow
                         }
                     throw new RuntimeCapabilityException("FILE_HANDLE_INVALID");
                 }
-                return await Task.Run<object>(() =>
-                {
-                    switch (method)
-                    {
-                        case "saves.list": Exact(p); return new { slots = Require(Data().ListSlots(ct)) };
-                        case "saves.read": Exact(p, "slot"); var value = Require(Data().ReadSave(Text(p, "slot"), ct)); return new { exists = value.HasValue, value };
-                        case "saves.write":
-                            if (p.TryGetProperty("formatVersion", out var version)) { Exact(p, "slot", "value", "formatVersion"); Require(Data().WriteSave(Text(p, "slot"), p.GetProperty("value"), version.GetInt32(), ct)); }
-                            else { Exact(p, "slot", "value"); Require(Data().WriteSave(Text(p, "slot"), p.GetProperty("value"), 1, ct)); }
-                            return new { saved = true };
-                        case "saves.restore": Exact(p, "slot"); Require(Data().RestoreSave(Text(p, "slot"), ct)); return new { restored = true };
-                        case "storage.read":
-                            Exact(p, "key"); var raw = Require(Data().ReadPrivate(Text(p, "key"), ct));
-                            if (raw?.Length > 20 * 1024) throw new RuntimeCapabilityException("FILE_TOO_LARGE");
-                            return new { exists = raw is not null, data = raw is null ? null : Convert.ToBase64String(raw), encoding = "base64" };
-                        case "storage.write": Exact(p, "key", "data"); Require(Data().WritePrivate(Text(p, "key"), Convert.FromBase64String(Text(p, "data")), ct)); return new { written = true };
-                        case "storage.delete": Exact(p, "key"); return new { deleted = Require(Data().DeletePrivate(Text(p, "key"), ct)) };
-                        case "preferences.get":
-                            Exact(p, "key"); var saved = Require(Data().ReadPrivate("pref_" + Text(p, "key"), ct));
-                            return new { exists = saved is not null, value = saved is null ? (JsonElement?)null : JsonSerializer.Deserialize<JsonElement>(saved) };
-                        case "preferences.set": Exact(p, "key", "value"); Require(Data().WritePrivate("pref_" + Text(p, "key"), JsonSerializer.SerializeToUtf8Bytes(p.GetProperty("value")), ct)); return new { saved = true };
-                        default: throw new RuntimeCapabilityException("CAPABILITY_UNAVAILABLE");
-                    }
-                }, ct);
+                return await Task.Run(() => AccountDataRequestHandler.Handle(Data(), method, p, ct), ct);
             }
         };
     }

@@ -218,6 +218,126 @@ public static class IdentityTests
             Assert(!RegistrationStatusLoader.Parse(RegistrationJson.Replace("\"contains_secrets\":false", "\"contains_secrets\":true", StringComparison.Ordinal)).IsReadable, "Secret-bearing notes accepted.");
             Assert(!RegistrationStatusLoader.Parse("DO_NOT_ECHO").IsReadable, "Malformed notes accepted.");
         });
+        yield return ("Registration: shipped public configuration and notes remain readable without authentication", () =>
+        {
+            string directory = Path.Combine(AppContext.BaseDirectory, "config");
+            LogtoConfigurationResult configuration = LogtoConfigurationLoader.Load(Path.Combine(directory, "logto.public.json"));
+            Assert(configuration.IsValid, "Shipped public configuration is invalid.");
+            RegistrationStatusResult result = RegistrationStatusLoader.Load(
+                Path.Combine(directory, "logto.registration-status.json"), configuration.Options!.ClientId);
+            Assert(result.IsReadable && result.Code == "REGISTRATION_NOTES_ONLY", "Shipped registration notes were rejected.");
+            Assert(result.Status!.ApplicationId == configuration.Options.ClientId && !result.Status.IsAuthenticationEvidence,
+                "Shipped notes must match the public client and never establish authentication.");
+        });
+        yield return ("Registration: bounded history remains optional and never supersedes the current probe", () =>
+        {
+            foreach (int count in new[] { 0, 1, 32 })
+            {
+                string json = MutateRegistration(root =>
+                {
+                    JsonArray history = [];
+                    for (int index = 0; index < count; index++)
+                    {
+                        JsonObject entry = root["discovery_probe"]!.DeepClone().AsObject();
+                        entry["status"] = "historical_claim";
+                        entry["product_login_test_executed"] = true;
+                        history.Add(entry);
+                    }
+                    root["probe_history"] = history;
+                });
+                RegistrationStatusResult result = RegistrationStatusLoader.Parse(json);
+                Assert(result.IsReadable && result.Status!.DiscoveryProbeStatus == "not_verified", "History replaced the current probe.");
+                Assert(!result.Status!.ProductLoginTestExecuted && !result.Status.IsAuthenticationEvidence,
+                    "Historical login claims became current authentication evidence.");
+            }
+        });
+        foreach (string invalidHistory in new[] { "null", "{}", "false", "1", "\"DO_NOT_ECHO\"", "[null]", "[[]]", "[{}]" })
+        {
+            string invalid = invalidHistory;
+            yield return ($"Registration: rejects malformed history {StableLabel(invalid)}", () =>
+                InvalidRegistration(MutateRegistration(root => root["probe_history"] = JsonNode.Parse(invalid))));
+        }
+        foreach (string probeName in new[] { "discovery_probe", "probe_history" })
+        {
+            string target = probeName;
+            foreach (string field in new[] { "status", "attempted_read_only", "reason", "product_login_test_executed" })
+            {
+                string property = field;
+                yield return ($"Registration: {target} requires a correctly typed {property}", () =>
+                {
+                    InvalidRegistration(MutateRegistrationProbe(target, probe => probe.Remove(property)));
+                    InvalidRegistration(MutateRegistrationProbe(target, probe => probe[property] = null));
+                    InvalidRegistration(MutateRegistrationProbe(target, probe => probe[property] = new JsonObject()));
+                    InvalidRegistration(MutateRegistrationProbe(target, probe =>
+                        probe[property] = property is "status" or "reason" ? JsonValue.Create(false) : JsonValue.Create("true")));
+                });
+            }
+            yield return ($"Registration: {target} rejects unknown fields and unsafe or excessive text", () =>
+            {
+                InvalidRegistration(MutateRegistrationProbe(target, probe => probe["client_secret"] = "DO_NOT_ECHO"));
+                foreach (string invalid in new[] { "", new string('a', 129), "DO_NOT_ECHO\n", "https://example.org/" })
+                    InvalidRegistration(MutateRegistrationProbe(target, probe => probe["status"] = invalid));
+                foreach (string invalid in new[] { "", " ", new string('a', 4097), "DO_NOT_ECHO\u0000" })
+                    InvalidRegistration(MutateRegistrationProbe(target, probe => probe["reason"] = invalid));
+                Assert(RegistrationStatusLoader.Parse(MutateRegistrationProbe(target,
+                    probe => probe["reason"] = new string('a', 4096))).IsReadable, "Maximum-length note was rejected.");
+            });
+        }
+        yield return ("Registration: unknown root fields and duplicate history properties fail safely", () =>
+        {
+            InvalidRegistration(MutateRegistration(root => root["access_token"] = "DO_NOT_ECHO"));
+            string json = MutateRegistration(root => { });
+            InvalidRegistration(json.Replace("\"schema_version\":1", "\"schema_version\":1,\"schema_version\":1", StringComparison.Ordinal));
+            InvalidRegistration(json.Replace("\"probe_history\":[", "\"probe_history\":[],\"probe_history\":[", StringComparison.Ordinal));
+            InvalidRegistration(json.Replace("\"probe_history\":[{", "\"probe_history\":[{\"status\":\"DO_NOT_ECHO\",", StringComparison.Ordinal));
+            InvalidRegistration(RegistrationJson.Replace("\"attempted_read_only\":true",
+                "\"attempted_read_only\":false,\"attempted_read_only\":true", StringComparison.Ordinal));
+        });
+        yield return ("Registration: source notes and console change flag have bounded required types", () =>
+        {
+            foreach (string field in new[] { "pack_version", "public_values_source", "console_changes_performed" })
+            {
+                InvalidRegistration(MutateRegistration(root => root.Remove(field)));
+                InvalidRegistration(MutateRegistration(root => root[field] = null));
+                InvalidRegistration(MutateRegistration(root => root[field] = new JsonArray()));
+            }
+            InvalidRegistration(MutateRegistration(root => root["pack_version"] = new string('a', 129)));
+            InvalidRegistration(MutateRegistration(root => root["public_values_source"] = new string('a', 4097)));
+            InvalidRegistration(MutateRegistration(root => root["public_values_source"] = "DO_NOT_ECHO\n"));
+            InvalidRegistration(MutateRegistration(root => root["console_changes_performed"] = "false"));
+        });
+        yield return ("Registration: history count and total UTF-8 document size are bounded", () =>
+        {
+            InvalidRegistration(MutateRegistration(root =>
+            {
+                JsonArray history = root["probe_history"]!.AsArray();
+                for (int index = 1; index < 33; index++) history.Add(root["discovery_probe"]!.DeepClone());
+            }));
+            string oversized = MutateRegistration(root =>
+            {
+                JsonArray history = root["probe_history"]!.AsArray();
+                history.Clear();
+                for (int index = 0; index < 6; index++)
+                {
+                    JsonObject entry = root["discovery_probe"]!.DeepClone().AsObject();
+                    entry["reason"] = new string('\u4e2d', 4096);
+                    history.Add(entry);
+                }
+            }).Replace("\\u4E2D", "\u4e2d", StringComparison.Ordinal);
+            Assert(oversized.Length < 65536 && System.Text.Encoding.UTF8.GetByteCount(oversized) > 65536,
+                "Fixture must cross the byte limit without crossing the character limit.");
+            InvalidRegistration(oversized);
+            InvalidRegistration(RegistrationJson + new string(' ', 65536));
+            string path = Path.Combine(Path.GetTempPath(), "autumnos-registration-" + Guid.NewGuid().ToString("N") + ".json");
+            try
+            {
+                File.WriteAllText(path, oversized);
+                Assert(!RegistrationStatusLoader.Load(path).IsReadable, "Oversized notes loaded from disk.");
+                File.WriteAllBytes(path, [0xFF, 0xFE, 0xFF]);
+                Assert(!RegistrationStatusLoader.Load(path).IsReadable, "Invalid UTF-8 notes loaded from disk.");
+            }
+            finally { if (File.Exists(path)) File.Delete(path); }
+        });
     }
 
     private static LogtoPublicOptions Options() => LogtoConfigurationLoader.ValidateJson(PublicJson).Options!;
@@ -236,6 +356,19 @@ public static class IdentityTests
         return root.ToJsonString();
     }
 
+    private static string MutateRegistration(Action<JsonObject> mutate)
+    {
+        JsonObject root = JsonNode.Parse(RegistrationJson)!.AsObject();
+        root["probe_history"] = new JsonArray(root["discovery_probe"]!.DeepClone());
+        mutate(root);
+        return root.ToJsonString();
+    }
+
+    private static string MutateRegistrationProbe(string target, Action<JsonObject> mutate) =>
+        MutateRegistration(root => mutate(target == "discovery_probe"
+            ? root["discovery_probe"]!.AsObject()
+            : root["probe_history"]![0]!.AsObject()));
+
     private static string StableLabel(string text) =>
         Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text)))[..8];
 
@@ -253,6 +386,14 @@ public static class IdentityTests
         Assert(!result.IsValid && result.Document is null && result.Issues.Count > 0, "Unsafe discovery accepted.");
         Assert(!result.SafeSummary.Contains("DO_NOT_ECHO") && !result.Issues.Any(i => (i.Message + i.Field).Contains("DO_NOT_ECHO")),
             "Discovery echoed sensitive input.");
+    }
+
+    private static void InvalidRegistration(string json)
+    {
+        RegistrationStatusResult result = RegistrationStatusLoader.Parse(json);
+        Assert(!result.IsReadable && result.Status is null && result.Code == "AUTH_REGISTRATION_UNVERIFIED",
+            "Malformed registration notes were accepted.");
+        Assert(!result.SafeSummary.Contains("DO_NOT_ECHO"), "Registration result echoed sensitive input.");
     }
 
     private static void Assert(bool condition, string message)

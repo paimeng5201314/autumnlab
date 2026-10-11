@@ -4,10 +4,13 @@ using System.Text.Json.Serialization;
 namespace AutumnOS.Storage;
 
 public enum FirstRunCheckpoint { Hello, Brand, Initializing, Completed }
+// This records an onboarding decision, never whether a usable account session exists now.
+public enum FirstRunLoginStep { Pending, Completed, Skipped, NotOffered }
 
-public sealed record FirstRunState(int SchemaVersion, FirstRunCheckpoint Checkpoint, long Revision, DateTimeOffset UpdatedUtc)
+public sealed record FirstRunState(int SchemaVersion, FirstRunCheckpoint Checkpoint, long Revision, DateTimeOffset UpdatedUtc,
+    FirstRunLoginStep LoginStep = FirstRunLoginStep.Pending)
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
     [JsonIgnore]
     public bool IsComplete => Checkpoint == FirstRunCheckpoint.Completed;
 }
@@ -27,7 +30,8 @@ public sealed class FirstRunStateStore(InstallationRoot root, CriticalOperationC
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
-        Converters = { new JsonStringEnumConverter<FirstRunCheckpoint>(allowIntegerValues: false) }
+        Converters = { new JsonStringEnumConverter<FirstRunCheckpoint>(allowIntegerValues: false),
+            new JsonStringEnumConverter<FirstRunLoginStep>(allowIntegerValues: false) }
     };
 
     public string StateFilePath => Path.Combine(root.Directories["Config"], "first-run.json");
@@ -46,6 +50,19 @@ public sealed class FirstRunStateStore(InstallationRoot root, CriticalOperationC
     public FirstRunResult Advance(FirstRunCheckpoint checkpoint, CancellationToken cancellationToken = default)
     {
         if (!Enum.IsDefined(checkpoint)) return FirstRunResult.Failed(StorageErrors.InvalidTransition);
+        return Save(checkpoint, null, cancellationToken);
+    }
+
+    /// <summary>Only the first-run controller calls this after a verified login or explicit skip.</summary>
+    public FirstRunResult RecordLoginStep(FirstRunLoginStep step, CancellationToken cancellationToken = default)
+    {
+        if (step is not (FirstRunLoginStep.Completed or FirstRunLoginStep.Skipped))
+            return FirstRunResult.Failed(StorageErrors.InvalidTransition);
+        return Save(null, step, cancellationToken);
+    }
+
+    private FirstRunResult Save(FirstRunCheckpoint? requestedCheckpoint, FirstRunLoginStep? loginStep, CancellationToken cancellationToken)
+    {
         string? temporaryPath = null;
         try
         {
@@ -63,14 +80,20 @@ public sealed class FirstRunStateStore(InstallationRoot root, CriticalOperationC
                 FirstRunResult currentResult = ReadCurrent(cancellationToken);
                 if (!currentResult.Success) return currentResult;
                 FirstRunState current = currentResult.State!;
+                FirstRunCheckpoint checkpoint = requestedCheckpoint ?? current.Checkpoint;
+                if (loginStep.HasValue && (current.Checkpoint != FirstRunCheckpoint.Initializing ||
+                    current.LoginStep != FirstRunLoginStep.Pending && current.LoginStep != loginStep))
+                    return FirstRunResult.Failed(StorageErrors.InvalidTransition);
                 int distance = (int)checkpoint - (int)current.Checkpoint;
                 if (distance is < 0 or > 1) return FirstRunResult.Failed(StorageErrors.InvalidTransition);
+                if (checkpoint == FirstRunCheckpoint.Completed && current.LoginStep == FirstRunLoginStep.Pending)
+                    return FirstRunResult.Failed(StorageErrors.InvalidTransition);
                 bool alreadyExists = File.Exists(StateFilePath);
-                if (distance == 0 && alreadyExists) return currentResult;
+                if (distance == 0 && alreadyExists && (!loginStep.HasValue || loginStep == current.LoginStep)) return currentResult;
                 if (current.Revision == long.MaxValue) return FirstRunResult.Failed(StorageErrors.CorruptState);
 
                 var next = new FirstRunState(FirstRunState.CurrentSchemaVersion, checkpoint,
-                    current.Revision + 1, DateTimeOffset.UtcNow);
+                    current.Revision + 1, DateTimeOffset.UtcNow, loginStep ?? current.LoginStep);
                 temporaryPath = Path.Combine(root.Directories["Config"], $".first-run-{Guid.NewGuid():N}.tmp");
                 root.ValidateManagedFile(temporaryPath);
                 using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
@@ -121,11 +144,13 @@ public sealed class FirstRunStateStore(InstallationRoot root, CriticalOperationC
                 || !record.TryGetProperty("schemaVersion", out JsonElement schema)
                 || !schema.TryGetInt32(out int version)) return FirstRunResult.Failed(StorageErrors.CorruptState);
             if (version > FirstRunState.CurrentSchemaVersion) return FirstRunResult.Failed(StorageErrors.FutureSchema);
-            if (version != FirstRunState.CurrentSchemaVersion) return FirstRunResult.Failed(StorageErrors.CorruptState);
+            if (version is not (1 or FirstRunState.CurrentSchemaVersion)) return FirstRunResult.Failed(StorageErrors.CorruptState);
 
             string[] propertyNames = record.EnumerateObject().Select(property => property.Name).ToArray();
-            if (propertyNames.Length != 4 || propertyNames.Distinct(StringComparer.Ordinal).Count() != 4
-                || propertyNames.Any(name => name is not ("schemaVersion" or "checkpoint" or "revision" or "updatedUtc")))
+            int expectedProperties = version == 1 ? 4 : 5;
+            if (propertyNames.Length != expectedProperties || propertyNames.Distinct(StringComparer.Ordinal).Count() != expectedProperties
+                || propertyNames.Any(name => name is not ("schemaVersion" or "checkpoint" or "revision" or "updatedUtc") &&
+                    !(version == 2 && name == "loginStep")))
                 return FirstRunResult.Failed(StorageErrors.CorruptState);
 
             // Required fields are checked explicitly: serializer defaults must never turn truncated JSON into valid state.
@@ -138,7 +163,16 @@ public sealed class FirstRunStateStore(InstallationRoot root, CriticalOperationC
                 || !record.TryGetProperty("updatedUtc", out JsonElement updated) || updated.ValueKind != JsonValueKind.String
                 || !updated.TryGetDateTimeOffset(out DateTimeOffset parsedUpdated) || parsedUpdated.Offset != TimeSpan.Zero)
                 return FirstRunResult.Failed(StorageErrors.CorruptState);
-            return FirstRunResult.Ready(new(version, parsedCheckpoint, parsedRevision, parsedUpdated));
+            FirstRunLoginStep step = parsedCheckpoint == FirstRunCheckpoint.Completed ? FirstRunLoginStep.NotOffered : FirstRunLoginStep.Pending;
+            if (version == 2 && (!record.TryGetProperty("loginStep", out JsonElement login) || login.ValueKind != JsonValueKind.String ||
+                !Enum.TryParse(login.GetString(), false, out step) || !Enum.IsDefined(step) ||
+                Enum.GetName(step) != login.GetString())) return FirstRunResult.Failed(StorageErrors.CorruptState);
+            if (parsedCheckpoint == FirstRunCheckpoint.Completed && step == FirstRunLoginStep.Pending ||
+                parsedCheckpoint != FirstRunCheckpoint.Completed && step == FirstRunLoginStep.NotOffered ||
+                parsedCheckpoint < FirstRunCheckpoint.Initializing && step != FirstRunLoginStep.Pending)
+                return FirstRunResult.Failed(StorageErrors.CorruptState);
+            // Legacy completed installs keep their completion marker; no new welcome or implied login.
+            return FirstRunResult.Ready(new(FirstRunState.CurrentSchemaVersion, parsedCheckpoint, parsedRevision, parsedUpdated, step));
         }
         catch (JsonException) { return FirstRunResult.Failed(StorageErrors.CorruptState); }
         catch (InvalidOperationException) { return FirstRunResult.Failed(StorageErrors.CorruptState); }

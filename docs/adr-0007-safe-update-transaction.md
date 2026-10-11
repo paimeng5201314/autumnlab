@@ -4,6 +4,8 @@ Lab Chronicles AutumnOS · 制作人：派蒙。
 
 这是 T05 采用的实现协议；实际运行、升级、回退及中断测试结果以对应构建报告为准，源码和本说明本身不代表通过。
 
+2026-10-10 的协议 1.1 增量在保留以下事务基础上，加入精确目标的手动回滚授权、限定桌面配置快照、应用前官方源复核与单文件入口持久绑定。下文的协议 1.0／只升级／不复制任何数据描述保留为历史设计边界；当前能力、首个完整 EXE 过渡要求和验证限制见 [更新与恢复](t05-updates-and-recovery.md) 及 [本轮验收](update-first-login-validation.md)。
+
 ## 文件布局与部署边界
 
 `AutumnOS.exe` 为 .NET 10 / win-x64 自包含单文件 Bootstrap。原 WinUI 程序改为同目录 `AutumnOS.Client.exe`，其 DLL、PRI、XBF 与 Windows App SDK 资源仍保留在原发行根。独立 `AutumnOS.Updater.exe` 也为自包含单文件；启动时从自己的 bundle 加载协议、验证器和内嵌可信公钥，不依赖正在替换的发行根 DLL。两个稳定 EXE 永远不属于更新 payload 的文件表。所需更新器协议高于 `1.0.0` 时必须拒绝，改走将来经授权的完整安装包，不能一边执行一边覆盖恢复入口。

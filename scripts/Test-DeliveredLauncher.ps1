@@ -209,6 +209,8 @@ function Test-DeliveredUpdatesPage {
         Assert-DeliveredOwnedPrimary
         $element=Wait-DeliveredCondition {
             $candidate=Find-DeliveredUi $Id
+            $scroll=$null
+            if($candidate -and $candidate.Current.IsEnabled -and $candidate.Current.IsOffscreen -and $candidate.TryGetCurrentPattern([Windows.Automation.ScrollItemPattern]::Pattern,[ref]$scroll)){$scroll.ScrollIntoView()}
             if($candidate -and $candidate.Current.IsEnabled -and -not $candidate.Current.IsOffscreen){return $candidate}
             return $null
         } "visible enabled T05 button $Id" 45
@@ -226,8 +228,10 @@ function Test-DeliveredUpdatesPage {
     while($true){
         if($onboardingTimer.Elapsed.TotalSeconds -gt 90){throw 'T05 native onboarding did not finish within 90 seconds.'}
         $next=Wait-DeliveredCondition {
-            foreach($candidateId in @('HelloNextButton','BrandNextButton','PrepareDesktopButton','SettingsButton','SettingsNavUpdates')){
+            foreach($candidateId in @('HelloNextButton','BrandNextButton','FirstRunSkip','PrepareDesktopButton','SettingsButton','SettingsNavUpdates')){
                 $candidate=Find-DeliveredUi $candidateId
+                $scroll=$null
+                if($candidateId -in @('FirstRunSkip','PrepareDesktopButton') -and $candidate -and $candidate.Current.IsEnabled -and $candidate.Current.IsOffscreen -and $candidate.TryGetCurrentPattern([Windows.Automation.ScrollItemPattern]::Pattern,[ref]$scroll)){$scroll.ScrollIntoView()}
                 if($candidate -and $candidate.Current.IsEnabled -and -not $candidate.Current.IsOffscreen){return $candidateId}
             }
             return $null

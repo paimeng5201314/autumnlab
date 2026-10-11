@@ -39,7 +39,7 @@ foreach($variant in $variants){
     $prepared=Get-Content -LiteralPath (Join-Path $ProjectRoot "artifacts/builds/$id/package-prepared.json") -Raw|ConvertFrom-Json
     $delivery=Split-Path $prepared.executable -Parent
     $material=Join-Path $run ($variant.name+'-signed')
-    Invoke-Dotnet -Arguments @($cli,'prepare','--source',$delivery,'--output',$material,'--version',$variant.version,'--build-id',$id,'--channel','plus','--sequence',[string]$variant.sequence,'--key-id',$trust.keys[0].keyId,'--release-id',[string]$variant.release,'--asset-id',[string]$variant.asset) -LogPath (Join-Path $run ($variant.name+'-prepare.log'))
+    Invoke-Dotnet -Arguments @($cli,'prepare','--source',$delivery,'--output',$material,'--version',$variant.version,'--build-id',$id,'--channel','plus','--release-tag',('plus-v'+$variant.version),'--sequence',[string]$variant.sequence,'--key-id',$trust.keys[0].keyId,'--release-id',[string]$variant.release,'--asset-id',[string]$variant.asset) -LogPath (Join-Path $run ($variant.name+'-prepare.log'))
     $manifest=Join-Path $material 'autumn.update.json';$signature=Join-Path $material 'autumn.update.sig'
     Invoke-Dotnet -Arguments @($cli,'sign','--manifest',$manifest,'--private-key-file',$PrivateKeyFile,'--output',$signature) -LogPath (Join-Path $run ($variant.name+'-sign.log'))
     $meta=Get-Content -LiteralPath $manifest -Raw|ConvertFrom-Json

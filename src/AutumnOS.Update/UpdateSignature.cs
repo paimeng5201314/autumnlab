@@ -68,6 +68,14 @@ public static class UpdateSignature
     }
     public static UpdateManifest Verify(byte[] manifestBytes, byte[] signatureBytes, UpdateTrustStore trust,
         DateTimeOffset now, long minSequence = 0)
+        => VerifyCore(manifestBytes, signatureBytes, trust, now, minSequence, null, null, null);
+
+    public static UpdateManifest VerifyForRollback(byte[] manifestBytes, byte[] signatureBytes, UpdateTrustStore trust,
+        DateTimeOffset now, long minSequence, UpdateRollbackAuthorization authorization, string currentBuildId, string currentVersion)
+        => VerifyCore(manifestBytes, signatureBytes, trust, now, minSequence, authorization, currentBuildId, currentVersion);
+
+    private static UpdateManifest VerifyCore(byte[] manifestBytes, byte[] signatureBytes, UpdateTrustStore trust,
+        DateTimeOffset now, long minSequence, UpdateRollbackAuthorization? authorization, string? currentBuildId, string? currentVersion)
     {
         var manifest = UpdateManifestCodec.Parse(manifestBytes);
         var signature = UpdateManifestCodec.ParseStrict<UpdateSignatureEnvelope>(signatureBytes, 16 * 1024);
@@ -84,7 +92,10 @@ public static class UpdateSignature
         { throw new UpdateException("UPDATE_SIGNATURE_INVALID", ex); }
         if (now < new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero) || manifest.IssuedAtUtc > now.AddMinutes(5)) throw new UpdateException("UPDATE_CLOCK_OR_FUTURE_METADATA");
         if (manifest.ExpiresAtUtc <= now) throw new UpdateException("UPDATE_METADATA_EXPIRED");
-        if (manifest.Sequence < minSequence) throw new UpdateException("UPDATE_METADATA_REPLAY");
+        // Only explicit consent for these exact signed bytes and this installed source
+        // grants a sequence exception. Normal discovery/apply never changes its floor.
+        authorization?.Validate(manifest, manifestBytes, currentBuildId!, currentVersion!, now);
+        if (manifest.Sequence < minSequence && authorization is null) throw new UpdateException("UPDATE_METADATA_REPLAY");
         return manifest;
     }
 }

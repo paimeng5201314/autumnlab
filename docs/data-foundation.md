@@ -19,11 +19,15 @@ FirstRunResult current = firstRun.Load();
 FirstRunResult saved = firstRun.Advance(FirstRunCheckpoint.Hello);
 ```
 
-`Load(CancellationToken = default)` 和 `Advance(FirstRunCheckpoint, CancellationToken = default)` 返回 `FirstRunResult(Success, State, ErrorCode, RecoveryMessage)`。成功时 `State` 含 `SchemaVersion`、`Checkpoint`、`Revision`、`UpdatedUtc` 及计算属性 `IsComplete`。失败时 `State` 为 null，调用方必须处理错误，不能当作全新首次启动。
+`Load(CancellationToken = default)`、`Advance(FirstRunCheckpoint, CancellationToken = default)` 和 `RecordLoginStep(FirstRunLoginStep, CancellationToken = default)` 返回 `FirstRunResult(Success, State, ErrorCode, RecoveryMessage)`。成功时 `State` 含 `SchemaVersion`、`Checkpoint`、`Revision`、`UpdatedUtc`、`LoginStep` 及计算属性 `IsComplete`。失败时 `State` 为 null，调用方必须处理错误，不能当作全新首次启动。
 
 顺序为 `Hello → Brand → Initializing → Completed`。初始缺少状态文件时返回 Hello/revision 0，不写文件。`Advance(Hello)` 可将当前初始步骤持久化。重复同一步幂等、不更改时间或字节；回退、跳步、未知枚举返回 `CONFIG_INVALID_TRANSITION`。UI 只能在真实工作完成后推进；保存 checkpoint 不代表已实现 T02 桌面。
 
-状态存于 `Config/first-run.json`，当前 schema 为 1。文件最多 16 KiB，要求精确字段与正确类型；损坏、缺字段、重复字段、未知字段、无效 checkpoint/时间/修订均返回 `CONFIG_CORRUPT`，未来版本返回 `CONFIG_FUTURE_SCHEMA`。两种情况均保持原始字节，拒绝覆盖，无隐式重置或降级迁移。schema 1 是首版，无历史 schema 迁移可执行；新增迁移必须单独测试。
+状态存于 `Config/first-run.json`，当前 schema 为 2。文件最多 16 KiB，要求精确字段与正确类型；损坏、缺字段、重复字段、未知字段、无效 checkpoint/时间/修订均返回 `CONFIG_CORRUPT`，未来版本返回 `CONFIG_FUTURE_SCHEMA`。两种情况均保持原始字节，拒绝覆盖，无隐式重置或降级迁移。schema 1 的 `Completed` 读取为已完成且 `LoginStep=NotOffered`，老用户不重走欢迎流程；未完成状态读取为 `Pending`。读取不重写文件，下一次真实进度修改才原子提交 schema 2。
+
+`LoginStep` 的 `Pending / Completed / Skipped / NotOffered` 仅表示引导中是否完成登录步骤或明确跳过，不表示当前有效会话。仅在 `Initializing` 中可把 Pending 改为 Completed 或 Skipped；不同的已决选择不能由迟到结果改写。Pending 时禁止完成整个首次配置。`FirstRunAccountCoordinator` 合并重复登录，使用现有 `IIdentityService`；只有返回的真实 `SignedIn` 与当前会话代次一致才记录登录完成。跳过取消旧登录并在必要时退出其已提交会话，防止迟到回调写回凭据；首次配置仍需桌面准备成功后另行 `Advance(Completed)`。取消、登录失败、关闭窗口不写成功标记。
+
+退出账号不修改 first-run 文件。更新及受支持回滚不备份或恢复 first-run 与 Identity 凭据目录；旧客户端不能读取 schema 2 时必须标记为不支持该回滚目标，不能把首次配置倒回旧快照或恢复已注销会话。
 
 保存先独占 `Config/.first-run.lock`，在同目录创建随机暂存文件、完整写入并 `Flush(true)`，再通过 `File.Replace`（已有文件）或不覆盖的 `File.Move`（首个文件）提交。没有先删除正式文件的窗口。被其他写入者占用时返回 `CONFIG_BUSY`，可稍后重试。取消发生于提交前时保留旧文件；调用方收到成功后说明提交完成。崩溃留下的未知 `.tmp` 文件不自动提升或删除；重新启动从最后一个完整 checkpoint 继续。断电时底层文件系统持久性仍取决于设备与文件系统；本模块没有声称已通过断电硬件测试。
 

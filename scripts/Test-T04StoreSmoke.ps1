@@ -302,7 +302,7 @@ try{
     }
     $cwd=Join-Path $testScope 'different working directory';New-Item -ItemType Directory -Path $cwd -Force | Out-Null
     $product=Start-SmokeProduct $cwd
-    Click 'HelloNextButton';Click 'BrandNextButton';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click 'HelloNextButton';Click 'BrandNextButton';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
     Click 'StoreButton'
     $null=Wait-SmokeCondition {Visible 'StoreHeading'} 'native store heading' 6
     $publicText=Wait-SmokeCondition {$item=Find 'StoreStatus';if($item -and $item.Current.Name -and $item.Current.Name -notmatch '正在读取'){$item.Current.Name}} 'real GitHub discovery result or honest network error' 60

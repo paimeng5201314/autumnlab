@@ -34,6 +34,9 @@ public sealed class DataStoreException(string code) : IOException(code)
 
 internal static class ScopedStorageSafety
 {
+    // The logical preference contract remains 1–59 ASCII characters. The safe pref_ filename encoding
+    // preserves historical support for logical names such as CON and LPT1 without creating device files.
+    internal static bool IsPreferenceKey(string? key) => key is { Length: > 0 and <= 59 } && IsKey("pref_" + key);
     internal static bool IsKey(string? key) => key is { Length: > 0 and <= 64 }
         && key.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' or '-' or '_')
         && !new[] { "CON", "PRN", "AUX", "NUL" }.Contains(key, StringComparer.OrdinalIgnoreCase)

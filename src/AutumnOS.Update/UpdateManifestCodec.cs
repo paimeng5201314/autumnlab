@@ -50,6 +50,8 @@ public static class UpdateManifestCodec
     {
         if (m.SchemaVersion != 1) throw new UpdateException("UPDATE_SCHEMA_UNSUPPORTED");
         if (m.ProductId != "cn.labchronicles.autumnos" || m.Repository != "paimeng5201314/autumnlab") throw new UpdateException("UPDATE_PRODUCT_SOURCE_MISMATCH");
+        if (m.ReleaseTag is not null && (m.ReleaseTag.Length is < 1 or > 200 || m.ReleaseTag.Any(c => char.IsControl(c) || c is '/' or '\\')))
+            throw new UpdateException("UPDATE_RELEASE_TAG_INVALID");
         if (!SemanticVersion.TryParse(m.Version, out var version) || m.Channel is not ("plus" or "meta") ||
             version!.IsPrerelease != (m.Channel == "meta")) throw new UpdateException("UPDATE_CHANNEL_VERSION_MISMATCH");
         if (!SemanticVersion.TryParse(m.MinimumUpdaterVersion, out _) || m.TargetRid != "win-x64") throw new UpdateException("UPDATE_COMPATIBILITY_INVALID");

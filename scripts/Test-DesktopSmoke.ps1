@@ -467,7 +467,8 @@ namespace AutumnDesktopSmoke {
     Add-SmokeCheck 'brand_stage_has_product_name' ((Find-SmokeElement $first.Element 'WelcomeBrand').Current.Name -eq $metadata['DisplayName'])
     $null = Save-SmokeScreenshot $first '02-brand'
     Invoke-SmokeButton $first.Element 'BrandNextButton'
-    $null = Wait-SmokeCondition { Find-VisibleSmokeElement $first.Element 'PrepareDesktopButton' } 'the initialization stage'
+    Invoke-SmokeButton $first.Element 'FirstRunSkip'
+    $null = Wait-SmokeCondition { (Find-SmokeElement $first.Element 'PrepareDesktopButton').Current.IsEnabled } 'explicit account skip saved'
     $null = Save-SmokeScreenshot $first '03-initialization'
     Invoke-SmokeButton $first.Element 'PrepareDesktopButton'
     Wait-SmokeDesktop $first

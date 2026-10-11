@@ -8,8 +8,8 @@ namespace AutumnOS.Runtime;
 /// <summary>T01 host-bound guest game session. Never accept an application identity from an SDK message.</summary>
 public sealed partial class RuntimeSession
 {
-    private static readonly JsonSerializerOptions ResponseJsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     public const int MaximumMessageBytes = 32 * 1024;
+    public const int MaximumRequestIdLength = 64;
     public const int MaximumRememberedRequestIds = 2048;
     public const int MaximumPendingRequests = 16;
     public const int MaximumRequestsPerMinute = 120;
@@ -265,6 +265,7 @@ public sealed partial class RuntimeSession
                         }
                         else
                         {
+                            BridgeJson.EnsureReadable(parameters.GetProperty("value"));
                             saves.Write(parameters.GetProperty("value"), linked.Token);
                             result = new { saved = true };
                         }
@@ -314,8 +315,8 @@ public sealed partial class RuntimeSession
         if (!IsActive) return Error(requestId, "SESSION_EXPIRED");
         services?.Account.EnsureCurrent();
         cancellationToken.ThrowIfCancellationRequested();
-        string response = JsonSerializer.Serialize(new { requestId, ok = true, result = value }, ResponseJsonOptions);
-        return services is not null && Encoding.UTF8.GetByteCount(response) > MaximumMessageBytes
+        string response = BridgeJson.Success(requestId, value);
+        return Encoding.UTF8.GetByteCount(response) > MaximumMessageBytes
             ? Error(requestId, "RESPONSE_TOO_LARGE") : response;
     }
 
@@ -358,6 +359,9 @@ public sealed partial class RuntimeSession
                 "PERMISSION_DENIED" => "This capability requires the user's approval.",
                 "PERMISSION_REVOKED" => "The host revoked this permission for the current session.",
                 "SAVE_CORRUPT" => "The existing save is invalid and has been preserved.",
+                "PREFERENCE_CORRUPT" => "The existing preference is invalid and has been preserved.",
+                "PREFERENCE_MIGRATION_CONFLICT" => "Existing preference copies disagree and have been preserved for recovery.",
+                "RESPONSE_TOO_LARGE" => "The value exceeds the complete SDK read-response budget; an oversized write was not committed.",
                 "STORAGE_UNSAFE_PATH" => "The save path is redirected and cannot be used.",
                 "CAPABILITY_UNAVAILABLE" => "This capability is unavailable in the current runtime.",
                 "DUPLICATE_REQUEST" => "A request ID is pending or was completed within the replay protection window.",
