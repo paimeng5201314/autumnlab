@@ -2,6 +2,14 @@
 
 制作人：派蒙。此文件是公开仓库的脱敏交付摘要；完整本机历史、失败记录和测试数据保留在原工作区，没有删除或改成通过。
 
+## 2026-10-11 · 更新与首次登录改造预览发行
+
+按制作人授权提交并发布 [meta0.0.3-20261011](https://github.com/paimeng5201314/autumnlab/releases/tag/meta0.0.3-20261011)，内部版本顺延为 `0.5.1-local.6`。发行提交 `65755778ebdf03aa61203ce72354d3cfceec7667` 保留上一预览的数据桥、日志轮转及 Windows CI 修复，并合入更新确认、历史版本、安全回退、可跳过首次登录和会话恢复改造。
+
+[GitHub Actions 38126950961](https://github.com/paimeng5201314/autumnlab/actions/runs/38126950961) 在 Windows 普通用户下完成真实 WinUI Release 构建，完整 C# **694/694**、SDK/示例/机器契约/原生客户端合成夹具/服务端 HTTP/开发工具非交互测试通过，生成并发布 `AutumnOS.exe`、`SHA256SUMS.txt` 和 `release-build.json`。源码快照为 `sha256:de5c3e9ab9c371b50dabcca285e8c4654ba9446a9fd1678b539f5b3f3041b081`；EXE 为 488688643 字节，SHA-256 为 `4bf30b9405329aeedc4a8755476919f348d2e974029849ce32fe9b2702453cd8`。公开附件摘要与构建记录一致，发布器已下载回读全部附件后才公开。
+
+交付为完整单文件预览 EXE；旧版本需退出后替换完整 EXE，保留同目录 `AutumnOS_Data`。EXE 未做 Authenticode 签名，生产自更新信任根及签名更新资产尚未配置。交互式 UI、真实 Logto 登录、真实更新重启和兼容矩阵未由此次非交互 CI 验收。main 后续仅补充发行记录与构建说明；本发行产物仍精确绑定上述发行提交。
+
 ## 2026-10-07 · 新版 EXE 的 GitHub Actions 构建
 
 用户要求生成新版 EXE，并选择 GitHub Actions 作为 Windows 构建环境。新增 Windows 工作流和 `Build-SingleFile.ps1`，默认内部版本 `0.5.1-local.5`、显示版本 `meta0.0.2-20261007`；通过独立构建分支触发，完整执行非交互测试和单文件打包，将 EXE 与摘要/证据保存为 Actions 产物。原生交互烟测在 CI 明确为 `not_run_ci_no_interactive_desktop`，没有发布公共 Release 或配置生产签名。

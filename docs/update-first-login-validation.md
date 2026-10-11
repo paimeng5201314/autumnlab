@@ -88,3 +88,11 @@ dotnet build src/AutumnOS.Shell/AutumnOS.Shell.csproj --no-restore -c Release -m
 整合后使用同一已验证 Linux SDK、locked restore 和真实项目源完成 Release 测试工程编译，0 错误、72 条 CA1416 提示。完整 Linux 用例为 **532/540**，失败仍仅为上文列出的 8 项 Windows 文件语义断言；更新、回滚、引导和会话为 **68/68**，含新增带 `+build` 标签的安装源复验。SDK 与示例仍为 **22/22、6/6**。原始日志在 `/workspace/work/release-validation`，此阶段仍为 `local-untracked`，不替代 Windows CI。
 
 Windows Actions 必须对精确提交重新编译、运行完整测试、打包 EXE；发布作业在验证同一次运行的产物、源摘要和 SHA-256 后创建预览 Release。实际 Windows 成绩与最终下载哈希以该 Actions 运行及 Release 附件为准，交互式 UI、真实 Logto 与兼容矩阵不由非交互 CI 代替。
+
+## 2026-10-11 Windows Actions 实际结果
+
+[运行 38126950961](https://github.com/paimeng5201314/autumnlab/actions/runs/38126950961) 已成功：发行提交 `65755778ebdf03aa61203ce72354d3cfceec7667` 的真实 WinUI Release 构建通过，完整 Windows C# **694/694**，全部要求的非交互测试组通过。Windows 用例包含凭据持久化、身份协议、独立更新器和安装事务；上文 8 项 Linux 文件语义差异没有成为 Windows 失败。
+
+同次运行已生成完整 EXE 并发布 [meta0.0.3-20261011](https://github.com/paimeng5201314/autumnlab/releases/tag/meta0.0.3-20261011)。公开 `AutumnOS.exe` SHA-256 为 `4bf30b9405329aeedc4a8755476919f348d2e974029849ce32fe9b2702453cd8`，与 Actions、GitHub 资产摘要和 `SHA256SUMS.txt` 一致；公开 `release-build.json` 的摘要和源码／构建／测试身份也已核对。发布器在草稿阶段下载回读三个附件后才公开。
+
+此次仍未运行 Windows 交互式 UI、真实 Logto、真实原入口更新重启或系统矩阵。EXE 未 Authenticode 签名，生产自更新可信根未配置，本次未提供签名更新清单及 ZIP；这些边界已写入 Release 说明。main 的发行记录与构建文档后补提交不改变已冻结的发行源码身份。

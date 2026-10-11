@@ -1,14 +1,20 @@
 # 从当前源码生成新版单文件 EXE
 
-此入口默认构建 `0.5.1-local.5`，显示版本 `meta0.0.2-20261007`，每次自动生成唯一 T06 构建 ID。本地默认执行锁定恢复、构建、测试、打包和 Windows 原生烟测；无交互桌面的 Windows CI 必须显式跳过原生烟测，并将其记录为未执行。本说明不表示新版 EXE 已在 Linux 云环境生成。更改源码后，旧 EXE 不会自动包含修复。
+此入口默认构建 `0.5.1-local.6`，显示版本 `meta0.0.3-20261011`，每次自动生成唯一 T06 构建 ID。本地默认执行锁定恢复、构建、测试、打包和 Windows 原生烟测；无交互桌面的 Windows CI 必须显式跳过原生烟测，并将其记录为未执行。本说明不表示新版 EXE 已在 Linux 云环境生成。更改源码后，旧 EXE 不会自动包含修复。
 
 ## GitHub Actions
 
-`.github/workflows/windows-exe.yml` 使用 `windows-2025`，固定 Node.js 24.19.0、PowerShell 7.6.6 与项目 SDK。`Invoke-CiBuild.ps1` 在临时普通用户账户下执行构建、全部非交互测试和打包，加载该用户配置文件；仅向该账户授予工作目录权限，随机密码只保留在内存中，结束后删除临时账户。推送 `codex/windows-exe-*` 构建分支时自动运行；工作流进入默认分支后也可从 Actions 页使用 Run workflow 手动触发并指定显示版本。无需添加发布令牌；工作流权限只有读取源码，上传产物使用 Actions 提供的运行凭据。
+`.github/workflows/windows-exe.yml` 使用 `windows-2025`，固定 Node.js 24.19.0、PowerShell 7.6.6 与项目 SDK。`Invoke-CiBuild.ps1` 在临时普通用户账户下执行构建、全部非交互测试和打包，加载该用户配置文件；仅向该账户授予工作目录权限，随机密码只保留在内存中，结束后删除临时账户。推送 `codex/windows-exe-*` 或 `codex/update-first-login-*` 分支时自动运行；工作流进入默认分支后也可从 Actions 页使用 Run workflow 手动触发，选择分支并指定内部版本与显示版本。
 
-成功运行后，在该次运行的 **Artifacts** 下载 `AutumnOS-meta0.0.2-20261007-win-x64`（自定义标签时名称随之改变），其中含单文件 EXE、SHA-256 和源快照/打包记录。`Windows-build-evidence-<run>-<attempt>` 保存构建和测试报告，失败时也尝试保留日志。产物保留 14 天，未创建 Release。
+`build` 作业只有 `contents: read` 权限。独立的 `publish-preview` 作业通过 `needs: build` 等待构建成功，且仅在当前分支匹配 `codex/update-first-login-*` 时运行；旧的 `codex/windows-exe-*` 分支仍只构建和上传 Artifacts。发布作业单独授予 `actions: read` 与 `contents: write`，使用 GitHub Actions 内建的 `github.token`，无需自行配置 PAT 或发布令牌；普通用户构建进程不会获得发布令牌。
 
-云端显式使用 `-SkipNativeSmoke`；新版原生 UI 尚需从下载的 EXE 在普通用户桌面运行验收。Actions 构建 ID 包含 run ID 与重试次数，失败重跑不会复用本地证据目录。此工作流不向仓库写入构建文件，也不修改生产更新签名配置。
+构建成功后，可在该次运行的 **Artifacts** 下载 `AutumnOS-meta0.0.3-20261011-win-x64`（自定义标签时名称随之改变）。其中包含单文件 EXE、源码快照、打包记录、构建与测试报告；EXE 的 SHA-256 记录在打包和流水线报告中。`Windows-build-evidence-<run>-<attempt>` 保存构建和测试证据，失败时也尝试保留日志。这两类 Actions artifact 保留 14 天。
+
+发布作业从本次构建输出的精确 artifact ID 下载完整产物，核对官方仓库、运行 ID、重试次数、源码提交和快照等来源信息，确认要求的流水线阶段、全部非交互测试及 EXE 版本、长度和 SHA-256 均一致。验证通过后先创建预览版草稿，上传 `AutumnOS.exe`、`SHA256SUMS.txt`、`release-build.json` 三个附件，再检查附件完整性并下载回读、逐项核对摘要；全部通过后才公开为预览版，且不设为 Latest。验证或上传失败时不会公开不完整的 Release。
+
+本次 `Publish-GitHubRelease.ps1` 只接受固定版本组合 `0.5.1-local.6` / `meta0.0.3-20261011`。如果已有同名 tag 或同身份 Release（包括草稿），发布器会停止，不覆盖或复用；再次运行也不会覆盖已有发布。Release 附件不受 Actions artifact 的 14 天保留期影响，会保留至被主动删除。
+
+云端显式使用 `-SkipNativeSmoke`；Windows 交互 UI 和真实 Logto 登录未在该流程中验证，下载后的 EXE 仍需在普通用户桌面验收。Actions 构建 ID 包含 run ID 与重试次数，失败重跑不会复用本地证据目录。产物未做正式 Authenticode 签名，生产自更新可信根仍未配置；创建预览 Release 不代表这些验证或配置已经完成。构建作业不向源码仓库写入构建文件，发布作业也不修改生产更新签名配置。
 
 ## 准备 Windows
 

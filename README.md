@@ -1,14 +1,14 @@
 # Lab Chronicles AutumnOS
 
-**制作人：派蒙。历史单文件交付记录：meta0.0.1-20261001。**
+**制作人：派蒙。当前预览发行：meta0.0.3-20261011。**
 
 Windows 原生 .NET 10 / WinUI 3 客户端，运行内部 `.autumn` 应用。
 
-2026-10-10 本地源码改造：主程序更新支持启动检查、确认后下载、指定版本与受支持回滚、成功后固定版本；首次配置增加可跳过的账号登录。此次未修改产品发行号，未发布或生成新版完整 EXE。更新／回滚／引导相关 67 项测试通过；完整 Linux 集合 475/483，剩余 8 项在未修改仓库基线同样失败。Windows 安装、界面和真实身份验证仍未运行，见 [本轮验收记录](docs/update-first-login-validation.md) 和 [使用说明](docs/t05-updates-and-recovery.md)。
+2026-10-11 预览版：主程序更新支持启动检查、确认后下载、指定版本与受支持回滚、成功后固定版本；首次配置增加可跳过的账号登录，保留上一版数据桥和诊断修复。[Windows Actions](https://github.com/paimeng5201314/autumnlab/actions/runs/38126950961) 已完成真实 WinUI Release 构建、完整 C# 694/694 与全部要求的非交互测试，生成完整 EXE。交互界面、真实 Logto 和实际更新重启尚需验收，详见 [本轮验收记录](docs/update-first-login-validation.md) 和 [使用说明](docs/t05-updates-and-recovery.md)。
 
 ## 下载与运行
 
-2026-10-10 只读核对的官方 [Releases](https://github.com/paimeng5201314/autumnlab/releases) 包含稳定标签 `meta`、预览标签 `meta0.0.2-20261007`，渠道以 GitHub 的 prerelease 字段为准。下载时以实际 Release 为准；下面的 EXE 摘要和运行成绩属于历史交付，不是最新标签的验证结果。现有发行缺少可信更新清单与签名，暂不能通过主程序内的新机制安装。
+从 [meta0.0.3-20261011 Release](https://github.com/paimeng5201314/autumnlab/releases/tag/meta0.0.3-20261011) 下载 `AutumnOS.exe`，用同页 `SHA256SUMS.txt` 校验。内部版本为 `0.5.1-local.6`；EXE SHA-256 为 `4bf30b9405329aeedc4a8755476919f348d2e974029849ce32fe9b2702453cd8`，构建身份见 `release-build.json`。这是预览版，稳定 Latest 仍保留 `meta`。旧版升级须退出后替换完整 EXE，保留同目录 `AutumnOS_Data`；此次包含启动器和更新器协议过渡。生产可信更新根与签名更新资产尚未配置，主程序内可信安装保持禁用。
 
 单文件 `AutumnOS.exe` 放入用户可写目录，双击即可使用。首次准备需要展开运行资源，会在 EXE 同级创建唯一的 `AutumnOS_Data` 文件夹；运行资源、配置和存档都在其中。移动程序时一起移动此文件夹可以保留数据。首次准备有进度窗口。历史本机普通缓存实测首次约 26.78 秒、再次约 3.94 秒，其他设备尚未验证。
 
@@ -39,7 +39,7 @@ PowerShell 可执行 `Get-FileHash ./AutumnOS.exe -Algorithm SHA256` 核对下�
 ./scripts/Install-LocalSdk.ps1
 ./scripts/Get-Environment.ps1
 ./scripts/Restore.ps1 -Locked
-./scripts/Build.ps1 -BuildId T06-local-source-check-01 -BuildVersion 0.5.1-local.4 -ReleaseLabel meta0.0.1-20261001
+./scripts/Build.ps1 -BuildId T06-local-source-check-01 -BuildVersion 0.5.1-local.6 -ReleaseLabel meta0.0.3-20261011
 ./scripts/Test.ps1
 ```
 
