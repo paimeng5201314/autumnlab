@@ -157,7 +157,7 @@ try{
         $startupResults.Add([ordered]@{iteration=$iteration;kind=$(if($iteration -eq 0){'first_run'}else{'restart'});seconds=$seconds;target_seconds=$target;target_met=($seconds -le $target)
             pid=$product.Process.Id;start_utc_ticks=$product.Process.StartTime.ToUniversalTime().Ticks;hwnd=$product.Handle.ToInt64();dpi=[AutumnT06Performance.Dpi]::GetDpiForWindow($product.Handle);poll_interval_ms=150})
         $null=Get-T05WindowGeometry $product ('startup-'+$iteration)
-        if($iteration -eq 0){Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'PrepareDesktopButton';Wait-SmokeDesktop $product}
+        if($iteration -eq 0){Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton';Wait-SmokeDesktop $product}
         if($iteration -lt 3){Close-SmokeProduct $product}
     }
     $restarts=@($startupResults|Where-Object kind -eq 'restart'|ForEach-Object seconds|Sort-Object)

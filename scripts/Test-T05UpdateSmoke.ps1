@@ -308,7 +308,7 @@ function Publish-T05SignedFixture([string]$PayloadDirectory){
     }
     Add-SmokeCheck ($scenario.name+'_supplied_payload_bytes_match_signed_manifest') ((Get-T05Hash (Join-Path $PayloadDirectory $manifest.payload.asset)) -eq $manifest.payload.sha256 -and
         (Get-Item -LiteralPath (Join-Path $PayloadDirectory $manifest.payload.asset)).Length -eq $manifest.payload.bytes)
-    $release=[ordered]@{id=[long]$manifest.payload.releaseId;tag_name=$tag;draft=$false;prerelease=$false;body='仅本地 T05 真实更新演练；合成 Release 列表，真实签名与最终程序负载。';assets=$assets.ToArray()}
+    $release=[ordered]@{id=[long]$manifest.payload.releaseId;tag_name=$tag;draft=$false;prerelease=$false;fixture_latest=$true;body='仅本地 T05 真实更新演练；合成 Release 列表，真实签名与最终程序负载。';assets=$assets.ToArray()}
     Write-T05FeedList @($release) ($scenario.name+'-releases.json')
     return $manifest
 }
@@ -363,7 +363,7 @@ function Test-T05TamperedFeedSignature($Manifest,[string]$PayloadDirectory){
         $scenario.signature_rejection.status_text=(Find-T05 'UpdateStatus').Current.Name
         $scenario.signature_rejection.candidate_text=(Find-T05 'UpdateCandidate').Current.Name
         Add-SmokeCheck ($scenario.name+'_actual_client_rejects_tampered_signature') (
-            $scenario.signature_rejection.candidate_text -eq '没有已验证候选。' -and
+            $scenario.signature_rejection.candidate_text -eq '没有已验证的可安装候选。' -and
             -not (Find-T05 'RestartSystemUpdate').Current.IsEnabled -and
             -not (Test-Path -LiteralPath (Join-Path $stageDirectory '.autumnos-update/journal.json')) -and
             -not $product.Process.HasExited)
@@ -565,7 +565,7 @@ function Assert-T05GameStillBlocks([string]$State){
         if($last.state -ne $State -or -not $last.blocksMaintenance){throw 'Real runtime state no longer matches the blocking observation.'}
         Start-Sleep -Milliseconds 300
     }
-    Add-SmokeCheck ($scenario.name+'_'+$State.ToLowerInvariant()+'_blocks_beyond_idle_countdown') ((Get-T05Hash $savePath) -eq $beforeHash -and (Get-T05Hash (Join-Path $stageDirectory 'AutumnOS.Client.dll')) -eq $scenario.a_client_hash)
+    Add-SmokeCheck ($scenario.name+'_'+$State.ToLowerInvariant()+'_preserves_program_and_unsaved_work') ((Get-T05Hash $savePath) -eq $beforeHash -and (Get-T05Hash (Join-Path $stageDirectory 'AutumnOS.Client.dll')) -eq $scenario.a_client_hash)
 }
 function Read-T05GameSave {
     Invoke-SmokeNamedButton $product.Element '读取存档'
@@ -619,11 +619,12 @@ function Invoke-T05Scenario([string]$Name,[string]$PayloadDirectory,[bool]$Rollb
     $script:product=Start-SmokeProduct $cwd
     Register-T05Process $product.EntryProcess 'AutumnOS.exe';Register-T05Process $product.Process 'AutumnOS.Client.exe' $product.EntryProcess.Id
     $scenario.a_business_pid=$product.Process.Id
-    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton';Click-T05 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton';Click-T05 'FirstRunSkip'
+    $null=Wait-SmokeCondition {(Find-T05 'PrepareDesktopButton').Current.IsEnabled} 'explicit account skip saved before desktop preparation'
+    Click-T05 'PrepareDesktopButton';Wait-SmokeDesktop $product
     Show-T05Updates
-    $automatic=(Find-T05 'AutomaticUpdates').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern)
     $preview=(Find-T05 'PreviewUpdates').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern)
-    Add-SmokeCheck ($Name+'_new_user_automatic_on_preview_off') ($automatic.Current.ToggleState -eq [Windows.Automation.ToggleState]::On -and $preview.Current.ToggleState -eq [Windows.Automation.ToggleState]::Off)
+    Add-SmokeCheck ($Name+'_new_user_preview_off_and_explicit_download_action') ($preview.Current.ToggleState -eq [Windows.Automation.ToggleState]::Off -and $null -ne (Find-T05 'DownloadSystemUpdate'))
     Toggle-T05 'SettingsNavAppearance' $true;Click-T05 'DarkThemeButton';Click-T05 'NightWallpaperButton'
     Click-T05 'SettingsHomeButton';Wait-SmokeDesktop $product
     # One real drag creates meaningful desktop state for preservation; the full T02 gesture matrix
@@ -648,16 +649,26 @@ function Invoke-T05Scenario([string]$Name,[string]$PayloadDirectory,[bool]$Rollb
     Click-T05 'BackgroundButton';Wait-SmokeDesktop $product;Show-T05Updates
     if(-not $Rollback){Test-T05TamperedFeedSignature $manifest $PayloadDirectory}
     Click-T05 'CheckSystemUpdate'
+    $null=Wait-SmokeCondition {(Find-T05 'DownloadSystemUpdate').Current.IsEnabled} 'verified metadata available without package download' $UpdateTimeoutSeconds
+    Click-T05 'DownloadSystemUpdate'
+    $null=Wait-SmokeCondition {Find-T05 'ConfirmSystemUpdate'} 'exact target release notes and confirmation'
+    Add-SmokeCheck ($Name+'_metadata_check_and_open_consent_do_not_stage_or_install') (
+        -not(Test-Path -LiteralPath (Join-Path $dataDirectory 'Updates/staging')) -and
+        -not(Test-Path -LiteralPath (Join-Path $stageDirectory '.autumnos-update/journal.json')) -and -not $product.Process.HasExited)
+    Click-T05 'DismissSystemUpdate'
+    Add-SmokeCheck ($Name+'_cancel_confirmation_leaves_no_staged_plan') (-not (Find-T05 'RestartSystemUpdate').Current.IsEnabled)
+    Click-T05 'DownloadSystemUpdate';Click-T05 'ConfirmSystemUpdate'
     $null=Wait-SmokeCondition {
         $text=(Find-T05 'UpdateStatus').Current.Name
-        if($text -match '更新未完成|自动安装尚未配置'){throw $text}
-        if($text -match '已准备，尚未安装'){return $true}
-        $download=Find-T05 'DownloadSystemUpdate';if($download -and $download.Current.IsEnabled){$download.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()}
-        return $false
+        if($text -match '检查或更新未完成|缺少正式更新可信公钥'){throw $text}
+        return $text -match '等待重启.*安装包已验证' -and $null -ne (Find-T05 'PostponeSystemUpdateRestart')
     } 'the actual downloaded and signature-verified candidate' $UpdateTimeoutSeconds
+    Click-T05 'PostponeSystemUpdateRestart'
     $scenario.staged_status=(Find-T05 'UpdateStatus').Current.Name;$scenario.candidate_text=(Find-T05 'UpdateCandidate').Current.Name
     Add-SmokeCheck ($Name+'_signed_target_selected_and_staged') ($scenario.candidate_text.Contains([string]$manifest.version))
-    $null=Wait-SmokeCondition {(Find-T05 'UpdateWaitingReason').Current.Name -match '后台运行'} 'the real background game wait reason'
+    Add-SmokeCheck ($Name+'_postpone_preserves_staged_plan_without_install') ((Find-T05 'RestartSystemUpdate').Current.IsEnabled -and -not(Test-Path -LiteralPath (Join-Path $stageDirectory '.autumnos-update/journal.json')))
+    Click-T05 'RestartSystemUpdate';Click-T05 'ConfirmSystemUpdateRestart'
+    $null=Wait-SmokeCondition {(Find-T05 'UpdateWaitingReason').Current.Name -match '保存并正常退出'} 'explicit restart blocked by the real background game'
     Save-T05Screenshot '01-background-wait'
     if(-not $Rollback){Assert-T05GameStillBlocks 'Background'}
     Click-T05 'SettingsHomeButton';Wait-SmokeDesktop $product;Invoke-SmokePointer $product 'SampleButton' 'single_click'
@@ -673,7 +684,9 @@ function Invoke-T05Scenario([string]$Name,[string]$PayloadDirectory,[bool]$Rollb
     $scenario.data_before=@(foreach($relative in $protected){$path=Join-Path $dataDirectory $relative;[ordered]@{path=$relative;sha256=Get-T05Hash $path}})
     Finish-T05Game
     $null=Wait-SmokeCondition {@(Read-SmokeEvents $runtimeLog|Where-Object {$_.instanceId -eq $scenario.game_instance -and $_.state -eq 'Closed' -and -not $_.blocksMaintenance}).Count -gt 0} 'actual resource-complete game close'
-    # No Restart button: this exercises default-on background download plus bounded idle restart.
+    # Becoming idle never grants restart consent. The exact staged target requires a new explicit action.
+    Add-SmokeCheck ($Name+'_idle_after_postpone_does_not_start_transaction') (-not(Test-Path -LiteralPath (Join-Path $stageDirectory '.autumnos-update/journal.json')) -and -not $product.Process.HasExited)
+    Show-T05Updates;Click-T05 'RestartSystemUpdate';Click-T05 'ConfirmSystemUpdateRestart'
     $script:product=Wait-T05Transaction $manifest.buildId $Rollback
     $repeatRecords=@($scenario.maintenance_repeated_launches)
     $busyRecords=@($repeatRecords|Where-Object {$_.status -like 'passed_*'})

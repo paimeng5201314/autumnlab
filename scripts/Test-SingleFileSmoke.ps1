@@ -79,7 +79,8 @@ try{
     Add-SmokeCheck 'first_launch_starts_at_real_hello' ($null -ne (Find-VisibleSmokeElement $first.Element 'HelloNextButton'))
     $null=Save-SmokeScreenshot $first '01-single-file-hello'
     Invoke-SmokeButton $first.Element 'HelloNextButton';$null=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'BrandNextButton'} 'brand stage'
-    Invoke-SmokeButton $first.Element 'BrandNextButton';$null=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'PrepareDesktopButton'} 'preparation stage'
+    Invoke-SmokeButton $first.Element 'BrandNextButton';Invoke-SmokeButton $first.Element 'FirstRunSkip'
+    $null=Wait-SmokeCondition {(Find-SmokeElement $first.Element 'PrepareDesktopButton').Current.IsEnabled} 'explicit account skip saved'
     Invoke-SmokeButton $first.Element 'PrepareDesktopButton';Wait-SmokeDesktop $first
     Add-SmokeCheck 'real_first_run_committed' ((Get-Content -LiteralPath (Join-Path $dataDirectory 'Config/first-run.json') -Raw|ConvertFrom-Json).checkpoint -eq 'Completed')
     Invoke-SmokeButton $first.Element 'SettingsButton'

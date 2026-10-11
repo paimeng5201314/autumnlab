@@ -7,7 +7,8 @@ public static class UpdaterHandoff
 {
     /// <summary>Call only while holding the in-process exclusive maintenance lease. On success immediately exit normally.</summary>
     public static async Task<string> PrepareAsync(string root, string manifestPath, string signaturePath, string payloadPath,
-        string currentBuildId, string currentVersion, CancellationToken cancellationToken = default)
+        string currentBuildId, string currentVersion, CancellationToken cancellationToken = default,
+        UpdateRollbackAuthorization? rollbackAuthorization = null, bool pinAfterSuccess = false, UpdateTargetIdentity? targetIdentity = null)
     {
         root = UpdateFiles.Root(root);
         var installed = UpdateFiles.ReadInstalled(root);
@@ -28,7 +29,8 @@ public static class UpdaterHandoff
         }
         using var self = Process.GetCurrentProcess();
         var record = new HandoffRecord(1, id, root, UpdateFiles.DataRoot(root), self.Id, self.StartTime.ToUniversalTime().Ticks,
-            currentBuildId, currentVersion, UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")), DateTimeOffset.UtcNow.AddMinutes(3));
+            currentBuildId, currentVersion, UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")), DateTimeOffset.UtcNow.AddMinutes(3),
+            rollbackAuthorization, pinAfterSuccess, targetIdentity);
         UpdateFiles.Write(Path.Combine(tx, "handoff.json"), record);
         using var pipe = UpdatePipe.Server(id, "handoff");
         string updaterPath = Path.Combine(root, "AutumnOS.Updater.exe");

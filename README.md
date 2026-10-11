@@ -1,16 +1,20 @@
 # Lab Chronicles AutumnOS
 
-**制作人：派蒙。单文件预览版：meta0.0.1-20261001。**
+**制作人：派蒙。历史单文件交付记录：meta0.0.1-20261001。**
 
 Windows 原生 .NET 10 / WinUI 3 客户端，运行内部 `.autumn` 应用。
 
+2026-10-10 本地源码改造：主程序更新支持启动检查、确认后下载、指定版本与受支持回滚、成功后固定版本；首次配置增加可跳过的账号登录。此次未修改产品发行号，未发布或生成新版完整 EXE。更新／回滚／引导相关 67 项测试通过；完整 Linux 集合 475/483，剩余 8 项在未修改仓库基线同样失败。Windows 安装、界面和真实身份验证仍未运行，见 [本轮验收记录](docs/update-first-login-validation.md) 和 [使用说明](docs/t05-updates-and-recovery.md)。
+
 ## 下载与运行
 
-目前正确 EXE 已在制作人的 Release 草稿中，尚未公开发布。草稿发布后，到 [Releases](https://github.com/paimeng5201314/autumnlab/releases) 下载 `AutumnOS.exe`，放入用户可写目录，双击即可使用。首次准备需要展开运行资源，会在 EXE 同级创建唯一的 `AutumnOS_Data` 文件夹；运行资源、配置和存档都在其中。移动程序时一起移动此文件夹可以保留数据。首次准备有进度窗口。本机普通缓存实测首次约 26.78 秒、再次约 3.94 秒，其他设备尚未验证。
+2026-10-10 只读核对的官方 [Releases](https://github.com/paimeng5201314/autumnlab/releases) 包含稳定标签 `meta`、预览标签 `meta0.0.2-20261007`，渠道以 GitHub 的 prerelease 字段为准。下载时以实际 Release 为准；下面的 EXE 摘要和运行成绩属于历史交付，不是最新标签的验证结果。现有发行缺少可信更新清单与签名，暂不能通过主程序内的新机制安装。
+
+单文件 `AutumnOS.exe` 放入用户可写目录，双击即可使用。首次准备需要展开运行资源，会在 EXE 同级创建唯一的 `AutumnOS_Data` 文件夹；运行资源、配置和存档都在其中。移动程序时一起移动此文件夹可以保留数据。首次准备有进度窗口。历史本机普通缓存实测首次约 26.78 秒、再次约 3.94 秒，其他设备尚未验证。
 
 本版 EXE 包含 .NET、Windows App SDK、固定 WebView2、内置游戏、开发者 SDK/模板及许可证，不需要复制旧发行目录的 DLL。准备器使用 Windows 自带 .NET Framework 4.x；干净系统和完整离线首次运行矩阵尚未执行，不承诺所有环境完全离线可用。
 
-## 版本与校验
+## 历史版本与校验
 
 - 显示版本：`meta0.0.1-20261001`
 - 内部兼容版本：`0.5.1-local.4`
@@ -21,7 +25,7 @@ Windows 原生 .NET 10 / WinUI 3 客户端，运行内部 `.autumn` 应用。
 
 PowerShell 可执行 `Get-FileHash ./AutumnOS.exe -Algorithm SHA256` 核对下载完整性。摘要不代表发布签名；EXE 尚未 Authenticode 签名，生产更新信任根尚未配置，自动安装保持禁用。
 
-## 本轮验证与限制
+## 历史构建验证与限制
 
 595 C#、22 SDK、358 机器合同、6 DOM 模拟、21 合成身份、7 本机后端 HTTP 负面/前置条件、12 CLI 检查通过。两个独立原生单文件运行检查各 41/41，通过实际首启、内部游戏、权限与保存、后台等待、重复启动唤回原窗、正常结束以及重启数据保留。嵌入内容篡改、非法参数、Data junction 三项真实负面控制通过。
 
@@ -39,6 +43,6 @@ PowerShell 可执行 `Get-FileHash ./AutumnOS.exe -Algorithm SHA256` 核对下�
 ./scripts/Test.ps1
 ```
 
-构建 ID 必须唯一；本地构建结果不是已上传 EXE 的重复下载。单文件打包、受控辅助构建及原生验收步骤见 [单文件工程说明](docs/t06-single-file.md)，机器合同见 `schemas/`，开发者资料见 [版本化文档](docs/versions/0.5.1/README.md) 和 `sdk/`、`samples/`。原始任务和全部验收 ID 保留于 `autumnos-spec/`。
+构建 ID 必须唯一；上述版本参数是历史构建示例，新的发行号应按真实 GitHub 顺序和签名身份确定。本地构建结果不是已上传 EXE 的重复下载。单文件打包、受控辅助构建及原生验收步骤见 [单文件工程说明](docs/t06-single-file.md)，机器合同见 `schemas/`，开发者资料见 [工程架构](docs/architecture.md) 和 `sdk/`、`samples/`。原始任务和全部验收 ID 保留于 `autumnos-spec/`。
 
 对应源快照及公开交付记录见 [release/meta0.0.1-20261001](release/meta0.0.1-20261001/)。源码不包含用户数据、真实凭据、签名私钥或测试默认源。仓库现有 `LICENSE` 保留；各运行组件仍遵守其自身第三方许可证，不能据此宣称许可门禁已全部通过。

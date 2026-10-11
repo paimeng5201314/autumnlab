@@ -51,6 +51,7 @@ cases = cases.Concat(SupportBundleTests.Cases());
 cases = cases.Concat(PortableLayoutTests.Cases());
 cases = cases.Concat(DeveloperSimulationTests.Cases());
 cases = cases.Concat(UpdateCoreTests.Cases());
+cases = cases.Concat(FirstRunAccountTests.Cases()).Concat(UpdateRollbackTests.Cases());
 if (OperatingSystem.IsWindows()) cases = cases.Concat(UpdateProtocolTests.Cases()).Concat(SetupTransactionTests.Cases());
 cases = cases.Concat(ServerIdentityTests.Cases()).Concat(DeveloperToolsTests.Cases()).Concat(PackageDesktopTests.Cases());
 cases = cases.Concat(StoreCatalogTests.Cases()).Concat(StoreDownloadTests.Cases()).Concat(StoreInstallTests.Cases()).Concat(StoreCoordinatorTests.Cases());
@@ -67,7 +68,8 @@ if (filterIndex >= 0)
     }
     filters = args[filterIndex + 1].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     if (filters.Length == 0) return 2;
-    cases = cases.Where(test => filters.Any(prefix => test.Name.StartsWith(prefix, StringComparison.Ordinal)));
+    cases = cases.Where(test => filters.Any(prefix => test.Name.StartsWith(prefix, StringComparison.Ordinal))).ToArray();
+    if (!cases.Any()) { Console.Error.WriteLine("No tests matched the requested prefix filter."); return 2; }
 }
 var results = new List<object>();
 var failed = 0;
@@ -89,7 +91,7 @@ foreach (var (name, run) in cases)
 }
 var document = new { schema_version = 1, task_id = BrandInfo.BuildId.StartsWith("T06-", StringComparison.Ordinal) ? "T06" : "T05", source_snapshot_id = BrandInfo.SourceSnapshotId,
     build_id = BrandInfo.BuildId, executed_utc = DateTimeOffset.UtcNow, environment = Environment.OSVersion.VersionString,
-    status = failed == 0 && results.Count > 0 ? "passed" : "failed", total = results.Count, failed, filters, results };
+    status = failed == 0 && results.Count > 0 ? "passed" : "failed", total = results.Count, failed, filters, filter = filters, results };
 var outputIndex = Array.IndexOf(args, "--report");
 if (outputIndex >= 0 && outputIndex + 1 < args.Length)
 {

@@ -98,28 +98,28 @@ internal static class UpdateCoreTests
             var m = p.Manifest with { Payload = p.Manifest.Payload with { Bytes = zip.Length, Sha256 = Hash(zip) } };
             string path = Path.Combine(f.Root, "symlink.zip"); await File.WriteAllBytesAsync(path, zip); await RejectAsync(() => UpdatePayload.VerifyAsync(path, m), "UPDATE_PAYLOAD_ENTRY_INVALID");
         }));
-        yield return ("update.production_no_root_still_reads_release_list", () => Run(async f =>
+        yield return ("update.production_no_root_still_reads_latest", () => Run(async f =>
         {
             using var service = f.Service(new(new(1, 1, "production", []))); await service.CheckAsync(false);
-            Check(f.Requests.Any(u => u.AbsolutePath.EndsWith("/releases", StringComparison.Ordinal)) && service.Snapshot.ErrorCode == "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" && service.Snapshot.Candidate is null);
+            Check(f.Requests.Any(u => u.AbsolutePath.EndsWith("/releases/latest", StringComparison.Ordinal)) && service.Snapshot.ErrorCode == "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" && service.Snapshot.Candidate is null);
         }));
-        yield return ("update.semver_numeric_order_not_release_date_or_latest", () => Run(async f =>
+        yield return ("update.stable_follows_github_latest_only", () => Run(async f =>
         {
             f.Add("1.9.0", 9); f.Add("1.10.0", 10); f.Add("1.8.0", 8);
-            using var service = f.Service(); await service.CheckAsync(false); Check(service.Snapshot.Candidate?.Manifest.Version == "1.10.0");
-            Check(f.Requests.All(u => !u.AbsolutePath.EndsWith("latest", StringComparison.Ordinal)));
+            using var service = f.Service(); await service.CheckAsync(false); Check(service.Snapshot.Candidate?.Manifest.Version == "1.8.0");
+            Check(f.Requests.Any(u => u.AbsolutePath.EndsWith("latest", StringComparison.Ordinal)) && f.Requests.All(u => !u.Query.Contains("page=", StringComparison.Ordinal)));
         }));
         yield return ("update.strict_plus_meta_and_no_downgrade", () => Run(async f =>
         {
             f.Add("0.9.0", 1); f.Add("1.1.0", 2); f.Add("2.0.0-preview.1", 3);
             using var service = f.Service(); await service.CheckAsync(false); Check(service.Snapshot.Candidate?.Manifest.Channel == "plus");
             await service.CheckAsync(true); Check(service.Snapshot.Candidate?.Manifest.Channel == "meta");
-            await service.CheckAsync(false); Check(service.Snapshot.Candidate is null && service.Snapshot.Warnings.Contains("UPDATE_METADATA_REPLAY"));
+            await service.CheckAsync(false); Check(service.Snapshot.Candidate?.Manifest.Version == "1.1.0");
         }));
         yield return ("update.paginates_to_later_release_page", () => Run(async f =>
         {
-            for (int i = 0; i < 100; i++) f.Releases.Add(new { draft = true }); f.Add("1.2.0");
-            using var service = f.Service(); await service.CheckAsync(false); Check(service.Snapshot.Candidate?.Manifest.Version == "1.2.0"); Check(f.Requests.Any(u => u.Query.Contains("page=2", StringComparison.Ordinal)));
+            for (int i = 0; i < 100; i++) f.Releases.Add(new { draft = true }); f.Add("1.2.0-preview.1");
+            using var service = f.Service(); await service.CheckAsync(true); Check(service.Snapshot.Candidate?.Manifest.Version == "1.2.0-preview.1"); Check(f.Requests.Any(u => u.Query.Contains("page=2", StringComparison.Ordinal)));
         }));
         yield return ("update.prerelease_release_id_size_source_missing_assets_rejected", () => Run(async f =>
         {
@@ -131,15 +131,15 @@ internal static class UpdateCoreTests
         }));
         yield return ("update.download_verification_stage_channel_switch_blocks_commit", () => Run(async f =>
         {
-            f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false); await service.DownloadAndStageAsync();
+            f.Add("1.1.0-preview.1"); using var service = f.Service(); await service.CheckAsync(true); service.ConfirmTarget(service.Snapshot.Candidate!); await service.DownloadAndStageAsync();
             Check(service.Snapshot.State == UpdateState.Staged, service.Snapshot.ErrorCode ?? "no staged payload"); Check(File.Exists(service.ValidateStagedForCommit().PayloadPath));
-            service.SetPreviewEnabled(true); Reject(() => service.ValidateStagedForCommit(), "UPDATE_NOT_STAGED");
+            service.SetPreviewEnabled(false); Reject(() => service.ValidateStagedForCommit(), "UPDATE_NOT_STAGED");
         }));
         yield return ("update.persisted_sequence_digest_replay_and_failed_build", () => Run(async f =>
         {
             var first = f.Add("1.2.0", 5); using (var service = f.Service()) { await service.CheckAsync(false); service.RecordFailedCandidate(first.Manifest.BuildId); }
             using (var service = f.Service()) { await service.CheckAsync(false); Check(service.Snapshot.Candidate is null); }
-            f.Clear(); f.Add("1.3.0", 5); using var next = f.Service(); await next.CheckAsync(false); Check(next.Snapshot.Candidate is null && next.Snapshot.Warnings.Contains("UPDATE_SEQUENCE_REUSED"));
+            f.Clear(); f.Add("1.3.0", 5); using var next = f.Service(); await next.CheckAsync(false); Check(next.Snapshot.Candidate?.Manifest.Version == "1.3.0"); // Discovery alone never advances installation replay ledger.
         }));
         yield return ("update.unknown_signature_bad_bytes_no_candidate", () => Run(async f =>
         {
@@ -165,6 +165,125 @@ internal static class UpdateCoreTests
             int writes = 0; using var service = new UpdateService(Path.Combine(f.Root, "lease"), "1.0.0", "build-a", f, f.Downloads, Trust(), () => Now, _ => { writes++; return new Lease(); });
             service.SetPreviewEnabled(true); Check(writes == 1); await Task.CompletedTask;
         }));
+        yield return ("update.preview_pool_keeps_latest_stable_and_semver_order", () => Run(async f =>
+        {
+            f.Add("1.2.0", 1); f.Add("1.3.0-beta.10", 2); f.Add("1.3.0-beta.2", 3);
+            using var service = f.Service(); await service.CheckAsync(false); Check(service.Snapshot.Candidate?.Manifest.Version == "1.2.0");
+            await service.CheckAsync(true); Check(service.Snapshot.Candidate?.Manifest.Version == "1.3.0-beta.10");
+            f.Clear(); f.Add("1.3.0", 4);
+            using var preview = f.Service(dataSuffix: "preview", currentVersion: "1.3.0-rc.1"); await preview.CheckAsync(true);
+            Check(preview.Snapshot.Candidate?.Manifest.Version == "1.3.0");
+        }));
+        yield return ("update.preview_disabled_never_automatically_downgrades", () => Run(async f =>
+        {
+            f.Add("1.2.0", 1); using var service = f.Service(currentVersion: "1.3.0-beta.1"); await service.CheckAsync(false);
+            Check(service.Snapshot.Candidate is null && service.Snapshot.CheckComplete && service.Snapshot.Warnings.Contains("UPDATE_PREVIEW_STOPPED_KEEP_CURRENT"));
+        }));
+        yield return ("update.build_metadata_does_not_create_upgrade_loop", () => Run(async f =>
+        {
+            f.Add("1.1.0+build2"); using var service = f.Service(currentVersion: "1.1.0+build1"); await service.CheckAsync(false);
+            Check(service.Snapshot.Candidate is null && service.Snapshot.CheckComplete, service.Snapshot.ErrorCode ?? string.Join(",", service.Snapshot.Warnings));
+        }));
+        yield return ("update.opaque_release_requires_signed_tag_mapping", () => Run(async f =>
+        {
+            f.Add("1.1.0", tagOverride: "meta-historical-date"); using var service = f.Service(); await service.CheckAsync(false);
+            Check(service.Snapshot.Candidate?.Tag == "meta-historical-date" && service.Snapshot.Candidate.Manifest.Version == "1.1.0");
+        }));
+        yield return ("update.history_disabled_previews_current_and_old_protocol_are_visible", () => Run(async f =>
+        {
+            f.Add("0.9.0", 1); f.Add("1.0.0", 2); f.Add("1.2.0-beta.1", 3); f.Add("1.1.0", 4);
+            using var service = f.Service(); var page = await service.LoadHistoryAsync(UpdateSelectionMode.Upgrade);
+            Check(page.Items.Count == 4 && page.Items.Single(x => x.Version == "1.2.0-beta.1").DisabledReason == "UPDATE_PREVIEW_DISABLED");
+            Check(page.Items.Single(x => x.Version == "1.0.0").DisabledReason == "UPDATE_CURRENT_VERSION");
+            var rollback = await service.LoadHistoryAsync(UpdateSelectionMode.Rollback);
+            Check(rollback.Items.Single(x => x.Version == "0.9.0").DisabledReason == "UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED");
+        }));
+        yield return ("update.history_pagination_deduplicates_and_can_cancel", () => Run(async f =>
+        {
+            var added = f.Add("1.1.0"); object release = f.Releases[0];
+            for (int i = 1; i < 100; i++) f.Releases.Add(release); f.Add("1.2.0", 2);
+            using var service = f.Service(); var first = await service.LoadHistoryAsync(UpdateSelectionMode.Upgrade);
+            Check(first.HasMore && first.Items.Count == 1); using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+            try { await service.LoadHistoryAsync(UpdateSelectionMode.Upgrade, cancellationToken: cancelled.Token); throw new Exception("Expected cancellation"); } catch (OperationCanceledException) { }
+            var second = await service.LoadHistoryAsync(UpdateSelectionMode.Upgrade); Check(!second.HasMore && second.Items.Count == 2 && second.Items[0].Version == "1.2.0");
+        }));
+        yield return ("update.unconfirmed_never_enqueues_payload", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false); await service.DownloadAndStageAsync();
+            Check(service.Snapshot.ErrorCode == "UPDATE_CONSENT_REQUIRED" && f.Downloads.Snapshot().Count == 0 && f.Requests.All(u => !u.AbsolutePath.EndsWith("payload.zip", StringComparison.Ordinal)));
+        }));
+        yield return ("update.consent_pins_exact_release_when_latest_changes", () => Run(async f =>
+        {
+            f.Add("1.1.0", 1); using var service = f.Service(); await service.CheckAsync(false); var approved = service.Snapshot.Candidate!;
+            service.ConfirmTarget(approved); f.Add("1.2.0", 2); await service.DownloadAndStageAsync();
+            Check(service.Snapshot.Staged?.Candidate.ReleaseId == approved.ReleaseId, service.Snapshot.ErrorCode ?? "missing stage");
+            Check(f.Requests.All(u => !u.AbsolutePath.Contains("plus-v1.2.0/payload.zip", StringComparison.Ordinal)));
+            var staged = await service.ValidateStagedForCommitAsync(); Check(staged.Candidate.Manifest.Version == "1.1.0");
+        }));
+        yield return ("update.withdrawn_or_replaced_target_blocks_download", () => Run(async f =>
+        {
+            f.Add("1.1.0", 1); using var service = f.Service(); await service.CheckAsync(false); service.ConfirmTarget(service.Snapshot.Candidate!); f.Releases.Clear();
+            await service.DownloadAndStageAsync(); Check(service.Snapshot.ErrorCode == "UPDATE_NOT_FOUND" && f.Downloads.Snapshot().Count == 0);
+        }));
+        yield return ("update.cancel_consent_does_not_leave_authorized_plan", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false); var candidate = service.Snapshot.Candidate!;
+            service.DismissCandidate(candidate); Check(!service.Snapshot.ShouldPrompt); await service.CheckAsync(false); Check(!service.Snapshot.ShouldPrompt);
+            service.ConfirmTarget(candidate); service.CancelConsent(); await service.DownloadAndStageAsync(); Check(f.Downloads.Snapshot().Count == 0);
+        }));
+        yield return ("update.staged_survives_restart_without_automatic_install", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using (var service = f.Service()) { await service.CheckAsync(false); service.ConfirmTarget(service.Snapshot.Candidate!); await service.DownloadAndStageAsync(); Check(service.Snapshot.Staged is not null, service.Snapshot.ErrorCode ?? "missing"); }
+            using var restored = f.Service(); Check(restored.Snapshot.State == UpdateState.Staged && !restored.Snapshot.ShouldPrompt);
+            await restored.CheckAsync(false); Check(restored.Snapshot.Staged is not null && !restored.Snapshot.ShouldPrompt);
+        }));
+        yield return ("update.delayed_rollback_preserves_consent_refreshes_handoff_only", () => Run(async f =>
+        {
+            f.Add("1.1.0", minimumUpdater: "1.1.0");
+            using (var service = f.Service(currentVersion: "1.2.0"))
+            {
+                var choice = (await service.LoadHistoryAsync(UpdateSelectionMode.Rollback)).Items.Single(); Check(choice.CanInstall, choice.DisabledReason ?? "missing");
+                service.ConfirmTarget(choice.Candidate!, UpdateSelectionMode.Rollback, pinAfterSuccess: true); await service.DownloadAndStageAsync(); Check(service.Snapshot.Staged is not null, service.Snapshot.ErrorCode ?? "missing");
+            }
+            f.CurrentTime = Now.AddHours(6); using var restored = f.Service(currentVersion: "1.2.0");
+            Check(restored.Snapshot.Staged is not null, restored.Snapshot.ErrorCode ?? "missing restored");
+            var ready = await restored.ValidateStagedForCommitAsync(); Check(ready.RollbackAuthorization!.ExpiresUtc > f.CurrentTime && ready.Consent!.PinAfterSuccess);
+        }));
+        yield return ("update.startup_once_and_manual_coalesce", () => Run(async f =>
+        {
+            f.Add("1.1.0"); f.DelayMilliseconds = 30; using var service = f.Service();
+            await Task.WhenAll(service.CheckOnStartupAsync(), service.CheckOnStartupAsync(), service.CheckAsync(false));
+            int count = f.Requests.Count; await service.CheckOnStartupAsync(); Check(f.Requests.Count == count && f.Requests.Count(u => u.AbsolutePath.EndsWith("/latest", StringComparison.Ordinal)) == 1);
+        }));
+        yield return ("update.busy_metadata_releases_unstarted_consent_but_duplicate_preserves_download", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false); var candidate = service.Snapshot.Candidate!;
+            service.ConfirmTarget(candidate); f.DelayMilliseconds = 20; var historyTask = service.LoadHistoryAsync(UpdateSelectionMode.Upgrade);
+            await RejectAsync(() => service.DownloadAndStageAsync(), "UPDATE_OPERATION_IN_PROGRESS"); await historyTask;
+            service.ConfirmTarget(candidate); var download = service.DownloadAndStageAsync();
+            await RejectAsync(() => service.DownloadAndStageAsync(), "UPDATE_OPERATION_IN_PROGRESS"); await download;
+            Check(service.Snapshot.Staged is not null, service.Snapshot.ErrorCode ?? "missing");
+        }));
+        yield return ("update.conditional_304_is_validated_but_offline_is_not_success", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false); var success = service.Snapshot.LastSuccessfulCheckUtc;
+            f.ConditionalResponses = true; await service.CheckAsync(false); Check(service.Snapshot.CheckComplete && service.Snapshot.Candidate is not null && f.NotModifiedResponses > 0);
+            f.Offline = true; await service.CheckAsync(false); Check(!service.Snapshot.CheckComplete && service.Snapshot.ErrorCode == "UPDATE_OFFLINE" && service.Snapshot.LastSuccessfulCheckUtc == success);
+        }));
+        yield return ("update.rate_limit_backoff_persists_across_instances", () => Run(async f =>
+        {
+            f.RateLimited = true; using (var service = f.Service()) { await service.CheckAsync(false); Check(service.Snapshot.ErrorCode == "UPDATE_RATE_LIMITED" && service.Snapshot.RetryAfterUtc > Now); }
+            int count = f.Requests.Count; using var next = f.Service(); await next.CheckAsync(false); Check(f.Requests.Count == count && next.Snapshot.LastSuccessfulCheckUtc is null);
+        }));
+        yield return ("update.pin_is_committed_only_after_matching_health_receipt", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using var service = f.Service(); string ledger = Path.Combine(f.Root, ".autumnos-update"); Directory.CreateDirectory(ledger);
+            void Journal(string phase) => File.WriteAllText(Path.Combine(ledger, "journal.json"), JsonSerializer.Serialize(new { phase, transactionId = "unit-tx", toBuildId = "build-a", targetVersion = "1.0.0", pinAfterSuccess = true }));
+            await File.WriteAllTextAsync(Path.Combine(f.Root, "autumn.install.json"), JsonSerializer.Serialize(new { buildId = "build-a", version = "1.0.0" }));
+            Journal("healthCheck"); service.ReconcileCommittedPolicy(); Check(service.Snapshot.PinnedVersion is null);
+            Journal("committed"); service.ReconcileCommittedPolicy(); Check(service.Snapshot.PinnedVersion == "1.0.0"); await service.CheckAsync(false); Check(service.Snapshot.Candidate is not null && !service.Snapshot.ShouldPrompt);
+            service.RestoreFollowingChannel(); service.ReconcileCommittedPolicy(); Check(service.Snapshot.PinnedVersion is null);
+        }));
         yield return ("update.host_download_profile_does_not_relax_community_autumn_limit", () =>
         {
             var request = new DownloadRequest("cn.labchronicles.autumnos", "1.1.0", new("https://github.com/paimeng5201314/autumnlab/releases/download/plus-v1.1.0/payload.zip"), 21L * 1024 * 1024, new string('a', 64), 1, 1, 1);
@@ -186,16 +305,19 @@ internal static class UpdateCoreTests
         public List<object> Releases { get; } = [];
         public List<Uri> Requests { get; } = [];
         public DownloadService Downloads { get; }
+        public DateTimeOffset CurrentTime = Now;
+        public int DelayMilliseconds, NotModifiedResponses;
+        public bool ConditionalResponses, Offline, RateLimited;
         public Fixture() { Directory.CreateDirectory(Root); Downloads = new(Root, this, () => new(), hostUpdate: true); }
         public void Clear() { Releases.Clear(); Assets.Clear(); }
-        public UpdateService Service(UpdateTrustStore? trust = null, string dataSuffix = "data") => new(Path.Combine(Root, dataSuffix), "1.0.0", "build-a", this, Downloads, trust ?? Trust(), () => Now);
-        public Signed Add(string version, long sequence = 1, string fault = "")
+        public UpdateService Service(UpdateTrustStore? trust = null, string dataSuffix = "data", string currentVersion = "1.0.0") => new(Path.Combine(Root, dataSuffix), currentVersion, "build-a", this, Downloads, trust ?? Trust(), () => CurrentTime);
+        public Signed Add(string version, long sequence = 1, string fault = "", string? tagOverride = null, string minimumUpdater = "1.0.0")
         {
-            string channel = version.Contains('-') ? "meta" : "plus", tag = channel + "-v" + version;
+            string channel = SemanticVersion.Parse(version).IsPrerelease ? "meta" : "plus", tag = tagOverride ?? channel + "-v" + version;
             byte[] file = Encoding.UTF8.GetBytes("isolated unit bytes; never executable"), zip;
             using (MemoryStream memory = new()) { using (ZipArchive archive = new(memory, ZipArchiveMode.Create, true)) { var entry = archive.CreateEntry("AutumnOS.Client.exe"); using var output = entry.Open(); output.Write(file); } zip = memory.ToArray(); }
-            var manifest = new UpdateManifest(1, channel, version, "unit-build-" + version, "win-x64", "1.0.0", sequence, Now.AddMinutes(-5), Now.AddDays(7), "test-key", 1,
-                new("payload.zip", zip.Length, Hash(zip), sequence, sequence * 10 + 3), [new("AutumnOS.Client.exe", file.Length, Hash(file))], [], new(1, 1, true));
+            var manifest = new UpdateManifest(1, channel, version, "unit-build-" + version.Replace('+', '-'), "win-x64", minimumUpdater, sequence, Now.AddMinutes(-5), Now.AddDays(7), "test-key", 1,
+                new("payload.zip", zip.Length, Hash(zip), sequence, sequence * 10 + 3), [new("AutumnOS.Client.exe", file.Length, Hash(file))], [], new(1, 1, true), ReleaseTag: tagOverride);
             byte[] bytes = UpdateManifestCodec.Serialize(manifest), signature = UpdateSignature.Create(bytes, SigningKey.Value, "test-key", 1);
             Assets[tag + "/autumn.update.json"] = bytes; Assets[tag + "/autumn.update.sig"] = signature; Assets[tag + "/payload.zip"] = zip;
             object Asset(string name, byte[] content, long id) => new { id, name, size = content.Length + (fault == "size" && name == "payload.zip" ? 1 : 0), browser_download_url = "https://github.com/" + (fault == "source" ? "foreign/repo" : UpdateService.Repository) + "/releases/download/" + tag + "/" + name };
@@ -204,17 +326,37 @@ internal static class UpdateCoreTests
             return new(manifest, bytes, signature, zip);
         }
         public string SavePayload(Signed signed) { string path = Path.Combine(Root, "payload.zip"); File.WriteAllBytes(path, signed.Zip); return path; }
-        public Task<HttpResponseMessage> SendAsync(Uri url, GitHubRequestKind kind, IReadOnlyDictionary<string, string>? headers, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> SendAsync(Uri url, GitHubRequestKind kind, IReadOnlyDictionary<string, string>? headers, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested(); Requests.Add(url); byte[] bytes;
+            if (DelayMilliseconds > 0) await Task.Delay(DelayMilliseconds, cancellationToken);
+            if (Offline) throw new HttpRequestException("isolated offline");
+            if (RateLimited) { var limit = new HttpResponseMessage(HttpStatusCode.TooManyRequests); limit.Headers.RetryAfter = new(TimeSpan.FromMinutes(2)); return limit; }
+            if (ConditionalResponses && headers?.ContainsKey("If-None-Match") == true) { NotModifiedResponses++; return new HttpResponseMessage(HttpStatusCode.NotModified); }
             if (kind == GitHubRequestKind.Api)
             {
-                int page = int.Parse(url.Query.Split("page=", StringSplitOptions.None)[^1]);
-                bytes = JsonSerializer.SerializeToUtf8Bytes(Releases.Skip((page - 1) * 100).Take(100).ToArray());
+                var values = Releases.Select(x => JsonSerializer.SerializeToElement(x)).ToArray();
+                if (url.AbsolutePath.EndsWith("/latest", StringComparison.Ordinal))
+                {
+                    var stable = values.Where(x => !x.GetProperty("draft").GetBoolean() && !x.GetProperty("prerelease").GetBoolean()).LastOrDefault();
+                    if (stable.ValueKind == JsonValueKind.Undefined) return new HttpResponseMessage(HttpStatusCode.NotFound);
+                    bytes = JsonSerializer.SerializeToUtf8Bytes(stable);
+                }
+                else if (long.TryParse(url.Segments[^1], out long releaseId))
+                {
+                    var selected = values.FirstOrDefault(x => x.TryGetProperty("id", out var id) && id.GetInt64() == releaseId);
+                    if (selected.ValueKind == JsonValueKind.Undefined) return new HttpResponseMessage(HttpStatusCode.NotFound);
+                    bytes = JsonSerializer.SerializeToUtf8Bytes(selected);
+                }
+                else
+                {
+                    int page = int.Parse(url.Query.Split("page=", StringSplitOptions.None)[^1]);
+                    bytes = JsonSerializer.SerializeToUtf8Bytes(Releases.Skip((page - 1) * 100).Take(100).ToArray());
+                }
             }
             else bytes = Assets[Uri.UnescapeDataString(url.AbsolutePath.Split("/releases/download/", StringSplitOptions.None)[1])];
             var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) };
-            response.Headers.ETag = new('"' + Hash(bytes) + '"'); return Task.FromResult(response);
+            response.Headers.ETag = new('"' + Hash(bytes) + '"'); return response;
         }
         public void Dispose()
         {

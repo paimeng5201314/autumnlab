@@ -791,8 +791,12 @@ function Finish-SingleOnboarding($Product) {
         $null=Wait-SmokeCondition {Find-VisibleSmokeElement $Product.Element 'BrandNextButton'} 'the next onboarding brand page'
     }
     if (Find-VisibleSmokeElement $Product.Element 'BrandNextButton') { Invoke-SmokeButton $Product.Element 'BrandNextButton' }
-    $null=Wait-SmokeCondition { (Find-VisibleSmokeElement $Product.Element 'PrepareDesktopButton') -or (Find-VisibleSmokeElement $Product.Element 'SampleButton') } 'preparation or completed desktop'
-    if (Find-VisibleSmokeElement $Product.Element 'PrepareDesktopButton') { Invoke-SmokeButton $Product.Element 'PrepareDesktopButton' }
+    $null=Wait-SmokeCondition { (Find-VisibleSmokeElement $Product.Element 'WelcomePanel') -or (Find-VisibleSmokeElement $Product.Element 'SampleButton') } 'preparation or completed desktop'
+    if (Find-VisibleSmokeElement $Product.Element 'WelcomePanel') {
+        $skip=Find-SmokeElement $Product.Element 'FirstRunSkip'
+        if($skip -and $skip.Current.IsEnabled){Invoke-SmokeButton $Product.Element 'FirstRunSkip'}
+        Invoke-SmokeButton $Product.Element 'PrepareDesktopButton'
+    }
     Wait-SmokeDesktop $Product
 }
 

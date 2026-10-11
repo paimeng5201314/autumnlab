@@ -20,6 +20,7 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
     private CancellationTokenSource _epochCancellation = new();
     private CancellationTokenSource? _login;
     private Task<IdentitySnapshot>? _initialization;
+    private readonly TaskCompletionSource<IdentitySnapshot> _localSessionReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private ProtectedIdentitySession? _session;
     private bool _disposed;
     private bool _persistenceFailure;
@@ -36,6 +37,8 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
     }
     public IdentitySnapshot Snapshot { get { lock (_gate) return _snapshot; } }
     public event EventHandler<IdentitySnapshot>? Changed;
+    /// <summary>Completes after the protected local session has been read; network refresh continues independently.</summary>
+    public Task<IdentitySnapshot> LocalSessionReady => _localSessionReady.Task;
 
     /// <summary>Linearizes a synchronous final data commit with account mutation. Never await while held.</summary>
     public IDisposable EnterSessionLease(string accountNamespace, long sessionEpoch)
@@ -68,8 +71,9 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
     {
         await Task.Yield();
         // Reading the DPAPI vault may repair its restrictive ACL; it participates in maintenance too.
-        using (IDisposable? operation = TryEnterCriticalOperation("恢复身份凭据"))
+        try
         {
+            using IDisposable? operation = TryEnterCriticalOperation("恢复身份凭据");
             if (operation is null) return MaintenanceDeferred();
             lock (_gate)
             {
@@ -89,6 +93,7 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
                 }
             }
         }
+        finally { _localSessionReady.TrySetResult(Snapshot); }
         Publish();
         return _session is null ? Snapshot : await RefreshAsync(cancellationToken).ConfigureAwait(false);
     }

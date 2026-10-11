@@ -5,15 +5,16 @@ on:
     inputs:
       build_version:
         description: Internal build version
-        default: 0.5.1-local.5
+        default: 0.5.1-local.6
         required: true
       release_label:
         description: Version displayed in the application
-        default: meta0.0.2-20261007
+        default: meta0.0.3-20261011
         required: true
   push:
     branches:
       - 'codex/windows-exe-*'
+      - 'codex/update-first-login-*'
 
 permissions:
   contents: read
@@ -26,10 +27,12 @@ jobs:
   build:
     runs-on: windows-2025
     timeout-minutes: 90
+    outputs:
+      artifact_id: ${{ steps.executable.outputs.artifact-id }}
     env:
       AUTUMN_BUILD_ID: T06-actions-${{ github.run_id }}-${{ github.run_attempt }}
-      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1-local.5' }}
-      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'meta0.0.2-20261007' }}
+      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1-local.6' }}
+      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'meta0.0.3-20261011' }}
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
       POWERSHELL_TELEMETRY_OPTOUT: '1'
@@ -112,6 +115,7 @@ jobs:
           }
 
       - name: Upload the EXE and its identity
+        id: executable
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: AutumnOS-${{ env.AUTUMN_RELEASE_LABEL }}-win-x64
@@ -119,6 +123,14 @@ jobs:
             artifacts/single-file/${{ env.AUTUMN_BUILD_ID }}/AutumnOS.exe
             artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/package-single-file.json
             artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/source-snapshot.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/build-result.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/tests.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/sdk-tests.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/machine-contracts.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/sample-tests.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/native-client-tests.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/server-http-tests.json
+            artifacts/builds/${{ env.AUTUMN_BUILD_ID }}/t04-tools-tests.json
             artifacts/build-pipelines/${{ env.AUTUMN_BUILD_ID }}/pipeline.json
           if-no-files-found: error
           compression-level: 0
@@ -157,5 +169,32 @@ jobs:
           Source commit: $env:GITHUB_SHA
           Download the EXE from this run's Artifacts when the build job succeeds.
           Native interactive smoke tests: not_run_ci_no_interactive_desktop.
-          This job does not publish a GitHub Release or sign the EXE with Authenticode.
+          The EXE is not signed with Authenticode; production self-update trust is unconfigured.
+          The separate preview publication job requires this build and all noninteractive tests to succeed.
           "@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+
+  publish-preview:
+    needs: build
+    if: startsWith(github.ref, 'refs/heads/codex/update-first-login-')
+    runs-on: windows-2025
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
+    env:
+      AUTUMN_BUILD_ID: T06-actions-${{ github.run_id }}-${{ github.run_attempt }}
+      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1-local.6' }}
+      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'meta0.0.3-20261011' }}
+      AUTUMN_ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+      POWERSHELL_TELEMETRY_OPTOUT: '1'
+    steps:
+      - name: Check out the exact release source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Verify the build and publish the complete preview
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/Publish-GitHubRelease.ps1 -ArtifactId $env:AUTUMN_ARTIFACT_ID -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL

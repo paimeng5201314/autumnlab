@@ -71,13 +71,28 @@ public sealed partial class MainWindow
         {
             identityService = new LogtoIdentityService(options, installationRoot.DataDirectory, enterCriticalOperation: reason => criticalOperations.EnterWrite(reason));
             identityService.Changed += OnIdentityChanged;
-            await identityService.InitializeAsync(lifetime.Token);
+            Task<IdentitySnapshot> restoration = identityService.InitializeAsync(lifetime.Token);
+            _ = ObserveIdentityRestorationAsync(restoration);
+            // Establish the local account namespace before creating runtime services, while the
+            // bounded online validation continues without delaying desktop or public update checks.
+            await identityService.LocalSessionReady.WaitAsync(lifetime.Token);
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
-            accountResult.Text = "AUTH_INITIALIZATION_FAILED · 凭据未能安全恢复，请重新认证；游戏和存档已保留。";
+            if (!lifetime.IsCancellationRequested) accountResult.Text = "AUTH_INITIALIZATION_FAILED · 凭据未能安全恢复，请重新认证；游戏和存档已保留。";
         }
-        RefreshAccountUi();
+        if (!lifetime.IsCancellationRequested) RefreshAccountUi();
+    }
+
+    private async Task ObserveIdentityRestorationAsync(Task<IdentitySnapshot> restoration)
+    {
+        try { await restoration; }
+        catch (OperationCanceledException) { }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            if (!lifetime.IsCancellationRequested) accountResult.Text = "AUTH_INITIALIZATION_FAILED · 会话联网检查未完成，仍可使用游客功能。";
+        }
+        if (!lifetime.IsCancellationRequested) { RefreshAccountUi(); RefreshFirstRunAccountUi(); }
     }
 
     private void OnIdentityChanged(object? sender, IdentitySnapshot state)
@@ -86,6 +101,7 @@ public sealed partial class MainWindow
         {
             if (lifetime.IsCancellationRequested) return;
             RefreshAccountUi();
+            RefreshFirstRunAccountUi();
             RefreshPermissionsUi();
             RefreshDataRecoveryUi();
         });
@@ -108,7 +124,7 @@ public sealed partial class MainWindow
             ? $"{state.DisplayName ?? "Logto 用户"}\n{persistenceSummary}\n{(state.CanRefresh ? "会话支持刷新" : "无刷新凭据，超过有效期需要重新认证")}" : "使用系统浏览器完成 Logto 登录，密码只在登录网站中输入。";
         accountSessionIssue.Text = state?.ErrorCode is { } code ? code + " · 请检查会话状态；已有存档保留。" : "";
         accountSessionIssue.Visibility = state?.ErrorCode is null ? Visibility.Collapsed : Visibility.Visible;
-        bool busy = accountOperation || state?.State == IdentitySessionState.SigningIn;
+        bool busy = accountOperation || firstRunLoginPending || firstRunSkipPending || state?.State == IdentitySessionState.SigningIn;
         bool available = identityService is not null;
         loginButton.IsEnabled = sessionLoginButton.IsEnabled = available && !busy;
         updatingRememberAccount = true;
@@ -156,7 +172,7 @@ public sealed partial class MainWindow
 
     private async Task ChangeAccountAsync(bool login, bool reauthenticate, bool browserLogout, bool? remember = null)
     {
-        if (identityService is null || accountOperation) return;
+        if (identityService is null || accountOperation || firstRunLoginPending || firstRunSkipPending) return;
         accountOperation = true; RefreshAccountUi();
         try
         {

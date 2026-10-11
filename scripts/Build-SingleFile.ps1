@@ -2,8 +2,8 @@
 [CmdletBinding()]
 param(
     [string]$BuildId = ('T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0, 6)),
-    [string]$BuildVersion = '0.5.1-local.5',
-    [string]$ReleaseLabel = 'meta0.0.2-20261007',
+    [string]$BuildVersion = '0.5.1-local.6',
+    [string]$ReleaseLabel = 'meta0.0.3-20261011',
     [switch]$CheckPrerequisitesOnly,
     [switch]$SkipNativeSmoke
 )
