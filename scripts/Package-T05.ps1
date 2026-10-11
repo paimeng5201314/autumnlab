@@ -56,7 +56,8 @@ Build $buildId
 Source $snapshot
 保留整个目录，双击 AutumnOS.exe；AutumnOS.Client.exe 由稳定入口启动。
 数据在原目录的 AutumnOS_Data。升级仅修改清单内程序文件，备份保存在 .autumnos-update。
-设置 > 系统更新。自动更新默认开，预览默认关；正式公钥未配置时拒绝自动安装。
+设置 > 系统更新。每次启动检查，确认后才下载；预览默认关，安装必须主动重启确认。
+正式公钥未配置时拒绝安装；普通退出和下次启动不会应用待安装版本。
 本目录包含 .NET / Windows App SDK / 固定 WebView2 Runtime。没有安装系统组件。
 本地更新演练仅在明确标识的独立构建启用；生产来源固定 paimeng5201314/autumnlab。
 完整 T03 收尾及安装版暂缓；T01/T02/T04 未完成验收保留；无公开发布授权。

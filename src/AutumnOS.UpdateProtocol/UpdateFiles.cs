@@ -7,11 +7,13 @@ using AutumnOS.Update;
 namespace AutumnOS.UpdateProtocol;
 
 public sealed record InstalledFile(string Path, long Bytes, string Sha256);
-public sealed record InstalledBuild(int SchemaVersion, string Version, string BuildId, InstalledFile[] Files);
+public sealed record InstalledBuild(int SchemaVersion, string Version, string BuildId, InstalledFile[] Files, int DataSchemaVersion = 1);
 public sealed record HandoffRecord(int SchemaVersion, string TransactionId, string Root, string DataRoot, int ParentPid, long ParentStartUtcTicks,
-    string CurrentBuildId, string CurrentVersion, string ManifestSha256, DateTimeOffset ExpiresUtc);
+    string CurrentBuildId, string CurrentVersion, string ManifestSha256, DateTimeOffset ExpiresUtc,
+    UpdateRollbackAuthorization? RollbackAuthorization = null, bool PinAfterSuccess = false, UpdateTargetIdentity? TargetIdentity = null);
 public sealed record UpdateJournal(int SchemaVersion, string TransactionId, string Root, string Phase, string FromBuildId, string ToBuildId,
-    InstalledBuild Previous, InstalledFile[] NextFiles, string[] Touched, string? ErrorCode = null, int ChildPid = 0, long ChildStartUtcTicks = 0);
+    InstalledBuild Previous, InstalledFile[] NextFiles, string[] Touched, string? ErrorCode = null, int ChildPid = 0, long ChildStartUtcTicks = 0,
+    string? DataSnapshotId = null, bool PinAfterSuccess = false, string? TargetVersion = null, string? ManifestSha256 = null);
 
 public static class UpdateFiles
 {

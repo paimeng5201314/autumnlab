@@ -187,7 +187,7 @@ try{
  . (Join-Path $PSScriptRoot 'Smoke-NativeAppInput.ps1')
  $product=Start-SmokeProduct $scope
 
- Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
+ Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
  $null=Wait-SmokeCondition {Find-VisibleSmokeElement $product.Element 'SampleButton'} 'installed sample desktop'
  $dataDirectory=Join-Path $stageDirectory 'AutumnOS_Data'
  $runtimeLog=Join-Path $dataDirectory 'Logs/runtime-events.jsonl'

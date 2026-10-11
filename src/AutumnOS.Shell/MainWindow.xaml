@@ -277,7 +277,8 @@
         <TextBlock x:Name="WelcomeProducer" FontSize="13" Foreground="#607568" HorizontalAlignment="Center"/>
         <Button Content="继续  →" Click="OnWelcomeNext" Tag="initializing" HorizontalAlignment="Center" Margin="0,32,0,0" Padding="28,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="BrandNextButton"/>
       </StackPanel>
-      <StackPanel x:Name="InitializeStage" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="600" Spacing="18" Padding="32">
+      <ScrollViewer x:Name="InitializeScroll" Visibility="Collapsed" Margin="0,84,0,84" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Center">
+      <StackPanel x:Name="InitializeStage" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="600" Spacing="18" Padding="32">
         <TextBlock Text="从这里，开始。" FontSize="42" Foreground="#2E483C" HorizontalAlignment="Center"/>
         <TextBlock Text="准备桌面与元素配对，让灵感有处可留。&#x0a;游戏进度保存在这台电脑上，无需登录也能开始。" FontSize="17" Foreground="#607568" TextWrapping="Wrap" TextAlignment="Center" LineHeight="28"/>
         <TextBlock Text="选择你喜欢的光线" FontSize="13" Margin="0,18,0,0" Foreground="#607568" HorizontalAlignment="Center"/>
@@ -286,6 +287,7 @@
         <Button x:Name="PrepareDesktopButton" Content="准备我的桌面  →" Click="OnInitialize" HorizontalAlignment="Center" Margin="0,12,0,0" Padding="28,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="PrepareDesktopButton"/>
         <ProgressRing x:Name="InitializeProgress" IsActive="False" Visibility="Collapsed" Width="24" Height="24"/>
       </StackPanel>
+      </ScrollViewer>
       <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="30" Spacing="10"><TextBlock x:Name="WelcomeError" TextWrapping="Wrap" Foreground="#9D3425" MaxWidth="680"/><Button x:Name="WelcomeRetry" Content="重新检查" Click="OnRetry" Visibility="Collapsed" HorizontalAlignment="Center"/></StackPanel>
     </Grid>
     <Grid x:Name="RunningSwitcher" Visibility="Collapsed" Background="#C51B2422" AutomationProperties.AutomationId="RunningSwitcher">

@@ -10,7 +10,7 @@ $run=Join-Path $buildRoot ('single-file-'+[Guid]::NewGuid().ToString('N'))
 $destination=Join-Path $ProjectRoot "artifacts/single-file/$BuildId"
 if(Test-Path -LiteralPath $destination){throw 'Existing delivery preserved; choose a new BuildId.'}
 New-Item -ItemType Directory -Path $run,$destination|Out-Null
-$snapshot=& "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory $run
+$snapshot=& "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory $run -AdditionalInputs @($build.additional_inputs)
 if($snapshot -ne $build.source_snapshot_id){throw 'Source changed since build.'}
 $staging=Join-Path $run 'payload';New-Item -ItemType Directory -Path $staging|Out-Null
 $delivery=Get-Content -LiteralPath (Join-Path $buildRoot 'delivery-hashes.json') -Raw|ConvertFrom-Json
@@ -34,7 +34,8 @@ Lab Chronicles AutumnOS · 制作人：派蒙
 启动准备器使用目标 Windows 自带的 .NET Framework 4.x，不安装全局组件。
 保留 AutumnOS_Data 可保留存档；不要删除它内部正在使用的 System 运行文件。
 非安装包，不创建桌面/开始菜单快捷方式，不改系统 PATH/注册表。
-生产自动更新仍要求正式信任根/签名；不关闭 TLS 或验签。
+每次启动仅检查更新；确认后下载，主动选择「重启并安装」后应用。
+生产更新仍要求正式信任根和签名；不关闭 TLS 或验签。
 本地联调包，完整 T06、T03 收尾及正式发布门禁仍未全部通过。
 '@|Set-Content -LiteralPath (Join-Path $staging 'READ-ME.txt') -Encoding utf8NoBOM
 $inventoryPath=Join-Path $run 'managed-files.json'
@@ -92,6 +93,6 @@ try{
 if((Get-Item -LiteralPath $executable).VersionInfo.ProductVersion -ne $label){throw 'Compiled single-file version mismatch.'}
 $files|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $run 'delivery-hashes.json') -Encoding utf8NoBOM
 [ordered]@{status='passed';removed=$removed;removed_count=$removed.Count;removed_bytes=($removed|Measure-Object bytes -Sum).Sum;deduplicated_embedded_copies=$files.Count-$seen.Count;unique_blobs=$seen.Count;runtime_paths_retained=$files.Count;runtime_trimmed=$false;licenses_retained=$true;old_files_deleted=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $run 'cleanup.json') -Encoding utf8NoBOM
-$report=[ordered]@{status='prepared';build_id=$BuildId;source_snapshot_id=$snapshot;release_label=$label;version=$build.version;executable=$executable;executable_sha256=(Get-FileHash -LiteralPath $executable).Hash.ToLowerInvariant();bytes=(Get-Item -LiteralPath $executable).Length;delivery_files=1;data_folder='AutumnOS_Data';program_relative_path=('AutumnOS_Data/System/Product-'+$payloadHash.Substring(0,20));payload_sha256=$payloadHash;logical_files=$files.Count;unique_blobs=$seen.Count;native_tests='not_run';setup='deferred_by_user';public_release=$false;authenticode='not_signed';production_trust='unconfigured_signed_install_disabled';compiler=$compiler;compiler_sha256=(Get-FileHash -LiteralPath $compiler).Hash.ToLowerInvariant();compiler_version=(Get-Item -LiteralPath $compiler).VersionInfo.FileVersion;evidence=$run;inbox_framework='Windows .NET Framework 4.x';net10_winappsdk_webview2='embedded_self_contained_no_global_install'}
+$report=[ordered]@{status='prepared';build_id=$BuildId;source_snapshot_id=$snapshot;release_label=$label;version=$build.version;executable=$executable;executable_sha256=(Get-FileHash -LiteralPath $executable).Hash.ToLowerInvariant();bytes=(Get-Item -LiteralPath $executable).Length;delivery_files=1;data_folder='AutumnOS_Data';program_relative_path=('AutumnOS_Data/System/Product-'+$payloadHash.Substring(0,20));payload_sha256=$payloadHash;logical_files=$files.Count;unique_blobs=$seen.Count;native_tests='not_run';setup='deferred_by_user';public_release=$false;authenticode='not_signed';production_trust=$(if(@($build.build_properties|Where-Object {$_ -like '-p:ProductionUpdateTrustFile=*'}).Count){'embedded_public_root_requires_signed_release'}else{'unconfigured_signed_install_disabled'});compiler=$compiler;compiler_sha256=(Get-FileHash -LiteralPath $compiler).Hash.ToLowerInvariant();compiler_version=(Get-Item -LiteralPath $compiler).VersionInfo.FileVersion;evidence=$run;inbox_framework='Windows .NET Framework 4.x';net10_winappsdk_webview2='embedded_self_contained_no_global_install'}
 $report|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $buildRoot 'package-single-file.json') -Encoding utf8NoBOM
 $report|ConvertTo-Json -Depth 6

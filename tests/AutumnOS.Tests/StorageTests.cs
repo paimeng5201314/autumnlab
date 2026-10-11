@@ -112,6 +112,7 @@ public static class StorageTests
         var resumed = new FirstRunStateStore(new InstallationRoot(root.InstallationDirectory));
         Assert(resumed.Load().State!.Checkpoint == FirstRunCheckpoint.Brand, "A new service instance must resume persisted progress.");
         Assert(resumed.Advance(FirstRunCheckpoint.Initializing).Success, "Initializing checkpoint must persist.");
+        Assert(resumed.RecordLoginStep(FirstRunLoginStep.Skipped).Success, "Explicit login decision must persist independently.");
         Assert(resumed.Advance(FirstRunCheckpoint.Completed).State!.IsComplete, "Completion must persist.");
         Assert(new FirstRunStateStore(root).Load().State!.IsComplete, "Completion must survive service restart.");
     });

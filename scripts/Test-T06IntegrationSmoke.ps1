@@ -165,17 +165,19 @@ function Invoke-T06HostHop([string]$PayloadDirectory,[bool]$Rollback){
     Set-Input $unsaved
     Click 'ManagedAppHome';Wait-SmokeDesktop $product;Show-T05Updates
     Click-T05 'CheckSystemUpdate'
+    $null=Wait-SmokeCondition {(Find-T05 'DownloadSystemUpdate').Current.IsEnabled} 'verified host metadata available before consent' $UpdateTimeoutSeconds
+    Click-T05 'DownloadSystemUpdate';Click-T05 'ConfirmSystemUpdate'
     $null=Wait-SmokeCondition {
         $text=(Find-T05 'UpdateStatus').Current.Name
-        if($text -match '更新未完成|自动安装尚未配置'){throw $text}
-        if($text -match '已准备，尚未安装'){return $true}
-        $download=Find-T05 'DownloadSystemUpdate';if($download -and $download.Current.IsEnabled){$download.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()}
-        return $false
+        if($text -match '检查或更新未完成|缺少正式更新可信公钥'){throw $text}
+        return $text -match '等待重启.*安装包已验证' -and $null -ne (Find-T05 'PostponeSystemUpdateRestart')
     } 'real candidate download, hash and trusted signature verification' $UpdateTimeoutSeconds
+    Click-T05 'PostponeSystemUpdateRestart'
     $scenario.staged_status=(Find-T05 'UpdateStatus').Current.Name;$scenario.candidate_text=(Find-T05 'UpdateCandidate').Current.Name
     Add-SmokeCheck ($scenario.name+'_signed_host_candidate_staged') ($scenario.candidate_text.Contains([string]$manifest.version))
     Add-SmokeCheck ($scenario.name+'_host_preview_remains_off_independent_of_app_preview') ((Find-T05 'PreviewUpdates').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -eq [Windows.Automation.ToggleState]::Off)
-    $null=Wait-SmokeCondition {(Find-T05 'UpdateWaitingReason').Current.Name -match '后台运行'} 'actual installed-app background blocks update'
+    Click-T05 'RestartSystemUpdate';Click-T05 'ConfirmSystemUpdateRestart'
+    $null=Wait-SmokeCondition {(Find-T05 'UpdateWaitingReason').Current.Name -match '保存并正常退出'} 'actual installed-app background blocks explicit restart'
     Save-T05Screenshot 'background-wait';Assert-T06AppBlocks 'Background';Test-T06NormalRecall
     Click-T05 'SettingsHomeButton';Wait-SmokeDesktop $product
     $before=@(Read-SmokeEvents $runtimeLog).Count
@@ -188,7 +190,8 @@ function Invoke-T06HostHop([string]$PayloadDirectory,[bool]$Rollback){
     $scenario.data_before=@(Get-T06ProtectedData)
     $beforeReceipt=Read-T05Json (Join-Path $stageDirectory 'autumn.install.json')
     Close-T06ManagedApp
-    # No forced restart action: default-on idle maintenance obtains the real coordinator lease.
+    # Idle state does not grant consent; explicitly restart only after saving and closing the app.
+    Show-T05Updates;Click-T05 'RestartSystemUpdate';Click-T05 'ConfirmSystemUpdateRestart'
     $script:product=Wait-T05Transaction $manifest.buildId $Rollback
     Wait-SmokeDesktop $product
     $expectedBuild=if($Rollback){$scenario.a_build_id}else{$manifest.buildId}
@@ -274,10 +277,9 @@ try{
     $script:product=Start-SmokeProduct $cwd
     Register-T05Process $product.EntryProcess 'AutumnOS.exe';Register-T05Process $product.Process 'AutumnOS.Client.exe' $product.EntryProcess.Id
     New-T06Scenario 'A-to-B' $false
-    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton';Click-T05 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton';Click-T05 'FirstRunSkip';Click-T05 'PrepareDesktopButton';Wait-SmokeDesktop $product
     Show-T05Updates
-    Add-SmokeCheck 'new_user_auto_on_host_preview_off' (
-        (Find-T05 'AutomaticUpdates').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -eq [Windows.Automation.ToggleState]::On -and
+    Add-SmokeCheck 'new_user_host_preview_off' (
         (Find-T05 'PreviewUpdates').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -eq [Windows.Automation.ToggleState]::Off)
     Toggle-T05 'SettingsNavAppearance' $true;Click-T05 'DarkThemeButton';Click-T05 'NightWallpaperButton'
     Click-T05 'SettingsHomeButton';Wait-SmokeDesktop $product

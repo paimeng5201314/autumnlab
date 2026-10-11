@@ -20,14 +20,16 @@ internal static class Program
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             string code = error is UpdateException updateError ? updateError.Code : error is IOException && error.Message.StartsWith("UPDATE_", StringComparison.Ordinal) ? error.Message : "UPDATE_FAILED";
+            var cause = error.InnerException;
+            string? detailCode = cause is UpdateException detail ? detail.Code : cause is IOException && cause.Message.StartsWith("UPDATE_", StringComparison.Ordinal) ? cause.Message : null;
             var failure = UpdateTransaction.LastFailure;
-            try { UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "last-error.json"), new { code, at = DateTimeOffset.UtcNow,
+            try { UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "last-error.json"), new { code, detailCode, at = DateTimeOffset.UtcNow,
                 errorType = failure?.ErrorType ?? error.GetBaseException().GetType().Name,
                 hresult = failure?.HResult ?? $"0x{error.GetBaseException().HResult:X8}",
                 phase = failure?.Phase ?? "handoff-or-health", file = failure?.File, transactionId = failure?.TransactionId }); }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
             Console.Error.WriteLine("AUTUMNOS_UPDATER " + code);
-            if (code is "UPDATE_ROLLED_BACK" or "UPDATE_APPLY_ABORTED_FILES_BUSY")
+            if (code is "UPDATE_ROLLED_BACK" or "UPDATE_APPLY_ABORTED_FILES_BUSY" or "UPDATE_APPLY_RECHECK_ABORTED")
             {
                 // The transaction has restored the recorded old files and released all
                 // ownership. Relaunch through the original stable user entry.

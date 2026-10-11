@@ -182,7 +182,7 @@ namespace AutumnAccountSmoke {
     $window = [Windows.Automation.AutomationElement]::FromHandle($handle)
     Assert-OwnedWindow
     $null = Wait-For { Visible 'HelloNextButton' } 'first-run hello'
-    Invoke-Button 'HelloNextButton'; Invoke-Button 'BrandNextButton'; Invoke-Button 'PrepareDesktopButton'
+    Invoke-Button 'HelloNextButton'; Invoke-Button 'BrandNextButton'; Invoke-Button 'FirstRunSkip'; Invoke-Button 'PrepareDesktopButton'
     $null = Wait-For { Visible 'SettingsButton' } 'desktop'
     Check 'first_run_and_desktop_still_work' ($null -ne (Visible 'SettingsButton'))
     Invoke-Button 'AccountButton'

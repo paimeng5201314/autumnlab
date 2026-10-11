@@ -132,7 +132,7 @@ try{
  if(-not('AutumnDesktopInteractionSmoke.NativeWindows' -as [type])){Add-Type -TypeDefinition $nativeDefinition[0].Value}
  . (Join-Path $PSScriptRoot 'Smoke-NativeAppInput.ps1')
  $product=Start-SmokeProduct $scope
- Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
+ Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
  $null=Wait-SmokeCondition {Find-VisibleSmokeElement $product.Element 'SampleButton'} 'installed sample desktop'
  Add-SmokeCheck 'developer_entry_absent_by_default' ($null -eq (Find-VisibleSmokeElement $product.Element 'DeveloperButton'))
  Invoke-SmokeButton $product.Element 'SettingsButton';Select-FeatureCategory 'SettingsNavDiagnostics';Set-FeatureToggle 'DeveloperModeToggle' $true

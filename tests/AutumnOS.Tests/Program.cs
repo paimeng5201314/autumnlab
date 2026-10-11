@@ -51,10 +51,21 @@ cases = cases.Concat(SupportBundleTests.Cases());
 cases = cases.Concat(PortableLayoutTests.Cases());
 cases = cases.Concat(DeveloperSimulationTests.Cases());
 cases = cases.Concat(UpdateCoreTests.Cases());
+cases = cases.Concat(FirstRunAccountTests.Cases()).Concat(UpdateRollbackTests.Cases());
 if (OperatingSystem.IsWindows()) cases = cases.Concat(UpdateProtocolTests.Cases()).Concat(SetupTransactionTests.Cases());
 cases = cases.Concat(ServerIdentityTests.Cases()).Concat(DeveloperToolsTests.Cases()).Concat(PackageDesktopTests.Cases());
 cases = cases.Concat(StoreCatalogTests.Cases()).Concat(StoreDownloadTests.Cases()).Concat(StoreInstallTests.Cases()).Concat(StoreCoordinatorTests.Cases());
 if (OperatingSystem.IsWindows()) cases = cases.Concat(LauncherTests.Cases()).Concat(IdentitySessionTests.Cases()).Concat(IdentityProtocolTests.Cases());
+var filterIndex = Array.IndexOf(args, "--filter");
+string[] filters = [];
+if (filterIndex >= 0)
+{
+    if (filterIndex + 1 >= args.Length || args[filterIndex + 1].StartsWith("--", StringComparison.Ordinal)) return 2;
+    filters = args[filterIndex + 1].Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    if (filters.Length == 0) return 2;
+    cases = cases.Where(test => filters.Any(prefix => test.Name.StartsWith(prefix, StringComparison.Ordinal))).ToArray();
+    if (!cases.Any()) { Console.Error.WriteLine("No tests matched the requested prefix filter."); return 2; }
+}
 var results = new List<object>();
 var failed = 0;
 foreach (var (name, run) in cases)
@@ -75,7 +86,7 @@ foreach (var (name, run) in cases)
 }
 var document = new { schema_version = 1, task_id = BrandInfo.BuildId.StartsWith("T06-", StringComparison.Ordinal) ? "T06" : "T05", source_snapshot_id = BrandInfo.SourceSnapshotId,
     build_id = BrandInfo.BuildId, executed_utc = DateTimeOffset.UtcNow, environment = Environment.OSVersion.VersionString,
-    status = failed == 0 ? "passed" : "failed", total = results.Count, failed, results };
+    status = failed == 0 ? "passed" : "failed", filter = filters, total = results.Count, failed, results };
 var outputIndex = Array.IndexOf(args, "--report");
 if (outputIndex >= 0 && outputIndex + 1 < args.Length)
 {

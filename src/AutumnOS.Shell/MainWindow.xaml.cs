@@ -29,6 +29,7 @@ public sealed partial class MainWindow : Window
         if (AutumnOS.UpdateProtocol.UpdateLaunchGuard.IsHealthStart) InteractionRoot.IsEnabled = false;
         InitializeDesktopInteractions();
         InitializeAccountUi();
+        InitializeFirstRunAccountUi();
         InitializeStoreUi();
         InitializeUpdateUi();
         Closed += (_, _) => CloseUpdateServices();
@@ -56,7 +57,7 @@ public sealed partial class MainWindow : Window
         int height = Math.Min(880, Math.Max(320, work.Height - 48));
         AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(work.X + (work.Width - width) / 2,
             work.Y + (work.Height - height) / 2, width, height));
-        Closed += (_, _) => { HideRunningOperations(); clockTimer.Stop(); systemUiSettings.AnimationsEnabledChanged -= OnSystemAnimationsChanged; foreach (var timer in pressTimers) timer.Stop(); lifetime.Cancel(); CloseStoreServices(); CloseDeveloperCapabilities(); appHost?.Dispose(); foreach (var broker in fileBrokers.Values) broker.Dispose(); fileBrokers.Clear(); identityService?.Dispose(); };
+        Closed += (_, _) => { HideRunningOperations(); clockTimer.Stop(); systemUiSettings.AnimationsEnabledChanged -= OnSystemAnimationsChanged; foreach (var timer in pressTimers) timer.Stop(); lifetime.Cancel(); firstRunAccount?.Dispose(); CloseStoreServices(); CloseDeveloperCapabilities(); appHost?.Dispose(); foreach (var broker in fileBrokers.Values) broker.Dispose(); fileBrokers.Clear(); identityService?.Dispose(); };
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -78,6 +79,9 @@ public sealed partial class MainWindow : Window
         DiscoveryButton.IsEnabled = configuration.IsValid;
         if (!CheckData()) return;
         await InitializeIdentityAsync();
+        if (lifetime.IsCancellationRequested) return;
+        firstRunAccount?.Dispose();
+        firstRunAccount = new FirstRunAccountCoordinator(stateStore!, identityService);
         InitializeRuntimeServices();
         InitializeDeveloperTools();
         InitializeDataRecoveryUi();
@@ -147,8 +151,14 @@ public sealed partial class MainWindow : Window
     {
         HelloStage.Visibility = checkpoint == FirstRunCheckpoint.Hello ? Visibility.Visible : Visibility.Collapsed;
         BrandStage.Visibility = checkpoint == FirstRunCheckpoint.Brand ? Visibility.Visible : Visibility.Collapsed;
-        InitializeStage.Visibility = checkpoint == FirstRunCheckpoint.Initializing ? Visibility.Visible : Visibility.Collapsed;
+        InitializeScroll.Visibility = checkpoint == FirstRunCheckpoint.Initializing ? Visibility.Visible : Visibility.Collapsed;
+        RefreshFirstRunAccountUi();
         ShowPage(WelcomePanel);
+        if (checkpoint == FirstRunCheckpoint.Initializing) DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!lifetime.IsCancellationRequested && WelcomePanel.Visibility == Visibility.Visible && InitializeScroll.Visibility == Visibility.Visible)
+                (firstRunLogin.IsEnabled ? firstRunLogin : firstRunSkip.IsEnabled ? firstRunSkip : PrepareDesktopButton).Focus(FocusState.Programmatic);
+        });
     }
 
     private void OnWelcomeNext(object sender, RoutedEventArgs e)
@@ -164,6 +174,14 @@ public sealed partial class MainWindow : Window
     private async void OnInitialize(object sender, RoutedEventArgs e)
     {
         if (stateStore is null || preparing) return;
+        var onboarding = stateStore.Load();
+        if (!onboarding.Success) { StartupError(onboarding.RecoveryMessage); return; }
+        if (!onboarding.State!.IsComplete && onboarding.State.LoginStep == FirstRunLoginStep.Pending)
+        {
+            ShowWelcome(onboarding.State.Checkpoint);
+            WelcomeError.Text = "请先选择登录账号或暂时跳过，然后完成桌面配置。";
+            return;
+        }
         preparing = true;
         PrepareDesktopButton.IsEnabled = InitializeButton.IsEnabled = false;
         InitializeProgress.Visibility = Visibility.Visible;
@@ -186,7 +204,14 @@ public sealed partial class MainWindow : Window
             new StructuredLog(installationRoot).Write(DiagnosticEvent.FirstRunCheckpointSaved);
             ShowPage(DesktopPanel);
         }
-        finally { preparing = false; InitializeProgress.IsActive = false; InitializeProgress.Visibility = Visibility.Collapsed; PrepareDesktopButton.IsEnabled = true; }
+        catch (OperationCanceledException) { }
+        catch (Exception error) when (error is not OutOfMemoryException) { if (!lifetime.IsCancellationRequested) StartupError("桌面配置未完成，已保存的进度仍然保留，请重试。"); }
+        finally
+        {
+            preparing = false;
+            if (!lifetime.IsCancellationRequested) { InitializeProgress.IsActive = false; InitializeProgress.Visibility = Visibility.Collapsed; RefreshFirstRunAccountUi(); }
+        }
+        await TryShowStartupUpdatePromptAsync();
     }
 
     private async Task<bool> PrepareInstalledAppsAsync()

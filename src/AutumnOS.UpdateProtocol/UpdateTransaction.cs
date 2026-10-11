@@ -1,16 +1,17 @@
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Text.Json;
 using AutumnOS.Store;
 using AutumnOS.Update;
 
 namespace AutumnOS.UpdateProtocol;
 
-public sealed record UpdateSecurityState(long HighestSequence, string[] FailedBuilds, string ManifestSha256 = "");
+public sealed record UpdateSecurityState(long HighestSequence, string[] FailedBuilds, string ManifestSha256 = "", string? MinimumVersion = null);
 public sealed record UpdateFailureDiagnostic(string TransactionId, string Phase, string? File, string ErrorType, string HResult, DateTimeOffset AtUtc);
 
 public static class UpdateTransaction
 {
-    public const string UpdaterVersion = "1.0.0";
+    public const string UpdaterVersion = "1.1.0";
     public static UpdateFailureDiagnostic? LastFailure { get; private set; }
     private sealed class ApplyContext { internal string Phase = "inventory"; internal string? File; internal bool Recorded; }
     private static string JournalPath(string root) => Path.Combine(UpdateFiles.Work(root), "journal.json");
@@ -21,6 +22,37 @@ public static class UpdateTransaction
     }
     public static bool IsFailedBuild(string root, string buildId) => Security(root).FailedBuilds.Contains(buildId, StringComparer.Ordinal);
     public static long HighestSequence(string root) => Security(root).HighestSequence;
+    public static string? GetCompatibility(string root, UpdateManifest manifest, bool rollback)
+    {
+        try
+        {
+            if (!SemanticVersion.TryParse(manifest.MinimumUpdaterVersion, out var minimum) || !SemanticVersion.TryParse(UpdaterVersion, out var updater) || minimum!.CompareTo(updater) > 0)
+                return "UPDATE_UPDATER_TOO_OLD";
+            // Protocol 1.1 is the first release profile that can read first-run v2.
+            // Restoring an old onboarding file would incorrectly repeat setup/logout.
+            if (rollback && minimum!.CompareTo(updater) < 0) return "UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED";
+            if (minimum!.CompareTo(updater) < 0)
+            {
+                string firstRun = Path.Combine(UpdateFiles.DataRoot(root), "Config", "first-run.json");
+                UpdatePaths.EnsureNoReparsePoints(firstRun);
+                if (File.Exists(firstRun))
+                {
+                    if (new FileInfo(firstRun).Length > 16384) return "UPDATE_ONBOARDING_SCHEMA_UNSUPPORTED";
+                    using var state = JsonDocument.Parse(File.ReadAllBytes(firstRun));
+                    if (!state.RootElement.TryGetProperty("schemaVersion", out var schema) || !schema.TryGetInt32(out int version) || version > 1)
+                        return "UPDATE_ONBOARDING_SCHEMA_UNSUPPORTED";
+                }
+            }
+            var security = Security(root);
+            if (security.MinimumVersion is { } floor && (!SemanticVersion.TryParse(floor, out var lower) ||
+                !SemanticVersion.TryParse(manifest.Version, out var target) || target!.CompareTo(lower) < 0)) return "UPDATE_MINIMUM_SECURITY_VERSION";
+            if (security.FailedBuilds.Contains(manifest.BuildId, StringComparer.Ordinal)) return "UPDATE_FAILED_BUILD_BLOCKED";
+            UpdateDataSnapshot.CheckCompatibility(root, manifest);
+            return null;
+        }
+        catch (IOException error) when (error.Message.StartsWith("UPDATE_", StringComparison.Ordinal)) { return error.Message; }
+        catch (Exception error) when (error is IOException or UpdateException or UnauthorizedAccessException or JsonException) { return "UPDATE_DATA_COMPATIBILITY_UNAVAILABLE"; }
+    }
     public static bool NeedsRecovery(string root) => File.Exists(JournalPath(root)) && UpdateFiles.Read<UpdateJournal>(JournalPath(root)).Phase is not ("committed" or "rolledBack" or "aborted");
 
     public static void RunHandoff(string root, string id)
@@ -79,14 +111,35 @@ public static class UpdateTransaction
         string metadata = Path.Combine(tx, "autumn.update.json"), signature = Path.Combine(tx, "autumn.update.sig");
         if (new FileInfo(metadata).Length > UpdateManifestCodec.MaximumManifestBytes || new FileInfo(signature).Length > 16384 || UpdateFiles.Hash(metadata) != offer.ManifestSha256) throw new IOException("UPDATE_HANDOFF_DIGEST_INVALID");
         var security = Security(root);
-        var manifest = UpdateSignature.Verify(File.ReadAllBytes(metadata), File.ReadAllBytes(signature), UpdateTrustStore.FromEmbedded(), DateTimeOffset.UtcNow, security.HighestSequence);
+        byte[] bytes = File.ReadAllBytes(metadata), signed = File.ReadAllBytes(signature);
+        var manifest = offer.RollbackAuthorization is { } authorization
+            ? UpdateSignature.VerifyForRollback(bytes, signed, UpdateTrustStore.FromEmbedded(), DateTimeOffset.UtcNow, security.HighestSequence, authorization, offer.CurrentBuildId, offer.CurrentVersion)
+            : UpdateSignature.Verify(bytes, signed, UpdateTrustStore.FromEmbedded(), DateTimeOffset.UtcNow, security.HighestSequence);
         if (manifest.Sequence == security.HighestSequence && security.ManifestSha256.Length != 0 && security.ManifestSha256 != offer.ManifestSha256) throw new IOException("UPDATE_SEQUENCE_CONTENT_CONFLICT");
         if (security.FailedBuilds.Contains(manifest.BuildId, StringComparer.Ordinal)) throw new IOException("UPDATE_FAILED_BUILD_BLOCKED");
         var installed = UpdateFiles.ReadInstalled(root);
         if (installed.BuildId != offer.CurrentBuildId || installed.Version != offer.CurrentVersion) throw new IOException("UPDATE_CURRENT_BUILD_MISMATCH");
-        if (!SemanticVersion.TryParse(manifest.Version, out var target) || !SemanticVersion.TryParse(installed.Version, out var current) || target!.CompareTo(current) <= 0) throw new IOException("UPDATE_DOWNGRADE_FORBIDDEN");
+        if (!SemanticVersion.TryParse(manifest.Version, out var target) || !SemanticVersion.TryParse(installed.Version, out var current) ||
+            (offer.RollbackAuthorization is null ? target!.CompareTo(current) <= 0 : target!.CompareTo(current) >= 0)) throw new IOException("UPDATE_DOWNGRADE_FORBIDDEN");
         if (!SemanticVersion.TryParse(manifest.MinimumUpdaterVersion, out var minimum) || !SemanticVersion.TryParse(UpdaterVersion, out var updater) || minimum!.CompareTo(updater) > 0) throw new IOException("UPDATE_UPDATER_TOO_OLD");
-        if (!manifest.Data.RollbackCompatible || manifest.Data.SchemaVersion != 1 || manifest.Data.MinimumReadableVersion > 1) throw new IOException("UPDATE_DATA_MIGRATION_UNSUPPORTED");
+        if (GetCompatibility(root, manifest, offer.RollbackAuthorization is not null) is { } compatibilityError) throw new IOException(compatibilityError);
+        if (offer.TargetIdentity is { } identity && (identity.Repository != manifest.Repository || identity.ReleaseId != manifest.Payload.ReleaseId ||
+            identity.Version != manifest.Version || identity.TargetRid != manifest.TargetRid || identity.AssetId != manifest.Payload.AssetId ||
+            identity.Asset != manifest.Payload.Asset || identity.Bytes != manifest.Payload.Bytes || identity.Sha256 != manifest.Payload.Sha256 || identity.ManifestSha256 != offer.ManifestSha256))
+            throw new IOException("UPDATE_HANDOFF_TARGET_CHANGED");
+        string policyPath = Path.Combine(UpdateFiles.DataRoot(root), "Updates", "state.json");
+        UpdatePaths.EnsureNoReparsePoints(policyPath);
+        if (File.Exists(policyPath))
+        {
+            if (new FileInfo(policyPath).Length > 128 * 1024) throw new IOException("UPDATE_POLICY_INVALID");
+            using var policy = JsonDocument.Parse(File.ReadAllBytes(policyPath));
+            if (manifest.Channel == "meta" && (!policy.RootElement.TryGetProperty("preview", out var enabled) || enabled.ValueKind != JsonValueKind.True)) throw new IOException("UPDATE_PREVIEW_DISABLED");
+            if (policy.RootElement.TryGetProperty("retryAfterUtc", out var retry) && retry.ValueKind == JsonValueKind.String &&
+                retry.TryGetDateTimeOffset(out var after) && after > DateTimeOffset.UtcNow) throw new IOException("UPDATE_RATE_LIMITED");
+        }
+        else if (manifest.Channel == "meta") throw new IOException("UPDATE_PREVIEW_DISABLED");
+        UpdateApplySourceGuard.VerifyDefaultAsync(manifest, offer.TargetIdentity?.Tag ?? offer.RollbackAuthorization?.ReleaseTag ?? manifest.ReleaseTag ?? manifest.Channel + "-v" + manifest.Version,
+            CancellationToken.None, offer.ManifestSha256, new StoreNetworkSettingsService(UpdateFiles.DataRoot(root)).Load()).GetAwaiter().GetResult();
         foreach (var file in manifest.Files) _ = UpdateFiles.Managed(root, file.Path);
         foreach (var path in manifest.RemoveFiles) _ = UpdateFiles.Managed(root, path);
         UpdatePayload.VerifyAsync(Path.Combine(tx, "payload.zip"), manifest, CancellationToken.None).GetAwaiter().GetResult();
@@ -96,7 +149,13 @@ public static class UpdateTransaction
     private static void Apply(string root, string tx, HandoffRecord offer, UpdateManifest manifest)
     {
         // Recheck after both the business lock and cross-session physical root lock exist.
-        manifest = Verify(root, tx, offer);
+        try { manifest = Verify(root, tx, offer); }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            // Parent already exited. No bytes changed, so the independent entry must
+            // reopen the intact original rather than leave an unexplained closed app.
+            throw new IOException("UPDATE_APPLY_RECHECK_ABORTED", error);
+        }
         ApplyFiles(root, tx, offer, manifest);
     }
 
@@ -119,7 +178,12 @@ public static class UpdateTransaction
         var next = manifest.Files.Select(f => new InstalledFile(f.Path, f.Bytes, f.Sha256)).ToArray();
         var oldMap = old.Files.ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);
         var nextMap = next.ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);
-        var removals = new HashSet<string>(manifest.RemoveFiles, StringComparer.OrdinalIgnoreCase);
+        // A historical signed inventory cannot name files first added by a later build.
+        // Explicit rollback removes only currently receipt-owned bytes absent from the
+        // exact authorized target; unknown files are never part of this derived set.
+        var removals = offer.RollbackAuthorization is null
+            ? new HashSet<string>(manifest.RemoveFiles, StringComparer.OrdinalIgnoreCase)
+            : old.Files.Where(f => !nextMap.ContainsKey(f.Path)).Select(f => f.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var file in old.Files)
         {
             context.File = file.Path;
@@ -145,8 +209,13 @@ public static class UpdateTransaction
             { original.CopyTo(saved); saved.Flush(true); }
             if (!UpdateFiles.Matches(destination, file)) throw new IOException("UPDATE_BACKUP_INVALID");
         }
+        // All supported host configuration is snapshotted after business exit, before
+        // the first program replacement or possible new-client migration.
+        context.Phase = "data-backup"; context.File = null;
+        var dataSnapshot = UpdateDataSnapshot.Capture(root, offer.TransactionId, old);
         var journal = new UpdateJournal(1, offer.TransactionId, root, "backedUp", old.BuildId, manifest.BuildId, old, next,
-            next.Select(f => f.Path).Concat(removals).Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            next.Select(f => f.Path).Concat(removals).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            DataSnapshotId: dataSnapshot.SnapshotId, PinAfterSuccess: offer.PinAfterSuccess, TargetVersion: manifest.Version, ManifestSha256: offer.ManifestSha256);
         context.Phase = "journal-backedUp"; context.File = null;
         UpdateFiles.Write(JournalPath(root), journal);
         var occupiedFiles = new List<FileStream>();
@@ -172,7 +241,7 @@ public static class UpdateTransaction
             }
             foreach (var path in removals) { context.Phase = "remove"; context.File = path; File.Delete(UpdateFiles.Managed(root, path)); }
             context.Phase = "receipt"; context.File = UpdateFiles.ReceiptName;
-            UpdateFiles.Write(Path.Combine(root, UpdateFiles.ReceiptName), new InstalledBuild(1, manifest.Version, manifest.BuildId, next));
+            UpdateFiles.Write(Path.Combine(root, UpdateFiles.ReceiptName), new InstalledBuild(1, manifest.Version, manifest.BuildId, next, manifest.Data.SchemaVersion));
             context.Phase = "journal-health"; context.File = null;
             UpdateFiles.Write(JournalPath(root), journal with { Phase = "health" });
         }
@@ -269,13 +338,15 @@ public static class UpdateTransaction
             foreach (var file in manifest.Files)
                 if (!UpdateFiles.Matches(UpdateFiles.Managed(root, file.Path), new(file.Path, file.Bytes, file.Sha256))) throw new IOException("UPDATE_HEALTH_FILES_CHANGED");
             var state = Security(root);
-            UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), state with { HighestSequence = Math.Max(state.HighestSequence, manifest.Sequence), ManifestSha256 = UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")) });
+            UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), state with { HighestSequence = Math.Max(state.HighestSequence, manifest.Sequence),
+                ManifestSha256 = manifest.Sequence >= state.HighestSequence ? UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")) : state.ManifestSha256 });
+            PortableEntryBinding.Commit(root, manifest.BuildId, manifest.Version);
             UpdateFiles.Write(JournalPath(root), journal with { Phase = "committed" });
             committed = true;
             rootLease.Dispose();
             UpdatePipe.SendAsync(pipe, new("commit", id), timeout.Token).GetAwaiter().GetResult();
             UpdatePipe.ReceiveAsync(pipe, id, "lease-acquired", timeout.Token).GetAwaiter().GetResult();
-            UpdateFiles.Write(Path.Combine(tx, "result.json"), new { outcome = "committed", buildId = manifest.BuildId, coreHealthVerified = true });
+            UpdateFiles.Write(Path.Combine(tx, "result.json"), new { outcome = "committed", buildId = manifest.BuildId, version = manifest.Version, pinAfterSuccess = journal.PinAfterSuccess, coreHealthVerified = true });
             UpdatePipe.SendAsync(pipe, new("interactive", id), timeout.Token).GetAwaiter().GetResult();
             // Keep the server allocated until the client consumed the final grant and
             // disconnected; a transport failure here must never trigger process killing.
@@ -327,6 +398,7 @@ public static class UpdateTransaction
         var previous = journal.Previous.Files.ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);
         foreach (var file in journal.Previous.Files)
             if (!UpdateFiles.Matches(UpdateFiles.Managed(backup, file.Path), file)) throw new IOException("UPDATE_RECOVERY_BACKUP_INVALID");
+        if (journal.DataSnapshotId is { } snapshotId) _ = UpdateDataSnapshot.Validate(root, snapshotId, journal.Previous);
         UpdateFiles.Write(JournalPath(root), journal with { Phase = "rollingBack", ErrorCode = error });
         foreach (var file in journal.Previous.Files) Replace(UpdateFiles.Managed(backup, file.Path), UpdateFiles.Managed(root, file.Path), file);
         foreach (var file in journal.NextFiles.Where(f => !previous.ContainsKey(f.Path)))
@@ -339,11 +411,15 @@ public static class UpdateTransaction
             }
         }
         UpdateFiles.Write(Path.Combine(root, UpdateFiles.ReceiptName), journal.Previous);
+        if (journal.DataSnapshotId is { } restoreId) UpdateDataSnapshot.Restore(root, restoreId, journal.Previous);
+        PortableEntryBinding.Commit(root, journal.Previous.BuildId, journal.Previous.Version);
         UpdateFiles.Write(JournalPath(root), journal with { Phase = "rolledBack", ErrorCode = error });
     }
     private static void RecordFailure(string root, string buildId, long sequence, string? manifestSha256 = null)
     {
         var state = Security(root);
-        UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), new UpdateSecurityState(Math.Max(state.HighestSequence, sequence), state.FailedBuilds.Append(buildId).Distinct(StringComparer.Ordinal).ToArray(), manifestSha256 ?? state.ManifestSha256));
+        UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), state with { HighestSequence = Math.Max(state.HighestSequence, sequence),
+            FailedBuilds = state.FailedBuilds.Append(buildId).Distinct(StringComparer.Ordinal).ToArray(),
+            ManifestSha256 = sequence >= state.HighestSequence ? manifestSha256 ?? state.ManifestSha256 : state.ManifestSha256 });
     }
 }

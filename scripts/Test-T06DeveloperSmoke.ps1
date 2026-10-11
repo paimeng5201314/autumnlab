@@ -247,7 +247,7 @@ try{
     Initialize-T05FocusNative
     $script:product=Start-SmokeProduct $cwd
     $trackedProcesses.Add([pscustomobject]@{Process=$product.Process;StartTicks=$product.Process.StartTime.ToUniversalTime().Ticks;Path=$product.Process.MainModule.FileName;Root=$stageDirectory})
-    Click 'HelloNextButton';Click 'BrandNextButton';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click 'HelloNextButton';Click 'BrandNextButton';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
     $script:documentTitle='元素配对 · Lab Chronicles'
     Click 'SampleButton'
     $businessName=Wait-SmokeCondition {Find-DeveloperNamed '玩家昵称' ([Windows.Automation.ControlType]::Edit)} 'real installed business sample input'

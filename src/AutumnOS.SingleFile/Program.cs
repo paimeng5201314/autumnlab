@@ -53,8 +53,16 @@ namespace AutumnOS.SingleFile
                     if (!held) throw new IOException("PORTABLE_PREPARATION_BUSY");
                     try
                     {
-                        if (!Directory.Exists(product)) Extract(executable, system, product, inventory);
+                        // The entry record lives outside the disposable extraction directory.
+                        // Never silently reseed the old embedded program after a signed update.
+                        EntryBinding binding = ReadEntryBinding(system);
+                        if (!Directory.Exists(product))
+                        {
+                            if (binding != null && binding.BuildId != BundleIdentity.BuildId) throw new IOException("PORTABLE_UPDATED_RUNTIME_MISSING");
+                            Extract(executable, system, product, inventory);
+                        }
                         ValidateRuntime(product, inventory);
+                        ValidateEntryBinding(product, binding);
                     }
                     finally { mutex.ReleaseMutex(); }
                 }
@@ -216,6 +224,33 @@ namespace AutumnOS.SingleFile
             }
         }
 
+        private static EntryBinding ReadEntryBinding(string system)
+        {
+            string path = Path.Combine(system, "Entry-" + BundleIdentity.PayloadSha256.Substring(0, 20) + ".json"); Plain(path);
+            if (!File.Exists(path)) return null;
+            if (new FileInfo(path).Length > 8192) throw new IOException("PORTABLE_ENTRY_BINDING_INVALID");
+            EntryBinding binding;
+            using (var input = File.OpenRead(path)) binding = (EntryBinding)new DataContractJsonSerializer(typeof(EntryBinding)).ReadObject(input);
+            if (binding.Schema != 1 || binding.Seed != BundleIdentity.PayloadSha256 || binding.ProductDirectory != "Product-" + BundleIdentity.PayloadSha256.Substring(0, 20) || string.IsNullOrWhiteSpace(binding.BuildId))
+                throw new IOException("PORTABLE_ENTRY_BINDING_INVALID");
+            return binding;
+        }
+
+        private static void ValidateEntryBinding(string product, EntryBinding binding)
+        {
+            string journalPath = Path.Combine(product, ".autumnos-update", "journal.json"); Plain(journalPath);
+            if (File.Exists(journalPath))
+            {
+                Journal journal;
+                using (var input = File.OpenRead(journalPath)) journal = (Journal)new DataContractJsonSerializer(typeof(Journal)).ReadObject(input);
+                if (journal.Phase != "committed" && journal.Phase != "rolledBack" && journal.Phase != "aborted") return;
+            }
+            Receipt receipt;
+            using (var input = File.OpenRead(Path.Combine(product, "autumn.install.json"))) receipt = (Receipt)new DataContractJsonSerializer(typeof(Receipt)).ReadObject(input);
+            if (binding == null ? receipt.BuildId != BundleIdentity.BuildId : receipt.BuildId != binding.BuildId)
+                throw new IOException("PORTABLE_ENTRY_BINDING_INVALID");
+        }
+
         private static string Resolve(string root, string relative)
         {
             CheckRelative(relative);
@@ -269,6 +304,13 @@ namespace AutumnOS.SingleFile
             [DataMember(Name = "sha256")] public string Hash = null;
         }
         [DataContract] private sealed class Journal { [DataMember(Name = "phase")] public string Phase = null; }
+        [DataContract] private sealed class EntryBinding
+        {
+            [DataMember(Name = "schemaVersion")] public int Schema = 0;
+            [DataMember(Name = "seedSha256")] public string Seed = null;
+            [DataMember(Name = "productDirectory")] public string ProductDirectory = null;
+            [DataMember(Name = "buildId")] public string BuildId = null;
+        }
 
         private sealed class RegionStream : Stream
         {

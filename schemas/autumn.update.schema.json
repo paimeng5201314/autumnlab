@@ -11,6 +11,7 @@
     "repository": { "const": "paimeng5201314/autumnlab" },
     "channel": { "enum": ["plus", "meta"] },
     "version": { "$ref": "#/$defs/semver" },
+    "releaseTag": { "type": ["string", "null"], "minLength": 1, "maxLength": 200, "pattern": "^[^\\u0000-\\u001f\\u007f/\\\\]+$", "description": "Optional exact signed GitHub Release tag. Required for opaque historical-style tag mappings; never inferred from display names or dates." },
     "buildId": { "$ref": "#/$defs/identifier" },
     "targetRid": { "const": "win-x64" },
     "minimumUpdaterVersion": { "$ref": "#/$defs/semver" },
