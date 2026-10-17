@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "version": "plus0.0.4-20261017",
+  "release_label": "plus0.0.4-20261017",
+  "tag": "plus0.0.4-20261017",
+  "channel": "stable",
+  "prerelease": false,
+  "producer": "派蒙",
+  "build_id": "T06-20261017-stable-03",
+  "source_snapshot_id": "sha256:18dab870b97cc5785213a4f666205348fb33d4c2253263d988e8170650461e45",
+  "compiled_input_count": 393,
+  "compatibility_semver": "0.5.1",
+  "windows_file_version": "0.0.4.0",
+  "product_version": "plus0.0.4-20261017",
+  "build": {
+    "status": "passed",
+    "configuration": "Release",
+    "rid": "win-x64",
+    "sdk": "10.0.401",
+    "warnings": 0,
+    "errors": 0,
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "finished_utc": "2026-10-17T18:10:21.6282393+08:00"
+  },
+  "executable": {
+    "name": "AutumnOS.exe",
+    "bytes": 488734276,
+    "sha256": "94ce904433866e4d54d9c5ac3f2b0afb9de1008003391500cb8417850d914b37",
+    "authenticode": "not_signed"
+  },
+  "automated_tests": {
+    "status": "passed",
+    "total": 1244,
+    "csharp": 768,
+    "sdk": 22,
+    "machine_contracts": 358,
+    "samples": 6,
+    "chemleap_model": 50,
+    "synthetic_identity": 21,
+    "server_http_negative": 7,
+    "developer_cli": 12,
+    "failed": 0
+  },
+  "source_checks": {
+    "status": "passed",
+    "checks": 79
+  },
+  "native_tests": {
+    "status": "passed",
+    "checks": 49,
+    "passed": 49,
+    "cleanup": "passed",
+    "remaining_processes": 0,
+    "started_utc": "2026-10-17T18:46:35.6023237+08:00",
+    "finished_utc": "2026-10-17T18:47:44.7236468+08:00",
+    "scope": "isolated actual single-file first start, version, theme, guest game save, recall and restart"
+  },
+  "login": {
+    "public_discovery": "passed",
+    "real_provider": "not_run",
+    "real_login": "not_run",
+    "logout_callback_registration": "unverified"
+  },
+  "remaining": {
+    "full_t06": "in_progress",
+    "installer": "deferred_by_user",
+    "clean_os": "not_run",
+    "windows10": "not_run",
+    "production_update": "not_run",
+    "production_update_trust": "unconfigured_signed_install_disabled",
+    "single_file_outer_upgrade": "not_run",
+    "community_runtime_isolation": "not_accepted_in_this_release"
+  },
+  "source_asset": "AutumnOS-plus0.0.4-20261017-source.zip",
+  "checksum_note": "Source ZIP digest is in the Release SHA256SUMS.txt; no self-referential archive hash is embedded here."
+}

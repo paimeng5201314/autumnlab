@@ -247,7 +247,7 @@ try{
     Initialize-T05FocusNative
     $script:product=Start-SmokeProduct $cwd
     $trackedProcesses.Add([pscustomobject]@{Process=$product.Process;StartTicks=$product.Process.StartTime.ToUniversalTime().Ticks;Path=$product.Process.MainModule.FileName;Root=$stageDirectory})
-    Click 'HelloNextButton';Click 'BrandNextButton';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click 'HelloNextButton';Click 'BrandNextButton'; Click 'WelcomeAppearanceNext';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
     $script:documentTitle='元素配对 · Lab Chronicles'
     Click 'SampleButton'
     $businessName=Wait-SmokeCondition {Find-DeveloperNamed '玩家昵称' ([Windows.Automation.ControlType]::Edit)} 'real installed business sample input'
@@ -259,7 +259,7 @@ try{
     Click-DeveloperWeb '申请私有存储权限';Click-Named '允许';$null=Wait-DeveloperText 'storage：granted'
     Click-DeveloperWeb '保存笔记设置';$null=Wait-DeveloperText '笔记设置已保存到当前账号'
     Click-DeveloperWeb '写入私有文件';$null=Wait-DeveloperText '已原子写入本应用私有文件'
-    Click 'CloseGameButton';Click-Named '确认结束';Wait-SmokeDesktop $product
+    Invoke-AutumnGameShortcut $product 'Close';Click-Named '确认结束';Wait-SmokeDesktop $product
     $businessBefore=@(Snapshot-DeveloperProtected)
     $productionPermissionPath=Join-Path $dataDirectory 'Config/application-permissions.v1.json'
     $productionPermissionHash=Get-T05Hash $productionPermissionPath

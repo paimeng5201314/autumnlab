@@ -101,7 +101,7 @@ function Wait-T06ProbeText([string]$Text){
     $null=Wait-SmokeCondition {(Input-Value) -eq $Text} 'exact SDK-restored controlled app text' 15
 }
 function Close-T06ManagedApp {
-    Click 'ManagedAppClose';Click-Named '确认结束';Wait-SmokeDesktop $product
+    Invoke-AutumnGameShortcut $product 'Close';Click-Named '确认结束';Wait-SmokeDesktop $product
     $instance=$scenario.game_instance
     $null=Wait-SmokeCondition {@(Read-SmokeEvents $runtimeLog|Where-Object {$_.instanceId -eq $instance -and $_.state -eq 'Closed' -and -not $_.blocksMaintenance}).Count -gt 0} 'actual managed WebView resources released' 15
 }

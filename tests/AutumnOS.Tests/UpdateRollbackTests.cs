@@ -5,12 +5,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Net;
+using System.Runtime.Versioning;
 using AutumnOS.Store;
 using AutumnOS.Update;
 using AutumnOS.UpdateProtocol;
 
 namespace AutumnOS.Tests;
 
+[SupportedOSPlatform("windows")]
 internal static class UpdateRollbackTests
 {
     internal static IEnumerable<(string Name, Action Run)> Cases()

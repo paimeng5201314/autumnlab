@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "appId": "cn.labchronicles.chemleap",
+  "name": "ChemLeap · 化学跳一跳",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": ["saves"],
+  "permissionPurposes": { "saves": "保存和读取本局反应进度与个人最高分，仅在你主动操作时申请" },
+  "saveFormatVersion": 1,
+  "minReadableSaveFormatVersion": 1,
+  "maxReadableSaveFormatVersion": 1
+}

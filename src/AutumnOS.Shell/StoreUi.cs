@@ -16,7 +16,7 @@ public sealed partial class MainWindow
     private readonly TextBlock storeStatus = new() { TextWrapping = TextWrapping.Wrap, Opacity = 0.75 };
     private readonly TextBlock storeHeading = new() { Text = "发现", FontSize = 30, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold };
     private readonly TextBlock storeSource = new() { Text = "GitHub 公开应用", FontSize = 12, Opacity = 0.65 };
-    private readonly TextBox storeSearch = new() { PlaceholderText = "搜索公开应用", MaxLength = 100, MinWidth = 180 };
+    private readonly TextBox storeSearch = new() { PlaceholderText = "搜索应用或粘贴 GitHub 仓库链接", MaxLength = 200, MinWidth = 180 };
     private readonly ComboBox storeCategory = StoreChoice("StoreCategory", "所有分类", "PM · 仓库自标", "SQ · 社区自标", "未分类", "标签冲突");
     private readonly ComboBox storeInstalled = StoreChoice("StoreInstalledFilter", "全部应用", "已安装", "尚未安装", "有更新（已读详情）");
     private readonly ComboBox storeCompatibility = StoreChoice("StoreCompatibility", "所有兼容状态", "有兼容版本", "无兼容版本");
@@ -73,6 +73,7 @@ public sealed partial class MainWindow
             sidebar.Children.Add(button);
         }
         sidebar.Children.Add(new Border { Height = 1, Background = (Brush)Application.Current.Resources["DividerStrokeColorDefaultBrush"], Margin = new Thickness(4, 12, 4, 10) });
+        sidebar.Children.Add(ActionButton("打开 GitHub 仓库", "StoreOpenRepository", OnOpenStoreRepository));
         sidebar.Children.Add(ActionButton("安装 .autumn", "StoreLocalInstall", OnLocalPackageInstall));
         sidebar.Children.Add(ActionButton("网络与下载", "StoreNetworkSettings", (_, e) => { SelectSettingsCategory("github"); OnSettings(StorePanel, e); }));
         sidebar.Children.Add(Paragraph(BrandInfo.ProducerCredit));
@@ -90,7 +91,21 @@ public sealed partial class MainWindow
         var scroll = new ScrollViewer { Content = storeBody, HorizontalScrollMode = ScrollMode.Disabled, HorizontalContentAlignment = HorizontalAlignment.Stretch };
         Grid.SetRow(scroll, 2); main.Children.Add(scroll); Grid.SetColumn(main, 1); StorePanel.Children.Add(main);
         storeDebounce.Tick += async (_, _) => { storeDebounce.Stop(); await SearchStoreAsync(false); };
-        storeSearch.TextChanged += (_, _) => { if (storeSection != "discover") return; storeDebounce.Stop(); storeQuery?.Cancel(); storeDebounce.Start(); };
+        storeSearch.TextChanged += (_, _) =>
+        {
+            if (storeSection != "discover") return;
+            storeDebounce.Stop(); storeQuery?.Cancel();
+            if (IsStoreRepositoryInput(storeSearch.Text))
+                storeStatus.Text = "按 Enter 打开仓库，或使用左侧“打开 GitHub 仓库”查看可安装版本。";
+            else storeDebounce.Start();
+        };
+        storeSearch.KeyDown += async (_, e) =>
+        {
+            if (e.Key != Windows.System.VirtualKey.Enter || storeSection != "discover") return;
+            e.Handled = true; storeDebounce.Stop();
+            if (IsStoreRepositoryInput(storeSearch.Text)) await OpenStoreDetailsAsync(null, storeSearch.Text);
+            else await SearchStoreAsync(false);
+        };
         foreach (var filter in new[] { storeCategory, storeInstalled, storeCompatibility, storeOffline, storeRuntime }) filter.SelectionChanged += (_, _) => { if (storeSection == "discover") RenderStoreDiscovery(); };
         storeOwner.TextChanged += (_, _) => { if (storeSection == "discover") RenderStoreDiscovery(); };
         StorePanel.AllowDrop = true;
@@ -125,6 +140,11 @@ public sealed partial class MainWindow
     private async Task SearchStoreAsync(bool nextPage)
     {
         if (storeCatalog is null || (nextPage && (storeBusy || !storeHasMore))) return;
+        if (IsStoreRepositoryInput(storeSearch.Text))
+        {
+            storeBusy = false; storeStatus.Text = "按 Enter 打开仓库，或使用左侧“打开 GitHub 仓库”查看可安装版本。";
+            RenderStoreDiscovery(); return;
+        }
         storeQuery?.Cancel(); storeQuery?.Dispose();
         storeQuery = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
         var token = storeQuery.Token; long revision = ++storeRevision;
@@ -197,17 +217,38 @@ public sealed partial class MainWindow
         if (storeOffline.SelectedIndex > 0 && (details?.Store is null || details.Store.OfflineCapable != (storeOffline.SelectedIndex == 1))) return false;
         return storeRuntime.SelectedIndex == 0 || details?.Versions.Any(v => v.Manifest?.Runtime == "web") == true;
     }
-    private async Task OpenStoreDetailsAsync(CatalogRepository repository)
+    private static bool IsStoreRepositoryInput(string text) => text.IndexOfAny(['/', '\\', ':']) >= 0;
+
+    private async void OnOpenStoreRepository(object sender, RoutedEventArgs e)
+    {
+        if (aboutOpen || storeCatalog is null) return;
+        aboutOpen = true; string? reference = null;
+        var input = new TextBox { PlaceholderText = "https://github.com/owner/name 或 owner/name", MaxLength = 200,
+            Text = IsStoreRepositoryInput(storeSearch.Text) ? storeSearch.Text : "", MinWidth = 360 };
+        AutomationProperties.SetAutomationId(input, "StoreRepositoryInput");
+        var content = new StackPanel { Spacing = 12 };
+        content.Children.Add(Paragraph("粘贴公开仓库链接，查看应用信息与可安装版本。")); content.Children.Add(input);
+        var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "打开 GitHub 仓库", Content = content,
+            PrimaryButtonText = "查看应用", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Primary };
+        try { if (await dialog.ShowAsync() == ContentDialogResult.Primary) reference = input.Text; }
+        catch (Exception error) when (error is not OutOfMemoryException) { storeStatus.Text = StoreError(SafeStoreCode(error)); }
+        finally { aboutOpen = false; }
+        if (reference is not null && !lifetime.IsCancellationRequested) await OpenStoreDetailsAsync(null, reference);
+    }
+
+    private async Task OpenStoreDetailsAsync(CatalogRepository? repository, string? reference = null)
     {
         if (storeCatalog is null) return;
         storeDebounce.Stop(); storeQuery?.Cancel(); storeQuery?.Dispose(); storeQuery = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
         var token = storeQuery.Token; long revision = ++storeRevision; storeSection = "detail";
-        storeHeading.Text = repository.Name; storeSearch.Visibility = Visibility.Collapsed; storeBody.Children.Clear();
+        storeBusy = false;
+        storeHeading.Text = repository?.Name ?? "仓库详情"; storeSearch.Visibility = Visibility.Collapsed; storeBody.Children.Clear();
         storeBody.Children.Add(ActionButton("‹  返回发现", "StoreBack", (_, _) => ShowStoreSection("discover")));
         storeBody.Children.Add(ActionButton("取消读取", "StoreCancelDetails", (_, _) => storeQuery?.Cancel()));
         storeStatus.Text = "正在读取应用清单与版本…";
         try
         {
+            repository ??= await storeCatalog.ResolveRepositoryAsync(reference ?? "", token);
             var details = await storeCatalog.GetDetailsAsync(repository, token);
             if (token.IsCancellationRequested || revision != storeRevision) return;
             storeVersionPages[repository.RepositoryId] = 1;
@@ -223,10 +264,15 @@ public sealed partial class MainWindow
         storeHeading.Text = details.Store?.Name ?? details.Repository.Name;
         storeStatus.Text = (details.IsCached ? "缓存资料 · " : "公开资料 · ") + details.FetchedAt.ToLocalTime().ToString("MM-dd HH:mm") + " · " + details.Repository.CategoryLabel;
         storeBody.Children.Add(ActionButton("‹  返回发现", "StoreBack", (_, _) => ShowStoreSection("discover")));
+        storeBody.Children.Add(ActionButton("刷新应用信息", "StoreRefreshDetails", async (_, _) => await OpenStoreDetailsAsync(details.Repository)));
         storeBody.Children.Add(Paragraph(details.Store?.Description ?? details.Repository.Description));
         storeBody.Children.Add(Paragraph("开发者：" + (details.Store?.Developer.Name ?? details.Repository.Owner) + "\n来源：" + details.Repository.FullName + "\n应用 ID：" + (details.Store?.AppId ?? "清单不可用") + "\nrepositoryId：" + details.Repository.RepositoryId));
         storeBody.Children.Add(Paragraph("分类由仓库自行标注。安装校验不会授予运行时权限；一般社区应用的运行隔离仍待验证，当前可浏览、下载和安装，运行入口会说明限制。"));
-        foreach (var warning in details.Warnings) storeBody.Children.Add(Paragraph(StoreError(warning)));
+        foreach (var warning in details.Warnings)
+        {
+            var message = Paragraph(StoreError(warning)); AutomationProperties.SetAutomationId(message, "StoreWarning-" + warning);
+            storeBody.Children.Add(message);
+        }
         AddStoreScreenshots(details);
         var channels = StoreChoice("StoreVersionChannel", "稳定版本", "稳定与预览", "仅预览");
         channels.SelectedIndex = StoreAllowsPreview(details) ? 1 : 0;
@@ -262,7 +308,16 @@ public sealed partial class MainWindow
     {
         "STORE_RATE_LIMITED" or "GITHUB_RATE_LIMITED" => "GitHub 请求暂时受限，请按提示稍后重试。",
         "STORE_OFFLINE" or "STORE_NETWORK_ERROR" => "无法连接 GitHub，请检查网络或 GitHub 加速设置。",
-        "STORE_MANIFEST_MISSING" => "仓库尚未提供应用展示清单。",
+        "STORE_REPOSITORY_INVALID" => "请输入 GitHub 公开仓库链接或 owner/name，例如 https://github.com/owner/name。",
+        "STORE_QUERY_INVALID" => "请使用应用名称搜索；仓库链接请通过“打开 GitHub 仓库”查看。",
+        "STORE_NOT_FOUND" => "未找到此公开仓库，请核对链接；私有仓库不能从公开商店安装。",
+        "STORE_TOPIC_MISSING" => "仓库尚未加入 AutumnOS 商店，开发者需添加 autumnos-app 标签。",
+        "STORE_MANIFEST_MISSING" or "STORE_METADATA_MISSING" => "仓库尚未提供 autumn.store.json 应用展示清单。",
+        "STORE_NO_RELEASES" => "开发者尚未发布公开版本，当前没有可下载的安装包。",
+        "STORE_RELEASE_METADATA_MISSING" => "此版本缺少 autumn.release.json，暂时无法下载并安装。",
+        "STORE_PACKAGE_ASSET_MISSING" => "此版本缺少清单指定的 .autumn 安装包。",
+        "STORE_SERVICE_UNAVAILABLE" => "GitHub 服务暂时不可用，请稍后刷新应用信息。",
+        "STORE_TIMEOUT" => "读取 GitHub 超时，请重试或检查网络设置。",
         "RELEASE_INCOMPATIBLE" => "此版本与当前运行环境不兼容。",
         "PACKAGE_APP_RUNNING" => "应用仍在运行，请先保存并结束，再继续安装。",
         _ => code + " · 此项尚不可用，原有应用和数据保留。"

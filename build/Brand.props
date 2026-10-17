@@ -4,6 +4,8 @@
     <AutumnDisplayName>AutumnOS</AutumnDisplayName>
     <AutumnProducer>派蒙</AutumnProducer>
     <AutumnProducerCredit>制作人：派蒙</AutumnProducerCredit>
-    <AutumnVersion Condition="'$(AutumnVersion)' == ''">0.5.1-local.1</AutumnVersion>
+    <AutumnVersion Condition="'$(AutumnVersion)' == ''">0.5.1</AutumnVersion>
+    <AutumnReleaseLabel Condition="'$(AutumnReleaseLabel)' == '' and '$(AutumnVersion)' == '0.5.1' and '$(TestUpdateTrustFile)' == ''">plus0.0.4-20261017</AutumnReleaseLabel>
+    <AutumnFileVersion>0.0.4.0</AutumnFileVersion>
   </PropertyGroup>
 </Project>

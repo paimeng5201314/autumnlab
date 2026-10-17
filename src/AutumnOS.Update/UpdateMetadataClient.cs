@@ -65,7 +65,10 @@ internal sealed class UpdateMetadataClient(string directory, IGitHubTransport tr
             UpdatePaths.EnsureNoReparsePoints(path);
             if (!File.Exists(path) || new FileInfo(path).Length > maximum * 2L + 4096) return null;
             var item = JsonSerializer.Deserialize<Entry>(File.ReadAllBytes(path));
-            return item is not null && item.Url == uri.AbsoluteUri && item.Bytes.Length <= maximum && item.Digest == Hash(item.Bytes) ? item : null;
+            // The cache is disposable, including syntactically valid but incomplete JSON.
+            // Never let a damaged cache bypass a fresh request or fault startup checking.
+            return item is not null && item.Url == uri.AbsoluteUri && item.Bytes is { Length: > 0 } bytes &&
+                bytes.Length <= maximum && item.Digest == Hash(bytes) ? item : null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or UpdateException) { return null; }
     }

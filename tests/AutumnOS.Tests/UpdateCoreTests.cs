@@ -270,6 +270,23 @@ internal static class UpdateCoreTests
             f.ConditionalResponses = true; await service.CheckAsync(false); Check(service.Snapshot.CheckComplete && service.Snapshot.Candidate is not null && f.NotModifiedResponses > 0);
             f.Offline = true; await service.CheckAsync(false); Check(!service.Snapshot.CheckComplete && service.Snapshot.ErrorCode == "UPDATE_OFFLINE" && service.Snapshot.LastSuccessfulCheckUtc == success);
         }));
+        yield return ("update.corrupt_cache_with_null_bytes_is_refetched", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using var service = f.Service();
+            string url = "https://api.github.com/repos/" + UpdateService.Repository + "/releases/latest";
+            string directory = Path.Combine(f.Root, "data", "Updates", "metadata-cache-v2");
+            Directory.CreateDirectory(directory);
+            string cache = Path.Combine(directory, Hash(Encoding.UTF8.GetBytes(url)) + ".json");
+            await File.WriteAllTextAsync(cache, JsonSerializer.Serialize(new
+            {
+                Url = url, ETag = "\"corrupted-cache\"", LastModified = (string?)null,
+                Bytes = (byte[]?)null, Digest = new string('0', 64)
+            }));
+            await service.CheckAsync(false);
+            Check(service.Snapshot.CheckComplete && service.Snapshot.Candidate?.Manifest.Version == "1.1.0");
+            using var saved = JsonDocument.Parse(await File.ReadAllTextAsync(cache));
+            Check(saved.RootElement.GetProperty("Bytes").ValueKind == JsonValueKind.String);
+        }));
         yield return ("update.rate_limit_backoff_persists_across_instances", () => Run(async f =>
         {
             f.RateLimited = true; using (var service = f.Service()) { await service.CheckAsync(false); Check(service.Snapshot.ErrorCode == "UPDATE_RATE_LIMITED" && service.Snapshot.RetryAfterUtc > Now); }

@@ -156,6 +156,24 @@ public static class IdentitySessionTests
                 await service.InitializeAsync();
                 Assert(flow.RefreshCount == 1, "Initialization was not idempotent.");
             }));
+        yield return ("T06 setup identity: protected local session is ready while refresh remains pending", () => Run(async () =>
+        {
+            MemoryVault vault = new() { Value = Session() with { ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-5) } };
+            FixtureFlow flow = new() { HoldRefresh = true };
+            using LogtoIdentityService service = new(Options(), vault, flow);
+            Task<IdentitySnapshot> initialization = service.InitializeAsync();
+            IdentitySnapshot local = await service.LocalSessionReady.WaitAsync(TimeSpan.FromSeconds(2));
+            await flow.RefreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            Assert(!initialization.IsCompleted && local.State == IdentitySessionState.OfflineCached,
+                "Setup waited for network refresh or treated cached state as fresh authentication.");
+            flow.RefreshCompleted.SetResult(Session());
+            Assert((await initialization).State == IdentitySessionState.SignedIn, "Refresh did not complete after setup became available.");
+        }));
+        yield return ("T06 identity messages: unknown remote text never appears in user diagnostics", () =>
+        {
+            string message = IdentityUserMessage.ForError("remote-error: fixture-authorize-code-and-token");
+            Assert(!message.Contains("fixture-authorize-code") && !message.Contains("remote-error"), "Diagnostic echoed arbitrary input.");
+        });
         yield return ("T03 identity fixture: malformed restored fields fail closed without null crash", () => Run(async () =>
         {
             foreach (ProtectedIdentitySession malformed in new[] { Session() with { Subject = null! }, Session() with { AccessToken = null! },

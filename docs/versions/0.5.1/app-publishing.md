@@ -1,19 +1,23 @@
-# 应用发布材料 · 0.5.1
+# 应用发布材料与安装
 
-AutumnOS 0.5.1 开发 CLI 可本地生成和校验发布材料，不上传 GitHub、不改仓库 Topics、不登录账号或创建 Release。先按 [第一个应用](first-app.md) 获得 `$cli` 和真实 `$packed.packagePath`。只有用户另外决定发布时才将检查过的材料交到对应仓库；运行本地命令不构成公开发布。
+适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。本页命令只生成/校验本地材料，不上传、不创建仓库或Release，不修改Topics/Tag。实际远端发布必须另获制作人授权。
 
-```powershell
-$publication = Join-Path $workRoot ('publication-' + [Guid]::NewGuid().ToString('N'))
-$release = & $cli generate-release $packed.packagePath $publication --developer '你的开发者名称' --description '应用的实际用途' --category sq --offline true --min-host 0.5.1 --min-sdk 0.3.0 | ConvertFrom-Json
-if ($LASTEXITCODE -ne 0 -or $release.status -ne 'passed') { throw '发布材料生成失败。' }
-& $cli validate-publication $release.storePath $release.releasePath $release.packagePath
-if ($LASTEXITCODE -ne 0) { throw '发布材料校验失败。' }
-```
+先按[入门](first-app.md)创建、校验并pack，使用真实返回的packagePath。从Developer目录：
 
-上述 `--offline true` 仅适合实际可离线工作的应用；需要联网时改为 false。最低宿主和 SDK 必须与所用能力一致。输出目录必须不存在；工具不覆盖旧发布目录。返回的 packagePath 是生成目录中的真实包副本，不再依赖猜测的文件名。
+~~~powershell
+$cli = Join-Path (Get-Location) 'AutumnOS.Developer.Cli.exe'
+$package = '填入pack实际返回的packagePath'
+& $cli generate-release $package ./work/publication-01 --developer '开发者名字' --description '应用的实际功能' --category sq --offline true --min-host 0.5.1 --min-sdk 0.3.0
+~~~
 
-默认分支根放 `autumn.store.json`，包内保留 `manifest.json`；单独版本 Release 同时包含 `autumn.release.json` 和其 asset 字段指定的 `.autumn`。每仓库一应用，Topic 为 `autumnos-app`，分类可选 `autumn-app-sq` 或 `autumn-app-pm`。PM 是仓库自标，未核验，不额外授予权限或跳过运行门禁；分类冲突应修正元数据。
+输出新目录含autumn.store.json、autumn.release.json和实际 `.autumn`逐字节副本。将真实输出路径用于：
 
-生成器从真实字节提取 appId、version、entry、permissions、saveFormatVersion、bytes 与 sha256，并用共享解析器复核。修改任何包内容后重新生成新版本；不能沿用旧摘要，不能把 GitHub 自动源码 ZIP/TAR 当作安装包。发布校验输出 `publishing:not_performed`、`liveGitHubRegistration:not_verified` 只证明本地材料一致，不证明仓库存在、索引完成或应用可运行。
+~~~powershell
+& $cli validate-publication ./work/publication-01/autumn.store.json ./work/publication-01/autumn.release.json '该目录的实际包路径'
+~~~
 
-验收至少覆盖真实包成功、错误摘要、另一 appId、未知/重复字段、普通 EXE、路径穿越及输出目录冲突。安装升级还需检查数据兼容、权限扩大和活动实例占用。网络运行限制仍见 [网络边界](network.md)，不能把“生成发布材料成功”写成“第三方运行隔离通过”。
+真实共享引擎核对appId、版本、入口、权限、存档格式、大小、SHA256、附件名及三层元数据；未知/重复字段、跨应用清单、错误摘要或EXE伪装拒绝。输出已存在时保留旧材料，不能覆盖同版本内容后仍引用旧摘要。stable/preview来自应用SemVer预发布部分，与主程序plus/meta不同。
+
+未来授权发布时，每仓库一应用：默认分支根autumn.store.json，独立版本Release含autumn.release.json与其asset指向的.autumn；自动生成source ZIP/TAR不能安装。仓库标签autumnos-app，分类autumn-app-sq或autumn-app-pm；PM自标未核验，冲突显示冲突，不增加权限。首次确认来源绑定真实repositoryId，同名仓库不等于同来源。
+
+开发者预览不进入商店安装注册。真实安装还需适用环境、兼容版本、来源确认和安装事务完成；应用运行中不可替换资源，固定版本偏好保留，降级需检查所有相关存档格式并备份，卸载默认保留存档。完整沙箱未证实仍阻止公开开放任意社区应用。受控本地测试源必须隔离并在关闭开发模式后撤销，不算公网分发成功。参见[应用包](packages.md)、[网络](network.md)。

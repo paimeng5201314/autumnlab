@@ -26,6 +26,8 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeWelcomeExperience();
+        InitializeGameShortcuts();
         if (AutumnOS.UpdateProtocol.UpdateLaunchGuard.IsHealthStart) InteractionRoot.IsEnabled = false;
         InitializeDesktopInteractions();
         InitializeAccountUi();
@@ -149,16 +151,19 @@ public sealed partial class MainWindow : Window
 
     private void ShowWelcome(FirstRunCheckpoint checkpoint)
     {
-        HelloStage.Visibility = checkpoint == FirstRunCheckpoint.Hello ? Visibility.Visible : Visibility.Collapsed;
+        bool enteringBrand = visibleWelcomeCheckpoint == FirstRunCheckpoint.Hello && checkpoint == FirstRunCheckpoint.Brand;
+        visibleWelcomeCheckpoint = checkpoint;
+        HelloStage.Visibility = checkpoint is FirstRunCheckpoint.Hello or FirstRunCheckpoint.Brand ? Visibility.Visible : Visibility.Collapsed;
+        HelloActions.Visibility = checkpoint == FirstRunCheckpoint.Hello ? Visibility.Visible : Visibility.Collapsed;
+        GreetingViewport.Visibility = checkpoint == FirstRunCheckpoint.Hello ? Visibility.Visible : Visibility.Collapsed;
         BrandStage.Visibility = checkpoint == FirstRunCheckpoint.Brand ? Visibility.Visible : Visibility.Collapsed;
         InitializeScroll.Visibility = checkpoint == FirstRunCheckpoint.Initializing ? Visibility.Visible : Visibility.Collapsed;
+        InitializeStage.Visibility = welcomeAccountVisible ? Visibility.Collapsed : Visibility.Visible;
+        WelcomeAccountStage.Visibility = welcomeAccountVisible ? Visibility.Visible : Visibility.Collapsed;
+        WelcomeStep.Text = checkpoint switch { FirstRunCheckpoint.Hello => "01 / 你好", FirstRunCheckpoint.Brand => "02 / AutumnOS", _ => welcomeAccountVisible ? "04 / 账号" : "03 / 个性化" };
         RefreshFirstRunAccountUi();
         ShowPage(WelcomePanel);
-        if (checkpoint == FirstRunCheckpoint.Initializing) DispatcherQueue.TryEnqueue(() =>
-        {
-            if (!lifetime.IsCancellationRequested && WelcomePanel.Visibility == Visibility.Visible && InitializeScroll.Visibility == Visibility.Visible)
-                (firstRunLogin.IsEnabled ? firstRunLogin : firstRunSkip.IsEnabled ? firstRunSkip : PrepareDesktopButton).Focus(FocusState.Programmatic);
-        });
+        RefreshWelcomeMotion(enteringBrand);
     }
 
     private void OnWelcomeNext(object sender, RoutedEventArgs e)
@@ -287,7 +292,10 @@ public sealed partial class MainWindow : Window
         HideRunningOperations();
         foreach (var menu in appMenus) menu.Hide();
         foreach (var panel in new[] { WelcomePanel, DesktopPanel, SettingsPanel, AppPanel, DeveloperPanel, StorePanel, ManagedAppPanel }) panel.Visibility = panel == page ? Visibility.Visible : Visibility.Collapsed;
-        if (systemUiSettings.AnimationsEnabled)
+        if (page != WelcomePanel) StopWelcomeAnimations();
+        // The opaque welcome surface stays in place between its steps: fading the entire page
+        // exposed the newly selected desktop theme beneath it and caused a colour flash.
+        if (page != WelcomePanel && systemUiSettings.AnimationsEnabled)
         {
             var animation = new DoubleAnimation { From = 0, To = 1, Duration = new Duration(TimeSpan.FromMilliseconds(220)) };
             Storyboard.SetTarget(animation, page);

@@ -1,22 +1,32 @@
-# 独立服务器身份 · 0.5.1
+# 独立服务器身份与HTTP合同
 
-AutumnOS 0.5.1 的 Developer 套件包含 `BackendIdentity/server`、`BackendIdentity/client` 及可重建源码。它展示独立 Native/public client 的系统浏览器 PKCE 登录和本机 API 验证，不使用宿主凭据，也不将普通 EXE 导入内部应用。真实登记和认证必须另行完成；提供示例、健康检查或合成 fixture 通过不表示真实服务器身份已验证。
+适用 AutumnOS 0.5.1、SDK 0.3.0、协议1；后端HTTP合同1.0.0，OpenAPI3.1。制作人：派蒙。第五类backend-identity复用实际ServerIdentity和NativeIdentity样例，不提供宿主代签服务。identity.beginAppSession仍CAPABILITY_UNAVAILABLE。昵称、appScopedUserId、ID token或裸userId不能替代独立资源access token。
 
-先由有权管理租户的人登记或批准独立 Native Client ID、HTTPS API resource identifier 和真实最小 permission。不能复用 AutumnOS 宿主 Client ID 作为独立业务客户端或 API audience。Native 回调固定为 `http://127.0.0.1:17854/callback/`，与宿主 17853 分开；保留末尾斜杠，不占公网端口。代码使用授权码、PKCE S256 和公开客户端 `none`，无需 Client Secret。
+交付BackendIdentity/server包含自包含服务器和openapi.json；client包含系统浏览器PKCE客户端、config.example.json和config.schema.json。真实配置需独立Native/public客户端、127.0.0.1:17854/callback/回调、HTTPS API resource与最小scope登记。不能把宿主ClientId当独立资源ID。配置值是公开身份元数据；不要提供Client Secret、密码、私钥或token。缺字段时退出2，不启动监听。
 
-套件 client 目录的 `config.example.json` 是故意不可运行的空模板。复制到新的本地公开配置后填写 Authority、MetadataAddress、ClientId、RedirectUri、Resource、RequiredScope 与 schemaVersion。先按该目录 README 检查关联规则，绝不把 token、密码或管理密钥放入配置。定位单文件展开后的 `$developerRoot` 方法见 [第一个应用](first-app.md)。
+服务器环境变量是AUTUMN_SERVER_AUTHORITY、AUTUMN_SERVER_METADATA、AUTUMN_SERVER_AUDIENCE、AUTUMN_SERVER_CLIENT_ID、AUTUMN_SERVER_REQUIRED_SCOPE。它们分别对应客户端公开配置的Authority、MetadataAddress、Resource、ClientId、RequiredScope。先按 `BackendIdentity/client/README.md` 创建新的config.local.json并填入已登记值，保留随包config/logto.public.json作为防误用宿主登记的检查材料。空模板不是合法配置。
 
-```powershell
-Set-Location (Join-Path $developerRoot 'BackendIdentity/server')
-$config = Get-Content -LiteralPath ../client/config.local.json -Raw | ConvertFrom-Json
-$env:AUTUMN_SERVER_AUTHORITY = $config.Authority
-$env:AUTUMN_SERVER_METADATA = $config.MetadataAddress
-$env:AUTUMN_SERVER_AUDIENCE = $config.Resource
-$env:AUTUMN_SERVER_CLIENT_ID = $config.ClientId
-$env:AUTUMN_SERVER_REQUIRED_SCOPE = $config.RequiredScope
+在Developer/BackendIdentity/server目录的第一个PowerShell中，按该目录README把实际公开配置映射到五个本进程环境变量，再执行：
+
+~~~powershell
 & ./AutumnOS.ServerIdentity.Sample.exe
-```
+~~~
 
-保持服务器窗口运行，在另一 PowerShell 的 client 目录执行 `./AutumnOS.NativeIdentity.Sample.exe --config ./config.local.json`。先确认固定 5197 监听者是自己启动的示例。服务器只监听本机 HTTP，远端部署需独立 HTTPS 与运维设计；客户端不跟随重定向转发 token。真实成功须来自本次 `RESOURCE_API_VERIFIED` 结果。
+只监听127.0.0.1:5197。在Developer/BackendIdentity/client目录的第二个PowerShell中执行：
 
-API 顺序为 GET `/v1/me`、POST `/v1/action-challenge`、POST `/v1/confirm-action`。服务器验证签名、issuer、audience、client、有效期及 scope；挑战 60 秒内同一身份只消费一次。401/403/503 分别要求核查凭据、权限、可信密钥可用性，不能通过关闭校验解决。第二账号、取消、端口占用、重放和真实错误 scope 应独立留存脱敏证据。详情以套件两侧 README、config.schema.json 与 openapi.json 为准。
+~~~powershell
+& ./AutumnOS.NativeIdentity.Sample.exe --config ./config.local.json
+~~~
+
+客户端会打开系统浏览器等待实际授权；运行前须确认本机服务为自己启动，且独立登记获准。凭据仅在内存，通过Authorization header送到固定本机资源，不写查询串、日志、命令参数或聊天。正常结束自有服务器使用Ctrl+C。两个EXE保留相邻自包含运行时即可启动，不需要工作区scripts/Common.ps1或`$Dotnet`。旧源码构建命令只属于原工作区记录。
+
+| 路由 | 输入、输出与失败 |
+|---|---|
+| GET /health | 无认证；返回service/producer/status=configured/real_provider_verified=false。只证明配置加载 |
+| GET /v1/me | 单个Bearer头且无query；返回subject/issuer/clientId。幂等，不创建档案 |
+| POST /v1/action-challenge | 验证后返回随机challenge与expiresIn=60；每次产生新挑战，不幂等；1024上限429 |
+| POST /v1/confirm-action | application/json的challenge，正文≤4096字节；正确身份原子消费一次，返回accepted=true及无游戏变更的effect。重放/过期/跨身份409 |
+
+签名验证仅RS256/PS256/ES256/ES384，固定issuer、audience、client_id、scope、iat/exp及30秒时钟偏差。可信HTTPS发现/JWKS不跟随重定向，10秒、128KiB、最多32key、30秒缓存。401 INVALID_CREDENTIAL，403 INSUFFICIENT_SCOPE，503 KEYS_UNAVAILABLE；所有响应no-store。JSON绑定/内容类型/大小错误另可能400/415/413，不承诺框架错误有JSON正文。取消请求中止网络取key；POST可能已消费后断线，不自动重试或宣称未执行。
+
+挑战绑定issuer/sub/client，重启丢弃，内存实现不等于生产多实例防重放。有效Bearer本身可重复读取，账号验证也不能证明分数真实。真实部署需HTTPS、限流、密钥轮换和持久业务规则，须另行授权。临时RSA/ECDSA正反例、实际本机HTTP fixture和OpenAPI验证分开报告，均不能代替独立Logto登记与真实登录。源码在BackendIdentity/Sources，通过Build-Sources.ps1复制到干净目录再编译。参见[核心开发](core-development.md)。

@@ -93,7 +93,7 @@ try{
     if($strings.Count -ne 1){throw 'Native helper declaration mismatch.'};Add-Type -TypeDefinition $strings[0].Value;Initialize-T05FocusNative
     $script:product=Start-SmokeProduct $cwd
     $trackedProcesses.Add([pscustomobject]@{Process=$product.Process;StartTicks=$product.Process.StartTime.ToUniversalTime().Ticks;Path=$product.Process.MainModule.FileName;Root=$stageDirectory})
-    Click 'HelloNextButton';Click 'BrandNextButton';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click 'HelloNextButton';Click 'BrandNextButton'; Click 'WelcomeAppearanceNext';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
     Click 'SettingsButton';Toggle 'SettingsNavDiagnostics' $true;Toggle 'DeveloperModeToggle' $true;Click 'SettingsHomeButton';Click 'DeveloperButton'
     $session=Start-ConfirmedPreview $sample
     $capabilityObservation=Wait-SmokeCondition {$value=Get-SecurityObservation;if($value.capabilityError){throw ('Real SDK capability query failed: '+$value.capabilityError)};if($value.runtimeCapabilities){return $value}} 'real SDK runtime capability response' 15

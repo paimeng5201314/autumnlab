@@ -4,6 +4,13 @@ using AutumnOS.Contracts;
 using AutumnOS.Identity;
 using AutumnOS.Tests;
 
+if (args.Contains("--probe-store-repository"))
+{
+    int target = Array.IndexOf(args, "--probe-store-repository"), output = Array.IndexOf(args, "--report");
+    if (target + 1 >= args.Length || output < 0 || output + 1 >= args.Length || args[target + 1].StartsWith("--", StringComparison.Ordinal)) return 2;
+    return await StoreLiveProbe.RunAsync(args[output + 1], args[target + 1]);
+}
+
 if (args.Contains("--probe-store"))
 {
     int index = Array.IndexOf(args, "--report");
@@ -45,14 +52,15 @@ if (args.Contains("--probe-logto"))
 }
 
 var cases = StorageTests.Cases().Concat(DesktopPreferencesTests.Cases()).Concat(DesktopLayoutTests.Cases()).Concat(IdentityTests.Cases()).Concat(RuntimeTests.Cases()).Concat(PackageTests.Cases()).Concat(ContractCases());
+cases = cases.Concat(StoreRepositoryLookupTests.Cases());
 cases = cases.Concat(ScopedStorageTests.Cases()).Concat(T03RuntimeTests.Cases()).Concat(DataBridgeTests.Cases());
 cases = cases.Concat(MaintenanceTests.Cases());
 cases = cases.Concat(SupportBundleTests.Cases());
 cases = cases.Concat(PortableLayoutTests.Cases());
 cases = cases.Concat(DeveloperSimulationTests.Cases());
 cases = cases.Concat(UpdateCoreTests.Cases());
-cases = cases.Concat(FirstRunAccountTests.Cases()).Concat(UpdateRollbackTests.Cases());
-if (OperatingSystem.IsWindows()) cases = cases.Concat(UpdateProtocolTests.Cases()).Concat(SetupTransactionTests.Cases());
+cases = cases.Concat(FirstRunAccountTests.Cases());
+if (OperatingSystem.IsWindows()) cases = cases.Concat(UpdateRollbackTests.Cases()).Concat(UpdateProtocolTests.Cases()).Concat(SetupTransactionTests.Cases());
 cases = cases.Concat(ServerIdentityTests.Cases()).Concat(DeveloperToolsTests.Cases()).Concat(PackageDesktopTests.Cases());
 cases = cases.Concat(StoreCatalogTests.Cases()).Concat(StoreDownloadTests.Cases()).Concat(StoreInstallTests.Cases()).Concat(StoreCoordinatorTests.Cases());
 if (OperatingSystem.IsWindows()) cases = cases.Concat(LauncherTests.Cases()).Concat(IdentitySessionTests.Cases()).Concat(IdentityProtocolTests.Cases());

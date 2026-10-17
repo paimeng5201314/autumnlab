@@ -176,6 +176,16 @@
           "observed_result": "Release 0 warnings/errors; C# 153/153; SDK 15/15; delivered desktop smoke 47 checks; 17 real screenshots; SDK and host each 12000-request session; ZIP 554 matching files",
           "evidence_path": "artifacts/builds/T02-20261001-desktop-01",
           "scope": "User-authorized T02 intermediate checkpoint; T01 and full T02 acceptance remain incomplete"
+        },
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
         }
       ],
       "acceptance_test_ids": [
@@ -724,7 +734,17 @@
         "src/AutumnOS.Store/",
         "src/AutumnOS.Shell/StoreUi.cs",
         "src/AutumnOS.Packages/ApplicationInstallService.cs",
-        "artifacts/builds/T04-20261002-store-04/package-result.json"
+        "artifacts/builds/T04-20261002-store-04/package-result.json",
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
+        }
       ],
       "acceptance_test_ids": [
         "A020",
@@ -770,7 +790,17 @@
         "src/AutumnOS.Store/",
         "src/AutumnOS.Shell/StoreUi.cs",
         "src/AutumnOS.Packages/ApplicationInstallService.cs",
-        "artifacts/builds/T04-20261002-store-04/package-result.json"
+        "artifacts/builds/T04-20261002-store-04/package-result.json",
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
+        }
       ],
       "acceptance_test_ids": [
         "A022",

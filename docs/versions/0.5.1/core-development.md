@@ -1,29 +1,18 @@
-# 核心开发 · 0.5.1
+# 核心开发与本地工具
 
-本页命令只适用于完整源码工作区。AutumnOS 0.5.1 的原生构建目标是 Windows x64，工程锁定 .NET SDK `10.0.401`、PowerShell 7 及 NuGet 锁文件。机器合同工具要求显式可用的 Node.js ≥22.9，以及 `tools/contract-checks/toolchain.json` 固定的 npm 11.6.1。先检查这些配置、`Directory.Packages.props` 和已有工具；不要为了恢复成功而升级依赖或关闭包签名、校验和、TLS 验证。开发者交付套件的 CLI 已自包含，创建应用不需要重建宿主，见 [第一个应用](first-app.md)。
+适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。当前C#基线为固定 .NET SDK10.0.401、net10.0、win-x64、WinUI3和WebView2；锁文件是恢复依据。客户端随包包含.NET10.0.12、Windows App SDK及固定WebView2 Runtime154.0.4258.53，实际版本仍应读取最终deps/runtimeconfig和物料记录。构建成功不证明Windows10/干净环境已通过。
 
-在源码根的 PowerShell 7 执行以下命令；构建 ID 每次新建，不能覆盖先前证据：
+普通应用开发使用已交付自包含 `AutumnOS.Developer.Cli.exe`，不需要先安装.NET SDK。仅当重建BackendIdentity源码或宿主工程时，才使用显式路径指向10.0.401 SDK。`BackendIdentity/Build-Sources.ps1`把已交付源码复制到一个全新隔离目录，建立局部缓存并执行locked restore/build，不在产品目录生成obj/bin，不安装全局组件。
 
-```powershell
-./scripts/Install-LocalSdk.ps1
-./scripts/Get-Environment.ps1
-./scripts/Restore.ps1 -Locked
-./tools/contract-checks/restore-tools.ps1
-$buildId = 'T06-local-' + [Guid]::NewGuid().ToString('N')
-./scripts/Build.ps1 -BuildId $buildId -BuildVersion 0.5.1-local.4 -ReleaseLabel meta0.0.1-20261001
-./scripts/Test.ps1
-```
+构建脚本在调用SDK前显式设置 `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`、`DOTNET_GENERATE_ASPNET_CERTIFICATE=false`，并退出遥测。独立后端脚本结束时恢复调用进程原环境，不登记临时工具路径、不自动生成或信任开发证书。该设置依据[微软的 .NET CLI 环境变量说明](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-environment-variables)；本机复现仍需比较运行前后用户PATH与证书元数据，不能仅凭设置宣称环境无变化。
 
-安装脚本使用项目内 `.tools/dotnet`，不会要求全局 PATH 替换。构建前确认依赖下载和磁盘空间；WinUI/XAML 编译及原生程序不由 Linux 工具链替代。`Test.ps1` 要求成功且源快照匹配的构建，源码改动后必须生成新构建，不能把旧二进制测试结果关联到新源码。
+TypeScript/Schema/OpenAPI检查需要Node.js >=22.9，工具固定TypeScript5.9.3、Ajv8.17.1、ajv-formats3.0.1、swagger-parser12.1.0。从Developer目录运行：
 
-以下单独执行 JS 测试和机器合同检查，要求前面的合同工具恢复已成功，报告使用新路径：
+~~~powershell
+& ./Tools/contract-checks/restore-tools.ps1 -NodePath 'C:/你的已安装Node/node.exe'
+& 'C:/你的已安装Node/node.exe' ./Tools/contract-checks/contract-check.cjs --kit-root . --report ./work/contracts-01.json
+~~~
 
-```powershell
-node --test tests/sdk-tests.cjs tests/t03-sample-tests.cjs
-$report = Join-Path ([IO.Path]::GetTempPath()) ('autumn-contracts-' + [Guid]::NewGuid().ToString('N') + '.json')
-node tools/contract-checks/contract-check.cjs --report $report
-```
+路径应替换成实际已安装工具；脚本不会代替用户安装Node。恢复仅写Developer下 `.tools/`，固定npm11.6.1官方SHA512、完整package-lock、忽略生命周期脚本，不修改PATH。没有联网缓存时恢复是环境前置，不把未运行检查写通过。
 
-Linux 可以运行同一 JS 与机器合同检查，但不能直接依赖上面恢复脚本中的 Windows `tar.exe`。云环境应使用已配置的 Linux 安装助手，按相同 toolchain.json 从官方源获取并核验固定 npm 的 SHA-512，恢复相同锁文件到 `.tools/contracts`，禁用安装生命周期脚本；不要改用未经版本核对的全局 npm。原生 WinUI/XAML 构建与 Windows 文件系统语义需在 Windows 另行验证。
-
-机器合同包含真实 TypeScript 严格编译、JSON Schema/OpenAPI 验证和文档链接检查；DOM/SDK 测试使用明确的替身。这些结果不能写成 Windows 构建或真实产品验收通过。持续保持每项验证的执行环境、构建身份、报告位置与未执行范围，记录规范见 [协作与证据](collaboration.md)。
+工程集成统一管理解决方案、版本、公共Contracts、依赖和构建脚本。模块只改自己拥有的目录。当前不用Git时，以真实源文件SHA256快照、BuildId和最终文件表关联报告；测试使用隔离目录，保留所有失败。身份令牌、私钥、用户存档和缓存不进源码快照或ZIP。合同检查与实际原生运行是不同证据，参见[协作](collaboration.md)。

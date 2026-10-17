@@ -1,16 +1,28 @@
-# AutumnOS 0.5.1 开发者文档
+# AutumnOS 0.5.1 开发者交付
 
-制作人：派蒙。本文档对应内部兼容版本 0.5.1、SDK 0.3.0、消息协议 1；显示版本可能为 `meta0.0.1-20261001`。目录编号不代表生产发行状态，也不表示文档中的验收步骤已经执行。当前包含原生 Windows 宿主、受控内部应用、开发工具和独立身份示例；普通社区应用的全面网络隔离、生产更新信任根及多项真实环境验收仍未完成。
+制作人：派蒙。适用客户端 **0.5.1 系列本地联调版**、SDK **0.3.0**、应用消息协议 **1**；这三个版本相互独立。精确产品版本、BuildId、源快照和SDK版本读取开发者目录 `kit.json`，不把文档目录名当成某次构建已经测试的证明。当前停止位置是本地审阅，未授权公开发布；生产更新公钥、正式签名、独立后端登记、干净Windows10及完整隔离/输入矩阵按发布就绪报告保留阻塞。安装器及T03收尾仍按制作人决定暂缓。
 
-先按 [产品与交付形态](product.md) 找到当前运行目录，再按 [创建第一个应用](first-app.md) 创建、打包并确认预览。单文件交付的 `Developer` 位于展开后的 `AutumnOS_Data/System/Product-<摘要>/Developer`，普通目录版位于程序目录的 `Developer`。`--host` 始终指向实际 `AutumnOS.Client.exe` 所在目录；不能在单文件版中直接使用外层 EXE 所在目录。示例会检查当前进程，避免误选旧资源。
+从完整便携目录打开 `AutumnOS.exe`。开发工具位于同级 `Developer/`；不要单独拷贝EXE。先阅读[第一个应用](first-app.md)，使用真实CLI创建模板、校验、打包，再在开启开发者模式的宿主内预览。前四个模板可以在游客会话验证非身份能力；真实身份成功分支必须使用真实登录。独立开发预览提供显式测试账号A/B、权限拒绝和离线状态模拟，界面及CLI标记测试范围，不改变普通账号或正式数据。第五类[独立后端样例](server.md)需要另外登记资源身份，缺配置时明确退出。
 
-| 目标 | 阅读入口 |
+| 专题 | 内容 |
 |---|---|
-| 了解运行边界和模块 | [产品](product.md)、[架构](architecture.md)、[界面与交互](design.md) |
-| 修改宿主、复现构建 | [核心开发](core-development.md)、[协作与证据](collaboration.md) |
-| 创建与校验应用 | [第一个应用](first-app.md)、[包格式](packages.md)、[应用发布](app-publishing.md) |
-| 调用内部服务 | [SDK 参考](sdk-reference.md)、[身份与权限](identity-permissions.md)、[数据](data.md) |
-| 接入桌面或独立 API | [桌面扩展](desktop-extension.md)、[服务器身份](server.md)、[网络边界](network.md) |
-| 分发宿主与定位失败 | [宿主发布](host-publishing.md)、[排错](troubleshooting.md) |
+| [产品](product.md) | 范围、术语、兼容与未完成项 |
+| [架构](architecture.md) | 三层边界、进程和数据流 |
+| [核心开发](core-development.md) | 本地SDK、锁依赖、构建与快照 |
+| [设计](design.md) | 生命周期、输入、主题与原生覆盖层 |
+| [应用入门](first-app.md) | 空目录到真实内部预览与打包 |
+| [应用包](packages.md) | 清单、归档、Schema、来源与兼容 |
+| [身份与权限](identity-permissions.md) | 资料、拒绝、撤销、账号代次 |
+| [SDK参考](sdk-reference.md) | 全部26方法、6事件、错误与取消 |
+| [数据](data.md) | 私有数据、存档、迁移、文件能力与删除 |
+| [服务端](server.md) | 独立资源JWT、OpenAPI和本地配置 |
+| [桌面扩展](desktop-extension.md) | 通知、角标、长按动作、小组件和链接 |
+| [网络](network.md) | 当前支持边界与完整沙箱阻塞 |
+| [应用发布](app-publishing.md) | 只读商店合同及本地发布材料 |
+| [主程序发布](host-publishing.md) | plus/meta、签名、维护与恢复 |
+| [排错](troubleshooting.md) | 用户操作、数据保护、脱敏与证据 |
+| [协作](collaboration.md) | 所有权、合同校验、兼容和交接 |
 
-这些页面随开发者套件整体复制，因此页间链接只引用本目录。源码位置与套件资源路径使用文字分别标明；源码工作区脚本不能直接在交付套件中运行。机器合同检查可验证 TypeScript、Schema、OpenAPI 及本组文档链接，不能代替 Windows 原生交互、真实登录、更新回退或外部新人验收。
+包内 `SDK/` 提供运行JS、TypeScript声明、应用Schema及独立开发管道developer.schema.json，`Schemas/` 是主程序更新Schema，`Templates/` 是四个原生宿主内部应用模板，`BackendIdentity/` 提供真实本机服务和独立客户端。开发管道不是应用SDK能力；应用不可发送模拟命令。`Tools/contract-checks/` 固定工具锁，`Tests/contracts/` 是正反例与公开接口基线。执行合同检查需显式可用的Node.js；它不会自动安装系统组件。
+
+自测和外部新人验收必须分别记录。干净目录复现报告会说明工具、命令、包哈希、真实运行范围和未执行项；本页不是验收成绩单。所有例子均是本地操作，不创建仓库、Release、Tag或公共服务。

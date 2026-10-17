@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>ChemLeap · 化学跳一跳</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="autumn-sdk.js" defer></script>
+  <script src="chemistry.js" defer></script>
+  <script src="model.js" defer></script>
+  <script src="renderer.js" defer></script>
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main class="game-app">
+    <header class="masthead">
+      <div class="wordmark"><span class="atom-mark" aria-hidden="true">✳</span><div><p class="eyebrow">LAB CHRONICLES · LITTLE DISCOVERIES</p><h1>ChemLeap<span>.</span></h1></div><span class="edition">化学跳一跳</span></div>
+      <div class="header-actions"><span id="host-status" class="host-status">离线知识小游戏</span><button id="help-button" class="quiet-button" type="button" aria-controls="field-guide" aria-expanded="false">玩法 / 反应图鉴</button></div>
+    </header>
+    <section class="play-shell" aria-label="化学跳一跳游戏">
+      <div class="hud">
+        <div class="current-card"><span class="eyebrow">YOU ARE · 当前物质</span><strong id="current-substance" aria-label="当前物质 H₂ 氢气">H₂ <small>氢气</small></strong></div>
+        <div class="scoreboard"><div><span>本局得分</span><strong id="score" aria-label="得分 0" aria-live="polite">0</strong></div><div class="best-cell"><span>最高分</span><strong id="best-score">0</strong></div><span id="round-indicator" class="round-pill">第 1 跳</span></div>
+      </div>
+      <div id="stage" class="stage">
+        <canvas id="world" tabindex="0" aria-label="3D 化学平台。可使用下方平台按钮，或按数字键选择跳跃。"></canvas>
+        <div id="platform-labels" class="platform-labels" aria-hidden="true"></div>
+        <div class="stage-note"><span class="live-dot"></span><span id="renderer-status">正在准备 3D 场景…</span></div>
+        <div id="intro" class="intro-overlay"><div class="intro-content"><p class="eyebrow">A SMALL LEAP. A NEW REACTION.</p><h2>下一跳，<br>会变成什么？</h2><p>你是一小团 H₂。选择能够发生反应的平台，<br>让新的物质带你继续向前。</p><button id="start-button" class="primary-button" type="button">开始跳跃 <span aria-hidden="true">↗</span></button><span class="intro-footnote">每轮都有解 · 可随时查看反应图鉴</span></div></div>
+        <div id="game-over" class="game-over-overlay" hidden><div class="result-card"><p class="eyebrow">END OF THIS LITTLE JOURNEY</p><h2>这次没有发生反应</h2><p id="failure-detail"></p><strong id="final-score">0 分</strong><p>下一次，试着找到能和你发生反应的物质。</p><button id="again-button" class="primary-button" type="button">再跳一次 ↗</button></div></div>
+        <div id="pause-overlay" class="pause-overlay" hidden><span>旅程已暂停</span><small>继续后保持原来的进度</small></div>
+      </div>
+      <div class="control-deck">
+        <div class="deck-heading"><div><span class="eyebrow">CHOOSE YOUR NEXT REACTION</span><h2>选择下一块平台</h2></div><span id="difficulty">初见 · 3 块平台</span></div>
+        <div id="platform-options" class="platform-options" role="group" aria-label="点击一个物质平台即可跳跃"></div>
+        <div class="jump-row"><div class="charge-control"><button id="jump-button" class="jump-button" type="button" disabled>按住蓄力 · 松开跳跃 <span aria-hidden="true">↗</span></button><div class="charge-track" role="progressbar" aria-label="蓄力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="charge-meter"><div id="charge-fill"></div></div></div><p>点击物质按钮直接跳跃<br><kbd>1</kbd>–<kbd>6</kbd> 直跳 · 按住 <kbd>空格</kbd> 选择目标</p><button id="hint-button" class="quiet-button" type="button">给我一个提示</button></div>
+        <p id="game-status" class="game-status" role="status" aria-live="polite">点击“开始跳跃”，从 H₂ 开启这次旅程。</p>
+      </div>
+    </section>
+    <section class="journal-row" aria-label="旅程与存档"><div class="last-reaction"><span class="eyebrow">REACTION JOURNAL</span><p id="last-reaction">让一次小小的相遇，变成新的发现。</p></div><div class="utility-actions"><button id="pause-button" type="button" class="quiet-button">暂停</button><button id="restart-button" type="button" class="quiet-button">重新开始</button><button id="save-button" type="button" class="quiet-button">保存进度</button><button id="load-button" type="button" class="quiet-button">读取存档</button></div><p id="save-status" class="save-status" role="status" aria-live="polite">存档由你主动保存；未授权也可以继续游戏。</p></section>
+    <section id="field-guide" class="field-guide" hidden><div class="guide-heading"><div><p class="eyebrow">YOUR POCKET FIELD GUIDE</p><h2>把好奇心带到下一跳</h2></div><button id="close-guide" type="button" class="quiet-button">收起图鉴</button></div><p>每次从 3～6 块平台中选择一个。前期有 2 个可反应平台，得分提高后保留 1 个；错误平台会结束本局。蓄力条在平台之间往返移动，松开即跳往高亮目标，力度同时改变跳跃弧线。也可直接点击物质按钮，或按数字键。</p><p>方程式表示理想化的反应规则，真实反应还取决于条件。本游戏不模拟实验操作。多产物反应会保留一种可继续反应的生成物作为角色，其余作为副产物展示。</p><div class="table-scroll"><table><caption>初始反应图鉴</caption><thead><tr><th>反应方程式</th><th>下一物质</th><th>条件说明</th></tr></thead><tbody id="reaction-table"></tbody></table></div><h3>本次旅程</h3><ol id="reaction-history"></ol></section>
+    <footer><span>原创知识小游戏 · 制作人：派蒙</span><span>AutumnOS 内部应用 · 离线可玩 · v0.1.0</span></footer>
+  </main>
+</body>
+</html>

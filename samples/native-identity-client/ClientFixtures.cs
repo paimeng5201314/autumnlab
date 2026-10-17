@@ -49,10 +49,17 @@ internal static class ClientFixtures
                         "denied" => "USER_CANCELLED", "invalid-grant" => "SESSION_EXPIRED",
                         "resource-audience" or "resource-expired" or "resource-es384-signature" => "SAMPLE_API_UNAUTHORIZED", "resource-scope" => "SAMPLE_API_FORBIDDEN",
                         "api-subject" => "SAMPLE_API_IDENTITY_MISMATCH", "api-redirect" => "SAMPLE_API_UNAVAILABLE",
-                        "api-oversize" => "SAMPLE_API_INVALID_RESPONSE", "id-nonce" or "id-signature" or "id-es384-signature" => "AUTH_INVALID_RESPONSE",
+                        "api-oversize" => "SAMPLE_API_INVALID_RESPONSE", "id-nonce" or "id-signature" or "id-es384-signature" => "AUTH_INVALID_TOKEN",
                         _ => "unexpected-success-required"
                     };
                     Check(error.Code == expected);
+                    if (defect is "id-nonce" or "id-signature" or "id-es384-signature")
+                    {
+                        // The validator's finite token rejection now survives the OIDC adapter.
+                        // A correct diagnostic alone is insufficient: rejected identities must
+                        // never reach UserInfo, the protected API, or its action challenge.
+                        Check(fixture.UserInfoCalls == 0 && fixture.ApiCalls == 0 && !fixture.ChallengeConsumed);
+                    }
                 }
                 await fixture.Callback.WaitAsync(budget.Token);
             });

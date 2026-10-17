@@ -573,7 +573,7 @@ function Read-T05GameSave {
     $null=Wait-SmokeCondition {$nickname.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -eq $scenario.saved_nickname} 'the exact real game save read through SDK'
 }
 function Finish-T05Game {
-    Click-T05 'CloseGameButton';Invoke-SmokeNamedButton $product.Element '确认结束';Wait-SmokeDesktop $product
+    Invoke-AutumnGameShortcut $product 'Close';Invoke-SmokeNamedButton $product.Element '确认结束';Wait-SmokeDesktop $product
 }
 function Start-T05Shortcut {
     $shell=New-Object -ComObject WScript.Shell;$link=$shell.CreateShortcut($scenario.shortcut)
@@ -619,7 +619,7 @@ function Invoke-T05Scenario([string]$Name,[string]$PayloadDirectory,[bool]$Rollb
     $script:product=Start-SmokeProduct $cwd
     Register-T05Process $product.EntryProcess 'AutumnOS.exe';Register-T05Process $product.Process 'AutumnOS.Client.exe' $product.EntryProcess.Id
     $scenario.a_business_pid=$product.Process.Id
-    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton';Click-T05 'FirstRunSkip'
+    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton'; Click-T05 'WelcomeAppearanceNext';Click-T05 'FirstRunSkip'
     $null=Wait-SmokeCondition {(Find-T05 'PrepareDesktopButton').Current.IsEnabled} 'explicit account skip saved before desktop preparation'
     Click-T05 'PrepareDesktopButton';Wait-SmokeDesktop $product
     Show-T05Updates
@@ -646,7 +646,7 @@ function Invoke-T05Scenario([string]$Name,[string]$PayloadDirectory,[bool]$Rollb
     Add-SmokeCheck ($Name+'_real_game_saved_unicode_and_moves') ($saved.value.nickname -eq $scenario.saved_nickname -and $saved.value.moves -ge 1)
     $unsaved='派蒙·T05待保存-'+$Name;$nickname.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue($unsaved)
     $manifest=Publish-T05SignedFixture $PayloadDirectory;$scenario.target_build_id=$manifest.buildId;$scenario.target_version=$manifest.version
-    Click-T05 'BackgroundButton';Wait-SmokeDesktop $product;Show-T05Updates
+    Invoke-AutumnGameShortcut $product 'Desktop';Wait-SmokeDesktop $product;Show-T05Updates
     if(-not $Rollback){Test-T05TamperedFeedSignature $manifest $PayloadDirectory}
     Click-T05 'CheckSystemUpdate'
     $null=Wait-SmokeCondition {(Find-T05 'DownloadSystemUpdate').Current.IsEnabled} 'verified metadata available without package download' $UpdateTimeoutSeconds
@@ -672,7 +672,7 @@ function Invoke-T05Scenario([string]$Name,[string]$PayloadDirectory,[bool]$Rollb
     Save-T05Screenshot '01-background-wait'
     if(-not $Rollback){Assert-T05GameStillBlocks 'Background'}
     Click-T05 'SettingsHomeButton';Wait-SmokeDesktop $product;Invoke-SmokePointer $product 'SampleButton' 'single_click'
-    $null=Wait-SmokeCondition {(Find-T05 'RuntimeStatus').Current.Name -match '前台运行'} 'same game foreground'
+    $null=Wait-SmokeCondition {((Find-VisibleSmokeElement $product.Element 'AppPanel') -and (Find-SmokeNamedElement $product.Element '玩家昵称' ([Windows.Automation.ControlType]::Edit)))} 'same game foreground'
     if(-not $Rollback){Assert-T05GameStillBlocks 'Foreground';Save-T05Screenshot '02-foreground-wait'}
     $nickname=Wait-SmokeCondition {Find-SmokeNamedElement $product.Element '玩家昵称' ([Windows.Automation.ControlType]::Edit)} 'same unsaved input'
     Add-SmokeCheck ($Name+'_waiting_did_not_lose_unsaved_input') ($nickname.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -eq $unsaved)

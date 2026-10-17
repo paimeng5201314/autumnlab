@@ -14,7 +14,9 @@ try {
         Get-ChildItem -LiteralPath (Join-Path $projectRoot $directory) -File -Recurse | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' }
     })
     foreach($file in $files) {
-        if($file.Extension -eq '.json') { $null=Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json -Depth 100 }
+        # JSON object keys may legally be empty (package-lock uses "" for its root).
+        # Hashtable parsing validates the original bytes without rejecting valid keys.
+        if($file.Extension -eq '.json') { $null=Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json -Depth 100 -AsHashtable }
         if($file.Extension -in @('.csproj','.props','.targets','.xaml','.manifest')) {
             $settings=[Xml.XmlReaderSettings]::new(); $settings.DtdProcessing=[Xml.DtdProcessing]::Prohibit
             $reader=[Xml.XmlReader]::Create($file.FullName,$settings)

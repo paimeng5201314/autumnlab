@@ -102,14 +102,15 @@ function Capture([string]$Name,[string]$ReadyId=''){
             '08-installed-desktop' {'InstalledApp-cn.labchronicles.storeprobe'}
             '09-background-running-icon' {'InstalledApp-cn.labchronicles.storeprobe'}
             '10-background-operations' {'ManagedContinue'}
-            '11-continued-internal-app' {'ManagedAppHome'}
-            '12-reopened-save' {'ManagedAppHome'}
+            '11-continued-internal-app' {'ManagedAppPanel'}
+            '12-reopened-save' {'ManagedAppPanel'}
             '13-rejected-bad-hash' {'DownloadState-1.9.0'}
             '14-uninstalled-desktop-save-retained' {'StoreButton'}
             default {'StoreHeading'}
         }
     }
     $ready=Show-Element $ReadyId
+    if($ReadyId -eq 'ManagedAppPanel'){$null=Probe-Input}
     $stability=[pscustomobject]@{LastBounds=$null;Samples=0}
     $null=Wait-SmokeCondition {
         $candidate=Visible $ReadyId
@@ -302,7 +303,7 @@ try{
     }
     $cwd=Join-Path $testScope 'different working directory';New-Item -ItemType Directory -Path $cwd -Force | Out-Null
     $product=Start-SmokeProduct $cwd
-    Click 'HelloNextButton';Click 'BrandNextButton';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click 'HelloNextButton';Click 'BrandNextButton'; Click 'WelcomeAppearanceNext';Click 'FirstRunSkip';Click 'PrepareDesktopButton';Wait-SmokeDesktop $product
     Click 'StoreButton'
     $null=Wait-SmokeCondition {Visible 'StoreHeading'} 'native store heading' 6
     $publicText=Wait-SmokeCondition {$item=Find 'StoreStatus';if($item -and $item.Current.Name -and $item.Current.Name -notmatch '正在读取'){$item.Current.Name}} 'real GitHub discovery result or honest network error' 60
@@ -391,16 +392,16 @@ try{
         Set-Input $unsavedText
         $report.saved_text_sha256=[Convert]::ToHexStringLower([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($savedText)))
         $report.unsaved_text_sha256=[Convert]::ToHexStringLower([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($unsavedText)))
-        Click 'ManagedAppHome';Wait-SmokeDesktop $product
+        Invoke-AutumnGameShortcut $product 'Desktop';Wait-SmokeDesktop $product
         Add-SmokeCheck 'background_icon_has_real_running_marker' ((Require $icon).Current.HelpText -match '运行中')
         Capture '09-background-running-icon'
         # Two real WebViews must appear together in the desktop-wide switcher.
         $sampleBaseline=@(Read-SmokeEvents $runtimeLog).Count
         Click 'SampleButton'
-        $null=Wait-SmokeCondition {(Visible 'RuntimeStatus') -and (Visible 'RuntimeStatus').Current.Name -match '前台运行'} 'second real app foreground' 15
+        $null=Wait-SmokeCondition {(Visible 'AppPanel') -and (Find-SmokeNamedElement $product.Element '玩家昵称' ([Windows.Automation.ControlType]::Edit))} 'second real app foreground' 15
         $sampleInstance=(Wait-SmokeNewForeground $runtimeLog $sampleBaseline '').instanceId
         Add-SmokeCheck 'second_app_has_independent_real_instance' ($sampleInstance -ne $report.first_instance)
-        Click 'BackgroundButton';Wait-SmokeDesktop $product
+        Invoke-AutumnGameShortcut $product 'Desktop';Wait-SmokeDesktop $product
         Invoke-SmokePointer $product 'DesktopGestureHint' 'double_click'
         $null=Require 'RunningContinueButton';$null=Require 'ManagedContinue'
         Add-SmokeCheck 'blank_double_click_lists_two_live_instances' ((Require 'RunningSwitcherSummary').Current.Name -match '^2 个应用')
@@ -417,7 +418,7 @@ try{
         $ownedProcesses.Add($forwarder);$report.process_ids+=$forwarder.Id
         Add-SmokeCheck 'relaunch_forwarder_exits' ($forwarder.WaitForExit(20000) -and $forwarder.ExitCode -eq 0)
         $product.Process.Refresh()
-        Add-SmokeCheck 'relaunch_preserves_main_window_and_background' ($product.Process.MainWindowHandle -eq $product.Handle -and [bool](Visible 'StoreButton') -and -not (Visible 'ManagedAppHome'))
+        Add-SmokeCheck 'relaunch_preserves_main_window_and_background' ($product.Process.MainWindowHandle -eq $product.Handle -and [bool](Visible 'StoreButton') -and -not (Visible 'ManagedAppPanel'))
         Add-SmokeCheck 'relaunch_does_not_foreground_or_restart_game' (@(Read-SmokeEvents $runtimeLog | Select-Object -Skip $before | Where-Object{$_.state -eq 'Foreground'}).Count -eq 0)
         Invoke-SmokePointer $product 'DesktopGestureHint' 'double_click'
         $null=Wait-SmokeCondition {Visible 'ManagedContinue'} 'background operation panel' 6
@@ -428,7 +429,7 @@ try{
         $report.resumed_instance=[string]$continued.instanceId
         Add-SmokeCheck 'continue_preserves_unsaved_input_and_original_instance' ((Input-Value) -eq $unsavedText -and $report.first_instance -eq $report.resumed_instance)
         Capture '11-continued-internal-app'
-        Click 'ManagedAppHome';Wait-SmokeDesktop $product
+        Invoke-AutumnGameShortcut $product 'Desktop';Wait-SmokeDesktop $product
         # Download an upgrade while the 1.0 WebView and its unsaved input remain alive in the background.
         # The script reads installation evidence; it never edits registrations or copies a package into Apps.
         $oldRegistration=Probe-Registration
@@ -450,7 +451,7 @@ try{
         Click 'StoreHome';Wait-SmokeDesktop $product;Invoke-SmokePointer $product 'DesktopGestureHint' 'double_click';Click 'ManagedContinue'
         $null=Probe-Input
         Add-SmokeCheck 'blocked_upgrade_preserves_live_unsaved_webview' ((Input-Value) -eq $unsavedText)
-        Click 'ManagedAppHome';Wait-SmokeDesktop $product;Invoke-SmokePointer $product 'DesktopGestureHint' 'double_click';Click 'ManagedEnd';Click-Named '确认结束'
+        Invoke-AutumnGameShortcut $product 'Desktop';Wait-SmokeDesktop $product;Invoke-SmokePointer $product 'DesktopGestureHint' 'double_click';Click 'ManagedEnd';Click-Named '确认结束'
         Wait-SmokeDesktop $product
         $null=Wait-SmokeCondition {@(Read-SmokeEvents $runtimeLog | Where-Object{$_.instanceId -eq $report.first_instance -and $_.state -eq 'Closed' -and -not $_.blocksMaintenance}).Count -gt 0} 'real old instance closed' 6
         Add-SmokeCheck 'end_clears_running_state' ((Require $icon).Current.HelpText -notmatch '运行中')
@@ -473,7 +474,7 @@ try{
         Click-Web '读取测试文字'
         $null=Wait-SmokeCondition {(Input-Value) -eq $savedText} 'new instance loads actual previous save' 6
         Capture '12-reopened-save'
-        Click 'ManagedAppClose';Click-Named '确认结束';Wait-SmokeDesktop $product
+        Invoke-AutumnGameShortcut $product 'Close';Click-Named '确认结束';Wait-SmokeDesktop $product
         Click 'StoreButton';Click 'StoreNav-installed'
         Toggle 'AppPin-cn.labchronicles.storeprobe' $true;Toggle 'AppPreview-cn.labchronicles.storeprobe' $true
         $null=Wait-SmokeCondition {$policy=Probe-Registration;$policy.pinnedVersion -eq '1.1.0' -and $policy.allowPreview} 'updated application pin and preview persisted' 6

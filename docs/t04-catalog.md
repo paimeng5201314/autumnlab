@@ -4,6 +4,12 @@
 
 ## 发现和缓存
 
+2026-10-17 增加仓库直达：商店左侧“打开 GitHub 仓库”可输入 `https://github.com/owner/name` 或 `owner/name`；搜索框粘贴同样地址后按 Enter 也可打开。输入仓库链接时暂停关键词防抖，避免尚未输完就跳走。返回发现保留输入，明确提示按 Enter 打开；链接不作为搜索运算符发出。详情提供“刷新应用信息”，缺少标签、展示清单、公开 Release 或安装附件分别显示中文原因。
+
+`ResolveRepositoryAsync(repository,ct)` 只解析上述两种形式（前后空白可忽略、可有末尾斜杠），最多200字符，GET固定的 `api.github.com/repos/owner/name`。拒绝非HTTPS、凭据、端口、查询串、片段、编码路径、额外路径和`.git`克隆地址，返回 `STORE_REPOSITORY_INVALID`；校验在网络前完成。不请求私有仓库授权。共享公开缓存、20秒请求超时、取消、退避与离线处理；响应中记录真实 repositoryId 和规范名称，不信任输入自报身份。取消旧操作后迟到结果不能切换当前页面。
+
+直达可检查尚未加 `autumnos-app` 的公开仓库，并返回 `STORE_TOPIC_MISSING` 警告。发现搜索仍要求该标签；版本页每次重新核对实际仓库身份和标签，缺标签版本不能安装，调用方自报的标签不能绕过。直达不注册桌面、不加入认可名单，也不解除一般社区包的运行限制。`STORE_METADATA_MISSING`、`STORE_NO_RELEASES`、`STORE_RELEASE_METADATA_MISSING` 和 `STORE_PACKAGE_ASSET_MISSING` 表示不同的发布缺项；无包不能进入下载或报告安装成功。
+
 生产查询固定 topic:autumnos-app is:public，关键词仅允许字母、数字、空格、点、下划线和连字符，最多100字符，不能注入搜索运算符。公开 REST 搜索按更新时间每页30条，最多34页且不超过GitHub搜索1,000条范围。返回按 repositoryId 去重的当前页、total_count、incomplete_results、缓存时间和警告。UI的本地筛选仅代表当前已加载结果；取消旧查询和防抖由Shell协调。
 
 类别来自精确Topics：autumn-app-pm为“受认可分类（仓库自标，未核验）”；autumn-app-sq为“社区分类（仓库自标）”；都没有为未分类，都有为冲突。根清单category不同只产生警告，不覆盖Topics，不授予权限。offlineCapable是开发者声明，不是独立认证。无开发者图标时使用原生中性图标。
@@ -24,7 +30,7 @@
 |---|---|---|
 | SearchAsync(search,page,ct) | 关键词与页码 → CatalogPage | 公开只读；取消、限流和离线明确；重复查询条件请求 |
 | GetDetailsAsync(repository,ct) | 宿主选中的来源 → CatalogDetails | 核对ID，返回根资料、首个版本页、警告、blob SHA/ETag |
-| GetVersionsAsync(repository,store,page,ct) | 来源/根清单/页码 → CatalogVersionPage | 每页30；当前页SemVer排序，调用方合并历史页去重 |
+| GetVersionsAsync(repository,store,page,ct) | 来源/根清单/页码 → CatalogVersionPage | 每页30；当前页SemVer排序，返回重新校验的Repository；Topic变化时Shell重新加载整个详情，避免旧页保留可安装状态 |
 | GetScreenshotAsync(repository,imageUrl,ct) | 同仓库图片 → CatalogImage(Bytes,MediaType) | 按需读取；拒任意外链和执行型内容；失败不阻断详情 |
 | ParseStore / ParseRelease | 最多64KiB JSON → 固定模型 | schema 1；拒未知/重复字段；缺少必填不猜测 |
 | GenerateRelease(packagePath,minHost,minSdk,ct) | 真实.autumn → ReleaseManifest | 先PackageInstaller.Inspect，从真实字节生成身份、权限、入口、大小、SHA与格式 |

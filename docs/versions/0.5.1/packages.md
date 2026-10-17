@@ -1,25 +1,11 @@
-# 应用包与校验 · 0.5.1
+# 应用包与机器合同
 
-AutumnOS 0.5.1 的 `.autumn` 是受限制的 Web/WASM 资源归档，必须包含合法 `manifest.json` 与真实 HTML 入口。它不能承载普通原生 EXE、安装脚本或任意命令。`validate` 检查项目，`pack` 使用与安装器一致的包检查，`preview` 在原生确认后运行受控开发实例。源码 ZIP/TAR、改名后的 EXE 或任意 GitHub 附件不是应用包。
+适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。`.autumn`是受限ZIP封装，根manifest.json声明schemaVersion=1、appId、name、version、runtime=web、entry和permissions。appId是小写分段身份，不能与已有不同来源同ID接管；SemVer决定版本顺序，发布时间和字符串排序不替代版本比较。entry必须是包内安全相对HTML资源，不是URL或外部EXE。
 
-最小清单如下，应用 ID 应改为自己的稳定标识。该例不请求敏感权限：
+SDK/manifest.schema.json、store.schema.json、release.schema.json和message.schema.json均采用JSON Schema2020-12。store/release通过固定URN引用manifest定义，验证器必须注册相应Schema；合同工具已经这样加载。正例是交付四模板和Tests/contracts中的协议用例，负例包括多余身份字段、路径穿越、错误权限、source.zip附件和不合规版本。Schema不验证ZIP实际存在的资源、重复JSON键、Windows设备名、来源与三层一致、签名或跨字段存档范围；真实PackageInstaller/ReleaseMetadata检查不可省略。
 
-```json
-{
-  "schemaVersion": 1,
-  "appId": "cn.example.hello",
-  "name": "我的第一个应用",
-  "version": "0.1.0",
-  "runtime": "web",
-  "entry": "index.html",
-  "permissions": []
-}
-```
+包权限仅九种已支持值。permissionPurposes只能为已声明权限解释用途，desktop声明最多各四个快捷操作、link动作和widget，快捷操作指向自己声明的link。缺能力返回CAPABILITY_UNAVAILABLE，不能因在清单里写一个名字就获得实现。minReadableSaveFormatVersion≤saveFormatVersion≤maxReadableSaveFormatVersion，默认旧清单为1；这是安装兼容约束，不自动转换存档JSON。
 
-准确格式见开发套件 `SDK/manifest.schema.json`；运行时还检查跨字段关系、重复字段、归档路径、原生文件伪装与入口存在性，Schema 接受不代表能够安装或运行。使用权限时同步声明用途；桌面扩展需额外声明固定动作、快捷项及纯文本小组件。权限扩大后重新检查和确认，不能依赖旧包授权。
+开发工具只打包HTML/JS/CSS/JSON/PNG/JPG/SVG/WOFF2/WASM等受限内容，拒绝原生可执行魔数、隐藏私密文件、重解析点、越界、输出在源内部等危险输入。当前项目上限128文件、32目录、12级、8MiB单文件和16MiB总内容；商店附件另限20MiB。不要把开发者包、node_modules、凭据、用户数据混进应用目录。
 
-项目工具只读取受支持的静态资源，不运行 npm、构建脚本或 Shell 命令。源文件单个最多 8 MiB、展开资源合计 16 MiB、128 个文件、32 个目录、12 级深度；链接/重解析点、路径穿越和敏感文件类型被拒绝。输出不能位于项目之内。失败时保留可诊断状态，不通过删除真实数据或放宽安全检查继续。
-
-从 [第一个应用](first-app.md) 得到 `$cli`、`$project` 后可执行 `& $cli validate $project` 和 `& $cli pack $project <项目外输出目录>`。读取返回 JSON 中的 `packagePath`、`bytes`、`sha256`，后续始终使用实际产物。安装身份绑定包来源；不同来源即使 appId 相同也不能自然继承权限与数据。
-
-发布需要 `autumn.store.json`、`autumn.release.json` 与逐字节相符的 `.autumn`。版本、入口、权限、摘要、大小和存档格式必须一致；同版本不能偷偷替换字节。生成与校验步骤见 [应用发布](app-publishing.md)，数据兼容见 [数据](data.md)。
+清单检查通过不等于网络沙箱、真实身份和UI验收通过。打包后修改任何字节都要生成新材料并重测。下载、哈希校验和安装提交是三种状态，只有事务注册提交后才出现已安装应用。参见[应用发布](app-publishing.md)、[网络](network.md)、[数据](data.md)。

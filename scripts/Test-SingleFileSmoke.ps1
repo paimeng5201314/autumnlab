@@ -23,7 +23,7 @@ $dataDirectory=Join-Path $testRoot 'AutumnOS_Data'
 $WindowTimeoutSeconds=90
 $checks=[Collections.Generic.List[object]]::new();$screenshots=[Collections.Generic.List[object]]::new();$inputActions=[Collections.Generic.List[object]]::new();$windowGeometry=[Collections.Generic.List[object]]::new()
 $ownedProcesses=[Collections.Generic.List[Diagnostics.Process]]::new();$ownedEntryProcesses=[Collections.Generic.List[Diagnostics.Process]]::new()
-$script:initialPointerPosition=$null;$first=$null;$second=$null
+$script:initialPointerPosition=$null;$script:preparationWindowCaptured=$false;$first=$null;$second=$null
 $report=[ordered]@{schema_version=1;task_id='T06';checkpoint='actual_single_file_first_start_game_save_and_recall';status='failed';build_id=$BuildId;source_snapshot_id=$package.source_snapshot_id;release_label=$package.release_label;source_executable=$package.executable;tested_executable=(Join-Path $testRoot 'AutumnOS.exe');test_scope=$testRoot;started_utc=[DateTimeOffset]::UtcNow.ToString('o');checks=$checks;screenshots=$screenshots;input_actions=$inputActions;window_geometry=$windowGeometry;process_ids=@();bootstrap_process_ids=@();remaining_processes=@();cleanup='not_run';installer='deferred_by_user';public_release=$false;full_t06='in_progress';cold_start='not_run';clean_os='not_run'}
 function Start-SmokeProduct([string]$WorkingDirectory){
     $clock=[Diagnostics.Stopwatch]::StartNew()
@@ -34,6 +34,15 @@ function Start-SmokeProduct([string]$WorkingDirectory){
     $null=Wait-SmokeCondition {
         $entry.Refresh();if($entry.HasExited){throw "Held single-file entry exited: $($entry.ExitCode)"}
         if(-not [string]::Equals($entry.MainModule.FileName,$report.tested_executable,[StringComparison]::OrdinalIgnoreCase)){throw 'Single-file entry identity changed.'}
+        if(-not $script:preparationWindowCaptured -and $entry.MainWindowHandle -ne [IntPtr]::Zero){
+            $preparationElement=[Windows.Automation.AutomationElement]::FromHandle($entry.MainWindowHandle)
+            if($preparationElement.Current.ProcessId -ne $entry.Id){throw 'Preparation window owner mismatch.'}
+            $preparation=[pscustomobject]@{Process=$entry;Handle=$entry.MainWindowHandle;Element=$preparationElement}
+            $script:preparationWindowCaptured=$true
+            $null=Save-SmokeScreenshot $preparation '00-real-native-preparation'
+            $preparationBounds=$preparationElement.Current.BoundingRectangle
+            Add-SmokeCheck 'real_preparation_uses_app_size_native_window' ($preparationBounds.Width -ge 720 -and $preparationBounds.Height -ge 440)
+        }
         $candidates=@(Get-CimInstance Win32_Process -Filter "ParentProcessId=$($entry.Id)"|Where-Object {[string]::Equals($_.ExecutablePath,$innerPath,[StringComparison]::OrdinalIgnoreCase) -and $_.CreationDate.ToUniversalTime() -ge $started})
         if($candidates.Count -gt 1){throw 'Multiple inner bootstrap children.'}
         if($candidates.Count -eq 1){$script:observedInner=$candidates[0];return $true};return $false
@@ -78,8 +87,23 @@ try{
     Add-SmokeCheck 'client_is_actual_current_build_and_source' ($metadata.BuildId -eq $BuildId -and $metadata.SourceSnapshotId -eq $package.source_snapshot_id)
     Add-SmokeCheck 'first_launch_starts_at_real_hello' ($null -ne (Find-VisibleSmokeElement $first.Element 'HelloNextButton'))
     $null=Save-SmokeScreenshot $first '01-single-file-hello'
+    Start-Sleep -Milliseconds 900
+    $null=Save-SmokeScreenshot $first '01b-moving-greetings'
     Invoke-SmokeButton $first.Element 'HelloNextButton';$null=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'BrandNextButton'} 'brand stage'
-    Invoke-SmokeButton $first.Element 'BrandNextButton';Invoke-SmokeButton $first.Element 'FirstRunSkip'
+    Start-Sleep -Milliseconds 1100
+    $null=Save-SmokeScreenshot $first '01c-handwriting-in-progress'
+    Start-Sleep -Milliseconds 2300
+    $null=Save-SmokeScreenshot $first '01d-handwriting-complete'
+    Invoke-SmokeButton $first.Element 'BrandNextButton'
+    Add-SmokeCheck 'personalization_has_no_login_controls' ($null -eq (Find-VisibleSmokeElement $first.Element 'FirstRunLogin'))
+    Invoke-SmokeButton $first.Element 'WelcomeDarkButton'
+    $null=Save-SmokeScreenshot $first '01e-personalization-dark-choice'
+    Add-SmokeCheck 'theme_choice_saved' ((Get-Content -LiteralPath (Join-Path $dataDirectory 'Config/desktop-preferences.json') -Raw|ConvertFrom-Json).theme -eq 'dark')
+    Invoke-SmokeButton $first.Element 'WelcomeLightButton'
+    Invoke-SmokeButton $first.Element 'WelcomeAppearanceNext'
+    Add-SmokeCheck 'account_has_no_theme_controls' ($null -eq (Find-VisibleSmokeElement $first.Element 'WelcomeDarkButton'))
+    $null=Save-SmokeScreenshot $first '01f-separate-account-page'
+    Invoke-SmokeButton $first.Element 'FirstRunSkip'
     $null=Wait-SmokeCondition {(Find-SmokeElement $first.Element 'PrepareDesktopButton').Current.IsEnabled} 'explicit account skip saved'
     Invoke-SmokeButton $first.Element 'PrepareDesktopButton';Wait-SmokeDesktop $first
     Add-SmokeCheck 'real_first_run_committed' ((Get-Content -LiteralPath (Join-Path $dataDirectory 'Config/first-run.json') -Raw|ConvertFrom-Json).checkpoint -eq 'Completed')
@@ -89,6 +113,12 @@ try{
     $null=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'AboutVersion'} 'about version'
     Add-SmokeCheck 'actual_about_version_exact' ((Find-SmokeElement $first.Element 'AboutVersion').Current.Name -eq $expectedReleaseLabel)
     $null=Save-SmokeScreenshot $first '02-single-file-about'
+    $updateNavigation=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'SettingsNavUpdates'} 'system update navigation'
+    $updateNavigation.GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Toggle()
+    $updateIdentity=Wait-SmokeCondition {Find-VisibleSmokeElement $first.Element 'SystemUpdateIdentity'} 'system update release identity'
+    Add-SmokeCheck 'system_update_shows_exact_release_label' ($updateIdentity.Current.Name.Contains($expectedReleaseLabel,[StringComparison]::Ordinal))
+    Add-SmokeCheck 'system_update_does_not_expose_internal_engineering_version' (!$updateIdentity.Current.Name.Contains('可比较工程版本',[StringComparison]::Ordinal))
+    $null=Save-SmokeScreenshot $first '02b-system-update-version'
     Invoke-SmokeButton $first.Element 'SettingsHomeButton';Wait-SmokeDesktop $first
     Invoke-SmokePointer $first 'SampleButton' 'single_click'
     $runtimeLog=Join-Path $dataDirectory 'Logs/runtime-events.jsonl'
@@ -106,7 +136,9 @@ try{
     Add-SmokeCheck 'guest_save_commits_to_the_only_data_folder' ($save.value.nickname -eq '派蒙·单文件验证' -and $save.value.moves -ge 1)
     $saveHash=(Get-FileHash -LiteralPath $savePath).Hash.ToLowerInvariant()
     $nickname.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('未保存的单文件输入')
-    Invoke-SmokeButton $first.Element 'BackgroundButton';Wait-SmokeDesktop $first
+    Add-SmokeCheck 'game_toolbar_removed' ($null -eq (Find-VisibleSmokeElement $first.Element 'BackgroundButton') -and $null -eq (Find-VisibleSmokeElement $first.Element 'CloseGameButton'))
+    $nickname.SetFocus()
+    Invoke-AutumnGameShortcut $first 'Desktop';Wait-SmokeDesktop $first
     $events=@(Read-SmokeEvents $runtimeLog|Where-Object instanceId -eq $instance)
     Add-SmokeCheck 'background_game_still_blocks_maintenance' ($events[-1].state -eq 'Background' -and $events[-1].blocksMaintenance)
     $pidBefore=$first.Process.Id;$hwndBefore=$first.Handle
@@ -119,7 +151,24 @@ try{
     Add-SmokeCheck 'continue_keeps_unsaved_input' ($input.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '未保存的单文件输入')
     Add-SmokeCheck 'continue_keeps_exact_instance' (@(Read-SmokeEvents $runtimeLog|Where-Object state -eq 'Foreground')[-1].instanceId -eq $instance)
     $null=Save-SmokeScreenshot $first '04-single-file-real-game'
-    Invoke-SmokeButton $first.Element 'CloseGameButton';Invoke-SmokeNamedButton $first.Element '确认结束'
+    $input.SetFocus()
+    Invoke-AutumnGameShortcut $first 'Close'
+    $null=Wait-SmokeCondition {Find-SmokeNamedElement $first.Element '确认结束' ([Windows.Automation.ControlType]::Button)} 'shortcut retains end confirmation'
+    $null=Assert-AutumnOwnedNativeWindow $first.Process $first.Handle
+    if([AutumnSmokeInput.Native]::GetForegroundWindow() -ne $first.Handle){throw 'Refusing held Esc outside the owned game.'}
+    try {
+        [AutumnSmokeInput.Native]::keybd_event(0x1B,0,0,[UIntPtr]::Zero)
+        foreach($repeatIndex in 1..5){
+            Start-Sleep -Milliseconds 120
+            $null=Assert-AutumnOwnedNativeWindow $first.Process $first.Handle
+            if([AutumnSmokeInput.Native]::GetForegroundWindow() -ne $first.Handle){throw 'Foreground changed during held Esc.'}
+            [AutumnSmokeInput.Native]::keybd_event(0x1B,0,0,[UIntPtr]::Zero)
+        }
+    } finally { [AutumnSmokeInput.Native]::keybd_event(0x1B,0,2,[UIntPtr]::Zero) }
+    $null=Wait-SmokeCondition {Find-SmokeNamedElement $first.Element '玩家昵称' ([Windows.Automation.ControlType]::Edit)} 'escape only dismisses confirmation'
+    Add-SmokeCheck 'held_escape_in_end_dialog_keeps_game_visible' ($null -eq (Find-VisibleSmokeElement $first.Element 'SampleButton'))
+    $input.SetFocus()
+    Invoke-AutumnGameShortcut $first 'Close';Invoke-SmokeNamedButton $first.Element '确认结束'
     $null=Wait-SmokeCondition {@(Read-SmokeEvents $runtimeLog|Where-Object {$_.instanceId -eq $instance -and $_.state -eq 'Closed' -and !$_.blocksMaintenance}).Count -gt 0} 'real game resources released'
     Add-SmokeCheck 'true_end_releases_maintenance_blocker' $true
     Close-SmokeProduct $first

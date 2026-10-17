@@ -51,8 +51,15 @@ public sealed partial class MainWindow
             var page = await storeCatalog.GetVersionsAsync(details.Repository, details.Store,
                 storeVersionPages.GetValueOrDefault(details.Repository.RepositoryId, 1) + 1, token);
             if (token.IsCancellationRequested || revision != storeRevision) return;
+            if (page.Repository is { } current && current.Topics.Contains("autumnos-app", StringComparer.Ordinal) !=
+                details.Repository.Topics.Contains("autumnos-app", StringComparer.Ordinal))
+            {
+                await OpenStoreDetailsAsync(current);
+                return;
+            }
             storeVersionPages[details.Repository.RepositoryId] = page.Page;
-            var merged = details with { Versions = details.Versions.Concat(page.Versions).DistinctBy(v => v.ReleaseId).ToArray(), HasMoreVersions = page.HasMore };
+            var merged = details with { Repository = page.Repository ?? details.Repository,
+                Versions = details.Versions.Concat(page.Versions).DistinctBy(v => v.ReleaseId).ToArray(), HasMoreVersions = page.HasMore };
             storeDetails[details.Repository.RepositoryId] = merged;
             RenderStoreDetails(merged);
         }

@@ -43,6 +43,16 @@
           "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
           "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
           "scope": "Only current named assertions; full gate not passed"
+        },
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
         }
       ],
       "status_history": [
@@ -68,7 +78,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3569134+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3569134+08:00"
         }
       ],
       "assessment": "partial",
@@ -119,7 +129,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3645632+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3645632+08:00"
         }
       ],
       "assessment": "partial",
@@ -170,7 +180,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646042+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646042+08:00"
         }
       ],
       "assessment": "partial",
@@ -221,7 +231,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646186+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646186+08:00"
         }
       ],
       "assessment": "partial",
@@ -247,6 +257,16 @@
           "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
           "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
           "scope": "Only current named assertions; full gate not passed"
+        },
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
         }
       ],
       "status_history": [
@@ -272,7 +292,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646291+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646291+08:00"
         }
       ],
       "assessment": "partial",
@@ -323,7 +343,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646446+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646446+08:00"
         }
       ],
       "assessment": "partial",
@@ -349,6 +369,16 @@
           "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
           "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
           "scope": "Only current named assertions; full gate not passed"
+        },
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
         }
       ],
       "status_history": [
@@ -374,7 +404,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646526+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646526+08:00"
         }
       ],
       "assessment": "partial",
@@ -400,6 +430,16 @@
           "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
           "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
           "scope": "Only current named assertions; full gate not passed"
+        },
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
         }
       ],
       "status_history": [
@@ -425,7 +465,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646627+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646627+08:00"
         }
       ],
       "assessment": "partial",
@@ -476,7 +516,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646728+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646728+08:00"
         }
       ],
       "assessment": "partial",
@@ -527,7 +567,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646827+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646827+08:00"
         }
       ],
       "assessment": "partial",
@@ -578,7 +618,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3646947+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3646947+08:00"
         }
       ],
       "assessment": "partial",
@@ -604,6 +644,16 @@
           "source_snapshot_id": "sha256:65737bd0c4b759354d832795cd98aafa5feabd711e8096918379220cb4aefb39",
           "evidence_path": "artifacts/reports/single-file-delivery-03/HANDOFF.md",
           "scope": "Only current named assertions; full gate not passed"
+        },
+        {
+          "build_id": "T06-20261017-chemleap-03",
+          "source_snapshot_id": "sha256:50cf737f7011fa97572c0c31fbd3e95b6ed39d68752b8c244aed382b7c6274b2",
+          "game_source_snapshot_id": "sha256:6a909c33279cdb6b4f309ad4d8929dbf5ca4ce003793f5b9e6b4a60747d00f08",
+          "environment": "Windows 11 10.0.26200 x64; standard user",
+          "command": "Build.ps1; Test.ps1; Package-ChemLeap.ps1; Test-ChemLeapNativeSmoke.ps1; Test-StoreRepositorySmoke.ps1",
+          "observed_result": "Release 0 warnings/errors; C#768; game model50; browser14; actual native game16 including SDK save and new-instance readback; repository UI29; three-layer .autumn package and eight ZIP resource hashes verified",
+          "evidence_path": "artifacts/chemleap-20261017",
+          "scope": "Local ChemLeap WebGL game plus public-repository lookup increment; native game execution is explicit developer preview, no public release/download or ordinary community execution approval; no full acceptance status promoted"
         }
       ],
       "status_history": [
@@ -629,7 +679,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3647022+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3647022+08:00"
         }
       ],
       "assessment": "partial",
@@ -680,7 +730,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3647130+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.364713+08:00"
         }
       ],
       "assessment": "partial",
@@ -731,7 +781,7 @@
               "observed_result": "Build0warnings/errors; C#591/SDK22/contracts358/DOM6/syntheticPKCE21/HTTP-negative7/CLI12; nativeDesktop122/store75/entry18/ZIPentry18/developer115/WebView33; clean-directoryCLI20/backend14/synthetic21; performance completed target missed."
             }
           ],
-          "recorded_utc": "2026-10-03T04:45:24.3647234+00:00"
+          "recorded_utc": "2026-10-03T12:45:24.3647234+08:00"
         }
       ],
       "assessment": "partial",

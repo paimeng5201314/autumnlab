@@ -1,28 +1,11 @@
-# 应用桌面扩展 · 0.5.1
+# 桌面扩展合同
 
-AutumnOS 0.5.1 的桌面扩展是宿主内部通知、角标、快捷动作、纯文本小组件和应用内链接，不是 Windows 全局通知、任意 HTML 小组件或外部协议注册。用 `create desktop-extension` 创建可用模板，具体创建与资源定位见 [第一个应用](first-app.md)。安装清单先声明权限、用途和有限动作，运行时仍须取得用户授权。
+适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。desktop-extension模板只使用当前实例与清单中的focus动作和note小组件；它不会注册Windows外部协议、启动命令、新建游戏或修改其他应用。所有操作先取得各自权限，不能把PM标签当成额外授权。
 
-```json
-{
-  "permissions": ["notifications", "shortcuts", "widgets", "links"],
-  "permissionPurposes": {
-    "notifications": "由你发送内部通知和角标",
-    "shortcuts": "为图标增加回到笔记的操作",
-    "widgets": "显示你选择的纯文本摘要",
-    "links": "把 focus 动作交给当前应用"
-  },
-  "desktop": {
-    "shortcuts": [{"id": "focus", "title": "回到笔记", "action": "focus"}],
-    "links": ["focus"],
-    "widgets": [{"id": "note", "title": "我的笔记"}]
-  }
-}
-```
+notifications.show需要notifications，输入id/title/body/action；title≤100、body≤500且无控制字符。action为null或本应用声明link。shown=false、reason=muted/duplicate是正常受限结果，不应显示“已发送成功”。通知每实例20条、全局100条，最多256个十分钟去重ID，尚存在的同ID一直去重。setBadge范围0–999，0清除；静音下返回0。关闭实例清除临时通知/角标；撤销或静音即时移除。
 
-以上是清单片段，应合入模板现有 manifest，不替换必需的 appId、version 等字段。最多分别声明 4 个快捷动作、链接动作和小组件。标题由清单给出；小组件每次最多 4 行纯文本、每行 160 字符，不执行脚本。
+shortcuts.register输入声明过的ids数组，每次替换集合，空数组撤下。宿主长按/右键显示真实动作，点击后投递shortcuts.invoked{id,action}给原实例并重新检查权限。widgets.update仅更新声明id的最多四行纯文本，每行160字符，标题来自清单；没有HTML/JS执行能力。links.openInternal需links及新原生手势，action已声明、arguments最多八个短字符串，投递links.opened并保持当前实例。
 
-授权后可调用 `shortcuts.register({ids:['focus']})`、`widgets.update({id:'note',lines:['待办 1 项']})` 和 `notifications.show({id:'note-1',title:'笔记',body:'已保存',action:'focus'})`。注册集合每次替换当前集合；通知 action 必须属于当前应用已声明的动作，不能是 URL 或命令。通过 `onEvent('links.opened', ...)` 和 `onEvent('shortcuts.invoked', ...)` 处理真实宿主控件触发的事件。
+appearance.get/changed无需敏感权限，带theme/language/scale/reduceMotion；主题支持system，当前中文正文不冒称多语言翻译。共享样例壳先订阅再读快照，防止旧值覆盖，并在pagehide/结束撤订阅。权限事件也用于清理应用已有临时引用；宿主仍在每次最终事件投递时验证代次。
 
-通知标题最多 100 字符、正文 500，不接受控制字符；角标 0–999，0 清除。静音或撤销会移除通知与角标；应用结束清除该实例的扩展，后台继续使用仍需实际授权。宿主核对实例身份，快捷动作不会另开第二个同一游戏。
-
-这些接口不能创建文件夹、多桌面、自定义 Dock 或任意排序 API。当前宿主自身的三列图标排序不等于开放桌面编辑能力；界面状态见 [界面与交互](design.md)。测试应覆盖拒绝、撤销、静音、重复通知、跨应用动作拒绝、账号切换和关闭后的迟到事件，物理触控仍需独立设备验收。
+验证顺序：申请通知→发送→重复观察duplicate→宿主通知中心静音后观察muted；申请shortcuts/widgets/links→登记/更新/投递→返回桌面查真实控件→继续原实例；撤销后操作失败，结束后扩展清理。DOM单测不证明WinUI覆盖层可见可点，真实窗口和截图另记。逐字段及取消/错误见[SDK参考](sdk-reference.md)。

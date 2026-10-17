@@ -791,7 +791,8 @@ function Finish-SingleOnboarding($Product) {
         $null=Wait-SmokeCondition {Find-VisibleSmokeElement $Product.Element 'BrandNextButton'} 'the next onboarding brand page'
     }
     if (Find-VisibleSmokeElement $Product.Element 'BrandNextButton') { Invoke-SmokeButton $Product.Element 'BrandNextButton' }
-    $null=Wait-SmokeCondition { (Find-VisibleSmokeElement $Product.Element 'WelcomePanel') -or (Find-VisibleSmokeElement $Product.Element 'SampleButton') } 'preparation or completed desktop'
+    $null=Wait-SmokeCondition { (Find-VisibleSmokeElement $Product.Element 'WelcomeAppearanceNext') -or (Find-VisibleSmokeElement $Product.Element 'FirstRunSkip') -or (Find-VisibleSmokeElement $Product.Element 'PrepareDesktopButton') -or (Find-VisibleSmokeElement $Product.Element 'SampleButton') } 'personalization, account choice or completed desktop'
+    if (Find-VisibleSmokeElement $Product.Element 'WelcomeAppearanceNext') { Invoke-SmokeButton $Product.Element 'WelcomeAppearanceNext' }
     if (Find-VisibleSmokeElement $Product.Element 'WelcomePanel') {
         $skip=Find-SmokeElement $Product.Element 'FirstRunSkip'
         if($skip -and $skip.Current.IsEnabled){Invoke-SmokeButton $Product.Element 'FirstRunSkip'}
@@ -805,7 +806,7 @@ function Assert-SingleBackgroundUnchanged($Product, [string]$RuntimePath, [strin
     $events=@(Read-SmokeEvents $RuntimePath)
     $fresh=@($events | Select-Object -Skip $BaselineCount)
     Add-SmokeCheck $Name ($fresh.Count -eq 0 -and $events[-1].instanceId -eq $InstanceId -and $events[-1].state -eq 'Background' -and
-        $events[-1].blocksMaintenance -and $null -eq (Find-VisibleSmokeElement $Product.Element 'RuntimeStatus'))
+        $events[-1].blocksMaintenance -and $null -eq (Find-VisibleSmokeElement $Product.Element 'AppPanel'))
     Assert-SmokeRunningBadges $Product $true "${Name}_both_badges_remain"
 }
 
@@ -915,7 +916,7 @@ try {
     $report.cross_copy_recall='passed';$report.multiple_working_directories='passed'
 
     Invoke-SmokePointer $activeProduct 'SampleButton' 'single_click'
-    $null=Wait-SmokeCondition {(Find-VisibleSmokeElement $activeProduct.Element 'RuntimeStatus').Current.Name -match '前台运行'} 'real internal game'
+    $null=Wait-SmokeCondition {((Find-VisibleSmokeElement $activeProduct.Element 'AppPanel') -and (Find-SmokeNamedElement $activeProduct.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit)))} 'real internal game'
     $gameInstance=(Wait-SmokeNewForeground $runtimePath 0 '').instanceId
     $report.game_instance_id=$gameInstance
     $nickname=Wait-SmokeCondition {Find-SmokeNamedElement $activeProduct.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit)} 'nickname input'
@@ -931,12 +932,12 @@ try {
     $null=Save-SmokeScreenshot $activeProduct '04-game-before-repeat-launch'
     $null=Invoke-SingleRecall $activeProduct $aRoot $bExe $cwdTwo 'foreground_game_recall'
     Add-SmokeCheck 'foreground_game_recall_does_not_create_or_transition_runtime' (@(Read-SmokeEvents $runtimePath).Count -eq $gameBaseline -and
-        (Find-VisibleSmokeElement $activeProduct.Element 'RuntimeStatus').Current.Name -match '前台运行')
+        ((Find-VisibleSmokeElement $activeProduct.Element 'AppPanel') -and (Find-SmokeNamedElement $activeProduct.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))))
     Add-SmokeCheck 'foreground_game_recall_keeps_unsaved_input_and_committed_save' ($nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·单实例未保存输入' -and
         (Get-FileHash -LiteralPath $savePath -Algorithm SHA256).Hash -eq $saveHash)
     $report.foreground_game_preservation='passed'
     $null=Save-SmokeScreenshot $activeProduct '05-game-after-repeat-launch'
-    Invoke-SmokeButton $activeProduct.Element 'BackgroundButton';Wait-SmokeDesktop $activeProduct
+    Invoke-AutumnGameShortcut $activeProduct 'Desktop';Wait-SmokeDesktop $activeProduct
     $backgroundBaseline=@(Read-SmokeEvents $runtimePath).Count
     $null=Invoke-SingleRecall $activeProduct $aRoot $aExe $cwdOne 'background_game_recall'
     Assert-SingleBackgroundUnchanged $activeProduct $runtimePath $gameInstance $backgroundBaseline 'repeated_launch_keeps_game_background'
@@ -949,7 +950,7 @@ try {
     Add-SmokeCheck 'explicit_continue_after_recall_keeps_same_instance_and_unsaved_input' ($resumed.instanceId -eq $gameInstance -and
         $nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·单实例未保存输入')
     $report.background_game_preservation='passed'
-    Invoke-SmokeButton $activeProduct.Element 'BackgroundButton';Wait-SmokeDesktop $activeProduct
+    Invoke-AutumnGameShortcut $activeProduct 'Desktop';Wait-SmokeDesktop $activeProduct
 
     # No response is injected only into this isolated, held primary; it is always resumed before cleanup.
     $preSuspendLauncherCount=@(Read-LauncherEvents $aRoot).Count

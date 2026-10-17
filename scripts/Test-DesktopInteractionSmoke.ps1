@@ -624,7 +624,7 @@ function Test-SmokeDesktopArrange {
     $assertArrangeDidNotLaunch = {
         param([string]$ArrangeCheckPrefix)
         Wait-SmokeDesktop $Product
-        Add-SmokeCheck ($ArrangeCheckPrefix + '_no_game_no_switcher') (-not (Find-VisibleSmokeElement $Product.Element 'RuntimeStatus') -and
+        Add-SmokeCheck ($ArrangeCheckPrefix + '_no_game_no_switcher') (-not (Find-VisibleSmokeElement $Product.Element 'AppPanel') -and
             -not (Find-VisibleSmokeElement $Product.Element 'SampleRunningBadge') -and -not (Find-VisibleSmokeElement $Product.Element 'RunningSwitcherTitle'))
         Add-SmokeCheck ($ArrangeCheckPrefix + '_no_context_menu') (-not (Find-SmokeMenuItem $Product 'SampleMenuOpen' @()) -and
             -not (Find-SmokeMenuItem $Product 'SampleMenuInfo' @()))
@@ -680,7 +680,7 @@ function Assert-SmokeBackgroundRemains($Product, [string]$RuntimeLog, [string]$I
     $timer = [Diagnostics.Stopwatch]::StartNew()
     do {
         if (-not (Find-VisibleSmokeElement $Product.Element 'SampleButton') -or
-            (Find-VisibleSmokeElement $Product.Element 'RuntimeStatus')) { throw 'A background single-click unexpectedly activated the game.' }
+            (Find-VisibleSmokeElement $Product.Element 'AppPanel')) { throw 'A background single-click unexpectedly activated the game.' }
         if (Find-SmokeMenuItem $Product 'RunningContinueButton' @()) { throw 'A single click unexpectedly opened the double-click action panel.' }
         $currentEvents = @(Read-SmokeEvents $RuntimeLog)
         $newEvents = @($currentEvents | Select-Object -Skip $BaselineCount)
@@ -1084,9 +1084,9 @@ namespace AutumnDesktopInteractionSmoke {
     $null = Save-SmokeScreenshot $first '08-hello'
     Invoke-SmokeButton $first.Element 'HelloNextButton'
     $null = Wait-SmokeCondition { Find-VisibleSmokeElement $first.Element 'BrandNextButton' } 'the AutumnOS brand stage'
-    Add-SmokeCheck 'brand_stage_has_product_name' ((Find-SmokeElement $first.Element 'WelcomeBrand').Current.Name -eq $metadata['DisplayName'])
+    Add-SmokeCheck 'brand_stage_has_product_name' ([bool](Find-SmokeNamedElement $first.Element $metadata['ProductName'] ([System.Windows.Automation.ControlType]::Text)))
     $null = Save-SmokeScreenshot $first '09-brand'
-    Invoke-SmokeButton $first.Element 'BrandNextButton'
+    Invoke-SmokeButton $first.Element 'BrandNextButton'; Invoke-SmokeButton $first.Element 'WelcomeAppearanceNext'
     Invoke-SmokeButton $first.Element 'FirstRunSkip'
     $null = Wait-SmokeCondition { (Find-SmokeElement $first.Element 'PrepareDesktopButton').Current.IsEnabled } 'explicit account skip saved'
     $null = Save-SmokeScreenshot $first '10-initialization'
@@ -1195,8 +1195,8 @@ namespace AutumnDesktopInteractionSmoke {
     # A real single pointer click on a stopped icon must launch an actual internal session.
     Invoke-SmokePointer $first 'SampleButton' 'single_click'
     $null = Wait-SmokeCondition {
-        $state = Find-VisibleSmokeElement $first.Element 'RuntimeStatus'
-        $state -and $state.Current.Name -match '前台运行'
+        $state = Find-VisibleSmokeElement $first.Element 'AppPanel'
+        $state -and -not $state.Current.IsOffscreen -and (Find-SmokeNamedElement $first.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))
     } 'internal WebView2 game launched by a real single click'
     $null = Wait-SmokeCondition { @(Read-SmokeEvents $runtimeLog | Where-Object { $_.state -eq 'Foreground' }).Count -gt 0 } 'actual foreground runtime event'
     $firstInstance = @(Read-SmokeEvents $runtimeLog | Where-Object { $_.state -eq 'Foreground' })[-1].instanceId
@@ -1218,7 +1218,7 @@ namespace AutumnDesktopInteractionSmoke {
     $null = Save-SmokeScreenshot $first '19-saved-application'
     # Keep distinct, unsaved input to prove that Continue preserves the same WebView instance.
     $nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('派蒙·尚未保存')
-    Invoke-SmokeButton $first.Element 'BackgroundButton'
+    Invoke-AutumnGameShortcut $first 'Desktop'
     Wait-SmokeDesktop $first
     Assert-SmokeRunningBadges $first $true 'background_game_marks_both_desktop_and_dock_icons'
     Add-SmokeCheck 'background_desktop_has_no_explanatory_running_card' ($null -eq (Find-VisibleSmokeElement $first.Element 'RunningCard') -and $null -eq (Find-VisibleSmokeElement $first.Element 'RunningTitle'))
@@ -1232,7 +1232,7 @@ namespace AutumnDesktopInteractionSmoke {
         Invoke-SmokePointer $first $resumeIcon 'single_click'
         $foreground = Wait-SmokeNewForeground $runtimeLog $singleClickBaseline $firstInstance
         Add-SmokeCheck "background_single_click_resumes_same_instance_$resumeIcon" ($foreground.instanceId -eq $firstInstance -and -not (Find-VisibleSmokeElement $first.Element 'RunningSwitcherTitle'))
-        Invoke-SmokeButton $first.Element 'BackgroundButton';Wait-SmokeDesktop $first
+        Invoke-AutumnGameShortcut $first 'Desktop';Wait-SmokeDesktop $first
     }
     $report.background_single_click = 'passed'
     foreach ($keyboardCase in @(@('SampleButton', 'Enter'), @('DockSampleButton', 'Space'))) {
@@ -1240,7 +1240,7 @@ namespace AutumnDesktopInteractionSmoke {
         Send-SmokeIconKey $first $keyboardCase[0] $keyboardCase[1]
         $latest = Wait-SmokeNewForeground $runtimeLog $keyBaseline $firstInstance
         Add-SmokeCheck "background_keyboard_resumes_same_instance_$($keyboardCase[1])" ($latest.instanceId -eq $firstInstance)
-        Invoke-SmokeButton $first.Element 'BackgroundButton';Wait-SmokeDesktop $first
+        Invoke-AutumnGameShortcut $first 'Desktop';Wait-SmokeDesktop $first
     }
     $report.background_keyboard_actions = 'passed'
     Invoke-SmokePointer $first 'DesktopGestureHint' 'double_click'
@@ -1250,7 +1250,7 @@ namespace AutumnDesktopInteractionSmoke {
     $null = Save-SmokeScreenshot $first '05-double-click-actions' -IncludeOverlays
     $continueBaseline = @(Read-SmokeEvents $runtimeLog).Count
     Invoke-SmokeOwnedButton $first 'RunningContinueButton'
-    $null = Wait-SmokeCondition { (Find-VisibleSmokeElement $first.Element 'RuntimeStatus').Current.Name -match '前台运行' } 'the Continue action restoring the existing game'
+    $null = Wait-SmokeCondition { ((Find-VisibleSmokeElement $first.Element 'AppPanel') -and (Find-SmokeNamedElement $first.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))) } 'the Continue action restoring the existing game'
     $latestForeground = Wait-SmokeNewForeground $runtimeLog $continueBaseline $firstInstance
     Add-SmokeCheck 'continue_panel_resumes_same_runtime_instance' ($latestForeground.instanceId -eq $firstInstance)
     $nickname = Wait-SmokeCondition { Find-SmokeNamedElement $first.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit) } 'restored nickname input'
@@ -1269,7 +1269,7 @@ namespace AutumnDesktopInteractionSmoke {
     $report.maximize_restore = 'passed'
 
     # End in the blank-desktop switcher closes the real captured session.
-    Invoke-SmokeButton $first.Element 'BackgroundButton'
+    Invoke-AutumnGameShortcut $first 'Desktop'
     Wait-SmokeDesktop $first
     Invoke-SmokePointer $first 'DesktopGestureHint' 'double_click'
     Wait-SmokeRunningPanel $first
@@ -1285,7 +1285,7 @@ namespace AutumnDesktopInteractionSmoke {
 
     $newInstanceBaseline = @(Read-SmokeEvents $runtimeLog).Count
     Invoke-SmokePointer $first 'DockSampleButton' 'single_click'
-    $null = Wait-SmokeCondition { (Find-VisibleSmokeElement $first.Element 'RuntimeStatus').Current.Name -match '前台运行' } 'new application instance launched from the Dock'
+    $null = Wait-SmokeCondition { ((Find-VisibleSmokeElement $first.Element 'AppPanel') -and (Find-SmokeNamedElement $first.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))) } 'new application instance launched from the Dock'
     $secondInstance = (Wait-SmokeNewForeground $runtimeLog $newInstanceBaseline '').instanceId
     Add-SmokeCheck 'single_dock_click_after_close_creates_new_instance' ($secondInstance -ne $firstInstance -and -not [string]::IsNullOrWhiteSpace($secondInstance))
     $report.second_instance_id = $secondInstance
@@ -1299,7 +1299,7 @@ namespace AutumnDesktopInteractionSmoke {
     $nickname = Wait-SmokeCondition { Find-SmokeNamedElement $first.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit) } 'new instance nickname input'
     $null = Wait-SmokeCondition { $nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·交互验证' } 'new instance restores the earlier guest save'
     Add-SmokeCheck 'new_instance_reopens_saved_progress_without_rewriting' ((Get-FileHash -LiteralPath $savePath -Algorithm SHA256).Hash.ToLowerInvariant() -eq $saveHash)
-    Invoke-SmokeButton $first.Element 'BackgroundButton'
+    Invoke-AutumnGameShortcut $first 'Desktop'
     Wait-SmokeDesktop $first
     Assert-SmokeRunningBadges $first $true 'new_background_instance_has_both_badges'
     Invoke-SmokePointer $first 'SampleButton' 'long_press'
@@ -1308,10 +1308,10 @@ namespace AutumnDesktopInteractionSmoke {
         $null -ne (Find-SmokeMenuItem $first 'SampleMenuClose' @('结束游戏')))
     $continueBaseline = @(Read-SmokeEvents $runtimeLog).Count
     Invoke-SmokeMenuItem $first 'SampleMenuOpen' @('继续游戏')
-    $null = Wait-SmokeCondition { (Find-VisibleSmokeElement $first.Element 'RuntimeStatus').Current.Name -match '前台运行' } 'long-press Continue resuming the new instance'
+    $null = Wait-SmokeCondition { ((Find-VisibleSmokeElement $first.Element 'AppPanel') -and (Find-SmokeNamedElement $first.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))) } 'long-press Continue resuming the new instance'
     Add-SmokeCheck 'long_press_continue_keeps_same_instance' ((Wait-SmokeNewForeground $runtimeLog $continueBaseline $secondInstance).instanceId -eq $secondInstance)
     $report.long_press = 'passed'
-    Invoke-SmokeButton $first.Element 'BackgroundButton'
+    Invoke-AutumnGameShortcut $first 'Desktop'
     Wait-SmokeDesktop $first
     Invoke-SmokePointer $first 'DockSampleButton' 'right_click'
     $null = Wait-SmokeCondition { Find-SmokeMenuItem $first 'SampleMenuClose' @('结束游戏') } 'the live right-click End menu'

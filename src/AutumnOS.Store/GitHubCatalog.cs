@@ -51,6 +51,27 @@ public sealed class GitHubStoreCatalog : IStoreCatalog
         catch (Exception ex) when (Malformed(ex)) { throw new CatalogException("STORE_RESPONSE_INVALID"); }
     }
 
+    public async Task<CatalogRepository> ResolveRepositoryAsync(string repository, CancellationToken cancellationToken = default)
+    {
+        string reference = repository?.Trim() ?? "";
+        if (reference.Length > 200) throw new CatalogException("STORE_REPOSITORY_INVALID");
+        const string prefix = "https://github.com/";
+        if (reference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) reference = reference[prefix.Length..];
+        Match match = Regex.Match(reference,
+            @"\A(?<owner>[A-Za-z0-9][A-Za-z0-9-]{0,38})/(?<name>[A-Za-z0-9_][A-Za-z0-9_.-]{0,99})/?\z",
+            RegexOptions.CultureInvariant);
+        if (!match.Success || match.Groups["name"].Value.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
+            throw new CatalogException("STORE_REPOSITORY_INVALID");
+        Uri uri = new("https://api.github.com/repos/" + match.Groups["owner"].Value + "/" + match.Groups["name"].Value);
+        CatalogResponse response = await cache.GetAsync(uri, GitHubRequestKind.Api, 256 * 1024, cancellationToken);
+        try
+        {
+            using JsonDocument doc = ReleaseMetadata.Document(response.Bytes, 256 * 1024);
+            return Repository(doc.RootElement);
+        }
+        catch (Exception ex) when (Malformed(ex)) { throw new CatalogException("STORE_RESPONSE_INVALID"); }
+    }
+
     public async Task<CatalogDetails> GetDetailsAsync(CatalogRepository repository, CancellationToken cancellationToken = default)
     {
         CheckRepository(repository);
@@ -87,6 +108,8 @@ public sealed class GitHubStoreCatalog : IStoreCatalog
         catch (CatalogException ex) { warnings.Add(ex.Code == "STORE_NOT_FOUND" ? "STORE_METADATA_MISSING" : ex.Code); }
         catch (Exception ex) when (Malformed(ex)) { warnings.Add("STORE_METADATA_INVALID"); }
         CatalogVersionPage versions = await GetVersionsAsync(repository, store, 1, cancellationToken);
+        repository = versions.Repository ?? repository;
+        if (!repository.Topics.Contains("autumnos-app", StringComparer.Ordinal)) warnings.Add("STORE_TOPIC_MISSING");
         if (identity.WarningCode is not null) warnings.Add(identity.WarningCode);
         if (versions.HasMore) warnings.Add("STORE_MORE_VERSIONS_AVAILABLE");
         if (versions.Versions.Count == 0) warnings.Add("STORE_NO_RELEASES");
@@ -99,11 +122,15 @@ public sealed class GitHubStoreCatalog : IStoreCatalog
         CheckRepository(repository);
         if (page is < 1 or > 34) throw new CatalogException("STORE_QUERY_INVALID");
         CatalogResponse identity = await cache.GetAsync(Api(repository), GitHubRequestKind.Api, 256 * 1024, cancellationToken);
+        bool hasAppTopic;
+        CatalogRepository currentRepository;
         try
         {
             using JsonDocument current = ReleaseMetadata.Document(identity.Bytes, 256 * 1024);
             CatalogRepository resolved = Repository(current.RootElement);
             if (resolved.RepositoryId != repository.RepositoryId) throw new CatalogException("STORE_SOURCE_CHANGED");
+            currentRepository = resolved;
+            hasAppTopic = resolved.Topics.Contains("autumnos-app", StringComparer.Ordinal);
         }
         catch (Exception ex) when (Malformed(ex)) { throw new CatalogException("STORE_RESPONSE_INVALID"); }
         CatalogResponse response = await cache.GetAsync(Api(repository, "/releases?per_page=30&page=" + page), GitHubRequestKind.Api, 2 * 1024 * 1024, cancellationToken);
@@ -148,13 +175,14 @@ public sealed class GitHubStoreCatalog : IStoreCatalog
                     if (!ReleaseMetadata.AssetName(asset.Name) || asset.Size != manifest.Bytes) throw new CatalogException("STORE_ASSET_SIZE_MISMATCH");
                     Digest(asset.Digest, manifest.Sha256);
                     error = ReleaseMetadata.Compatibility(manifest, hostVersion, sdkVersion);
+                    if (error is null && !hasAppTopic) error = "STORE_TOPIC_MISSING";
                 }
                 catch (CatalogException ex) { error = ex.Code; }
                 catch (Exception ex) when (Malformed(ex)) { error = "STORE_RELEASE_INVALID"; }
                 versions.Add(new(id, tag, published, notes, preview, manifest, asset, error is null, error));
             }
             return new(versions.OrderByDescending(v => SemanticVersion.TryParse(v.Manifest?.Version, out var version) ? version : null).ThenByDescending(v => v.PublishedAt).ToArray(),
-                page, releases.GetArrayLength() == PageSize && page < 34, fromCache, response.FetchedAt);
+                page, releases.GetArrayLength() == PageSize && page < 34, fromCache, response.FetchedAt, currentRepository);
         }
         catch (Exception ex) when (Malformed(ex)) { throw new CatalogException("STORE_RESPONSE_INVALID"); }
     }

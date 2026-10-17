@@ -60,7 +60,7 @@ Source $snapshot
 正式公钥未配置时拒绝安装；普通退出和下次启动不会应用待安装版本。
 本目录包含 .NET / Windows App SDK / 固定 WebView2 Runtime。没有安装系统组件。
 本地更新演练仅在明确标识的独立构建启用；生产来源固定 paimeng5201314/autumnlab。
-预览交付；完整 T03 收尾、安装版及系统兼容矩阵尚未验收，实际验证结果见对应构建与发行说明。
+完整 T03 收尾、安装版及系统兼容矩阵尚未验收，实际验证结果见对应构建与发行说明。
 "@ | Set-Content -LiteralPath (Join-Path $destination 'READ-ME.txt') -Encoding utf8
         # This allowlist comes from the exact delivery bytes, excluding stable and private paths.
         $inventory=Join-Path $run 'managed-files.json'

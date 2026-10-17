@@ -16,7 +16,8 @@ public static class IdentityProtocolTests
 {
     public static IEnumerable<(string Name, Action Run)> Cases()
     {
-        foreach (string defect in new[] { "valid", "nonce", "userinfo-sub", "issuer", "audience", "signature", "expired", "denied", "token-invalid-grant" })
+        foreach (string defect in new[] { "valid", "nonce", "userinfo-sub", "issuer", "audience", "signature", "expired", "denied", "token-invalid-grant",
+            "callback-unavailable", "callback-invalid-client", "callback-invalid-redirect", "token-invalid-client" })
             yield return ($"T03 OIDC protocol fixture: {defect}", () => Run(async () =>
             {
                 using ProtocolFixture fixture = new(defect);
@@ -38,6 +39,9 @@ public static class IdentityProtocolTests
                     Assert(defect != "valid", "Valid OIDC flow failed with " + error.Code);
                     if (defect == "denied") Assert(error.Code == "USER_CANCELLED" && fixture.TokenRequests == 0, "Denial became authentication.");
                     if (defect == "token-invalid-grant") Assert(error.Code == "SESSION_EXPIRED", "Invalid grant not distinguished.");
+                    if (defect == "callback-unavailable") Assert(error.Code == "AUTH_PROVIDER_UNAVAILABLE" && fixture.TokenRequests == 0, "Provider outage not distinguished.");
+                    if (defect is "callback-invalid-client" or "token-invalid-client") Assert(error.Code == "AUTH_CLIENT_REJECTED", "Rejected public client not distinguished.");
+                    if (defect == "callback-invalid-redirect") Assert(error.Code == "AUTH_REDIRECT_REJECTED" && fixture.TokenRequests == 0, "Rejected callback not distinguished.");
                 }
                 await fixture.LastCallback.WaitAsync(timeout.Token);
             }));
@@ -57,6 +61,28 @@ public static class IdentityProtocolTests
             await fixture.LastCallback;
             Assert(first.state != fixture.State && first.nonce != fixture.Nonce && first.challenge != fixture.Challenge && fixture.Reauthentication,
                 "Login reused protocol parameters or omitted fresh authentication.");
+        }));
+        yield return ("T06 OIDC login recovery: discovery 502 releases callback and permits a fresh retry", () => Run(async () =>
+        {
+            using ProtocolFixture fixture = new("valid") { MetadataUnavailable = true };
+            NativeOidcFlow flow = new(IdentitySessionTests.Options(), fixture.OpenBrowser, () => new FixtureHandler(fixture));
+            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(10));
+            try
+            {
+                await flow.SignInAsync(false, false, timeout.Token);
+                throw new InvalidOperationException("Unavailable provider authenticated.");
+            }
+            catch (IdentityFlowException error)
+            {
+                Assert(error.Code == "AUTH_PROVIDER_UNAVAILABLE" && fixture.BrowserCalls == 0 && fixture.TokenRequests == 0,
+                    "Discovery outage opened a browser, exchanged tokens or lost its diagnosis.");
+            }
+            using (LoopbackCallback next = new(IdentitySessionTests.Options().RedirectUri)) { }
+            fixture.MetadataUnavailable = false;
+            ProtectedIdentitySession result = await flow.SignInAsync(false, false, timeout.Token);
+            await fixture.LastCallback.WaitAsync(timeout.Token);
+            Assert(result.Subject == "fixture-user" && fixture.BrowserCalls == 1 && fixture.TokenRequests == 1,
+                "Retry after provider recovery did not complete a fresh checked authentication.");
         }));
         foreach (string failure in new[] { "profile-503", "profile-429", "profile-offline", "profile-invalid-sub", "profile-401",
             "token-503", "token-429", "token-server-error", "token-temporarily-unavailable" })
@@ -107,12 +133,13 @@ public static class IdentityProtocolTests
         private readonly RSA _rsa = RSA.Create(2048);
         private readonly RSA _wrong = RSA.Create(2048);
         public string State = "", Nonce = "", Challenge = "";
-        public bool SawPkce, SawOfflineAccess, SawPublicClient, Reauthentication;
-        public int TokenRequests, LogoutCalls;
+        public bool SawPkce, SawOfflineAccess, SawPublicClient, Reauthentication, MetadataUnavailable;
+        public int TokenRequests, LogoutCalls, BrowserCalls;
         public string? RefreshDefect, LastRefreshToken;
         public Task LastCallback = Task.CompletedTask;
         public void OpenBrowser(Uri uri)
         {
+            BrowserCalls++;
             Dictionary<string, string> query = Parse(uri.Query.TrimStart('?'));
             bool logout = uri.AbsolutePath.EndsWith("/end", StringComparison.Ordinal);
             if (!logout)
@@ -124,7 +151,14 @@ public static class IdentityProtocolTests
             }
             else LogoutCalls++;
             string callback = query[logout ? "post_logout_redirect_uri" : "redirect_uri"] + "?state=" + Uri.EscapeDataString(query["state"]);
-            if (!logout) callback += defect == "denied" ? "&error=access_denied" : "&code=fixture-authorization-code";
+            if (!logout) callback += defect switch
+            {
+                "denied" => "&error=access_denied",
+                "callback-unavailable" => "&error=temporarily_unavailable",
+                "callback-invalid-client" => "&error=unauthorized_client",
+                "callback-invalid-redirect" => "&error=invalid_redirect_uri",
+                _ => "&code=fixture-authorization-code"
+            };
             LastCallback = Task.Run(async () =>
             {
                 using HttpClient http = new(new HttpClientHandler { UseProxy = false });
@@ -135,6 +169,8 @@ public static class IdentityProtocolTests
         public async Task<HttpResponseMessage> ReplyAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string path = request.RequestUri!.AbsolutePath;
+            if (path.EndsWith("openid-configuration", StringComparison.Ordinal) && MetadataUnavailable)
+                return Json(new { error = "temporarily_unavailable" }, HttpStatusCode.BadGateway);
             if (path.EndsWith("openid-configuration", StringComparison.Ordinal))
                 return Json(new
                 {
@@ -177,6 +213,7 @@ public static class IdentityProtocolTests
                 if (!refresh)
                     Assert(Base64UrlEncoder.Encode(SHA256.HashData(Encoding.ASCII.GetBytes(values["code_verifier"]))) == Challenge, "PKCE verifier did not match challenge.");
                 if (defect == "token-invalid-grant") return Json(new { error = "invalid_grant", error_description = "fixture secret not returned" }, HttpStatusCode.BadRequest);
+                if (defect == "token-invalid-client") return Json(new { error = "invalid_client", error_description = "fixture secret not returned" }, HttpStatusCode.BadRequest);
                 string token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
                 {
                     Issuer = defect == "issuer" ? "https://wrong.example/oidc" : "https://identity.example.org/oidc",

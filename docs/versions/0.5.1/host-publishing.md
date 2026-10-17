@@ -1,21 +1,11 @@
-# 宿主交付与发布门禁 · 0.5.1
+# 主程序发行与安全更新
 
-本页描述 AutumnOS 0.5.1 的源码构建与交付检查，不宣称正式发布已完成。普通目录版保留整套运行资源，单文件版把这些资源及 Developer 打入外层 `AutumnOS.exe` 并首次展开；两种布局见 [产品](product.md)。修改源文件或内置文档后，既有交付 EXE 不会自动更新，必须以新构建 ID 重建、打包并验证。
+适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。本轮只交便携EXE完整目录与ZIP，安装器按用户决定暂缓，不生成假setup，不执行公共发布。普通构建没有生产信任根时，系统更新如实显示自动安装尚未配置；不得退回未签名或测试根。
 
-在完整 Windows 源码工作区，先完成 [核心开发](core-development.md) 的锁定恢复与成功构建，再执行：
+更新源固定paimeng5201314/autumnlab，预览关闭仅plus，开启仅meta；应用预览设置独立。分页Release列表经规范SemVer、Tag、清单渠道、预发布标记、RID和最低更新器兼容共同筛选。不按latest/发布时间字符串判断，不自动降级，切换渠道后旧候选不可提交。
 
-```powershell
-./scripts/Package-T05.ps1 -Stage Prepare
-./scripts/Test.ps1
-./scripts/Package-SingleFile.ps1 -BuildId $buildId
-$smokeReport = Join-Path $PWD ('artifacts/single-file-check-' + [Guid]::NewGuid().ToString('N'))
-./scripts/Test-SingleFileSmoke.ps1 -BuildId $buildId -ReportDirectory $smokeReport
-```
+清单原始UTF-8字节由可信RSA-PSS-SHA256密钥签名，包含产品/仓库、版本、序列、有效期、Release/Asset身份、payload摘要/大小、文件表、删除表和数据兼容约束。SHA256不能替代签名。客户端/独立更新器各自用编译嵌入信任根验证，不接收下载源临时公钥。测试根与测试源只在隔离演练构建，正常配置不能启用。私钥/PFX密码/token不进源、日志或ZIP。
 
-`Package-T05` 的 Prepare 读取最新匹配构建，`Package-SingleFile` 要求该构建已有匹配的准备产物；不要混合不同快照的 DLL 与报告。开发套件打包脚本会复制这 17 篇版本文档到 `Developer/Docs/0.5.1`。单文件准备结果不是完整升级、系统兼容或正式发布批准。
+后台可检查/下载/验证。所有活游戏状态和关键写入阻止提交。取得维护资格后复查并阻止新冲突操作，安全退出交给独立更新器；再次双击不能进入半更新目录。稳定AutumnOS.exe/Updater不纳热替换；只覆盖已拥有的受管程序文件，保留Data和未知文件。持久事务、备份、健康确认与失败报告支持恢复；新版核心初始化未确认不能算成功，坏版本被隔离避免无限更新回退。
 
-网络更新具有 RSA-PSS 验签、固定源、反回滚序列、维护租约、独立更新器、journal 和健康恢复，但生产信任根仍未配置，正式自动安装保持禁用。生产签名材料必须由有权持有人配置，不能接受未签名更新或将测试密钥当作生产根。EXE 摘要与嵌入完整性校验均不能替代 Authenticode 签名。
-
-新单文件布局的 A→B 更新、健康失败回退、事务崩溃后重启恢复要在独立测试信任构建中重新实测。覆盖 Starting/Foreground/Background/Suspended/Closing 实例、存档最终提交、安装并发、已更新种子重启、磁盘满、忙文件及兼容数据保护；旧布局成绩不能转移到新 EXE。
-
-正式收尾还包括 Windows 10、干净系统无 SDK、离线首启、多屏/DPI、输入法和触屏、外部新人、真实账号/独立后端、完整社区隔离、第三方许可及制作人审阅。安装包是否交付与 Setup 源码存在是两件事；当前安装包仍暂缓。对未执行项使用 not_run，对缺信任/登记使用 blocked，不能用一个总的“完成”掩盖它们。记录方式见 [协作与证据](collaboration.md)。
+T05已有签名A/B/Bad隔离演练，T06新构建的证据必须重新关联最终字节，不套用历史成绩。生产公钥、正式签名Release身份和Windows代码签名仍分别是外部状态；没有动态TUF根轮换实现，不宣称在线安全轮换已完成。产物物料、source_snapshot_id、BuildId、测试对象哈希必须一致。恢复和用户步骤见[排错](troubleshooting.md)。

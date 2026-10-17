@@ -5,11 +5,11 @@ on:
     inputs:
       build_version:
         description: Internal build version
-        default: 0.5.1-local.6
+        default: 0.5.1
         required: true
       release_label:
         description: Version displayed in the application
-        default: meta0.0.3-20261011
+        default: plus0.0.4-20261017
         required: true
   push:
     branches:
@@ -31,8 +31,8 @@ jobs:
       artifact_id: ${{ steps.executable.outputs.artifact-id }}
     env:
       AUTUMN_BUILD_ID: T06-actions-${{ github.run_id }}-${{ github.run_attempt }}
-      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1-local.6' }}
-      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'meta0.0.3-20261011' }}
+      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1' }}
+      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'plus0.0.4-20261017' }}
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
       POWERSHELL_TELEMETRY_OPTOUT: '1'
@@ -183,8 +183,8 @@ jobs:
       contents: write
     env:
       AUTUMN_BUILD_ID: T06-actions-${{ github.run_id }}-${{ github.run_attempt }}
-      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1-local.6' }}
-      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'meta0.0.3-20261011' }}
+      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1' }}
+      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'plus0.0.4-20261017' }}
       AUTUMN_ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
       POWERSHELL_TELEMETRY_OPTOUT: '1'
     steps:

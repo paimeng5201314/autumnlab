@@ -157,7 +157,7 @@ try{
         $startupResults.Add([ordered]@{iteration=$iteration;kind=$(if($iteration -eq 0){'first_run'}else{'restart'});seconds=$seconds;target_seconds=$target;target_met=($seconds -le $target)
             pid=$product.Process.Id;start_utc_ticks=$product.Process.StartTime.ToUniversalTime().Ticks;hwnd=$product.Handle.ToInt64();dpi=[AutumnT06Performance.Dpi]::GetDpiForWindow($product.Handle);poll_interval_ms=150})
         $null=Get-T05WindowGeometry $product ('startup-'+$iteration)
-        if($iteration -eq 0){Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton';Wait-SmokeDesktop $product}
+        if($iteration -eq 0){Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton'; Invoke-SmokeButton $product.Element 'WelcomeAppearanceNext';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton';Wait-SmokeDesktop $product}
         if($iteration -lt 3){Close-SmokeProduct $product}
     }
     $restarts=@($startupResults|Where-Object kind -eq 'restart'|ForEach-Object seconds|Sort-Object)
@@ -169,7 +169,7 @@ try{
     $foreground=Wait-SmokeNewForeground $runtimeLog $baseline ''; $instance=[string]$foreground.instanceId;$report.game_instance=$instance
     $null=Save-SmokeScreenshot $product 'foreground-game' -IncludeOverlays
     Measure-T06ResourceState 'Foreground' $instance
-    Measure-T06Response 'background_to_desktop' {Invoke-SmokeButton $product.Element 'BackgroundButton'} {Find-VisibleSmokeElement $product.Element 'SampleButton'}
+    Measure-T06Response 'background_to_desktop' {Invoke-AutumnGameShortcut $product 'Desktop'} {Find-VisibleSmokeElement $product.Element 'SampleButton'}
     $null=Wait-SmokeCondition {@(Read-SmokeEvents $runtimeLog|Where-Object instanceId -eq $instance)[-1].state -eq 'Background'} 'same game background'
     $null=Save-SmokeScreenshot $product 'background-desktop' -IncludeOverlays
     Measure-T06ResourceState 'Background' $instance
@@ -179,7 +179,7 @@ try{
     Add-SmokeCheck 'foreground_background_continue_keeps_same_instance' ($next.instanceId -eq $instance)
     # The user's explicit close confirmation is included in the response measurement.
     Measure-T06Response 'end_game_and_release_resources' {
-        Invoke-SmokeButton $product.Element 'CloseGameButton';Invoke-SmokeNamedButton $product.Element '确认结束'
+        Invoke-AutumnGameShortcut $product 'Close';Invoke-SmokeNamedButton $product.Element '确认结束'
     } {
         $events=@(Read-SmokeEvents $runtimeLog|Where-Object instanceId -eq $instance)
         (Find-VisibleSmokeElement $product.Element 'SampleButton') -and $events.Count -gt 0 -and $events[-1].state -eq 'Closed' -and -not $events[-1].blocksMaintenance

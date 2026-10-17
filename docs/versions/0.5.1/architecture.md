@@ -1,11 +1,11 @@
-# 架构与信任边界 · 0.5.1
+# 架构与信任边界
 
-AutumnOS 0.5.1 把原生宿主、内部应用和独立业务服务器分开。源码中 `AutumnOS.Contracts` 定义共享合同与路径规则，`AutumnOS.Storage` 管理受保护数据提交，`AutumnOS.Identity` 处理原生身份，`AutumnOS.Runtime` 检查消息、实例与权限，`AutumnOS.Packages` 检查应用包，`AutumnOS.Store` 解析商店资料，`AutumnOS.Shell` 提供真实 WinUI 控件及 WebView 适配。启动器、更新协议及更新器各自负责进程协调和维护事务，不能由 Web 应用传任意参数代替。
+适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。系统分为可信宿主内部C#服务、受限应用SDK、独立服务端HTTP三层。文档中的 `RuntimeSession`、`AccountDataStore`、`ApplicationInstallService` 等内部类型不导出为任意应用调用权限。
 
-应用消息只携带协议版本、请求 ID、方法及参数。实例、账号代次、应用来源与安装身份由宿主绑定；应用不能提交另一账号 ID 或磁盘路径选择数据空间。权限既在入口检查，也在写入提交和响应投递前重新检查。账号切换或关闭后到达的旧任务不能写入新账号或泄露旧资料。后台、挂起和关闭是不同状态，仍存活的后台实例可能阻止维护。
+稳定入口协调同一用户业务实例和维护期间的启动请求。WinUI宿主拥有桌面、系统应用、权限弹窗和WebView。每个内部应用由安装来源、appId、实例、当前账号和sessionEpoch绑定；应用发出的消息仅提供protocolVersion/requestId/method/params，不能自行选择账号、磁盘根、其他实例或执行命令。网关在处理开始和最终UI投递时再次检查租约、权限与代次，防止异步结果迟到泄露。
 
-单文件外层入口负责完整性校验和安全展开，业务客户端运行于 Data 内的程序根；`PortableLayout` 把资源目录和数据入口目录区分开。普通目录版没有该展开层。两种形态的资源路径不同，但不通过当前工作目录、应用自报路径或随意环境变量选择真实数据根。布局说明见 [产品](product.md)。
+请求路径是应用JS→WebView消息→RuntimeSession→权限/存储/桌面服务→最终响应门禁→原实例。事件路径也经过当前账号、权限修订和实例检查；关闭/切换账号撤销旧订阅，不能仅相信业务任务完成时的一次判断。数据写入、安装提交、身份关键变更和更新维护共享协调；游戏Starting、Foreground、Background、Suspended、Closing均阻止更新提交。
 
-内部网页通过 SDK 调用有限服务，不接触原生凭据。独立后端示例使用独立 Native 客户端和资源 access token，不能把应用范围 ID 当作服务器凭证。网络 CSP、导航控制和资源拦截仅是现有防线的一部分；`networkSandboxVerified` 仍为 false。详见 [身份与权限](identity-permissions.md)、[网络边界](network.md)。
+主程序更新先独立验证签名和payload，安全退出后由更新器重新验证交接与根目录，持久事务替换受管程序文件。新版核心初始化健康确认成功才提交；失败恢复旧版及兼容数据，并隔离坏版本。文件哈希用于字节完整性，发布签名用于来源，Windows Authenticode另属一层。
 
-设计修改应同步共享合同、宿主适配、SDK 声明、Schema、样例及负例测试。自动化可证明所覆盖的解析与状态行为；实际 WinUI 输入、提供方认证、物理网络隔离及新布局升级回退还需要独立的原生证据。
+独立后端只接受自己登记的资源JWT，不信任SDK返回的昵称或appScopedUserId。浏览器账号会话、宿主身份会话和开发者资源客户端不是同一凭据容器。参见[身份权限](identity-permissions.md)、[服务端](server.md)、[数据](data.md)。威胁边界仍包括未完整证明的WebView网络通道，见[网络](network.md)。

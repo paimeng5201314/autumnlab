@@ -149,14 +149,11 @@ public sealed partial class MainWindow
     private void CloseManagedApplications() { foreach (var app in managedApplications.Values) app.Host.Dispose(); managedApplications.Clear(); managedContent.Children.Clear(); UpdateManagedBadges(); }
     private void InitializeManagedAppUi()
     {
-        ManagedAppPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); ManagedAppPanel.RowDefinitions.Add(new RowDefinition());
-        var bar = new Grid { Padding = new Thickness(20, 12, 20, 12), ColumnSpacing = 18 };
-        bar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); bar.ColumnDefinitions.Add(new ColumnDefinition()); bar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        bar.Children.Add(ActionButton("‹  返回桌面", "ManagedAppHome", OnBackground));
-        Grid.SetColumn(managedTitle, 1); bar.Children.Add(managedTitle);
-        var close = ActionButton("结束游戏", "ManagedAppClose", async (_, _) => { if (visibleManagedApp is { } id && managedApplications.TryGetValue(id, out var app)) await CloseManagedApplicationAsync(id, app); });
-        Grid.SetColumn(close, 2); bar.Children.Add(close); ManagedAppPanel.Children.Add(bar);
-        Grid.SetRow(managedContent, 1); ManagedAppPanel.Children.Add(managedContent);
+        // Host chrome is available through native shortcuts and desktop multitasking.
+        // Keep the application's entire viewport for its own content.
+        managedTitle.Visibility = Visibility.Collapsed;
+        ManagedAppPanel.Children.Add(managedTitle);
+        ManagedAppPanel.Children.Add(managedContent);
     }
     private async Task OpenInstalledApplicationAsync(string appId)
     {

@@ -168,7 +168,7 @@
               <TextBlock Text="你的桌面" FontSize="20" FontWeight="SemiBold"/>
               <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="18" Padding="24"><StackPanel Spacing="12"><TextBlock Text="应用" FontSize="15" FontWeight="SemiBold"/><TextBlock x:Name="DesktopApplicationsSummary" TextWrapping="Wrap" LineHeight="26" AutomationProperties.AutomationId="DesktopApplicationsSummary"/></StackPanel></Border>
               <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="18" Padding="24"><StackPanel Spacing="12"><TextBlock Text="Dock" FontSize="15" FontWeight="SemiBold"/><TextBlock x:Name="DockApplicationsSummary" TextWrapping="Wrap" LineHeight="26"/></StackPanel></Border>
-              <TextBlock Text="拖动桌面图标可调整三列网格中的顺序，也可通过长按、右键或 Shift+F10 菜单选择向前移动／向后移动；位置保存后会在下次启动时保留。单击图标可打开或继续应用，双击桌面空白处或按 F6 可查看正在运行的应用并选择继续／结束。文件夹、多桌面、完整搜索、自定义 Dock 和抖动编辑尚未提供；拖动到边缘不会自动滚动。" TextWrapping="Wrap" Opacity="0.65" LineHeight="24"/>
+              <TextBlock Text="此检查点使用固定图标布局。运行中的游戏会显示状态标记，双击图标可继续或结束游戏。布局编辑尚未提供。" TextWrapping="Wrap" Opacity="0.65" LineHeight="24"/>
             </StackPanel>
           </ScrollViewer>
           <ScrollViewer x:Name="NotificationsDetails" Visibility="Collapsed" HorizontalScrollMode="Disabled" HorizontalContentAlignment="Stretch">
@@ -199,11 +199,11 @@
             <TextBlock Text="启动与数据记录" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
             <TextBlock x:Name="ProducerText" FontSize="16" AutomationProperties.AutomationId="ProducerCredit" />
             <TextBlock Text="本地开发版 · 内部应用验证" FontSize="13" Opacity="0.7" />
+            <TextBlock x:Name="DiagnosticLogStatusText" TextWrapping="Wrap" FontSize="12" AutomationProperties.AutomationId="DiagnosticLogStatusText"/>
               <ToggleSwitch x:Name="DeveloperModeToggle" Header="开发者模式" Toggled="OnDeveloperModeChanged" AutomationProperties.AutomationId="DeveloperModeToggle"/>
               <StackPanel x:Name="RecoveryContent" Spacing="8"/>
               <Button x:Name="SupportExportButton" Content="导出脱敏诊断包" Click="OnExportSupportBundle" AutomationProperties.AutomationId="SupportExportButton"/>
               <TextBlock x:Name="SupportExportStatus" TextWrapping="Wrap" AutomationProperties.AutomationId="SupportExportStatus"/>
-              <TextBlock x:Name="DiagnosticLogStatusText" TextWrapping="Wrap" AutomationProperties.AutomationId="DiagnosticLogStatusText"/>
             <TextBlock Text="此处检查实际程序旁的数据目录与首启记录；已有应用和存档会保留。" TextWrapping="Wrap" FontSize="16" MaxWidth="690" HorizontalAlignment="Left" />
             <InfoBar x:Name="DataStatus" IsOpen="True" IsClosable="False" Title="正在检查本地数据空间" />
             <TextBlock x:Name="DataPath" FontSize="12" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
@@ -234,7 +234,7 @@
                 <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}"/>
                 <StackPanel Spacing="6"><TextBlock Text="本地构建" Opacity="0.65"/><TextBlock x:Name="AboutBuild" TextWrapping="Wrap" IsTextSelectionEnabled="True" AutomationProperties.AutomationId="AboutBuild"/></StackPanel>
               </StackPanel></Border>
-              <TextBlock Text="本地开发检查版 · 未公开发行" Opacity="0.65"/>
+              <TextBlock Text="发行与验证范围以本版说明为准" Opacity="0.65"/>
               <TextBlock Text="C# / .NET 10 · WinUI 3" Opacity="0.65"/>
             </StackPanel>
           </ScrollViewer>
@@ -243,15 +243,9 @@
     </Grid>
     <Grid x:Name="StorePanel" Visibility="Collapsed" Background="{StaticResource SettingsSurface}" AutomationProperties.AutomationId="StorePanel" />
     <Grid x:Name="ManagedAppPanel" Visibility="Collapsed" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" AutomationProperties.AutomationId="ManagedAppPanel" />
-    <Grid x:Name="AppPanel" Visibility="Collapsed">
-      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-      <Grid Padding="20,12" ColumnSpacing="16" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-        <Button Content="‹  返回桌面" Click="OnBackground" AutomationProperties.AutomationId="BackgroundButton"/>
-        <StackPanel Grid.Column="1" Spacing="3"><TextBlock x:Name="GameTitle" Text="元素配对" FontWeight="SemiBold" FontSize="18"/><TextBlock x:Name="RuntimeStatus" FontSize="12" TextWrapping="Wrap" AutomationProperties.AutomationId="RuntimeStatus"/></StackPanel>
-        <Button Grid.Column="2" Content="结束游戏" Click="OnCloseGame" AutomationProperties.AutomationId="CloseGameButton"/>
-      </Grid>
-      <Grid x:Name="GameContent" Grid.Row="1"/>
+    <Grid x:Name="AppPanel" Visibility="Collapsed" AutomationProperties.AutomationId="AppPanel">
+      <Grid x:Name="GameContent"/>
+      <StackPanel Visibility="Collapsed"><TextBlock x:Name="GameTitle"/><TextBlock x:Name="RuntimeStatus" AutomationProperties.AutomationId="RuntimeStatus"/></StackPanel>
     </Grid>
     <Grid x:Name="DeveloperPanel" Visibility="Collapsed" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" AutomationProperties.AutomationId="DeveloperPanel">
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
@@ -262,34 +256,71 @@
         <Grid x:Name="DeveloperPreviewContent" Grid.Column="1" AutomationProperties.AutomationId="DeveloperPreviewContent"/>
       </Grid>
     </Grid>
-    <Grid x:Name="WelcomePanel" Background="#F2EEE5" AutomationProperties.AutomationId="WelcomePanel">
-      <Ellipse Width="650" Height="650" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-230,-350" Fill="#E2E6D7" IsHitTestVisible="False"/>
-      <Ellipse Width="380" Height="380" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-220,-200,0,0" Fill="#EDDBC9" IsHitTestVisible="False"/>
-      <TextBlock Text="LAB CHRONICLES" CharacterSpacing="300" FontSize="11" Foreground="#4D675C" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,54,0,0"/>
-      <StackPanel x:Name="HelloStage" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="24">
-        <TextBlock Text="hello" FontFamily="Segoe Print" FontSize="110" FontWeight="Light" Foreground="#355748" HorizontalAlignment="Center" AutomationProperties.AutomationId="HelloTitle"/>
-        <TextBlock Text="欢迎来到你的探索空间。" FontSize="20" Foreground="#607568" HorizontalAlignment="Center"/>
-        <Button Content="开始探索  →" Click="OnWelcomeNext" Tag="brand" HorizontalAlignment="Center" Margin="0,28,0,0" Padding="28,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="HelloNextButton"/>
-      </StackPanel>
-      <StackPanel x:Name="BrandStage" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="18">
-        <TextBlock Text="✦" FontSize="56" Foreground="#6E8462" HorizontalAlignment="Center"/>
-        <TextBlock x:Name="WelcomeBrand" FontSize="60" FontWeight="Light" Foreground="#2E483C" HorizontalAlignment="Center" AutomationProperties.AutomationId="WelcomeBrand"/>
-        <TextBlock x:Name="WelcomeFullBrand" FontSize="16" Foreground="#607568" HorizontalAlignment="Center"/>
-        <TextBlock x:Name="WelcomeProducer" FontSize="13" Foreground="#607568" HorizontalAlignment="Center"/>
-        <Button Content="继续  →" Click="OnWelcomeNext" Tag="initializing" HorizontalAlignment="Center" Margin="0,32,0,0" Padding="28,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="BrandNextButton"/>
-      </StackPanel>
-      <ScrollViewer x:Name="InitializeScroll" Visibility="Collapsed" Margin="0,84,0,84" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Center">
-      <StackPanel x:Name="InitializeStage" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="600" Spacing="18" Padding="32">
-        <TextBlock Text="从这里，开始。" FontSize="42" Foreground="#2E483C" HorizontalAlignment="Center"/>
-        <TextBlock Text="准备桌面与元素配对，让灵感有处可留。&#x0a;游戏进度保存在这台电脑上，无需登录也能开始。" FontSize="17" Foreground="#607568" TextWrapping="Wrap" TextAlignment="Center" LineHeight="28"/>
-        <TextBlock Text="选择你喜欢的光线" FontSize="13" Margin="0,18,0,0" Foreground="#607568" HorizontalAlignment="Center"/>
-        <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center"><Button x:Name="WelcomeLightButton" Content="☀  浅色" Tag="light" Click="OnTheme" Padding="22,12" CornerRadius="18"/><Button x:Name="WelcomeDarkButton" Content="☾  深色" Tag="dark" Click="OnTheme" Padding="22,12" CornerRadius="18"/></StackPanel>
-        <TextBlock x:Name="WelcomeTheme" Foreground="#607568" HorizontalAlignment="Center"/>
-        <Button x:Name="PrepareDesktopButton" Content="准备我的桌面  →" Click="OnInitialize" HorizontalAlignment="Center" Margin="0,12,0,0" Padding="28,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="PrepareDesktopButton"/>
-        <ProgressRing x:Name="InitializeProgress" IsActive="False" Visibility="Collapsed" Width="24" Height="24"/>
-      </StackPanel>
-      </ScrollViewer>
-      <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="30" Spacing="10"><TextBlock x:Name="WelcomeError" TextWrapping="Wrap" Foreground="#9D3425" MaxWidth="680"/><Button x:Name="WelcomeRetry" Content="重新检查" Click="OnRetry" Visibility="Collapsed" HorizontalAlignment="Center"/></StackPanel>
+    <Grid x:Name="WelcomePanel" Background="#F2EEE5" RequestedTheme="Light" AutomationProperties.AutomationId="WelcomePanel">
+      <Grid.RowDefinitions><RowDefinition Height="90"/><RowDefinition Height="*"/><RowDefinition Height="86"/></Grid.RowDefinitions>
+      <Grid Grid.RowSpan="3" IsHitTestVisible="False">
+        <Ellipse Width="640" Height="640" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-270,-370" Fill="#E2E6D7"/>
+        <Ellipse Width="340" Height="340" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-220,-220,0,0" Fill="#EDDBC9"/>
+      </Grid>
+      <Grid Margin="42,0">
+        <TextBlock Text="✦" FontSize="26" Foreground="#71856B" VerticalAlignment="Center"/>
+        <TextBlock Text="LAB CHRONICLES" CharacterSpacing="300" FontSize="11" Foreground="#4D675C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <TextBlock Text="属于你的探索空间" FontSize="11" Foreground="#718075" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+      </Grid>
+      <Grid Grid.Row="1">
+        <Grid x:Name="GreetingViewport" Margin="0,8,0,118" IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw">
+          <Grid x:Name="GreetingRows"/>
+        </Grid>
+        <Grid x:Name="HelloStage" Margin="24,0,24,85" VerticalAlignment="Center" HorizontalAlignment="Center">
+          <Border Background="#EDF2EEE5" CornerRadius="90" Padding="42,0,42,16" RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform><CompositeTransform x:Name="HelloTransform"/></Border.RenderTransform>
+            <TextBlock Text="hello" FontFamily="Segoe Print" FontSize="104" FontWeight="Light" Foreground="#355748" HorizontalAlignment="Center" AutomationProperties.AutomationId="HelloTitle"/>
+          </Border>
+        </Grid>
+        <StackPanel x:Name="HelloActions" VerticalAlignment="Bottom" HorizontalAlignment="Center" Spacing="20" Margin="24,0,24,14">
+          <TextBlock Text="每一种你好，都是新的开始。" FontSize="17" Foreground="#607568" HorizontalAlignment="Center"/>
+          <Button Content="下一步  →" Click="OnWelcomeNext" Tag="brand" HorizontalAlignment="Center" Padding="34,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="HelloNextButton"/>
+        </StackPanel>
+        <StackPanel x:Name="BrandStage" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16" Margin="24,104,24,0" MaxWidth="650">
+          <Viewbox MaxWidth="600" Height="154" Stretch="Uniform" AutomationProperties.Name="AutumnOS 手写标志"><Canvas x:Name="SignatureCanvas" Width="620" Height="180"/></Viewbox>
+          <TextBlock x:Name="WelcomeBrand" Visibility="Collapsed" AutomationProperties.AutomationId="WelcomeBrand"/>
+          <TextBlock x:Name="WelcomeFullBrand" FontSize="15" Foreground="#607568" HorizontalAlignment="Center"/>
+          <TextBlock x:Name="WelcomeProducer" FontSize="12" Foreground="#607568" HorizontalAlignment="Center"/>
+          <Button Content="继续  →" Click="OnWelcomeNext" Tag="initializing" HorizontalAlignment="Center" Margin="0,16,0,0" Padding="34,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="BrandNextButton"/>
+        </StackPanel>
+        <ScrollViewer x:Name="InitializeScroll" Visibility="Collapsed" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center">
+          <Grid MaxWidth="680" HorizontalAlignment="Center" Padding="28,12,28,20">
+            <StackPanel x:Name="InitializeStage" Spacing="20" HorizontalAlignment="Center">
+              <TextBlock Text="让桌面，像你。" FontSize="40" Foreground="#2E483C" HorizontalAlignment="Center"/>
+              <TextBlock Text="选择喜欢的光线，留一处空间给好奇心。" FontSize="16" Foreground="#607568" TextWrapping="Wrap" TextAlignment="Center"/>
+              <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center" Margin="0,12,0,0">
+                <Button x:Name="WelcomeLightButton" Tag="light" Click="OnTheme" Padding="12" CornerRadius="22" BorderBrush="#6B8B73" Background="#FAF8F2" AutomationProperties.AutomationId="WelcomeLightButton" AutomationProperties.Name="浅色主题">
+                  <StackPanel Spacing="14"><Border Width="174" Height="104" Background="#E8DFCC" CornerRadius="14"><Grid><Ellipse Width="38" Height="38" Fill="#FFF6DA" Margin="22,16,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/><Border Background="#B9C5AA" Height="44" VerticalAlignment="Bottom" CornerRadius="36,36,14,14"/><Border Width="96" Height="14" Background="#CFFFFFFF" CornerRadius="7" VerticalAlignment="Bottom" Margin="0,0,0,10"/></Grid></Border><TextBlock Text="☀  晨光 · 浅色" Foreground="#355748" HorizontalAlignment="Center" Margin="0,0,0,4"/></StackPanel>
+                </Button>
+                <Button x:Name="WelcomeDarkButton" Tag="dark" Click="OnTheme" Padding="12" CornerRadius="22" BorderBrush="#CDD3C6" Background="#FAF8F2" AutomationProperties.AutomationId="WelcomeDarkButton" AutomationProperties.Name="深色主题">
+                  <StackPanel Spacing="14"><Border Width="174" Height="104" Background="#273B35" CornerRadius="14"><Grid><Ellipse Width="24" Height="24" Fill="#D6D9BD" Margin="22,16,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/><Border Background="#4A6657" Height="44" VerticalAlignment="Bottom" CornerRadius="36,36,14,14"/><Border Width="96" Height="14" Background="#7057655B" CornerRadius="7" VerticalAlignment="Bottom" Margin="0,0,0,10"/></Grid></Border><TextBlock Text="☾  暮色 · 深色" Foreground="#355748" HorizontalAlignment="Center" Margin="0,0,0,4"/></StackPanel>
+                </Button>
+              </StackPanel>
+              <TextBlock x:Name="WelcomeTheme" Foreground="#607568" HorizontalAlignment="Center"/>
+              <TextBlock Text="随时可以在设置中更改。" FontSize="12" Foreground="#718075" HorizontalAlignment="Center"/>
+              <Button x:Name="WelcomeAppearanceNext" Content="下一步  →" Click="OnWelcomeAppearanceNext" HorizontalAlignment="Center" Padding="34,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="WelcomeAppearanceNext"/>
+            </StackPanel>
+            <StackPanel x:Name="WelcomeAccountStage" Visibility="Collapsed" Spacing="18" MaxWidth="500" HorizontalAlignment="Center">
+              <TextBlock Text="让探索，有一个名字。" FontSize="36" Foreground="#2E483C" HorizontalAlignment="Center"/>
+              <TextBlock Text="登录你的 Lab Chronicles 账号，或先以游客身份出发。" FontSize="15" Foreground="#607568" TextWrapping="Wrap" TextAlignment="Center"/>
+              <Border Background="#FAF8F2" BorderBrush="#DADFD3" BorderThickness="1" CornerRadius="24" Padding="26,22"><StackPanel x:Name="WelcomeAccountContent" Spacing="14"/></Border>
+              <Button x:Name="PrepareDesktopButton" Content="进入我的桌面  →" Click="OnInitialize" HorizontalAlignment="Center" Padding="28,14" CornerRadius="24" Background="#355748" Foreground="White" AutomationProperties.AutomationId="PrepareDesktopButton"/>
+              <ProgressRing x:Name="InitializeProgress" IsActive="False" Visibility="Collapsed" Width="24" Height="24"/>
+              <Button x:Name="WelcomeAccountBack" Content="←  返回个性化" Click="OnWelcomeAccountBack" HorizontalAlignment="Center" Background="Transparent" BorderThickness="0" Foreground="#607568" AutomationProperties.AutomationId="WelcomeAccountBack"/>
+            </StackPanel>
+          </Grid>
+        </ScrollViewer>
+      </Grid>
+      <Grid Grid.Row="2" Margin="42,0,42,18">
+        <TextBlock x:Name="WelcomeStep" Text="01 / 你好" FontSize="11" Foreground="#607568" VerticalAlignment="Bottom" CharacterSpacing="100"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6" MaxWidth="620"><TextBlock x:Name="WelcomeError" TextWrapping="Wrap" Foreground="#9D3425" FontSize="12"/><Button x:Name="WelcomeRetry" Content="重新检查" Click="OnRetry" Visibility="Collapsed" HorizontalAlignment="Center"/></StackPanel>
+        <TextBlock Text="制作人：派蒙" FontSize="11" Foreground="#607568" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+      </Grid>
     </Grid>
     <Grid x:Name="RunningSwitcher" Visibility="Collapsed" Background="#C51B2422" AutomationProperties.AutomationId="RunningSwitcher">
       <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TabIndex="2" Click="OnDismissSwitcher" AutomationProperties.AutomationId="RunningSwitcherBackdrop" AutomationProperties.Name="返回桌面"/>

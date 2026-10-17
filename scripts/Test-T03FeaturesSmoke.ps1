@@ -132,7 +132,7 @@ try{
  if(-not('AutumnDesktopInteractionSmoke.NativeWindows' -as [type])){Add-Type -TypeDefinition $nativeDefinition[0].Value}
  . (Join-Path $PSScriptRoot 'Smoke-NativeAppInput.ps1')
  $product=Start-SmokeProduct $scope
- Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
+ Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton'; Invoke-SmokeButton $product.Element 'WelcomeAppearanceNext';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
  $null=Wait-SmokeCondition {Find-VisibleSmokeElement $product.Element 'SampleButton'} 'installed sample desktop'
  Add-SmokeCheck 'developer_entry_absent_by_default' ($null -eq (Find-VisibleSmokeElement $product.Element 'DeveloperButton'))
  Invoke-SmokeButton $product.Element 'SettingsButton';Select-FeatureCategory 'SettingsNavDiagnostics';Set-FeatureToggle 'DeveloperModeToggle' $true
@@ -171,7 +171,7 @@ try{
  Click-FeatureWeb 't03-widget' '更新配对进度小组件';Wait-FeatureText 't03-desktop-result' '已更新真实桌面小组件'
  Add-SmokeCheck 'widget_sdk_commit_success' (Feature-TextContains 't03-desktop-result' '已更新真实桌面小组件')
  $null=Save-SmokeScreenshot $product '02-real-desktop-extension-actions'
- Invoke-SmokeButton $product.Element 'BackgroundButton'
+ Invoke-AutumnGameShortcut $product 'Desktop'
  $null=Wait-SmokeCondition {Find-VisibleSmokeElement $product.Element 'SampleButton'} 'background desktop'
  # StackPanel itself has no ControlView peer; assert the real visible native widget title instead.
  $widgetTitle=Wait-SmokeCondition {Find-SmokeNamedElement $product.Element '配对进度' ([Windows.Automation.ControlType]::Text)} 'visible native desktop widget title'
@@ -198,7 +198,7 @@ try{
  Click-FeatureWeb 't03-private-save' '写入私有文件';Wait-FeatureText 't03-storage-result' '已原子写入本应用私有文件'
  $privateFiles=@(Get-ChildItem -LiteralPath (Join-Path $stageDirectory 'AutumnOS_Data/AppData') -Filter field_note.bin -Recurse -File)
  Add-SmokeCheck 'private_note_really_written_to_isolated_account_data' ($privateFiles.Count -eq 1 -and [IO.File]::ReadAllText($privateFiles[0].FullName) -eq '派蒙 · T03 本账号笔记')
- Invoke-SmokeButton $product.Element 'BackgroundButton';Invoke-SmokeButton $product.Element 'DeveloperButton'
+ Invoke-AutumnGameShortcut $product 'Desktop';Invoke-SmokeButton $product.Element 'DeveloperButton'
  Invoke-SmokeButton $product.Element 'DeveloperRefreshTrace'
  $trace=Find-SmokeElement $product.Element 'DeveloperSdkTrace'
  $traceText=$trace.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value
@@ -222,7 +222,7 @@ try{
  Click-FeatureWeb 't03-preference-read' '读取笔记设置';Wait-FeatureText 't03-storage-result' '已读取本账号笔记设置'
  $note=Find-FeatureWebElement 't03-note' '笔记内容（最多 240 字符）'
  Add-SmokeCheck 'normal_game_note_survives_developer_disable' ($note.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙 · T03 本账号笔记')
- Invoke-SmokeButton $product.Element 'BackgroundButton'
+ Invoke-AutumnGameShortcut $product 'Desktop'
  Add-SmokeCheck 'developer_entry_removed_after_disable' ($null -eq (Find-VisibleSmokeElement $product.Element 'DeveloperButton'))
  Add-SmokeCheck 'normal_game_still_has_running_badge' ($null -ne (Find-VisibleSmokeElement $product.Element 'SampleRunningBadge'))
  $null=Save-SmokeScreenshot $product '07-developer-disabled-normal-game-preserved'

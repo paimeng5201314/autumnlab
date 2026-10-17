@@ -7,6 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/Smoke-NativeAppInput.ps1"
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $smokeId = $(if ($ExerciseRuntime) { 'T01-smoke-' } else { 'T00-smoke-' }) + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0, 8)
 $scope = Join-Path $projectRoot "artifacts/smoke/$smokeId"
@@ -340,8 +341,8 @@ namespace AutumnSmoke {
         $report.task_id = 'T01'
         Invoke-SmokeButton $second.Element 'SampleButton'
         $null = Wait-SmokeCondition {
-            $state = Find-SmokeElement $second.Element 'RuntimeStatus'
-            return $state -and $state.Current.Name -match '前台运行'
+            $state = Find-SmokeElement $second.Element 'AppPanel'
+            return $state -and -not $state.Current.IsOffscreen -and (Find-SmokeNamedElement $second.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))
         } 'internal WebView2 navigation'
         $runtimeLog = Join-Path $dataDirectory 'Logs/runtime-events.jsonl'
         $null = Wait-SmokeCondition { Test-Path -LiteralPath $runtimeLog } 'runtime audit events'
@@ -366,32 +367,32 @@ namespace AutumnSmoke {
         $null = Save-SmokeScreenshot $second '08-maximized-application'
         $null = [AutumnSmoke.NativeWindows]::ShowWindow($second.Handle, 9)
         $null = Wait-SmokeCondition { -not [AutumnSmoke.NativeWindows]::IsZoomed($second.Handle) } 'internal game restoration'
-        Invoke-SmokeButton $second.Element 'BackgroundButton'
+        Invoke-AutumnGameShortcut $second 'Desktop'
         Add-SmokeCheck 'background_game_remains_live' ((Find-SmokeElement $second.Element 'SessionSummary').Current.Name -match '后台运行')
         $events = @(Get-Content -LiteralPath $runtimeLog | ForEach-Object { $_ | ConvertFrom-Json })
         Add-SmokeCheck 'background_game_blocks_maintenance_in_runtime' (@($events | Where-Object { $_.state -eq 'Background' -and $_.blocksMaintenance }).Count -gt 0)
         Invoke-SmokeButton $second.Element 'SampleButton'
-        $null = Wait-SmokeCondition { (Find-SmokeElement $second.Element 'RuntimeStatus').Current.Name -match '前台运行' } 'foreground restoration'
+        $null = Wait-SmokeCondition { ((Find-SmokeElement $second.Element 'AppPanel') -and -not (Find-SmokeElement $second.Element 'AppPanel').Current.IsOffscreen -and (Find-SmokeNamedElement $second.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))) } 'foreground restoration'
         $nickname = Find-SmokeNamedElement $second.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit)
         Add-SmokeCheck 'background_resume_preserves_input' ($nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·本地验证')
         $nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue('临时修改')
         Invoke-SmokeNamedButton $second.Element '读取存档'
         $null = Wait-SmokeCondition { $nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·本地验证' } 'saved nickname restored through SDK'
         Add-SmokeCheck 'load_restores_saved_input_without_rewriting_save' ((Get-FileHash -LiteralPath $savePath -Algorithm SHA256).Hash -eq $saveHash)
-        Invoke-SmokeButton $second.Element 'CloseGameButton'
+        Invoke-AutumnGameShortcut $second 'Close'
         Invoke-SmokeNamedButton $second.Element '确认结束'
         $null = Wait-SmokeCondition { (Find-SmokeElement $second.Element 'SessionSummary').Current.Name -eq '无游戏会话' } 'actual game closure'
         $events = @(Get-Content -LiteralPath $runtimeLog | ForEach-Object { $_ | ConvertFrom-Json })
         Add-SmokeCheck 'closed_game_releases_maintenance_block' (@($events | Where-Object { $_.state -eq 'Closed' -and -not $_.blocksMaintenance }).Count -gt 0)
         Invoke-SmokeButton $second.Element 'SampleButton'
-        $null = Wait-SmokeCondition { (Find-SmokeElement $second.Element 'RuntimeStatus').Current.Name -match '前台运行' } 'new runtime instance'
+        $null = Wait-SmokeCondition { ((Find-SmokeElement $second.Element 'AppPanel') -and -not (Find-SmokeElement $second.Element 'AppPanel').Current.IsOffscreen -and (Find-SmokeNamedElement $second.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit))) } 'new runtime instance'
         Invoke-SmokeNamedButton $second.Element '读取存档'
         Invoke-SmokeNamedButton $second.Element '允许'
         $nickname = Wait-SmokeCondition { Find-SmokeNamedElement $second.Element '玩家昵称' ([System.Windows.Automation.ControlType]::Edit) } 'restarted HTML input'
         $null = Wait-SmokeCondition { $nickname.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·本地验证' } 'save restored in a new application instance'
         Add-SmokeCheck 'new_instance_reopens_real_saved_progress' ((Get-FileHash -LiteralPath $savePath -Algorithm SHA256).Hash -eq $saveHash)
         $null = Save-SmokeScreenshot $second '06-restored-application'
-        Invoke-SmokeButton $second.Element 'CloseGameButton'
+        Invoke-AutumnGameShortcut $second 'Close'
         Invoke-SmokeNamedButton $second.Element '确认结束'
         $null = Wait-SmokeCondition { (Find-SmokeElement $second.Element 'SessionSummary').Current.Name -eq '无游戏会话' } 'restarted game closure'
         $report.internal_application = 'passed'

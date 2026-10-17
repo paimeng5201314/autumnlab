@@ -54,7 +54,7 @@ internal sealed class NativeOidcFlow(LogtoPublicOptions options, Action<Uri>? br
         if (parameters.TryGetValue("iss", out string? issuer) && issuer != options.Authority.AbsoluteUri)
             throw new IdentityFlowException("AUTH_INVALID_CALLBACK");
         if (parameters.TryGetValue("error", out string? error))
-            throw new IdentityFlowException(error == "access_denied" ? "USER_CANCELLED" : "AUTH_PROVIDER_ERROR");
+            throw new IdentityFlowException(MapAuthorizationError(error));
         Parameters? tokenParameters = resource is null ? null : new() { { "resource", resource.Resource.AbsoluteUri } };
         LoginResult result = await client.ProcessResponseAsync(response, state, tokenParameters, cancellationToken).ConfigureAwait(false);
         if (result.IsError) throw new IdentityFlowException(MapError(result.Error));
@@ -198,11 +198,27 @@ internal sealed class NativeOidcFlow(LogtoPublicOptions options, Action<Uri>? br
         string[] identifiers = (error ?? "").Split([' ', ':', ';', ',', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         if (identifiers.Contains("invalid_grant", StringComparer.Ordinal)) return "SESSION_EXPIRED";
         if (identifiers.Contains("access_denied", StringComparer.Ordinal)) return "USER_CANCELLED";
+        if (identifiers.Contains("invalid_client", StringComparer.Ordinal) || identifiers.Contains("unauthorized_client", StringComparer.Ordinal))
+            return "AUTH_CLIENT_REJECTED";
+        if (identifiers.Contains("invalid_redirect_uri", StringComparer.Ordinal)) return "AUTH_REDIRECT_REJECTED";
+        if (identifiers.Contains("invalid_scope", StringComparer.Ordinal) || identifiers.Contains("unsupported_grant_type", StringComparer.Ordinal))
+            return "AUTH_CONFIGURATION_ERROR";
         if (identifiers.Contains("server_error", StringComparer.Ordinal) || identifiers.Contains("temporarily_unavailable", StringComparer.Ordinal))
             return "AUTH_PROVIDER_UNAVAILABLE";
         if (identifiers.Contains("AUTH_PROVIDER_UNAVAILABLE", StringComparer.Ordinal)) return "AUTH_PROVIDER_UNAVAILABLE";
+        if (identifiers.Contains("AUTH_INVALID_TOKEN", StringComparer.Ordinal)) return "AUTH_INVALID_TOKEN";
         return "AUTH_INVALID_RESPONSE";
     }
+    private static string MapAuthorizationError(string error) => error switch
+    {
+        "access_denied" => "USER_CANCELLED",
+        "temporarily_unavailable" or "server_error" => "AUTH_PROVIDER_UNAVAILABLE",
+        "invalid_client" or "unauthorized_client" => "AUTH_CLIENT_REJECTED",
+        "invalid_redirect_uri" => "AUTH_REDIRECT_REJECTED",
+        "invalid_scope" or "unsupported_response_type" => "AUTH_CONFIGURATION_ERROR",
+        "login_required" or "interaction_required" => "AUTH_REQUIRED",
+        _ => "AUTH_PROVIDER_ERROR"
+    };
     internal static string? SafeName(string? value) => string.IsNullOrWhiteSpace(value) ? null : new(value.Where(c => !char.IsControl(c)).Take(128).ToArray());
     internal static string? SafeAvatar(string? value) => Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) && uri.Scheme == "https" &&
         uri.UserInfo.Length == 0 && uri.AbsoluteUri.Length <= 2048 ? uri.AbsoluteUri : null;

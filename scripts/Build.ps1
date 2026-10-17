@@ -2,6 +2,11 @@
 param([string]$BuildId = ('T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,6)),
     [string]$BuildVersion, [string]$ReleaseLabel, [string]$ProductionUpdateTrustFile, [string]$TestUpdateTrustFile, [string]$TestUpdateFeedFile, [switch]$UpdateHealthFault)
 . "$PSScriptRoot/Common.ps1"
+[xml]$defaultBrand = Get-Content -LiteralPath (Join-Path $ProjectRoot 'build/Brand.props') -Raw
+if (-not $ReleaseLabel -and -not $TestUpdateTrustFile -and
+    (-not $BuildVersion -or $BuildVersion -eq $defaultBrand.SelectSingleNode('/Project/PropertyGroup/AutumnVersion').InnerText)) {
+    $ReleaseLabel = $defaultBrand.SelectSingleNode('/Project/PropertyGroup/AutumnReleaseLabel').InnerText
+}
 if ($BuildId -notmatch '^[A-Za-z0-9][A-Za-z0-9_.-]{0,90}$') { throw 'Invalid BuildId.' }
 Push-Location $ProjectRoot
 $reportDirectory = Join-Path $ProjectRoot "artifacts/builds/$BuildId"

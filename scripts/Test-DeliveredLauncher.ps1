@@ -228,7 +228,7 @@ function Test-DeliveredUpdatesPage {
     while($true){
         if($onboardingTimer.Elapsed.TotalSeconds -gt 90){throw 'T05 native onboarding did not finish within 90 seconds.'}
         $next=Wait-DeliveredCondition {
-            foreach($candidateId in @('HelloNextButton','BrandNextButton','FirstRunSkip','PrepareDesktopButton','SettingsButton','SettingsNavUpdates')){
+            foreach($candidateId in @('HelloNextButton','BrandNextButton','WelcomeAppearanceNext','FirstRunSkip','PrepareDesktopButton','SettingsButton','SettingsNavUpdates')){
                 $candidate=Find-DeliveredUi $candidateId
                 $scroll=$null
                 if($candidateId -in @('FirstRunSkip','PrepareDesktopButton') -and $candidate -and $candidate.Current.IsEnabled -and $candidate.Current.IsOffscreen -and $candidate.TryGetCurrentPattern([Windows.Automation.ScrollItemPattern]::Pattern,[ref]$scroll)){$scroll.ScrollIntoView()}

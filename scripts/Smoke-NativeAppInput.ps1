@@ -83,6 +83,7 @@ namespace AutumnSmokeInput {
     [DllImport("user32.dll")] public static extern void mouse_event(uint f,uint x,uint y,uint d,UIntPtr e);
     [DllImport("user32.dll")] public static extern uint GetDoubleClickTime();
     [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int key);
+    [DllImport("user32.dll")] public static extern void keybd_event(byte key,byte scan,uint flags,UIntPtr extra);
     [DllImport("user32.dll")] [return:MarshalAs(UnmanagedType.Bool)] public static extern bool GetGUIThreadInfo(uint thread,ref GUITHREADINFO info);
     [DllImport("user32.dll")] public static extern IntPtr MonitorFromWindow(IntPtr h,uint flags);
     [DllImport("user32.dll")] [return:MarshalAs(UnmanagedType.Bool)] public static extern bool GetMonitorInfo(IntPtr monitor,ref MONITORINFO info);
@@ -111,6 +112,19 @@ function Assert-AutumnOwnedNativeWindow([Diagnostics.Process]$Process,[IntPtr]$H
         throw 'The held process no longer owns its original native window.'
     }
     return $thread
+}
+
+function Invoke-AutumnGameShortcut($Product,[ValidateSet('Desktop','Close')][string]$Action='Desktop') {
+    $null=Assert-AutumnOwnedNativeWindow $Product.Process $Product.Handle
+    $null=[AutumnSmokeInput.Native]::SetForegroundWindow($Product.Handle)
+    Wait-AutumnOwnedPointerIdle $Product.Process $Product.Handle
+    if([AutumnSmokeInput.Native]::GetForegroundWindow() -ne $Product.Handle){throw 'Refusing keyboard input outside the held product window.'}
+    foreach($key in @(0x10,0x11,0x12,0x5B,0x5C)){if(([AutumnSmokeInput.Native]::GetAsyncKeyState($key) -band 0x8000) -ne 0){throw 'User modifier key is held; smoke shortcut aborted.'}}
+    $keys=if($Action -eq 'Close'){@(0x11,0x10,0x51)}else{@(0x1B)}
+    try{foreach($key in $keys){[AutumnSmokeInput.Native]::keybd_event([byte]$key,0,0,[UIntPtr]::Zero)}}
+    finally{for($index=$keys.Count-1;$index -ge 0;$index--){[AutumnSmokeInput.Native]::keybd_event([byte]$keys[$index],0,2,[UIntPtr]::Zero)}}
+    if($inputActions){$inputActions.Add([ordered]@{kind='synthetic_game_shortcut';action=$Action;process_id=$Product.Process.Id})}
+    Start-Sleep -Milliseconds 180
 }
 
 function Wait-AutumnOwnedPointerIdle([Diagnostics.Process]$Process,[IntPtr]$Handle) {

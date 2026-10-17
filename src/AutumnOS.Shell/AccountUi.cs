@@ -122,7 +122,7 @@ public sealed partial class MainWindow
             : state?.RememberSignIn == true ? "已启用保持登录" : "仅本次登录，关闭后不保留会话";
         accountSummary.Text = state?.State is IdentitySessionState.SignedIn or IdentitySessionState.OfflineCached or IdentitySessionState.SessionExpired
             ? $"{state.DisplayName ?? "Logto 用户"}\n{persistenceSummary}\n{(state.CanRefresh ? "会话支持刷新" : "无刷新凭据，超过有效期需要重新认证")}" : "使用系统浏览器完成 Logto 登录，密码只在登录网站中输入。";
-        accountSessionIssue.Text = state?.ErrorCode is { } code ? code + " · 请检查会话状态；已有存档保留。" : "";
+        accountSessionIssue.Text = state?.ErrorCode is { } code ? IdentityUserMessage.ForError(code) : "";
         accountSessionIssue.Visibility = state?.ErrorCode is null ? Visibility.Collapsed : Visibility.Visible;
         bool busy = accountOperation || firstRunLoginPending || firstRunSkipPending || state?.State == IdentitySessionState.SigningIn;
         bool available = identityService is not null;
@@ -181,7 +181,7 @@ public sealed partial class MainWindow
             var result = login
                 ? await identityService.SignInAsync(remember ?? rememberAccount.IsChecked == true, reauthenticate, lifetime.Token)
                 : await identityService.SignOutAsync(browserLogout, lifetime.Token);
-            accountResult.Text = result.ErrorCode is { } code ? code + " · 操作未完整完成，请查看账号状态。" : login ? "认证已结束，请以上方实际会话状态为准。" : browserLogout ? "退出操作已结束；不代表其他设备的会话已退出。" : "已退出本客户端。Logto 浏览器会话可能仍然有效。";
+            accountResult.Text = result.ErrorCode is { } code ? IdentityUserMessage.ForError(code) : login ? "认证已结束，请以上方实际会话状态为准。" : browserLogout ? "退出操作已结束；不代表其他设备的会话已退出。" : "已退出本客户端。Logto 浏览器会话可能仍然有效。";
         }
         catch (OperationCanceledException) { accountResult.Text = "USER_CANCELLED · 操作已取消。"; }
         catch (Exception error) when (error is not OutOfMemoryException) { accountResult.Text = "AUTH_OPERATION_FAILED · 操作未完成，未删除游戏存档。"; }

@@ -36,7 +36,7 @@ Lab Chronicles AutumnOS · 制作人：派蒙
 非安装包，不创建桌面/开始菜单快捷方式，不改系统 PATH/注册表。
 每次启动仅检查更新；确认后下载，主动选择「重启并安装」后应用。
 生产更新仍要求正式信任根和签名；不关闭 TLS 或验签。
-预览交付，完整 T06、T03 收尾及正式发布门禁仍未全部通过；实际验证结果见对应构建与发行说明。
+完整 T06、T03 收尾及正式发布门禁仍未全部通过；实际验证结果见对应构建与发行说明。
 '@|Set-Content -LiteralPath (Join-Path $staging 'READ-ME.txt') -Encoding utf8NoBOM
 $inventoryPath=Join-Path $run 'managed-files.json'
 Invoke-Dotnet -Arguments @('tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.Cli.dll','inventory','--source',$staging,'--output',$inventoryPath) -LogPath (Join-Path $run 'inventory.log')
@@ -59,6 +59,9 @@ try{if($zip.Entries.Count -ne $seen.Count){throw 'Blob count mismatch.'};foreach
 $payloadHash=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
 $metadata=Join-Path $run 'BundleIdentity.cs'
 $label=if($build.release_label){$build.release_label}else{$build.version}
+[xml]$brand=Get-Content -LiteralPath (Join-Path $ProjectRoot 'build/Brand.props') -Raw
+$fileVersion=[string]$brand.Project.PropertyGroup.AutumnFileVersion
+if($fileVersion -notmatch '^\d+\.\d+\.\d+\.\d+$' -or @($fileVersion.Split('.')|Where-Object {[int]$_ -gt 65535}).Count){throw 'Invalid numeric Windows file version.'}
 foreach($value in @($label,$BuildId,$build.source_snapshot_id)){if($value -match '["\\\r\n]'){throw 'Unsafe build metadata.'}}
 @"
 using System.Reflection;
@@ -67,7 +70,7 @@ using System.Reflection;
 [assembly: AssemblyCompany("派蒙")]
 [assembly: AssemblyDescription("制作人：派蒙")]
 [assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+[assembly: AssemblyFileVersion("$fileVersion")]
 [assembly: AssemblyInformationalVersion("$label")]
 [assembly: AssemblyMetadata("BuildId", "$BuildId")]
 [assembly: AssemblyMetadata("SourceSnapshotId", "$($build.source_snapshot_id)")]

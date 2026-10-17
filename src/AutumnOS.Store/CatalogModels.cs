@@ -32,11 +32,13 @@ public sealed record CatalogVersion(long ReleaseId, string Tag, DateTimeOffset P
 public sealed record CatalogDetails(CatalogRepository Repository, StoreManifest? Store,
     IReadOnlyList<CatalogVersion> Versions, IReadOnlyList<string> Warnings, DateTimeOffset FetchedAt,
     string? StoreContentSha = null, string? StoreETag = null, bool IsCached = false, bool HasMoreVersions = false);
-public sealed record CatalogVersionPage(IReadOnlyList<CatalogVersion> Versions, int Page, bool HasMore, bool IsCached, DateTimeOffset FetchedAt);
+public sealed record CatalogVersionPage(IReadOnlyList<CatalogVersion> Versions, int Page, bool HasMore, bool IsCached, DateTimeOffset FetchedAt,
+    CatalogRepository? Repository = null);
 public sealed record CatalogImage(byte[] Bytes, string MediaType);
 public interface IStoreCatalog
 {
     Task<CatalogPage> SearchAsync(string? search = null, int page = 1, CancellationToken cancellationToken = default);
+    Task<CatalogRepository> ResolveRepositoryAsync(string repository, CancellationToken cancellationToken = default);
     Task<CatalogDetails> GetDetailsAsync(CatalogRepository repository, CancellationToken cancellationToken = default);
     Task<CatalogVersionPage> GetVersionsAsync(CatalogRepository repository, StoreManifest? store, int page = 1, CancellationToken cancellationToken = default);
     Task<CatalogImage> GetScreenshotAsync(CatalogRepository repository, string imageUrl, CancellationToken cancellationToken = default);

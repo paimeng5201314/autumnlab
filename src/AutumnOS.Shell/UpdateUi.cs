@@ -34,6 +34,7 @@ public sealed partial class MainWindow
     {
         AutomationProperties.SetAutomationId(previewUpdates, "PreviewUpdates");
         AutomationProperties.SetAutomationId(updateStatus, "UpdateStatus");
+        AutomationProperties.SetAutomationId(updateIdentity, "SystemUpdateIdentity");
         AutomationProperties.SetAutomationId(updateCandidate, "UpdateCandidate");
         AutomationProperties.SetAutomationId(updateWait, "UpdateWaitingReason");
         AutomationProperties.SetAutomationId(updatePin, "UpdatePinnedVersion");
@@ -247,7 +248,7 @@ public sealed partial class MainWindow
     {
         if (updates is null || lifetime.IsCancellationRequested) return;
         var s = updates.Snapshot;
-        updateIdentity.Text = $"当前版本 {BrandInfo.DisplayVersion} · {installedUpdateChannel}\n可比较工程版本 {BrandInfo.Version}\n构建 {BrandInfo.BuildId}\n更新渠道：{(s.PreviewEnabled ? "稳定版及预览版" : "稳定版")}" +
+        updateIdentity.Text = $"当前版本 {BrandInfo.DisplayVersion} · {installedUpdateChannel}\n构建 {BrandInfo.BuildId}\n更新渠道：{(s.PreviewEnabled ? "稳定版及预览版" : "稳定版")}" +
             (s.IsTestBuild ? "\n仅本地更新演练 · 测试信任根 / 隔离源" : "") +
             (s.LastCheckUtc is { } checkedAt ? $"\n上次检查 {checkedAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}" : "\n尚未检查") +
             (s.LastSuccessfulCheckUtc is { } succeededAt ? $"\n上次成功 {succeededAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}" : "\n尚无成功检查记录");

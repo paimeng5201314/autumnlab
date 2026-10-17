@@ -1,4 +1,5 @@
 using AutumnOS.Contracts;
+using AutumnOS.Identity;
 using AutumnOS.Storage;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -16,24 +17,28 @@ public sealed partial class MainWindow
     private void InitializeFirstRunAccountUi()
     {
         var section = new StackPanel { Spacing = 10, HorizontalAlignment = HorizontalAlignment.Stretch };
-        section.Children.Add(Paragraph("登录账号（可选）"));
+        section.Children.Add(new TextBlock { Text = "你的账号，你的选择", FontSize = 19, Foreground = Brush("355748") });
         AutomationProperties.SetAutomationId(firstRunAccountStatus, "FirstRunAccountStatus");
         section.Children.Add(firstRunAccountStatus);
-        section.Children.Add(Paragraph("使用系统浏览器登录；成功后使用此 Windows 用户的加密存储保持会话。也可暂时跳过，之后到设置中登录。"));
+        section.Children.Add(Paragraph("在系统浏览器中安全登录。选择登录后，会话将加密保存在这台电脑上；也可先跳过，之后在设置中登录。"));
         foreach (var text in section.Children.OfType<TextBlock>())
             text.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 96, 117, 104));
-        firstRunLogin = ActionButton("登录账号", "FirstRunLogin", OnFirstRunLogin);
+        firstRunLogin = ActionButton("登录并保持登录  ↗", "FirstRunLogin", OnFirstRunLogin);
+        firstRunLogin.Background = Brush("355748"); firstRunLogin.Foreground = Brush("FFFFFF");
+        firstRunLogin.HorizontalAlignment = HorizontalAlignment.Stretch;
+        firstRunLogin.HorizontalContentAlignment = HorizontalAlignment.Center;
         firstRunSkip = ActionButton("暂时跳过", "FirstRunSkip", OnFirstRunSkip);
         firstRunCancel = ActionButton("取消登录", "FirstRunCancel", (_, _) =>
         {
             firstRunAccount?.CancelSignIn();
             firstRunAccountStatus.Text = "登录已取消，可以重试或暂时跳过。";
         });
-        // Vertical actions stay keyboard reachable even when display scaling narrows the welcome page.
         section.Children.Add(firstRunLogin);
+        firstRunSkip.HorizontalAlignment = HorizontalAlignment.Center;
+        firstRunSkip.Background = Brush("FAF8F2"); firstRunSkip.Foreground = Brush("355748");
         section.Children.Add(firstRunSkip);
         section.Children.Add(firstRunCancel);
-        InitializeStage.Children.Insert(InitializeStage.Children.IndexOf(PrepareDesktopButton), section);
+        WelcomeAccountContent.Children.Add(section);
     }
 
     private void RefreshFirstRunAccountUi()
@@ -48,6 +53,10 @@ public sealed partial class MainWindow
         firstRunCancel.Visibility = firstRunLoginPending ? Visibility.Visible : Visibility.Collapsed;
         firstRunCancel.IsEnabled = firstRunLoginPending && !firstRunSkipPending;
         PrepareDesktopButton.IsEnabled = progress?.Success == true && decided && !preparing && !firstRunSkipPending;
+        PrepareDesktopButton.Visibility = decided || preparing ? Visibility.Visible : Visibility.Collapsed;
+        firstRunSkip.Visibility = decided ? Visibility.Collapsed : Visibility.Visible;
+        firstRunLogin.Visibility = decided ? Visibility.Collapsed : Visibility.Visible;
+        WelcomeAccountBack.IsEnabled = !firstRunLoginPending && !firstRunSkipPending && !preparing;
         if (step == FirstRunLoginStep.Skipped) firstRunAccountStatus.Text = "已暂时跳过登录。完成桌面配置后即可使用，之后可到设置中登录。";
         else if (step == FirstRunLoginStep.Completed)
             firstRunAccountStatus.Text = session?.State == IdentitySessionState.SignedIn
@@ -69,8 +78,7 @@ public sealed partial class MainWindow
             if (lifetime.IsCancellationRequested) return;
             if (!result.Success) firstRunAccountStatus.Text = result.RecoveryMessage;
             else if (result.State?.LoginStep == FirstRunLoginStep.Pending)
-                firstRunAccountStatus.Text = "登录尚未成功，可以重试或暂时跳过。" +
-                    (identityService?.Snapshot.ErrorCode is { } code ? "（" + code + "）" : "");
+                firstRunAccountStatus.Text = IdentityUserMessage.ForError(identityService?.Snapshot.ErrorCode);
         }
         catch (OperationCanceledException) { if (!lifetime.IsCancellationRequested) firstRunAccountStatus.Text = "登录已取消，可以重试或暂时跳过。"; }
         catch (Exception error) when (error is not OutOfMemoryException) { if (!lifetime.IsCancellationRequested) firstRunAccountStatus.Text = "登录未完成，可以重试或暂时跳过。"; }

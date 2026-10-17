@@ -24,6 +24,7 @@ internal sealed class WebAppHost : IDisposable
     private readonly List<Stream> responseStreams = [];
     private readonly Dictionary<string, byte[]> resources = new(StringComparer.Ordinal);
     private WebView2? view;
+    private System.Diagnostics.Process? keyboardBrowserProcess;
     private bool disposed;
     private bool startInProgress;
     private bool navigated;
@@ -41,6 +42,11 @@ internal sealed class WebAppHost : IDisposable
     private readonly Action<WebAppHost>? retainForCleanup;
     public bool ResourcesReleased => !startInProgress && runtimeLease is null && maintenanceGameLease is null;
     public bool IsDeveloperPreview => previewPackage is not null;
+
+    // Capture the actual controller's browser process, with an open handle to prevent
+    // PID reuse from admitting an unrelated browser into the native shortcut scope.
+    internal bool OwnsKeyboardProcess(uint processId) => !disposed && navigated && desiredForeground &&
+        keyboardBrowserProcess is { } process && process.Id == processId && !process.HasExited;
 
     public WebAppHost(InstallationRoot root, Grid container,
         Func<string, CancellationToken, Task<bool>> requestPermission, Action<string> status,
@@ -166,6 +172,8 @@ internal sealed class WebAppHost : IDisposable
         linked.Token.ThrowIfCancellationRequested();
         startupStage = "settings";
         var core = view.CoreWebView2;
+        keyboardBrowserProcess = System.Diagnostics.Process.GetProcessById(checked((int)core.BrowserProcessId));
+        _ = keyboardBrowserProcess.Handle;
         core.Settings.AreHostObjectsAllowed = false;
         core.Settings.AreDevToolsEnabled = false;
         core.Settings.AreDefaultContextMenusEnabled = false;
@@ -363,6 +371,7 @@ internal sealed class WebAppHost : IDisposable
     public void Dispose()
     {
         if (!disposed) { disposed = true; stopped.Cancel(); }
+        keyboardBrowserProcess?.Dispose(); keyboardBrowserProcess = null;
         try
         {
             view?.Close(); view = null;

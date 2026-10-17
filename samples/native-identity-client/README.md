@@ -96,7 +96,9 @@ Invoke-Dotnet -Arguments @('build','samples/native-identity-client/AutumnOS.Nati
 | USER_CANCELLED_OR_TIMEOUT / 3 | 主动取消或总体超时，监听已清理 |
 | AUTH_PORT_IN_USE / 4 | 17854 被占用，不杀进程、不改端口 |
 | USER_CANCELLED / 4 | 提供方拒绝；没有认证成功 |
-| AUTH_INVALID_RESPONSE / 4 | 身份验证失败，不能降低 TLS/签名/issuer 等检查 |
+| AUTH_INVALID_TOKEN / 4 | ID token 的签名、nonce、issuer、audience 或有效期未通过校验；尚未调用资源 API，不可降低验证 |
+| AUTH_INVALID_RESPONSE / 4 | 身份协议响应未通过检查；不输出远端响应正文 |
+| AUTH_CLIENT_REJECTED / 4、AUTH_REDIRECT_REJECTED / 4 | 提供方拒绝公开客户端或回调；核对已登记的公开配置，不添加 client secret |
 | SESSION_EXPIRED / 4 | 代码交换 invalid_grant，开始新事务，不能重放回调 |
 | SAMPLE_RESOURCE_TOKEN_REQUIRED / 4 | 未获得资源 JWT 或 token 已过期 |
 | SAMPLE_API_UNAUTHORIZED / 4 | 服务器拒绝凭据签名、对象、客户端或有效期 |

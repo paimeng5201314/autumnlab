@@ -132,7 +132,7 @@ function Open-T06App {
     $opening.editor_ready_seconds=$watch.Elapsed.TotalSeconds;$opening.status='ready'
     $scenario.game_instance=[string]$event.instanceId
     $scenario.instance_history+=@([ordered]@{instance_id=$scenario.game_instance;host_pid=$product.Process.Id;timestamp_utc=[DateTimeOffset]::UtcNow.ToString('o')})
-    Add-SmokeCheck ($scenario.name+'_installed_app_is_real_internal_foreground_instance') ($event.blocksMaintenance -and [bool](Find 'ManagedAppHome'))
+    Add-SmokeCheck ($scenario.name+'_installed_app_is_real_internal_foreground_instance') ($event.blocksMaintenance -and [bool](Visible 'ManagedAppPanel') -and [bool](Probe-Input))
 }
 function Save-T06AppText([string]$Text,[switch]$First){
     Set-Input $Text;Click-Web '保存测试文字'
@@ -163,7 +163,7 @@ function Invoke-T06HostHop([string]$PayloadDirectory,[bool]$Rollback){
     $scenario.target_build_id=$manifest.buildId;$scenario.target_version=$manifest.version
     $unsaved='派蒙 T06 未保存 '+$scenario.name
     Set-Input $unsaved
-    Click 'ManagedAppHome';Wait-SmokeDesktop $product;Show-T05Updates
+    Invoke-AutumnGameShortcut $product 'Desktop';Wait-SmokeDesktop $product;Show-T05Updates
     Click-T05 'CheckSystemUpdate'
     $null=Wait-SmokeCondition {(Find-T05 'DownloadSystemUpdate').Current.IsEnabled} 'verified host metadata available before consent' $UpdateTimeoutSeconds
     Click-T05 'DownloadSystemUpdate';Click-T05 'ConfirmSystemUpdate'
@@ -277,7 +277,7 @@ try{
     $script:product=Start-SmokeProduct $cwd
     Register-T05Process $product.EntryProcess 'AutumnOS.exe';Register-T05Process $product.Process 'AutumnOS.Client.exe' $product.EntryProcess.Id
     New-T06Scenario 'A-to-B' $false
-    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton';Click-T05 'FirstRunSkip';Click-T05 'PrepareDesktopButton';Wait-SmokeDesktop $product
+    Click-T05 'HelloNextButton';Click-T05 'BrandNextButton'; Click-T05 'WelcomeAppearanceNext';Click-T05 'FirstRunSkip';Click-T05 'PrepareDesktopButton';Wait-SmokeDesktop $product
     Show-T05Updates
     Add-SmokeCheck 'new_user_host_preview_off' (
         (Find-T05 'PreviewUpdates').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Current.ToggleState -eq [Windows.Automation.ToggleState]::Off)

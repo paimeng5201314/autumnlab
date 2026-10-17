@@ -270,6 +270,6 @@ public sealed partial class MainWindow
     }
 
     private void OnSystemAnimationsChanged(Windows.UI.ViewManagement.UISettings sender, Windows.UI.ViewManagement.UISettingsAnimationsEnabledChangedEventArgs args)
-        => DispatcherQueue.TryEnqueue(() => { if (!lifetime.IsCancellationRequested) SynchronizeAppearance(); });
+        => DispatcherQueue.TryEnqueue(() => { if (!lifetime.IsCancellationRequested) { SynchronizeAppearance(); RefreshWelcomeMotion(); } });
     private void SynchronizeAppearance() => desktopExtensions?.SetAppearance(new(Root.ActualTheme == ElementTheme.Dark ? "dark" : "light", "zh-CN", Root.XamlRoot?.RasterizationScale ?? 1, !systemUiSettings.AnimationsEnabled));
 }

@@ -58,6 +58,13 @@ public sealed partial class MainWindow
         }
         WelcomeTheme.Text = "已选择：" + ThemeName(theme);
         WelcomeLightButton.IsEnabled = WelcomeDarkButton.IsEnabled = preferencesWritable;
+        foreach (var option in new[] { WelcomeLightButton, WelcomeDarkButton })
+        {
+            bool selected = (string)option.Tag == theme;
+            option.BorderThickness = new Thickness(selected ? 2 : 1);
+            option.BorderBrush = Brush(selected ? "355748" : "CDD3C6");
+            AutomationProperties.SetHelpText(option, selected ? "当前已选择" : "选择桌面主题");
+        }
         DesktopAppearance.Text = ThemeName(theme) + " · " + WallpaperName(wallpaper);
     }
 

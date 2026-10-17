@@ -187,7 +187,7 @@ try{
  . (Join-Path $PSScriptRoot 'Smoke-NativeAppInput.ps1')
  $product=Start-SmokeProduct $scope
 
- Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
+ Invoke-SmokeButton $product.Element 'HelloNextButton';Invoke-SmokeButton $product.Element 'BrandNextButton'; Invoke-SmokeButton $product.Element 'WelcomeAppearanceNext';Invoke-SmokeButton $product.Element 'FirstRunSkip';Invoke-SmokeButton $product.Element 'PrepareDesktopButton'
  $null=Wait-SmokeCondition {Find-VisibleSmokeElement $product.Element 'SampleButton'} 'installed sample desktop'
  $dataDirectory=Join-Path $stageDirectory 'AutumnOS_Data'
  $runtimeLog=Join-Path $dataDirectory 'Logs/runtime-events.jsonl'
@@ -215,7 +215,7 @@ try{
  $secondSaveHash=(Get-FileHash -LiteralPath $savePath).Hash
  Add-SmokeCheck 'second_save_preserves_exact_first_bytes_as_backup' ((Get-FileHash -LiteralPath ($savePath+'.bak')).Hash -eq $firstSaveHash)
  $nickname.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('派蒙·还未保存的内容')
- Invoke-SmokeButton $product.Element 'BackgroundButton';Invoke-SmokeButton $product.Element 'SettingsButton';Select-FeatureCategory 'SettingsNavDiagnostics'
+ Invoke-AutumnGameShortcut $product 'Desktop';Invoke-SmokeButton $product.Element 'SettingsButton';Select-FeatureCategory 'SettingsNavDiagnostics'
  Invoke-SmokeButton $product.Element 'DataRecoveryRefresh'
  $null=Wait-SmokeCondition {$e=Find-SmokeElement $product.Element 'RestoreDeveloperConfig';$e -and $e.Current.IsEnabled} 'valid configuration backup recovery'
  $beforeConfigHash=(Get-FileHash -LiteralPath $configuration).Hash
@@ -231,7 +231,7 @@ try{
  Return-FeatureGame
  $nickname=Find-FeatureWebElement 'nickname' '玩家昵称'
  Add-SmokeCheck 'cancel_recovery_keeps_unsaved_input_same_instance' ($nickname.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·还未保存的内容' -and (Read-SmokeEvents $runtimeLog|Where-Object state -eq Foreground|Select-Object -Last 1).instanceId -eq $report.game_instance_id)
- Invoke-SmokeButton $product.Element 'BackgroundButton';Invoke-SmokeButton $product.Element 'SettingsButton';Select-FeatureCategory 'SettingsNavDiagnostics'
+ Invoke-AutumnGameShortcut $product 'Desktop';Invoke-SmokeButton $product.Element 'SettingsButton';Select-FeatureCategory 'SettingsNavDiagnostics'
  Invoke-SmokeButton $product.Element 'RestoreSaveBackup';Invoke-SmokeNamedButton $product.Element '继续，检查并关闭游戏';Invoke-SmokeNamedButton $product.Element '取消'
  Add-SmokeCheck 'cancel_second_confirmation_keeps_game_and_main' ((Get-FileHash -LiteralPath $savePath).Hash -eq $secondSaveHash -and @(Read-SmokeEvents $runtimeLog|Where-Object {$_.instanceId -eq $report.game_instance_id -and $_.state -eq 'Closed'}).Count -eq 0)
  Invoke-SmokeButton $product.Element 'RestoreSaveBackup';Invoke-SmokeNamedButton $product.Element '继续，检查并关闭游戏';Invoke-SmokeNamedButton $product.Element '我已保存，关闭游戏'
