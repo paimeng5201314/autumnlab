@@ -1,0 +1,353 @@
+{
+  "status": "passed",
+  "checks": [
+    {
+      "name": "PowerShell syntax: Run.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Build-ProtocolPeer.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Build-T05LocalDrill.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Build.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Cache-OfficialPackages.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Cache-WebViewRuntime.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Common.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Export-SourceSnapshot.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Get-Environment.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Install-LocalSdk.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Measure-T06Performance.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: New-DeveloperSample.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: New-SamplePackage.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: New-SourceSnapshot.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: New-StoreFixturePackages.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: New-T06ReviewBundle.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Package-ChemLeap.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Package-CodeHandoff.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Package-DeveloperKit.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Package-SingleFile.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Package-T04.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Package-T05.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Package.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Prepare-ProductionUpdate.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Restore.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Run.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Smoke-NativeAppInput.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: T06-NativeHelpers.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-ChemLeapNativeSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-ChemLeapStoreSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-DeliveredLauncher.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-DesktopInteractionSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-DesktopSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-NormalLocalApp.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-ProductionUpdateTools.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-RuntimeIsolationNative.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-ServerIdentitySample.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-SingleFileSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-SingleInstanceSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-Source.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-StoreRepositorySmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T03AccountSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T03FeaturesSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T03RecoveryFilesSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T04DeveloperTools.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T04StoreSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T05Setup.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T05UpdateSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T06DeveloperSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T06IntegrationSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-T06WebViewSecurity.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-UpdateFaultDrill.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test-WindowsSmoke.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Test.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: UpdatePreparationFiles.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Make-BusyFileDriver.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Make-FaultDriver.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Make-LegacyDriver.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Read-T05Observation.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Wait-T05BusyFileTransaction.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Wait-T05FaultTransaction.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Wait-T05LegacyTransaction.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: Build-Sources.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "PowerShell syntax: restore-tools.ps1",
+      "status": "passed"
+    },
+    {
+      "name": "All source JSON and XML parse",
+      "status": "passed"
+    },
+    {
+      "name": "Package save schema range saveFormatVersion",
+      "status": "passed"
+    },
+    {
+      "name": "Package save schema range minReadableSaveFormatVersion",
+      "status": "passed"
+    },
+    {
+      "name": "Package save schema range maxReadableSaveFormatVersion",
+      "status": "passed"
+    },
+    {
+      "name": "Release save schema agrees with package schema",
+      "status": "passed"
+    },
+    {
+      "name": "57 original requirements retained",
+      "status": "passed"
+    },
+    {
+      "name": "65 original acceptance definitions retained",
+      "status": "passed"
+    },
+    {
+      "name": "Single-instance requirement and acceptance added without duplicate IDs",
+      "status": "passed"
+    },
+    {
+      "name": "Central product and producer",
+      "status": "passed"
+    },
+    {
+      "name": "Real WinUI project",
+      "status": "passed"
+    },
+    {
+      "name": "Stable AutumnOS executable entry",
+      "status": "passed"
+    },
+    {
+      "name": "Public configuration linked from specification",
+      "status": "passed"
+    },
+    {
+      "name": "Provided public values retained",
+      "status": "passed"
+    },
+    {
+      "name": "PKCE public client contract",
+      "status": "passed"
+    },
+    {
+      "name": "Retained product contract: autumnos-app",
+      "status": "passed"
+    },
+    {
+      "name": "Retained product contract: pm",
+      "status": "passed"
+    },
+    {
+      "name": "Retained product contract: sq",
+      "status": "passed"
+    },
+    {
+      "name": "Retained product contract: .autumn",
+      "status": "passed"
+    },
+    {
+      "name": "Retained product contract: plus",
+      "status": "passed"
+    },
+    {
+      "name": "Retained product contract: meta",
+      "status": "passed"
+    },
+    {
+      "name": "Retained product contract: paimeng5201314/autumnlab",
+      "status": "passed"
+    },
+    {
+      "name": "Narrow credential pattern scan",
+      "status": "passed"
+    }
+  ],
+  "failure": null,
+  "executed_utc": "2026-10-24T03:24:06.8180956+00:00",
+  "product_tests_executed": false,
+  "meaning": "Static source checks only. Credential patterns are not a complete security audit."
+}

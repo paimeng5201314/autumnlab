@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(ProductionUpdateTrustFile)' == '' and '$(TestUpdateTrustFile)' == '' and Exists('$(MSBuildThisFileDirectory)../../build/update-trust.production.json')">
+    <ProductionUpdateTrustFile>$(MSBuildThisFileDirectory)../../build/update-trust.production.json</ProductionUpdateTrustFile>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(TestUpdateTrustFile)' != ''">
     <DefineConstants>$(DefineConstants);AUTUMNOS_UPDATE_TEST_BUILD</DefineConstants>
   </PropertyGroup>

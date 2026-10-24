@@ -1,0 +1,31 @@
+{
+  "review_utc": "2026-10-18T05:06:37.7811643+00:00",
+  "scope": "static fail-closed review and prepared developer-only native test",
+  "execution": "not_run",
+  "files": [
+    {
+      "path": "src/AutumnOS.Shell/WebAppHost.cs",
+      "sha256": "3afd953ad8d2ed50751598543a0978be66b41ae55eaff5ad1cafb6965c4d4d35"
+    },
+    {
+      "path": "src/AutumnOS.Shell/MainWindow.xaml.cs",
+      "sha256": "d78da0106454ae3f5488be737e31e89ed85c6a3d6331149e40425a8cb6d07699"
+    },
+    {
+      "path": "src/AutumnOS.Shell/StoreApplicationsUi.cs",
+      "sha256": "b3671980029de470a8a820df1e9e53c910389fd89666591607e12e6d956f55bc"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DeveloperPreviewUi.cs",
+      "sha256": "c4a0aa49fe4177ff719804401b549afde28487c0d59caf04e77b030a58ed668d"
+    },
+    {
+      "path": "artifacts/isolation-20261018/drafts/Test-RuntimeBoundaryUnavailable.ps1",
+      "sha256": "1fda7d72180da8e899684006e9125d21df2fa2537d0ae86a2199840832684568"
+    },
+    {
+      "path": "artifacts/isolation-20261018/drafts/FailClosedHost-Build05Review.md",
+      "sha256": "686aa05bbf8c46a8a11cb6c0809d233db7983a5ac3b676b414ba0f3d607b6eb1"
+    }
+  ]
+}

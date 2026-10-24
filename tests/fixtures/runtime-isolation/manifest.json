@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "appId": "dev.autumnos.isolationprobe",
+  "name": "AutumnOS 完整隔离负面样例",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": []
+}

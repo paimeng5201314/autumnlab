@@ -5,6 +5,9 @@ $ErrorActionPreference='Stop'
 $OutputDirectory=[IO.Path]::GetFullPath($OutputDirectory)
 if(Test-Path -LiteralPath $OutputDirectory){throw 'Choose a new output directory; existing publication materials are preserved.'}
 $project=Join-Path $ProjectRoot 'samples/chemleap'
+$gameManifest=Get-Content -LiteralPath (Join-Path $project 'manifest.json') -Raw|ConvertFrom-Json
+if($gameManifest.appId -cne 'cn.labchronicles.chemleap' -or $gameManifest.version -notmatch '^\d+\.\d+\.\d+$'){throw 'Unexpected ChemLeap package identity or version.'}
+$packageName='ChemLeap-'+$gameManifest.version+'.autumn'
 $sdkSource=Join-Path $ProjectRoot 'sdk/autumn-sdk.js'
 if((Get-FileHash -LiteralPath (Join-Path $project 'autumn-sdk.js')).Hash -ne (Get-FileHash -LiteralPath $sdkSource).Hash){throw 'Game SDK copy differs from the current fixed SDK.'}
 $cli=Join-Path $ProjectRoot 'tools/AutumnOS.Developer.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Developer.Cli.dll'
@@ -25,11 +28,11 @@ function Invoke-GameCli([string[]]$CliArguments,[string]$LogName){
     return ($lines -join "`n"|ConvertFrom-Json)
 }
 $pack=Invoke-GameCli @('pack',$project,(Join-Path $OutputDirectory 'packed')) 'pack.json'
-$namedPackage=Join-Path $OutputDirectory 'ChemLeap-0.1.0.autumn'
+$namedPackage=Join-Path $OutputDirectory $packageName
 Copy-Item -LiteralPath $pack.packagePath -Destination $namedPackage
 $publication=Join-Path $OutputDirectory 'publication'
 $generated=Invoke-GameCli @('generate-release',$namedPackage,$publication,'--developer','派蒙','--description','从 H₂ 出发的 3D 化学跳一跳：选择反应平台、蓄力跳跃、收集生成物并挑战最高分。离线可玩，支持 AutumnOS 存档。','--category','sq','--offline','true','--min-host','0.5.1-local.8','--min-sdk','0.3.0') 'generate.json'
-$check=Invoke-GameCli @('validate-publication',(Join-Path $publication 'autumn.store.json'),(Join-Path $publication 'autumn.release.json'),(Join-Path $publication 'ChemLeap-0.1.0.autumn')) 'validate.json'
+$check=Invoke-GameCli @('validate-publication',(Join-Path $publication 'autumn.store.json'),(Join-Path $publication 'autumn.release.json'),(Join-Path $publication $packageName)) 'validate.json'
 foreach($file in $inventory){if((Get-FileHash -LiteralPath (Join-Path $project $file.path)).Hash.ToLowerInvariant() -ne $file.sha256){throw 'Game sources changed during packaging.'}}
 $release=Get-Content -LiteralPath (Join-Path $publication 'autumn.release.json') -Raw|ConvertFrom-Json
 $archive=[IO.Compression.ZipFile]::OpenRead((Join-Path $publication $release.asset))

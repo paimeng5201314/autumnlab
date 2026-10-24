@@ -2,6 +2,10 @@
 param([string]$BuildId = ('T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,6)),
     [string]$BuildVersion, [string]$ReleaseLabel, [string]$ProductionUpdateTrustFile, [string]$TestUpdateTrustFile, [string]$TestUpdateFeedFile, [switch]$UpdateHealthFault)
 . "$PSScriptRoot/Common.ps1"
+if(-not $ProductionUpdateTrustFile -and -not $TestUpdateTrustFile){
+    $defaultUpdateTrust=Join-Path $ProjectRoot 'build/update-trust.production.json'
+    if(Test-Path -LiteralPath $defaultUpdateTrust){$ProductionUpdateTrustFile=$defaultUpdateTrust}
+}
 [xml]$defaultBrand = Get-Content -LiteralPath (Join-Path $ProjectRoot 'build/Brand.props') -Raw
 if (-not $ReleaseLabel -and -not $TestUpdateTrustFile -and
     (-not $BuildVersion -or $BuildVersion -eq $defaultBrand.SelectSingleNode('/Project/PropertyGroup/AutumnVersion').InnerText)) {

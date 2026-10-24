@@ -97,7 +97,8 @@ try{
     Click 'SettingsButton';Toggle 'SettingsNavDiagnostics' $true;Toggle 'DeveloperModeToggle' $true;Click 'SettingsHomeButton';Click 'DeveloperButton'
     $session=Start-ConfirmedPreview $sample
     $capabilityObservation=Wait-SmokeCondition {$value=Get-SecurityObservation;if($value.capabilityError){throw ('Real SDK capability query failed: '+$value.capabilityError)};if($value.runtimeCapabilities){return $value}} 'real SDK runtime capability response' 15
-    Add-SmokeCheck 'real_runtime_capability_keeps_complete_network_sandbox_unverified' ($capabilityObservation.runtimeCapabilities.protocolVersion -eq 1 -and $capabilityObservation.runtimeCapabilities.networkSandboxVerified -ceq $false)
+    $isolationEvents=@(Read-DeveloperEvents|Where-Object {$_.instanceId -eq $sample.runtime_instance -and $_.eventName -eq 'isolation_verified'})
+    Add-SmokeCheck 'real_runtime_capability_requires_current_native_isolation_proof' ($capabilityObservation.runtimeCapabilities.protocolVersion -eq 1 -and $capabilityObservation.runtimeCapabilities.networkSandboxVerified -ceq $true -and $isolationEvents.Count -eq 1)
     $report.network_sandbox_verified=$capabilityObservation.runtimeCapabilities.networkSandboxVerified;$report.sdk_capability_query='passed_real_internal_protocol'
     Click-DeveloperWeb '尝试六类网络请求'
     $observation=Wait-SmokeCondition {$value=Get-SecurityObservation;if($value.complete){return $value}} 'six real browser network probes settle' 15

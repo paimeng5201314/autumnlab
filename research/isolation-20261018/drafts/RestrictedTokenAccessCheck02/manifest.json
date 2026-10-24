@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "frozen_utc": "2026-10-18T05:15:26.3178462+00:00",
+  "scope": "Five in-memory query tokens and AccessCheck only; no token attached to process/thread",
+  "files": [
+    {
+      "path": "Program.cs",
+      "bytes": 21289,
+      "sha256": "4e8099f7cfa9d027bca47fa203c39973b6d52ac755cf339eb020b97d435f287f"
+    },
+    {
+      "path": "RestrictedTokenAccessCheck02.csproj",
+      "bytes": 241,
+      "sha256": "0e01e71b05203a880d59e961b279954c0985f42d8cfb685c6beb702320531a32"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 3191,
+      "sha256": "9e5b6500ecbf987a7bad7f9841e3a767743d8093f5d19f54c91c8147967df2dc"
+    },
+    {
+      "path": "build.log",
+      "bytes": 469,
+      "sha256": "06d1c43547147feb50a27150c67fa2a24ae50d629b43efe2a81ced974deb3ea5"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenAccessCheck02.deps.json",
+      "bytes": 559,
+      "sha256": "70218a822d6bf5352f37870be87d0d47bd540ce2f9c1dae99c11b26c0e6be101"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenAccessCheck02.dll",
+      "bytes": 54272,
+      "sha256": "0ebbfb5b1f30eb12dbdb70cd13c5f185667e415c88021fa6d77fe03dbc4c17ae"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenAccessCheck02.exe",
+      "bytes": 162816,
+      "sha256": "712ec1f6340630cf1796609430b3b5e6856406667bbf99ddae0787c413582356"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenAccessCheck02.pdb",
+      "bytes": 16412,
+      "sha256": "d73a2598ae8d8fb21d2a54f33b1ebcf24cdd7f39296f9517dcd419696f276aa8"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenAccessCheck02.runtimeconfig.json",
+      "bytes": 399,
+      "sha256": "3e965cd7cfd553c2ff4e842d8d8019aaae2da0a21d92ff85a87573dd8d1b95c6"
+    }
+  ],
+  "build": {
+    "status": "passed",
+    "warnings": 0,
+    "errors": 0
+  },
+  "execution_evidence": "Root-owned restricted-token-accesscheck-02/report.json, not asserted by this preparation manifest",
+  "production_integration": "none",
+  "prior_candidate_unchanged": true
+}

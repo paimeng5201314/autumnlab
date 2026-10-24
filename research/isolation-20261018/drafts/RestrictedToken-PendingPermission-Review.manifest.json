@@ -1,0 +1,23 @@
+{
+  "completed_utc": "2026-10-18T04:44:39.8843425+00:00",
+  "review_timing": "post_execution_review_not_preflight_approval",
+  "execution_by_reviewer": "none",
+  "files": [
+    {
+      "path": "artifacts/isolation-20261018/drafts/RestrictedTokenLaunchProbe/Program.cs",
+      "sha256": "1c03b831a49e5f0fb2383e9785d35fcdd116bf55cca1ee0b1c2301217f614f9d"
+    },
+    {
+      "path": "artifacts/isolation-20261018/drafts/RestrictedTokenLaunchProbe-IndependentReview.md",
+      "sha256": "c4dbdf2ec6b3e4031d4129fa87f8bd2f4097e05d7d8d9c641f05498a0633ef47"
+    },
+    {
+      "path": "artifacts/isolation-20261018/drafts/PendingPermissionClose-Review.md",
+      "sha256": "d5d89b6b1436c0d3cc0dbce7e6279416b80f02fb9a094dcf230002a25ef36d17"
+    },
+    {
+      "path": "artifacts/isolation-20261018/restricted-token-launch-01/report.json",
+      "sha256": "7377c40bfe463f9688acb8c647c8e84ed845f348ff99f4f4d7f8ebb84c7b06b2"
+    }
+  ]
+}

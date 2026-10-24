@@ -251,8 +251,10 @@ public sealed partial class MainWindow
         updateIdentity.Text = $"当前版本 {BrandInfo.DisplayVersion} · {installedUpdateChannel}\n构建 {BrandInfo.BuildId}\n更新渠道：{(s.PreviewEnabled ? "稳定版及预览版" : "稳定版")}" +
             (s.IsTestBuild ? "\n仅本地更新演练 · 测试信任根 / 隔离源" : "") +
             (s.LastCheckUtc is { } checkedAt ? $"\n上次检查 {checkedAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}" : "\n尚未检查") +
-            (s.LastSuccessfulCheckUtc is { } succeededAt ? $"\n上次成功 {succeededAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}" : "\n尚无成功检查记录");
-        updateStatus.Text = s.State switch
+            (s.LastReleaseMetadataUtc is { } metadataAt ? $"\n上次读取发行记录 {metadataAt.ToLocalTime():yyyy-MM-dd HH:mm:ss} · {s.ReleasesExamined} 条" : "\n尚未成功读取发行记录") +
+            (s.LastSuccessfulCheckUtc is { } succeededAt ? $"\n上次完整检查成功 {succeededAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}" : "\n尚未完成更新包的完整检查");
+        bool currentMetadataRead = s.LastReleaseMetadataUtc is { } readAt && s.LastCheckUtc is { } checkAt && readAt >= checkAt;
+        string status = s.State switch
         {
             UpdateState.Idle => "尚未检查",
             UpdateState.Checking => "正在读取发行版信息…",
@@ -263,14 +265,28 @@ public sealed partial class MainWindow
             UpdateState.Staged => "等待重启 · 安装包已验证，尚未安装",
             UpdateState.Committed => "更新成功",
             UpdateState.RolledBack => "已恢复旧版",
-            UpdateState.Error => "检查或更新未完成 · " + UpdateReason(s.ErrorCode),
+            UpdateState.Error when currentMetadataRead && s.ErrorCode is ("UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" or
+                "UPDATE_ASSET_MISSING_OR_AMBIGUOUS" or "UPDATE_MANIFEST_MISSING" or "UPDATE_SIGNATURE_MISSING" or "UPDATE_PAYLOAD_MISSING") =>
+                "已读取官方发行记录，尚未取得可安装的可信更新包。",
+            UpdateState.Error => "检查或更新未完成。",
             _ => "更新处理中 · " + s.State
         };
-        if (!s.AutomaticInstallConfigured) updateStatus.Text += "\n缺少正式更新可信公钥，暂不能验证或安装正式更新。";
-        if (s.RetryAfterUtc is { } retry) updateStatus.Text += $"\n服务暂缓检查，可重试时间：{retry.ToLocalTime():yyyy-MM-dd HH:mm:ss}";
-        if (!s.PreviewEnabled && installedUpdateChannel == "预览版") updateStatus.Text += "\n已停止接收预览更新，可继续使用当前版本或手动回滚到稳定版。";
-        var visibleWarnings = s.Warnings.Where(code => code != "UPDATE_PREVIEW_STOPPED_KEEP_CURRENT" || installedUpdateChannel == "预览版").Select(UpdateReason).Distinct().ToArray();
-        if (visibleWarnings.Length != 0) updateStatus.Text += "\n" + string.Join("\n", visibleWarnings);
+        // An error, the trust flag and a per-release warning can describe the same
+        // condition. Show its reason once without hiding independent failures.
+        var lines = new List<string> { status };
+        var reasons = new HashSet<string>(StringComparer.Ordinal);
+        void AddReason(string? code)
+        {
+            if (code is null || code == "UPDATE_PREVIEW_STOPPED_KEEP_CURRENT" && installedUpdateChannel != "预览版") return;
+            string reason = UpdateReason(code);
+            if (reasons.Add(reason)) lines.Add(reason);
+        }
+        if (s.State == UpdateState.Error) AddReason(s.ErrorCode);
+        if (!s.AutomaticInstallConfigured) AddReason("UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED");
+        if (s.RetryAfterUtc is { } retry) lines.Add($"服务暂缓检查，可重试时间：{retry.ToLocalTime():yyyy-MM-dd HH:mm:ss}");
+        if (!s.PreviewEnabled && installedUpdateChannel == "预览版") AddReason("UPDATE_PREVIEW_STOPPED_KEEP_CURRENT");
+        foreach (string warning in s.Warnings) AddReason(warning);
+        updateStatus.Text = string.Join("\n", lines);
         AppendUpdateRecoveryStatus();
         updateCandidate.Text = s.Candidate is { } candidate ? $"可用版本 {candidate.Manifest.Version} · {ReleaseChannel(candidate)}\n{candidate.Tag} · {candidate.Manifest.Payload.Bytes:N0} 字节" : "没有已验证的可安装候选。";
         updatePin.Text = s.PinnedVersion is { } pinned ? $"已固定版本：{pinned}。每次启动仍检查，但不弹出常规升级提醒。" : "正在跟随更新渠道。";
@@ -354,13 +370,16 @@ public sealed partial class MainWindow
     private static string UpdateReason(string? code) => code switch
     {
         null => "原因未知，请重试。",
-        "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" => "缺少正式更新可信公钥。",
+        "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" => "此构建缺少正式更新验证公钥；可查看发行记录，暂不能验证或安装更新。",
         "UPDATE_PREVIEW_DISABLED" or "UPDATE_PREVIEW_NOT_ALLOWED" => "需要先开启并保存“接受预览版邀请”。",
         "UPDATE_VERSION_NOT_COMPARABLE" or "UPDATE_VERSION_INVALID" => "此历史版本没有可靠的可比较版本，暂不能安装。",
         "UPDATE_CURRENT_VERSION" or "UPDATE_CANDIDATE_CURRENT" => "当前已安装，不能重复安装同一版本。",
         "UPDATE_NOT_UPGRADE" or "UPDATE_UPGRADE_REQUIRES_NEWER" or "UPDATE_DOWNGRADE_REJECTED" => "更新目标必须高于当前版本。低版本请使用回滚入口。",
         "UPDATE_NOT_ROLLBACK" or "UPDATE_ROLLBACK_REQUIRES_OLDER" => "回滚目标必须低于当前版本。",
-        "UPDATE_ASSET_MISSING_OR_AMBIGUOUS" => "此版本缺少唯一、完整的安装资产。",
+        "UPDATE_ASSET_MISSING_OR_AMBIGUOUS" => "官方发行记录中的更新资产缺失或不唯一，暂不能安装。",
+        "UPDATE_MANIFEST_MISSING" => "官方发行记录未提供 autumn.update.json 更新清单，暂不能验证更新。",
+        "UPDATE_SIGNATURE_MISSING" => "官方发行记录未提供 autumn.update.sig 清单签名，暂不能验证更新。",
+        "UPDATE_PAYLOAD_MISSING" => "官方发行记录缺少更新清单指定的负载 ZIP，暂不能安装。",
         "UPDATE_TARGET_RID_INVALID" or "UPDATE_PLATFORM_NOT_SUPPORTED" => "此版本不支持当前系统或架构。",
         "UPDATE_UPDATER_TOO_OLD" or "UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED" => "此版本不支持当前所需的更新或回滚协议。",
         "UPDATE_COMPATIBILITY_INVALID" => "目标平台或更新协议不支持当前安装环境。",

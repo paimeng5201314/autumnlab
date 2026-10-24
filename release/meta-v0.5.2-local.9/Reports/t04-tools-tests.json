@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "task_id": "T04",
+  "build_id": "T06-20261024-update-04",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "observed_source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "status": "passed",
+  "total": 12,
+  "failed": 0,
+  "phase": "final_identity",
+  "failure": null,
+  "started_utc": "2026-10-24T03:25:16.9811326+00:00",
+  "finished_utc": "2026-10-24T03:25:20.8956334+00:00",
+  "environment": "Microsoft Windows NT 10.0.26200.0",
+  "source_kind": "isolated_local_cli_processes_no_upload",
+  "live_github": "not_run",
+  "uploaded": false,
+  "fixture_app_id": "fixture.cli",
+  "tool_assemblies": [
+    {
+      "path": "tools/AutumnOS.Developer.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Contracts.dll",
+      "sha256": "9a79e03f30e22bd2d6e35c04f6126779aafd0842e40d8df5be22ba426a77c7d6",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58"
+    },
+    {
+      "path": "tools/AutumnOS.Developer.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Developer.Cli.dll",
+      "sha256": "7a1138b89ed1edf0505adaf2ea7675bc8c0c3c6c44b240b244600e8e04cad710",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58"
+    },
+    {
+      "path": "tools/AutumnOS.Developer.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Packages.dll",
+      "sha256": "905ec21a9026feea49880a0e786735117ba000489a09f49ef400549d41d7f72a",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58"
+    },
+    {
+      "path": "tools/AutumnOS.Developer.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Storage.dll",
+      "sha256": "e0bab8e500379dcf4ddb14f80733488202350fa6da36cca59db5bcd2c749a5c4",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58"
+    },
+    {
+      "path": "tools/AutumnOS.Developer.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Store.dll",
+      "sha256": "0af871a9a323fae1d2ea434a9315207b98883c06d01eb967f9ea274f9043f89c",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58"
+    }
+  ],
+  "results": [
+    {
+      "name": "pack_real_archive_sha",
+      "status": "passed"
+    },
+    {
+      "name": "generated_store_release_real_copy",
+      "status": "passed"
+    },
+    {
+      "name": "same_validator_accepts_generated_three_layers",
+      "status": "passed"
+    },
+    {
+      "name": "refuses_existing_output_without_overwrite",
+      "status": "passed"
+    },
+    {
+      "name": "repeat_pack_retains_old_package",
+      "status": "passed"
+    },
+    {
+      "name": "wrong_hash_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "cross_application_metadata_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "exe_extension_rejected_without_execution",
+      "status": "passed"
+    },
+    {
+      "name": "duplicate_release_fields_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "invalid_option_no_output",
+      "status": "passed"
+    },
+    {
+      "name": "disguised_native_payload_rejected",
+      "status": "passed"
+    },
+    {
+      "name": "original_generated_package_preserved",
+      "status": "passed"
+    }
+  ],
+  "commands": [
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "pack",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\project",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\packages"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:17.3412052+00:00",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "output": "{\r\n  \"status\": \"passed\",\r\n  \"command\": \"pack\",\r\n  \"packagePath\": \"D:\\\\\\u7279\\u6B8A\\\\chem\\\\artifacts\\\\builds\\\\T06-20261024-update-04\\\\test-runs\\\\d8328d4c8a4b41e6aa2c0269d6d4934f\\\\t04-tools\\\\fixture\\\\packages\\\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn\",\r\n  \"appId\": \"fixture.cli\",\r\n  \"version\": \"2.1.0-preview.1\",\r\n  \"sha256\": \"efb5839fc108499a1ad043e42549c7ce920ba9af5afc5f2444647bea03b777ca\",\r\n  \"bytes\": 532\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "generate-release",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\packages\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication",
+        "--developer",
+        "隔离测试开发者",
+        "--description",
+        "本地测试材料，未上传",
+        "--offline",
+        "true"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:19.0073362+00:00",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "output": "{\r\n  \"status\": \"passed\",\r\n  \"command\": \"generate-release\",\r\n  \"outputDirectory\": \"D:\\\\\\u7279\\u6B8A\\\\chem\\\\artifacts\\\\builds\\\\T06-20261024-update-04\\\\test-runs\\\\d8328d4c8a4b41e6aa2c0269d6d4934f\\\\t04-tools\\\\fixture\\\\publication\",\r\n  \"appId\": \"fixture.cli\",\r\n  \"version\": \"2.1.0-preview.1\",\r\n  \"channel\": \"preview\",\r\n  \"packagePath\": \"D:\\\\\\u7279\\u6B8A\\\\chem\\\\artifacts\\\\builds\\\\T06-20261024-update-04\\\\test-runs\\\\d8328d4c8a4b41e6aa2c0269d6d4934f\\\\t04-tools\\\\fixture\\\\publication\\\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn\",\r\n  \"storePath\": \"D:\\\\\\u7279\\u6B8A\\\\chem\\\\artifacts\\\\builds\\\\T06-20261024-update-04\\\\test-runs\\\\d8328d4c8a4b41e6aa2c0269d6d4934f\\\\t04-tools\\\\fixture\\\\publication\\\\autumn.store.json\",\r\n  \"releasePath\": \"D:\\\\\\u7279\\u6B8A\\\\chem\\\\artifacts\\\\builds\\\\T06-20261024-update-04\\\\test-runs\\\\d8328d4c8a4b41e6aa2c0269d6d4934f\\\\t04-tools\\\\fixture\\\\publication\\\\autumn.release.json\",\r\n  \"bytes\": 532,\r\n  \"sha256\": \"efb5839fc108499a1ad043e42549c7ce920ba9af5afc5f2444647bea03b777ca\",\r\n  \"releaseMetadataSha256\": \"eedbc23a31095be9999a3a542e1db1598c81f799760011bddd29d9afa4234c62\",\r\n  \"storeContentSha256\": \"2b494428c9239d207a22da32913e94f2255096b06d8b854bc2e2d519dc6a5c2b\",\r\n  \"uploaded\": false\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "validate-publication",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\autumn.store.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\autumn.release.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:19.2290740+00:00",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "output": "{\r\n  \"status\": \"passed\",\r\n  \"command\": \"validate-publication\",\r\n  \"appId\": \"fixture.cli\",\r\n  \"version\": \"2.1.0-preview.1\",\r\n  \"channel\": \"preview\",\r\n  \"sha256\": \"efb5839fc108499a1ad043e42549c7ce920ba9af5afc5f2444647bea03b777ca\",\r\n  \"bytes\": 532,\r\n  \"publishing\": \"not_performed\",\r\n  \"liveGitHubRegistration\": \"not_verified\"\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "generate-release",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\packages\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication",
+        "--developer",
+        "fixture",
+        "--description",
+        "fixture"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:19.4024126+00:00",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output": "{\r\n  \"status\": \"failed\",\r\n  \"code\": \"CLI_OUTPUT_ALREADY_EXISTS\"\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "pack",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\project",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\packages"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:19.5169435+00:00",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "output": "{\r\n  \"status\": \"passed\",\r\n  \"command\": \"pack\",\r\n  \"packagePath\": \"D:\\\\\\u7279\\u6B8A\\\\chem\\\\artifacts\\\\builds\\\\T06-20261024-update-04\\\\test-runs\\\\d8328d4c8a4b41e6aa2c0269d6d4934f\\\\t04-tools\\\\fixture\\\\packages\\\\fixture.cli-2.1.0-preview.1-0a6222e193044b679ea71313a01998ba.autumn\",\r\n  \"appId\": \"fixture.cli\",\r\n  \"version\": \"2.1.0-preview.1\",\r\n  \"sha256\": \"efb5839fc108499a1ad043e42549c7ce920ba9af5afc5f2444647bea03b777ca\",\r\n  \"bytes\": 532\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "validate-publication",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\autumn.store.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\wrong-hash.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:19.6917438+00:00",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output": "{\r\n  \"status\": \"failed\",\r\n  \"code\": \"STORE_PACKAGE_METADATA_MISMATCH\"\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "validate-publication",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\wrong-store.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\autumn.release.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:19.8645684+00:00",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output": "{\r\n  \"status\": \"failed\",\r\n  \"code\": \"CLI_PUBLICATION_APP_ID_MISMATCH\"\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "validate-publication",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\autumn.store.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\autumn.release.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\disguised.exe"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:20.0320000+00:00",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output": "{\r\n  \"status\": \"failed\",\r\n  \"code\": \"PACKAGE_EXTENSION_INVALID\"\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "validate-publication",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\autumn.store.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\duplicate.json",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\publication\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:20.1836623+00:00",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output": "{\r\n  \"status\": \"failed\",\r\n  \"code\": \"STORE_RELEASE_INVALID\"\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "generate-release",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\packages\\fixture.cli-2.1.0-preview.1-bfe3dd041e80443d9b6e8b4ab43f4eb3.autumn",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\invalid-output",
+        "--developer",
+        "fixture",
+        "--description",
+        "fixture",
+        "--offline",
+        "maybe"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:20.3150177+00:00",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output": "{\r\n  \"status\": \"failed\",\r\n  \"code\": \"CLI_ARGUMENTS_INVALID\"\r\n}"
+    },
+    {
+      "executable": "<WORKSPACE>\\.tools\\dotnet\\dotnet.exe",
+      "arguments": [
+        "<WORKSPACE>\\tools\\AutumnOS.Developer.Cli\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.Developer.Cli.dll",
+        "pack",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\project",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\t04-tools\\fixture\\rejected"
+      ],
+      "working_directory": "<WORKSPACE>",
+      "started_utc": "2026-10-24T03:25:20.4237872+00:00",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "output": "{\r\n  \"status\": \"failed\",\r\n  \"code\": \"PACKAGE_FILE_TYPE_FORBIDDEN\"\r\n}"
+    }
+  ]
+}

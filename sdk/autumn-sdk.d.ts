@@ -30,7 +30,8 @@ export interface Capabilities {
   protocolVersion: 1;
   capabilities: ("lifecycle" | "permissions" | "identity.profile" | "saves" | "storage" | "preferences" | "files.open" | "files.save" | "appearance" | "notifications" | "shortcuts" | "widgets" | "links.internal")[];
   accountMode: "guest" | "account";
-  networkSandboxVerified: false;
+  /** True only after the host verified this live native WebView instance's network policy. */
+  networkSandboxVerified: boolean;
   limits: {
     maximumMessageBytes: 32768; maximumPendingRequests: 16; maximumRequestsPerMinute: 120; requestTimeoutMs: number;
     /** Pending IDs plus recent completed IDs; not a cumulative session request limit. */

@@ -11,7 +11,7 @@
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.3.2-t03-callback, )"
+          "AutumnOS.Contracts": "[0.5.1, )"
         }
       }
     },

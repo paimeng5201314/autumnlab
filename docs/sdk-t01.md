@@ -1,5 +1,7 @@
 # AutumnOS T01 SDK 0.1.0
 
+> 本页保留 T01 最小接口的历史子集，不是当前 SDK 0.3.0 的完整能力表。当前接口见 [版本文档](versions/0.5.1/sdk-reference.md)，当前宿主运行范围与逐项验证限制见 [运行隔离](runtime-isolation.md)。下文旧版的仅游客、仅内置入口和固定 `networkSandboxVerified:false` 不能用作当前启动规则。
+
 制作人：派蒙。适用于当前本地原生 WinUI/WebView2 技术验证版本；协议版本为 `1`。本页描述已经实现的最小接口，完整账户、商店、网络、SDK CLI 和发布能力仍按后续阶段实施。
 
 ## 接入与真实样例
@@ -71,6 +73,6 @@ SDK 的本地错误为 `AutumnSdkError`，具有 `code/message/retryable/correla
 
 传输替身仅存在于测试。schema 测试覆盖解析和核心正反例，不是完整 JSON Schema 引擎验收；TypeScript 编译验收未执行时保持 `not_run`。
 
-元素配对完全本地，无外部资源、网络请求、浏览器持久化或内联脚本。Shell 施加 CSP 和资源/导航限制，当前 capabilities 明确返回 `networkSandboxVerified:false`；这不是完整浏览器网络隔离认证。第三方通道、触控硬件、中文 IME、崩溃/缩放等最终结果以本地原生测试记录为准。
+元素配对完全本地，无外部资源、网络请求、浏览器持久化或内联脚本。当前 Shell 在第三方代码加载前施加原生策略并完成实例自检，`networkSandboxVerified` 是当前实例的实际 boolean，不能由包声明；关闭或崩溃撤销。支持范围和版本限制见 `runtime-isolation.md`。本地配置没有第三方网络代理；fetch/XHR、worker 和原生联网通道均不开放，联网需求仍待独立实现验收。第三方通道、触控硬件、中文 IME、崩溃/缩放等结果以对应本地原生测试记录为准。
 
 自动化目标：昵称 `#nickname`（名称“玩家昵称”）；保存 `#save-button`（“保存进度”）；读取 `#load-button`（“读取存档”）；重开 `#restart-button`（“重新开始 ↻”）；卡片 `#card-0` 至 `#card-11`，具有逐张动态 aria-label；结果 `#save-status` 与 `#round-status`。

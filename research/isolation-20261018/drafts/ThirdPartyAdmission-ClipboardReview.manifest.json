@@ -1,0 +1,22 @@
+{
+  "review_utc": "2026-10-18T04:47:32.0708393+00:00",
+  "scope": "read-only admission review; no new execution",
+  "files": [
+    {
+      "path": "src/AutumnOS.Shell/StoreApplicationsUi.cs",
+      "sha256": "4583a8f44539692056b1bfb6b67c600d4f92bc0a8d7636c872a31db84754ce75"
+    },
+    {
+      "path": "src/AutumnOS.Shell/WebAppHost.cs",
+      "sha256": "5e4fc66a43a578dfcb814a92359d9fde2305e7e4fccc15e7615b31690c9e28f2"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeIsolationPolicy.cs",
+      "sha256": "9a8a9d66a6aaebe5d14b44940c66d1dafd001769985a0df07cdc44b02d816cac"
+    },
+    {
+      "path": "artifacts/isolation-20261018/drafts/ThirdPartyAdmission-ClipboardReview.md",
+      "sha256": "f825d6309437365fc725febbc035dcaf9d882697e45a110284341f3b58085662"
+    }
+  ]
+}

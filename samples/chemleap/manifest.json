@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "appId": "cn.labchronicles.chemleap",
   "name": "ChemLeap · 化学跳一跳",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "runtime": "web",
   "entry": "index.html",
   "permissions": ["saves"],

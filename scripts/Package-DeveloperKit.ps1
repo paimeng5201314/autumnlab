@@ -35,6 +35,7 @@ try{
     }
     Copy-KitSource 'samples/template-shared' (Join-Path $Destination 'Templates/_shared')
     Copy-KitSource 'docs/versions/0.5.1' (Join-Path $Destination 'Docs/0.5.1')
+    Copy-Item -LiteralPath 'docs/runtime-isolation.md' -Destination (Join-Path $Destination 'runtime-isolation.md')
     Copy-KitSource 'tools/contract-checks' (Join-Path $Destination 'Tools/contract-checks')
     Copy-KitSource 'tests/contracts' (Join-Path $Destination 'Tests/contracts')
     foreach($sample in @(@{name='server';project='samples/server-identity/AutumnOS.ServerIdentity.Sample.csproj'},@{name='client';project='samples/native-identity-client/AutumnOS.NativeIdentity.Sample.csproj'})){

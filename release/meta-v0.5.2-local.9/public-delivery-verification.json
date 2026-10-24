@@ -1,0 +1,257 @@
+{
+  "status": "passed",
+  "kind": "public_delivery_path_redaction_and_archive_readback",
+  "build_id": "T06-20261024-update-04",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "files": 18,
+  "executable_sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+  "archive_name": "AutumnOS-0.5.2-local.9-public.zip",
+  "archive_bytes": 487913978,
+  "archive_sha256": "5f8e9db514a1f98fe93ff806c8214e68c977cf6fe01ddebd14a27a0776d5bbd2",
+  "original_archive_sha256": "9315d6c7bdddb5709b3e129f6313936fadd0124b96df565adfa64e240dd2444c",
+  "original_archive_unchanged": true,
+  "archive_readback": "passed",
+  "public_text_scan": "passed_narrow_pattern_check_not_full_secret_audit",
+  "changes": [
+    {
+      "path": "ACCEPTANCE.json",
+      "original_sha256": "8bcb9419fd29ad73c160eef1eda6157768fe5517988ef046b6e34fa954fa33da",
+      "public_sha256": "8bcb9419fd29ad73c160eef1eda6157768fe5517988ef046b6e34fa954fa33da",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "Reports/source-check.json",
+      "original_sha256": "97aae27459f814683fdab8ebb4a09d3de57f39283c65244a5b0b2de9902e0316",
+      "public_sha256": "97aae27459f814683fdab8ebb4a09d3de57f39283c65244a5b0b2de9902e0316",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "Reports/server-http-tests.json",
+      "original_sha256": "9edc4fb8f95947d0dfa322a5ddee002bdbbca5480e0ae63ac0784e3d52b9e895",
+      "public_sha256": "daedb9f1823a106a43ea67823c63929703783fded2bfa81543a4290bb867844b",
+      "changed": true,
+      "redactions": [
+        "<WORKSPACE>"
+      ]
+    },
+    {
+      "path": "Reports/sdk-tests.json",
+      "original_sha256": "d02b1b38b08ffa538fac740e83514391371cf6155d8e86d02d6b5a5c316f683e",
+      "public_sha256": "d02b1b38b08ffa538fac740e83514391371cf6155d8e86d02d6b5a5c316f683e",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "Reports/sample-tests.json",
+      "original_sha256": "1fc3c63a6c56979b7e8843c1ac87f7fe735869ba61bfa5f9a7d7d0d404f2005d",
+      "public_sha256": "1fc3c63a6c56979b7e8843c1ac87f7fe735869ba61bfa5f9a7d7d0d404f2005d",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "Reports/production-update-tools.json",
+      "original_sha256": "916b9827818580cc1bdbdb5308c9d0bd69605b33b0f1389bf8869341f912ecdc",
+      "public_sha256": "ef356322ad0b5a29bdd6f4d01fed1d9575d63a2398bd362b2c4ca32d60490905",
+      "changed": true,
+      "redactions": [
+        "<WORKSPACE>"
+      ]
+    },
+    {
+      "path": "Reports/package-single-file.json",
+      "original_sha256": "63bd417a2c065a171c14fd0f1d63eb985927a5d5f0ddbc9ea889ad3e52729488",
+      "public_sha256": "fde8f220ed21e19db98c05dd44d79cbac2567a7008f61b1a9b2cb1315ee98a6c",
+      "changed": true,
+      "redactions": [
+        "<WORKSPACE>",
+        "<WINDIR>"
+      ]
+    },
+    {
+      "path": "Reports/native-client-tests.json",
+      "original_sha256": "d73bfb843ba61a0af8c063c882469dfedcf5528585932395322d567566651b4b",
+      "public_sha256": "d73bfb843ba61a0af8c063c882469dfedcf5528585932395322d567566651b4b",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "Reports/machine-contracts.json",
+      "original_sha256": "66cef96daa1021e6b5fcbafd1062480e05c560a85615be9c8a2c39800764b749",
+      "public_sha256": "761cca24a2432533f6051e07d7697bfb1eab56dae71af34891193e7769c48815",
+      "changed": true,
+      "redactions": [
+        "<WORKSPACE>"
+      ]
+    },
+    {
+      "path": "Reports/chemleap-model-tests.json",
+      "original_sha256": "3fc88edf8e737d6eb95930d32a39a063be5a70bd5fb735af07c3908a58bcbba3",
+      "public_sha256": "19fc966d4400d3d05da448b94f82cd749f29a12083c5b25ff2cd75966b20fe41",
+      "changed": true,
+      "redactions": [
+        "<WORKSPACE>"
+      ]
+    },
+    {
+      "path": "Reports/build-result.json",
+      "original_sha256": "3e5a990f312a8185be52136741b9b82617a691cf5059d514f298f2cc8a79b8b5",
+      "public_sha256": "afeefdae8164be81838839d317e27641736d57f008f5eb783564f213f6b5ad7f",
+      "changed": true,
+      "redactions": [
+        "<WORKSPACE>"
+      ]
+    },
+    {
+      "path": "WINDOWS-STARTUP.md",
+      "original_sha256": "8be6d739d8eb3658c083f20bda8903cf4a52aeb0bcd61d3f50e15a28204fbf2e",
+      "public_sha256": "8be6d739d8eb3658c083f20bda8903cf4a52aeb0bcd61d3f50e15a28204fbf2e",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "START-HERE.md",
+      "original_sha256": "ea2f206460f1770951636733008500b6d393c78f953b55a48559d2246b66c588",
+      "public_sha256": "ea2f206460f1770951636733008500b6d393c78f953b55a48559d2246b66c588",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "RUNTIME-SCOPE.md",
+      "original_sha256": "40e2722b69cd1197024514eba51af0d1f19a4d63285b436a23337c551de27abc",
+      "public_sha256": "40e2722b69cd1197024514eba51af0d1f19a4d63285b436a23337c551de27abc",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "PRODUCTION-UPDATES.md",
+      "original_sha256": "821f3ad3e21fb01db18f2d7f0f01c44bc7940186ac78dbc778dd49dda2050d1b",
+      "public_sha256": "901d4a93c90824eb5bc54da0e29ed0c26cc4d8aa17a85b47cac642dc6d7e1054",
+      "changed": true,
+      "redactions": [
+        "<PRIVATE_SIGNING_DIRECTORY>"
+      ]
+    },
+    {
+      "path": "AutumnOS.exe",
+      "original_sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+      "public_sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+      "changed": false,
+      "redactions": []
+    },
+    {
+      "path": "Reports/t04-tools-tests.json",
+      "original_sha256": "bba65be8abc0fc8703113b11271840cd88901987beb63f119ce7a3f5cab2c833",
+      "public_sha256": "cafc716c09cc71cdf6ab864094db422c5e6fc5aad349e353318a951674d47abf",
+      "changed": true,
+      "redactions": [
+        "<WORKSPACE>"
+      ]
+    },
+    {
+      "path": "Reports/tests.json",
+      "original_sha256": "06594195436e68fe1333585be50d45626fb9163d7fc10d6bfa94020b28e03b42",
+      "public_sha256": "06594195436e68fe1333585be50d45626fb9163d7fc10d6bfa94020b28e03b42",
+      "changed": false,
+      "redactions": []
+    }
+  ],
+  "inventory": [
+    {
+      "path": "ACCEPTANCE.json",
+      "bytes": 1329,
+      "sha256": "8bcb9419fd29ad73c160eef1eda6157768fe5517988ef046b6e34fa954fa33da"
+    },
+    {
+      "path": "Reports/source-check.json",
+      "bytes": 8892,
+      "sha256": "97aae27459f814683fdab8ebb4a09d3de57f39283c65244a5b0b2de9902e0316"
+    },
+    {
+      "path": "Reports/server-http-tests.json",
+      "bytes": 1647,
+      "sha256": "daedb9f1823a106a43ea67823c63929703783fded2bfa81543a4290bb867844b"
+    },
+    {
+      "path": "Reports/sdk-tests.json",
+      "bytes": 211,
+      "sha256": "d02b1b38b08ffa538fac740e83514391371cf6155d8e86d02d6b5a5c316f683e"
+    },
+    {
+      "path": "Reports/sample-tests.json",
+      "bytes": 243,
+      "sha256": "1fc3c63a6c56979b7e8843c1ac87f7fe735869ba61bfa5f9a7d7d0d404f2005d"
+    },
+    {
+      "path": "Reports/production-update-tools.json",
+      "bytes": 15293,
+      "sha256": "ef356322ad0b5a29bdd6f4d01fed1d9575d63a2398bd362b2c4ca32d60490905"
+    },
+    {
+      "path": "Reports/package-single-file.json",
+      "bytes": 1410,
+      "sha256": "fde8f220ed21e19db98c05dd44d79cbac2567a7008f61b1a9b2cb1315ee98a6c"
+    },
+    {
+      "path": "Reports/native-client-tests.json",
+      "bytes": 474,
+      "sha256": "d73bfb843ba61a0af8c063c882469dfedcf5528585932395322d567566651b4b"
+    },
+    {
+      "path": "Reports/machine-contracts.json",
+      "bytes": 397,
+      "sha256": "761cca24a2432533f6051e07d7697bfb1eab56dae71af34891193e7769c48815"
+    },
+    {
+      "path": "Reports/chemleap-model-tests.json",
+      "bytes": 412,
+      "sha256": "19fc966d4400d3d05da448b94f82cd749f29a12083c5b25ff2cd75966b20fe41"
+    },
+    {
+      "path": "Reports/build-result.json",
+      "bytes": 999,
+      "sha256": "afeefdae8164be81838839d317e27641736d57f008f5eb783564f213f6b5ad7f"
+    },
+    {
+      "path": "WINDOWS-STARTUP.md",
+      "bytes": 4709,
+      "sha256": "8be6d739d8eb3658c083f20bda8903cf4a52aeb0bcd61d3f50e15a28204fbf2e"
+    },
+    {
+      "path": "START-HERE.md",
+      "bytes": 6671,
+      "sha256": "ea2f206460f1770951636733008500b6d393c78f953b55a48559d2246b66c588"
+    },
+    {
+      "path": "RUNTIME-SCOPE.md",
+      "bytes": 12976,
+      "sha256": "40e2722b69cd1197024514eba51af0d1f19a4d63285b436a23337c551de27abc"
+    },
+    {
+      "path": "PRODUCTION-UPDATES.md",
+      "bytes": 5959,
+      "sha256": "901d4a93c90824eb5bc54da0e29ed0c26cc4d8aa17a85b47cac642dc6d7e1054"
+    },
+    {
+      "path": "AutumnOS.exe",
+      "bytes": 488770298,
+      "sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11"
+    },
+    {
+      "path": "Reports/t04-tools-tests.json",
+      "bytes": 16589,
+      "sha256": "cafc716c09cc71cdf6ab864094db422c5e6fc5aad349e353318a951674d47abf"
+    },
+    {
+      "path": "Reports/tests.json",
+      "bytes": 128858,
+      "sha256": "06594195436e68fe1333585be50d45626fb9163d7fc10d6bfa94020b28e03b42"
+    }
+  ],
+  "private_key_accessed": false,
+  "user_data_accessed": false,
+  "product_execution": "not_run",
+  "uploaded": false,
+  "note": "Only textual local path references were redacted. Original product EXE bytes, report verdicts, failed and not_run results are preserved. This archive has a new hash; it is not the original local code-check ZIP."
+}

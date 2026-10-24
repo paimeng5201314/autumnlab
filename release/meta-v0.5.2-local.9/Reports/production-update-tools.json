@@ -1,0 +1,339 @@
+{
+  "schema_version": 1,
+  "build_id": "T06-20261024-update-04",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "status": "passed",
+  "phase": "final_binary_identity",
+  "failure": null,
+  "started_utc": "2026-10-24T03:25:20.9298182+00:00",
+  "finished_utc": "2026-10-24T03:25:23.6626420+00:00",
+  "kind": "real_local_update_CLI_synthetic_inert_payload_and_owned_DPAPI_key",
+  "total": 17,
+  "failed": 0,
+  "results": [
+    {
+      "name": "production_signer_creates_owned_DPAPI_key_and_public_only_trust",
+      "status": "passed"
+    },
+    {
+      "name": "existing_signing_identity_is_not_replaced",
+      "status": "passed"
+    },
+    {
+      "name": "public_export_preserves_the_same_signing_identity",
+      "status": "passed"
+    },
+    {
+      "name": "repeated_public_export_refuses_overwrite_and_preserves_bytes",
+      "status": "passed"
+    },
+    {
+      "name": "draft_has_zero_remote_identities_and_real_inert_payload_hash",
+      "status": "passed"
+    },
+    {
+      "name": "unbound_draft_cannot_be_signed_as_installable_metadata",
+      "status": "passed"
+    },
+    {
+      "name": "explicit_synthetic_release_binding_keeps_frozen_payload_bytes",
+      "status": "passed"
+    },
+    {
+      "name": "production_purpose_owned_key_signs_and_verifies_bound_fixture",
+      "status": "passed"
+    },
+    {
+      "name": "signing_requires_the_exact_expected_public_trust",
+      "status": "passed"
+    },
+    {
+      "name": "verification_rejects_an_unknown_signing_key",
+      "status": "passed"
+    },
+    {
+      "name": "verification_rejects_same_length_payload_tampering",
+      "status": "passed"
+    },
+    {
+      "name": "verification_rejects_modified_signed_manifest_bytes",
+      "status": "passed"
+    },
+    {
+      "name": "prepared_file_table_accepts_exact_owned_files_in_different_order",
+      "status": "passed"
+    },
+    {
+      "name": "prepared_file_table_rejects_an_extra_DLL",
+      "status": "passed"
+    },
+    {
+      "name": "prepared_file_table_rejects_a_missing_file",
+      "status": "passed"
+    },
+    {
+      "name": "prepared_file_table_rejects_a_hash_change_with_unchanged_length",
+      "status": "passed"
+    },
+    {
+      "name": "prepared_file_table_rejects_case_folded_duplicate_paths",
+      "status": "passed"
+    }
+  ],
+  "commands": [
+    {
+      "command": "init-production",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "error_code": null,
+      "arguments": [
+        "init-production",
+        "--private-directory",
+        "<owned-temporary-key>",
+        "--public-output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-public.json",
+        "--key-id",
+        "owned-cli-fixture-49bd021c21e7441aa06a4f53bedadab6"
+      ]
+    },
+    {
+      "command": "init-production",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "error_code": "UPDATE_SIGNER_DIRECTORY_EXISTS",
+      "arguments": [
+        "init-production",
+        "--private-directory",
+        "<owned-temporary-key>",
+        "--public-output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\must-not-create-on-repeat.json",
+        "--key-id",
+        "different-fixture-key"
+      ]
+    },
+    {
+      "command": "export-production-public",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "error_code": null,
+      "arguments": [
+        "export-production-public",
+        "--private-directory",
+        "<owned-temporary-key>",
+        "--public-output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-exported-public.json"
+      ]
+    },
+    {
+      "command": "export-production-public",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "error_code": "UPDATE_SIGNER_PUBLIC_EXISTS",
+      "arguments": [
+        "export-production-public",
+        "--private-directory",
+        "<owned-temporary-key>",
+        "--public-output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-exported-public.json"
+      ]
+    },
+    {
+      "command": "prepare-draft",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "error_code": null,
+      "arguments": [
+        "prepare-draft",
+        "--source",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\inert-source",
+        "--output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unbound-draft",
+        "--version",
+        "2.0.0",
+        "--build-id",
+        "owned-update-fixture",
+        "--channel",
+        "plus",
+        "--sequence",
+        "1",
+        "--key-id",
+        "owned-cli-fixture-49bd021c21e7441aa06a4f53bedadab6"
+      ]
+    },
+    {
+      "command": "sign-production",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "error_code": "UPDATE_PAYLOAD_INVALID",
+      "arguments": [
+        "sign-production",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unbound-draft\\autumn.update.draft.json",
+        "--private-directory",
+        "<owned-temporary-key>",
+        "--trust",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-public.json",
+        "--output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\must-not-sign-unbound.sig"
+      ]
+    },
+    {
+      "command": "bind-release",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "error_code": null,
+      "arguments": [
+        "bind-release",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unbound-draft\\autumn.update.draft.json",
+        "--payload",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unbound-draft\\AutumnOS-2.0.0-win-x64-payload.zip",
+        "--output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.json",
+        "--release-id",
+        "910001",
+        "--asset-id",
+        "920001",
+        "--release-tag",
+        "plus-v2.0.0"
+      ]
+    },
+    {
+      "command": "sign-production",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "error_code": null,
+      "arguments": [
+        "sign-production",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.json",
+        "--private-directory",
+        "<owned-temporary-key>",
+        "--trust",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-public.json",
+        "--output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.sig"
+      ]
+    },
+    {
+      "command": "verify",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "error_code": null,
+      "arguments": [
+        "verify",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.json",
+        "--signature",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.sig",
+        "--trust",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-public.json",
+        "--payload",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unbound-draft\\AutumnOS-2.0.0-win-x64-payload.zip"
+      ]
+    },
+    {
+      "command": "sign-production",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "error_code": "UPDATE_SIGNER_TRUST_MISMATCH",
+      "arguments": [
+        "sign-production",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.json",
+        "--private-directory",
+        "<owned-temporary-key>",
+        "--trust",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unknown-trust.json",
+        "--output",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\must-not-sign-unknown-trust.sig"
+      ]
+    },
+    {
+      "command": "verify",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "error_code": "UPDATE_UNKNOWN_KEY",
+      "arguments": [
+        "verify",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.json",
+        "--signature",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.sig",
+        "--trust",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unknown-trust.json",
+        "--payload",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unbound-draft\\AutumnOS-2.0.0-win-x64-payload.zip"
+      ]
+    },
+    {
+      "command": "verify",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "error_code": "UPDATE_PAYLOAD_HASH_MISMATCH",
+      "arguments": [
+        "verify",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.json",
+        "--signature",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.sig",
+        "--trust",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-public.json",
+        "--payload",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\modified-payload.zip"
+      ]
+    },
+    {
+      "command": "verify",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "error_code": "UPDATE_SIGNATURE_INVALID",
+      "arguments": [
+        "verify",
+        "--manifest",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\modified-manifest.json",
+        "--signature",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\autumn.update.sig",
+        "--trust",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\owned-public.json",
+        "--payload",
+        "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0\\unbound-draft\\AutumnOS-2.0.0-win-x64-payload.zip"
+      ]
+    }
+  ],
+  "tool_assemblies": [
+    {
+      "path": "tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Contracts.dll",
+      "sha256": "9a79e03f30e22bd2d6e35c04f6126779aafd0842e40d8df5be22ba426a77c7d6"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Packages.dll",
+      "sha256": "905ec21a9026feea49880a0e786735117ba000489a09f49ef400549d41d7f72a"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Storage.dll",
+      "sha256": "e0bab8e500379dcf4ddb14f80733488202350fa6da36cca59db5bcd2c749a5c4"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Store.dll",
+      "sha256": "0af871a9a323fae1d2ea434a9315207b98883c06d01eb967f9ea274f9043f89c"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.Cli.dll",
+      "sha256": "413d812144618b80357a0155524badcf988229262ea6452e61c063de1ee8cbb9"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.dll",
+      "sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970"
+    }
+  ],
+  "fixture_directory": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\test-runs\\d8328d4c8a4b41e6aa2c0269d6d4934f\\production-update-fixture-396becd262914300a9045c39599116d0",
+  "private_key_material_recorded": false,
+  "private_fixture_cleanup": "owned_temporary_DPAPI_fixture_removed",
+  "identifiers": "910001/920001 are synthetic test identities, never contacted or published",
+  "live_github": "not_run",
+  "GUI": "not_run",
+  "Windows_Authenticode": "not_run",
+  "real_production_key_used": false,
+  "uploaded": false
+}

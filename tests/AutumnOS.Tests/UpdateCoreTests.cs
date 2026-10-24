@@ -23,7 +23,14 @@ internal static class UpdateCoreTests
         yield return ("update.sha256_and_feed_key_never_replace_trust", () => Run(async f =>
         {
             var p = f.Add("1.1.0"); Reject(() => UpdateSignature.Verify(p.Bytes, p.Signature, new(new(1, 1, "production", [])), Now), "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED");
-            if (!UpdateTrustStore.IsTestBuild) Check(!UpdateTrustStore.FromEmbedded().IsConfigured);
+            if (!UpdateTrustStore.IsTestBuild)
+            {
+                var embedded = UpdateTrustStore.FromEmbedded();
+                Check(embedded.IsConfigured && embedded.Document.Purpose == "production");
+                Check(embedded.Document.Keys.All(k => k.PublicKeyPem.StartsWith("-----BEGIN PUBLIC KEY-----", StringComparison.Ordinal) &&
+                    !k.PublicKeyPem.Contains("PRIVATE", StringComparison.Ordinal)), "Only a production public root may enter ordinary builds.");
+                Reject(() => UpdateSignature.Verify(p.Bytes, p.Signature, embedded, Now), "UPDATE_UNKNOWN_KEY");
+            }
             await Task.CompletedTask;
         }));
         yield return ("update.unknown_revoked_and_old_root_rejected", () => Run(async f =>
@@ -100,8 +107,45 @@ internal static class UpdateCoreTests
         }));
         yield return ("update.production_no_root_still_reads_latest", () => Run(async f =>
         {
+            f.Add("1.1.0");
             using var service = f.Service(new(new(1, 1, "production", []))); await service.CheckAsync(false);
             Check(f.Requests.Any(u => u.AbsolutePath.EndsWith("/releases/latest", StringComparison.Ordinal)) && service.Snapshot.ErrorCode == "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" && service.Snapshot.Candidate is null);
+            Check(service.Snapshot.LastReleaseMetadataUtc == Now && service.Snapshot.ReleasesExamined == 1 && !service.Snapshot.CheckComplete && service.Snapshot.LastSuccessfulCheckUtc is null);
+        }));
+        foreach (var (fault, code) in new (string, string)[] {
+            ("missing-manifest", "UPDATE_MANIFEST_MISSING"), ("missing-signature", "UPDATE_SIGNATURE_MISSING"),
+            ("missing-payload", "UPDATE_PAYLOAD_MISSING"), ("duplicate-manifest", "UPDATE_ASSET_MISSING_OR_AMBIGUOUS"),
+            ("duplicate-signature", "UPDATE_ASSET_MISSING_OR_AMBIGUOUS"), ("duplicate-payload", "UPDATE_ASSET_MISSING_OR_AMBIGUOUS") })
+            yield return ("update.asset_role_specific_rejection_" + fault, () => Run(async f =>
+            {
+                f.Add("1.1.0", fault: fault); using var service = f.Service(); await service.CheckAsync(false);
+                Check(service.Snapshot.Candidate is null && service.Snapshot.ErrorCode == code, service.Snapshot.ErrorCode ?? "Missing rejection");
+                Check(service.Snapshot.LastReleaseMetadataUtc == Now && service.Snapshot.ReleasesExamined == 1 &&
+                    !service.Snapshot.CheckComplete && service.Snapshot.LastSuccessfulCheckUtc is null);
+                Check(f.Downloads.Snapshot().Count == 0, "An incomplete or duplicate asset set cannot start a payload download.");
+            }));
+        yield return ("update.real_executable_and_checksums_only_are_not_a_signed_update", () => Run(async f =>
+        {
+            f.Add("1.1.0", fault: "legacy-exe-only"); using var service = f.Service(); await service.CheckAsync(false);
+            Check(service.Snapshot.ErrorCode == "UPDATE_MANIFEST_MISSING" && service.Snapshot.Candidate is null && !service.Snapshot.CheckComplete);
+            Check(service.Snapshot.LastReleaseMetadataUtc == Now && service.Snapshot.ReleasesExamined == 1 && service.Snapshot.LastSuccessfulCheckUtc is null);
+            Check(f.Requests.All(u => !u.AbsolutePath.EndsWith("AutumnOS.exe", StringComparison.Ordinal) && !u.AbsolutePath.EndsWith("SHA256SUMS", StringComparison.Ordinal)) && f.Downloads.Snapshot().Count == 0,
+                "An executable and a digest file must not replace the signed install protocol.");
+        }));
+        yield return ("update.valid_signature_records_both_metadata_and_installable_check", () => Run(async f =>
+        {
+            f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false);
+            Check(service.Snapshot.CheckComplete && service.Snapshot.Candidate?.Manifest.Version == "1.1.0" && service.Snapshot.LastSuccessfulCheckUtc == Now);
+            Check(service.Snapshot.LastReleaseMetadataUtc == Now && service.Snapshot.ReleasesExamined == 1);
+        }));
+        yield return ("update.preview_metadata_success_requires_every_release_page", () => Run(async f =>
+        {
+            f.Add("1.1.0");
+            for (int i = 1; i < 100; i++) f.Releases.Add(new { draft = true });
+            f.Add("1.2.0-preview.1", 2); f.FailReleasePage = 2;
+            using var service = f.Service(); await service.CheckAsync(true);
+            Check(service.Snapshot.LastReleaseMetadataUtc is null && service.Snapshot.ReleasesExamined == 0 && !service.Snapshot.CheckComplete && service.Snapshot.LastSuccessfulCheckUtc is null);
+            Check(service.Snapshot.ErrorCode == "UPDATE_OFFLINE" && f.Requests.Any(u => u.Query.Contains("page=2", StringComparison.Ordinal)));
         }));
         yield return ("update.stable_follows_github_latest_only", () => Run(async f =>
         {
@@ -268,7 +312,9 @@ internal static class UpdateCoreTests
         {
             f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false); var success = service.Snapshot.LastSuccessfulCheckUtc;
             f.ConditionalResponses = true; await service.CheckAsync(false); Check(service.Snapshot.CheckComplete && service.Snapshot.Candidate is not null && f.NotModifiedResponses > 0);
+            Check(service.Snapshot.LastReleaseMetadataUtc == Now && service.Snapshot.ReleasesExamined == 1);
             f.Offline = true; await service.CheckAsync(false); Check(!service.Snapshot.CheckComplete && service.Snapshot.ErrorCode == "UPDATE_OFFLINE" && service.Snapshot.LastSuccessfulCheckUtc == success);
+            Check(service.Snapshot.LastReleaseMetadataUtc is null && service.Snapshot.ReleasesExamined == 0, "Offline retries cannot reuse a previous Release-list success.");
         }));
         yield return ("update.corrupt_cache_with_null_bytes_is_refetched", () => Run(async f =>
         {
@@ -323,7 +369,7 @@ internal static class UpdateCoreTests
         public List<Uri> Requests { get; } = [];
         public DownloadService Downloads { get; }
         public DateTimeOffset CurrentTime = Now;
-        public int DelayMilliseconds, NotModifiedResponses;
+        public int DelayMilliseconds, NotModifiedResponses, FailReleasePage;
         public bool ConditionalResponses, Offline, RateLimited;
         public Fixture() { Directory.CreateDirectory(Root); Downloads = new(Root, this, () => new(), hostUpdate: true); }
         public void Clear() { Releases.Clear(); Assets.Clear(); }
@@ -339,7 +385,19 @@ internal static class UpdateCoreTests
             Assets[tag + "/autumn.update.json"] = bytes; Assets[tag + "/autumn.update.sig"] = signature; Assets[tag + "/payload.zip"] = zip;
             object Asset(string name, byte[] content, long id) => new { id, name, size = content.Length + (fault == "size" && name == "payload.zip" ? 1 : 0), browser_download_url = "https://github.com/" + (fault == "source" ? "foreign/repo" : UpdateService.Repository) + "/releases/download/" + tag + "/" + name };
             var assets = new[] { Asset("autumn.update.json", bytes, sequence * 10 + 1), Asset("autumn.update.sig", signature, sequence * 10 + 2), Asset("payload.zip", zip, sequence * 10 + 3) };
-            Releases.Add(new { id = sequence + (fault == "release-id" ? 1 : 0), draft = false, tag_name = tag, prerelease = fault == "prerelease" || channel == "meta", published_at = "2020-01-01T00:00:00Z", body = "unit metadata", assets = fault == "missing" ? assets[..1] : assets });
+            object[] releaseAssets = fault switch {
+                "missing" => assets[..1], "missing-manifest" => assets[1..], "missing-signature" => [assets[0], assets[2]], "missing-payload" => assets[..2],
+                "duplicate-manifest" => [.. assets, assets[0]], "duplicate-signature" => [.. assets, assets[1]], "duplicate-payload" => [.. assets, assets[2]], _ => assets };
+            if (fault == "legacy-exe-only")
+            {
+                // Read a real, owned compiled PE as inert fixture bytes. It is never launched.
+                byte[] executable = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "AutumnOS.Tests.exe"));
+                Check(executable.Length > 2 && executable[0] == 'M' && executable[1] == 'Z');
+                byte[] sums = Encoding.ASCII.GetBytes(Hash(executable) + "  AutumnOS.exe\n");
+                Assets[tag + "/AutumnOS.exe"] = executable; Assets[tag + "/SHA256SUMS"] = sums;
+                releaseAssets = [Asset("AutumnOS.exe", executable, sequence * 10 + 4), Asset("SHA256SUMS", sums, sequence * 10 + 5)];
+            }
+            Releases.Add(new { id = sequence + (fault == "release-id" ? 1 : 0), draft = false, tag_name = tag, prerelease = fault == "prerelease" || channel == "meta", published_at = "2020-01-01T00:00:00Z", body = "unit metadata", assets = releaseAssets });
             return new(manifest, bytes, signature, zip);
         }
         public string SavePayload(Signed signed) { string path = Path.Combine(Root, "payload.zip"); File.WriteAllBytes(path, signed.Zip); return path; }
@@ -368,6 +426,7 @@ internal static class UpdateCoreTests
                 else
                 {
                     int page = int.Parse(url.Query.Split("page=", StringSplitOptions.None)[^1]);
+                    if (page == FailReleasePage) throw new HttpRequestException("isolated release page offline");
                     bytes = JsonSerializer.SerializeToUtf8Bytes(Releases.Skip((page - 1) * 100).Take(100).ToArray());
                 }
             }

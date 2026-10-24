@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AutumnOS 完整隔离负面样例</title>
+  <link rel="stylesheet" href="probe.css">
+</head>
+<body>
+  <main>
+    <h1>完整隔离负面样例</h1>
+    <p>制作人：派蒙。只向测试运行器自建的本机监听端口发出固定探针，不读取真实文件、账号或凭据。</p>
+    <label for="unsaved">隔离验证未保存内容</label><input id="unsaved" autocomplete="off">
+    <div>
+      <button id="network">尝试所有网络通道</button>
+      <button id="sdk">探测 SDK 权限与伪造</button>
+      <button id="permissions">探测浏览器权限拒绝</button>
+      <button id="storage">读取并标记浏览器存储</button>
+    </div>
+    <div>
+      <button id="popup">尝试隔离新窗口</button>
+      <button id="navigation">尝试隔离外部导航</button>
+      <button id="form-navigation">尝试隔离表单导航</button>
+      <button id="download">尝试隔离本地下载</button>
+      <button id="external">尝试未注册外部协议</button>
+      <button id="queue-close">排队请求后由宿主结束</button>
+      <button id="pending-permission">挂起真实授权请求</button>
+    </div>
+    <label for="results">完整隔离观测 JSON</label><textarea id="results" rows="18" readonly></textarea>
+    <div id="probe-elements" aria-hidden="true"></div>
+  </main>
+  <script src="config.js"></script>
+  <script src="probe.js"></script>
+</body>
+</html>

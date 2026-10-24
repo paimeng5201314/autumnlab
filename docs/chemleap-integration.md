@@ -1,5 +1,9 @@
 # ChemLeap 与 AutumnOS 接入
 
+2026-10-17 · 用户授权将游戏发布为0.1.1。此次统一manifest/界面版本标记和发布材料，玩法、物质表、SDK0.3.0及存档格式1保留；不把宿主隔离改动说成游戏内实现。发布包与旧版字节不同，0.1.0原生16/16、浏览器14/14仅为历史证据，不能直接算作0.1.1整包UI验收。宿主0.5.2-local.1仍为本地候选，普通游戏跳跃/SDK存档读回待桌面允许后验证。当前版本包通过真实CLI校验、逐项ZIP资源hash读回与模型50项测试；公开发布与下载结果见 artifacts/chemleap-011-publication-20261017/delivery.json。下文各日期保留历史状态，不重写旧版验证。
+
+2026-10-17新增宿主0.5.2-local.1接入：普通商店安装包现在走通用、每实例必需的原生隔离自检，通过后才执行游戏。可在商店打开 `paimeng5201314/chemleap`，安装0.1.0，再点桌面ChemLeap游玩；不需要开发者模式。此规则及失败关闭边界见[当前隔离实现](runtime-isolation.md)，实际普通下载/跳跃/SDK存档与最终EXE验证以 `artifacts/runtime-isolation-20261017/` 的交付报告为准。下文保留旧宿主及发布过程的历史记录，旧版门禁说明不代表新构建行为。游戏包未改字节，制作人仍为派蒙。
+
 制作人：派蒙。2026-10-17，游戏0.1.0，应用ID cn.labchronicles.chemleap。
 
 用户指定仓库为 <https://github.com/paimeng5201314/chemleap>。本轮匿名GitHub REST实际读取：repositoryId=1414175562，默认分支main只有10字节README.md，Topics与公开Releases均为空。只读报告在 artifacts/chemleap-20261017/repository-inspection-02/repository.json。此为读取时刻的远端状态；没有克隆、同步、覆盖或写入远端。
@@ -21,3 +25,17 @@
 本地材料准备后，公开上架需要将 autumn.store.json 放默认分支根，添加 autumnos-app 与 autumn-app-sq 或 autumn-app-pm 标签，每个独立应用版本的Release同时附 autumn.release.json 和其asset指定的.autumn。Tag为版本或v加版本，stable/preview和prerelease一致。大小、SHA-256、应用ID、版本、入口、权限、存档格式从真实包生成并匹配。
 
 本轮没有远端上传/发布授权，未执行上述远端操作。因此真实GitHub下载及普通商店运行保持 not_run；本地应用包与开发预览成绩另记。所有实际产物、构建源快照、原生/模型/浏览器证据和未验证项见 AUTUMNOS_PROGRESS.md 及 artifacts/chemleap-20261017。T01/T04/T06保持原状态，不以本游戏增量宣称全产品验收完成。
+
+## 2026-10-17 后续 GitHub 上传状态
+
+用户随后明确授权将 ChemLeap 上传到自己的上述仓库。本次实际上传21个游戏独立文件，main提交 c2d77bddc21e26fb90687af790fb27a489147703；保留原始提交与README标题。包和两项清单的远端HTTP200下载及官方三层校验通过，8运行文件与原生实测完全同字节。真实下载为 https://raw.githubusercontent.com/paimeng5201314/chemleap/c2d77bddc21e26fb90687af790fb27a489147703/dist/ChemLeap-0.1.0.autumn 。
+
+前文“没有远端上传/发布授权”是上传前的历史状态，现仅ChemLeap上传已获授权并完成。当前GitHub工具没有Release或Topics写接口且本机无可用认证，因此公开Release与商店Topics仍未配置；仓库dist直接下载不代替Release附件，普通社区运行门禁保持不变。仓库公开README/文档均写清限制。完整上传与远端核对记录见 artifacts/github-chemleap-20261017/github-result.json 和 HANDOFF.md；T01/T04/T06不因上传提升。
+
+## 2026-10-17 后续公开发布与商店检索完成
+
+用户进一步明确授权公开发布并完成本机GitHub设备授权。v0.1.0现已公开，Release ID415671030、非prerelease，独立附件.autumn/版本元数据/SHA256SUMS齐全；仓库已添加autumnos-app与autumn-app-sq。公开Release https://github.com/paimeng5201314/chemleap/releases/tag/v0.1.0 。此前“接口/认证缺失、未上架”的段落为历史状态，本次已完成这两项远端操作。
+
+实际HTTP200下载三个Release附件并核对摘要，官方三层校验通过；GitHub Topic和ChemLeap文本查询返回唯一目标；AutumnOS生产适配器真实发现与直达探针均passed，SQ、版本0.1.0、installable_release_count=1、can_install=true、warnings=[]。公开main说明提交c94fc4f6d86ece2e5c5162c15ad7f8376fcde443，游戏标签仍指向c2d77bddc21e26fb90687af790fb27a489147703，8个运行文件和实测包未变化。总报告artifacts/chemleap-store-publication-20261017/delivery.json。
+
+此次通过商店检索/发布元数据与公开附件下载验收，不代替完整商店UI安装或普通社区启动。既有安全门禁和完整阶段状态保持，已验证可玩路径仍是用户确认后的内部开发者预览。

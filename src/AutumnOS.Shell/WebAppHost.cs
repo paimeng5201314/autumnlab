@@ -11,11 +11,10 @@ using Microsoft.UI.Xaml.Input;
 
 namespace AutumnOS.Shell;
 
-/// <summary>Hosts the bundled T01 application. General third-party launch remains gated on network isolation verification.</summary>
+/// <summary>Hosts validated packages after this native WebView has passed its private isolation check.</summary>
 internal sealed class WebAppHost : IDisposable
 {
     private const string SampleId = "cn.labchronicles.elementpairs";
-    private const string ContentPolicy = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
     private readonly InstallationRoot root;
     private readonly Grid container;
     private readonly Func<string, CancellationToken, Task<bool>> requestPermission;
@@ -26,11 +25,17 @@ internal sealed class WebAppHost : IDisposable
     private WebView2? view;
     private System.Diagnostics.Process? keyboardBrowserProcess;
     private bool disposed;
+    private bool cleanupInProgress;
+    private bool cleanupPending;
     private bool startInProgress;
     private bool navigated;
     private bool desiredForeground = true;
     private string startupStage = "package";
     private int? profilePathLength;
+    private string? profileNamespace;
+    private string? browserVersion;
+    private BrowserProcessFailure? browserProcessFailure;
+    private sealed record BrowserProcessFailure(string Kind, string Reason, int ExitCode);
     private readonly Func<InstalledPackage, Func<RuntimeSession>, CancellationToken, RuntimeSessionServices>? serviceFactory;
     private readonly Action<Guid>? closeCapabilities;
     private readonly string? previewPackage;
@@ -40,7 +45,8 @@ internal sealed class WebAppHost : IDisposable
     private IDisposable? runtimeLease;
     private IDisposable? maintenanceGameLease;
     private readonly Action<WebAppHost>? retainForCleanup;
-    public bool ResourcesReleased => !startInProgress && runtimeLease is null && maintenanceGameLease is null;
+    public bool ResourcesReleased => disposed && !cleanupInProgress && !cleanupPending && !startInProgress && view is null && keyboardBrowserProcess is null &&
+        responseStreams.Count == 0 && resources.Count == 0 && runtimeLease is null && maintenanceGameLease is null;
     public bool IsDeveloperPreview => previewPackage is not null;
 
     // Capture the actual controller's browser process, with an open handle to prevent
@@ -99,7 +105,7 @@ internal sealed class WebAppHost : IDisposable
     private async Task StartCoreAsync(CancellationToken cancellationToken)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stopped.Token);
-        status("正在验证并安装内置 .autumn 应用…");
+        status("正在验证应用并准备运行环境…");
         string packagePath = previewPackage ?? Path.Combine(AppContext.BaseDirectory, "Samples", "element-pairs.autumn");
         string installRoot = previewPackage is null ? root.Directories["Apps"] : Path.Combine(root.Directories["Runtime"], "DeveloperPackages");
         ValidateManagedPath(Path.Combine(installRoot, "package-marker"));
@@ -118,6 +124,27 @@ internal sealed class WebAppHost : IDisposable
         if (registeredPackage is null && previewPackage is null && installed.Manifest.AppId != SampleId) throw new PackageException("PACKAGE_APP_ID_INVALID");
         if (registeredPackage is null) installed = installed with { HostSource = previewPackage is null ? "bundled:" + SampleId : "local-preview:" + installed.PackageSha256 };
         Installed = installed;
+        startupStage = "required_boundaries";
+        // The current native Job restriction still lets legacy browser copy/cut clear
+        // the clipboard. No clipboard-confined external-package host is implemented.
+        // This program's own installed content must match its fixed distribution asset
+        // as well as its host-created source binding. An app ID, bundled-looking manifest,
+        // report, developer mode, or GitHub/local package with the same bytes is no grant.
+        // Preserve the selected install/version and its runtime lease; never silently
+        // reinstall a different asset to make this check pass.
+        bool programContent = previewPackage is null && installed.HostSource == "bundled:" + SampleId &&
+            await Task.Run(() =>
+            {
+                string asset = Path.Combine(AppContext.BaseDirectory, "Samples", "element-pairs.autumn");
+                using FileStream assetLease = new(asset, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var distribution = PackageInstaller.Inspect(asset, linked.Token);
+                return installed.PackageSha256 == distribution.Sha256 &&
+                    installed.Manifest.AppId == distribution.Manifest.AppId && installed.Manifest.Version == distribution.Manifest.Version &&
+                    installed.Manifest.Entry == distribution.Manifest.Entry;
+            }, linked.Token);
+        linked.Token.ThrowIfCancellationRequested();
+        if (!programContent)
+            throw new PackageException("RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE");
         Session.Close();
         startupStage = "session";
         var services = serviceFactory?.Invoke(installed, () => Session, stopped.Token);
@@ -143,6 +170,12 @@ internal sealed class WebAppHost : IDisposable
         }
         Audit("installed");
         startupStage = "profile";
+        // WebView environment overrides can replace our fixed browser, profile or security options.
+        // Do not silently admit a differently configured controller into an isolated application.
+        foreach (string name in new[] { "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", "WEBVIEW2_USER_DATA_FOLDER" })
+            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(name)))
+                throw new PackageException("RUNTIME_ENVIRONMENT_OVERRIDE_BLOCKED");
+        RejectBrowserPolicyOverrides();
         // WebView2 creates additional native subdirectories below userDataFolder. The old account hash /
         // binding hash nesting exhausted MAX_PATH in ordinary deep portable directories on this machine.
         // InPrivate browser cache is not an app save: retain the old cache untouched and start a compact,
@@ -150,6 +183,7 @@ internal sealed class WebAppHost : IDisposable
         string profileRoot = WebViewProfileDirectory.ForBinding(root.Directories["Runtime"], services?.Account.AccountKey ?? "guest",
             services?.Application.BindingKey ?? RuntimeApplication.Hash("autumnos.legacy-bundled-profile.v1\0" + installed.Manifest.AppId));
         profilePathLength = profileRoot.Length;
+        profileNamespace = Path.GetFileName(profileRoot);
         ValidateManagedPath(Path.Combine(profileRoot, "profile-marker"));
         Directory.CreateDirectory(profileRoot);
         ValidateManagedPath(Path.Combine(profileRoot, "profile-marker"));
@@ -158,10 +192,21 @@ internal sealed class WebAppHost : IDisposable
         view.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((_, _) => Session.HostUserGesture()), true);
         view.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler((_, _) => Session.HostUserGesture()), true);
         container.Children.Add(view);
-        var environmentOptions = new CoreWebView2EnvironmentOptions { AdditionalBrowserArguments = "--force-renderer-accessibility" };
+        var environmentOptions = new CoreWebView2EnvironmentOptions
+        {
+            AdditionalBrowserArguments = RuntimeIsolationPolicy.BrowserArguments,
+            ExclusiveUserDataFolderAccess = true
+        };
         string fixedRuntime = Path.Combine(AppContext.BaseDirectory, "WebView2Runtime");
+        if (!File.Exists(Path.Combine(fixedRuntime, "msedgewebview2.exe"))) throw new PackageException("RUNTIME_ISOLATION_ENGINE_MISSING");
         startupStage = "environment";
-        var environment = await CoreWebView2Environment.CreateWithOptionsAsync(Directory.Exists(fixedRuntime) ? fixedRuntime : null, profileRoot, environmentOptions);
+        var environment = await CoreWebView2Environment.CreateWithOptionsAsync(fixedRuntime, profileRoot, environmentOptions);
+        browserVersion = environment.BrowserVersionString;
+        if (!RuntimeIsolationPolicy.IsSupportedBrowserVersion(browserVersion))
+            throw new PackageException("RUNTIME_ISOLATION_ENGINE_UNSUPPORTED");
+        if (!string.Equals(Path.GetFullPath(environment.UserDataFolder).TrimEnd(Path.DirectorySeparatorChar),
+            Path.GetFullPath(profileRoot).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase))
+            throw new PackageException("RUNTIME_ENVIRONMENT_OVERRIDE_BLOCKED");
         Audit("environment_created");
         linked.Token.ThrowIfCancellationRequested();
         startupStage = "controller";
@@ -174,6 +219,9 @@ internal sealed class WebAppHost : IDisposable
         var core = view.CoreWebView2;
         keyboardBrowserProcess = System.Diagnostics.Process.GetProcessById(checked((int)core.BrowserProcessId));
         _ = keyboardBrowserProcess.Handle;
+        if (!core.Profile.IsInPrivateModeEnabled || !string.Equals(keyboardBrowserProcess.MainModule?.FileName,
+            Path.Combine(fixedRuntime, "msedgewebview2.exe"), StringComparison.OrdinalIgnoreCase))
+            throw new PackageException("RUNTIME_ENVIRONMENT_OVERRIDE_BLOCKED");
         core.Settings.AreHostObjectsAllowed = false;
         core.Settings.AreDevToolsEnabled = false;
         core.Settings.AreDefaultContextMenusEnabled = false;
@@ -183,49 +231,94 @@ internal sealed class WebAppHost : IDisposable
         core.Settings.IsPasswordAutosaveEnabled = false;
         core.Settings.IsStatusBarEnabled = false;
         core.Settings.IsWebMessageEnabled = true;
-        core.PermissionRequested += (_, args) => { args.State = CoreWebView2PermissionState.Deny; args.Handled = true; };
+        core.PermissionRequested += (_, args) => { args.State = CoreWebView2PermissionState.Deny; args.Handled = true; Audit("browser_permission_denied"); };
         core.NewWindowRequested += (_, args) => { args.Handled = true; Audit("new_window_denied"); };
         core.DownloadStarting += (_, args) => { args.Cancel = true; Audit("download_denied"); };
         core.LaunchingExternalUriScheme += (_, args) => { args.Cancel = true; Audit("external_protocol_denied"); };
         var navigation = new RuntimeNavigationGuard(Session.PageUri);
+        var challenge = RuntimeIsolationPolicy.CreateChallenge(Session.Instance.Id.Value, Session.Origin);
+        var challengeNavigation = new RuntimeNavigationGuard(challenge.PageUri);
+        var challengeLoaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        bool checkingIsolation = true;
+        bool applicationDocumentCommitted = false;
         core.NavigationStarting += (_, args) =>
         {
-            if (!navigation.OnStarting(args.NavigationId, args.Uri)) { args.Cancel = true; Audit("navigation_denied"); }
+            var guard = checkingIsolation ? challengeNavigation : navigation;
+            if (!guard.OnStarting(args.NavigationId, args.Uri)) { args.Cancel = true; Audit("navigation_denied"); }
         };
         core.FrameNavigationStarting += (_, args) => { args.Cancel = true; Audit("frame_denied"); };
+        // A canceled request can still commit an engine error document (observed with
+        // Connection-Allowlist). Cancellation alone is not proof that the old document
+        // survived. Revoke its session before any later response/event can be delivered.
+        core.SourceChanged += (_, args) =>
+        {
+            if (!disposed && applicationDocumentCommitted && (args.IsNewDocument || core.Source != Session.PageUri))
+                Crash("document_binding_lost");
+        };
+        core.ContentLoading += (_, args) =>
+        {
+            if (disposed) return;
+            if (args.IsErrorPage) { Crash("error_document_blocked"); return; }
+            if (checkingIsolation) return;
+            if (applicationDocumentCommitted || core.Source != Session.PageUri)
+            { Crash("document_binding_lost"); return; }
+            applicationDocumentCommitted = true;
+        };
         core.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All, CoreWebView2WebResourceRequestSourceKinds.All);
         core.WebResourceRequested += (_, args) =>
         {
             byte[]? content = null;
             string mime = "text/plain; charset=utf-8";
-            if (!disposed && args.Request.Method == "GET" && args.Request.Uri.StartsWith(Session.Origin, StringComparison.Ordinal))
+            if (!disposed && responseStreams.Count < 512 && args.Request.Method == "GET" && args.Request.Uri.StartsWith(Session.Origin, StringComparison.Ordinal))
             {
                 string relative = args.Request.Uri[Session.Origin.Length..];
-                if (responseStreams.Count < 512 && resources.TryGetValue(relative, out content)) mime = MimeType(relative);
+                if (checkingIsolation)
+                {
+                    if (relative == challenge.DocumentPath) { content = Encoding.UTF8.GetBytes(challenge.DocumentHtml); mime = "text/html; charset=utf-8"; }
+                    else if (relative == challenge.ScriptPath) { content = Encoding.UTF8.GetBytes(challenge.Script); mime = "text/javascript; charset=utf-8"; }
+                }
+                else if (Session.NetworkSandboxVerified && resources.TryGetValue(relative, out content)) mime = MimeType(relative);
             }
             // Use only verified package resources, never a file:// or generic filesystem/network proxy.
             Stream? stream = content is null ? null : new MemoryStream(content, writable: false);
             if (stream is not null) responseStreams.Add(stream);
             args.Response = environment.CreateWebResourceResponse(stream?.AsRandomAccessStream(), content is null ? 403 : 200,
-                content is null ? "Forbidden" : "OK", "Content-Type: " + mime + "\r\nContent-Security-Policy: " + ContentPolicy
-                + "\r\nX-Content-Type-Options: nosniff\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nPermissions-Policy: camera=(), microphone=(), geolocation=(), usb=(), serial=(), bluetooth=(), display-capture=()");
+                content is null ? "Forbidden" : "OK", "Content-Type: " + mime + "\r\n" + RuntimeIsolationPolicy.ResponseHeaders);
         };
         core.NavigationCompleted += (_, args) =>
         {
             if (disposed) return;
+            if (checkingIsolation)
+            {
+                RuntimeNavigationCompletion probeCompletion = challengeNavigation.OnCompleted(args.NavigationId, args.IsSuccess);
+                if (probeCompletion != RuntimeNavigationCompletion.Ignored)
+                    challengeLoaded.TrySetResult(probeCompletion != RuntimeNavigationCompletion.InitialPageFailed && core.Source == challenge.PageUri);
+                return;
+            }
             RuntimeNavigationCompletion completion = navigation.OnCompleted(args.NavigationId, args.IsSuccess);
-            if (completion == RuntimeNavigationCompletion.Ignored) { Audit("navigation_completion_ignored"); return; }
+            if (completion == RuntimeNavigationCompletion.Ignored)
+            {
+                if (applicationDocumentCommitted && core.Source != Session.PageUri) Crash("document_binding_lost");
+                else Audit("navigation_completion_ignored");
+                return;
+            }
             if (completion == RuntimeNavigationCompletion.InitialPageFailed) { Crash("navigation_failed"); return; }
             navigated = true;
             if (desiredForeground) Foreground(); else Background();
             Audit("navigation_completed");
         };
-        core.ProcessFailed += (_, _) => Crash("process_failed");
+        core.ProcessFailed += (_, args) =>
+        {
+            // Fixed SDK enums and a numeric exit status only; descriptions/frames can
+            // contain application-controlled URLs or text and are never logged.
+            browserProcessFailure = new(args.ProcessFailedKind.ToString(), args.Reason.ToString(), args.ExitCode);
+            Crash("process_failed");
+        };
         core.WebMessageReceived += async (_, args) =>
         {
             try
             {
-                if (disposed || stopped.IsCancellationRequested) return;
+                if (disposed || stopped.IsCancellationRequested || checkingIsolation || !applicationDocumentCommitted || !Session.NetworkSandboxVerified || core.Source != Session.PageUri) return;
                 string source = args.Source;
                 string request = args.WebMessageAsJson;
                 if (Encoding.UTF8.GetByteCount(request) > RuntimeSession.MaximumMessageBytes) { Audit("message_too_large"); return; }
@@ -240,7 +333,8 @@ internal sealed class WebAppHost : IDisposable
                 catch (JsonException) { /* The gateway returns the finite invalid-request envelope. */ }
                 long revision = session.EventRevision;
                 string result = await session.HandleMessageAsync(source, request, requestPermission, stopped.Token);
-                if (disposed || stopped.IsCancellationRequested || session != Session || core.Source != session.PageUri) return;
+                if (disposed || stopped.IsCancellationRequested || session != Session || core.Source != session.PageUri)
+                { Audit("response_invalidated"); return; }
                 result = session.DeliverResponse(methodName, revision, result, core.PostWebMessageAsJson);
                 using var response = JsonDocument.Parse(result);
                 if (methodName.Length > 0)
@@ -259,8 +353,47 @@ internal sealed class WebAppHost : IDisposable
             }
             catch (Exception error) when (error is not OutOfMemoryException) { Audit("response_not_delivered"); }
         };
+        startupStage = "network_isolation";
+        Audit("isolation_check_started");
+        core.Navigate(challenge.PageUri);
+        if (!await challengeLoaded.Task.WaitAsync(TimeSpan.FromSeconds(8), linked.Token)) throw new PackageException("RUNTIME_ISOLATION_UNAVAILABLE");
+        RuntimeIsolationProof? proof = null;
+        var probeBudget = System.Diagnostics.Stopwatch.StartNew();
+        while (proof is null && probeBudget.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            linked.Token.ThrowIfCancellationRequested();
+            if (disposed || core.Source != challenge.PageUri) throw new PackageException("RUNTIME_ISOLATION_UNAVAILABLE");
+            string nativeResult = await core.ExecuteScriptAsync(challenge.ResultExpression)
+                .AsTask(linked.Token).WaitAsync(TimeSpan.FromSeconds(3), linked.Token);
+            if (disposed || core.Source != challenge.PageUri) throw new PackageException("RUNTIME_ISOLATION_UNAVAILABLE");
+            proof = RuntimeIsolationPolicy.ValidateNativeResult(challenge, nativeResult);
+            if (proof is null) await Task.Delay(50, linked.Token);
+        }
+        if (proof is null || !Session.ConfirmNetworkIsolation(proof)) throw new PackageException("RUNTIME_ISOLATION_UNAVAILABLE");
+        Audit("isolation_verified");
+        checkingIsolation = false;
         startupStage = "navigation";
         core.Navigate(Session.PageUri);
+    }
+
+    private static void RejectBrowserPolicyOverrides()
+    {
+        // WebView2 also accepts registry overrides for unpackaged hosts. Read only the
+        // documented current executable / wildcard selectors; never alter system policy.
+        string executable = Environment.ProcessPath ?? throw new PackageException("RUNTIME_ENVIRONMENT_OVERRIDE_BLOCKED");
+        foreach (var hive in new[] { Microsoft.Win32.RegistryHive.CurrentUser, Microsoft.Win32.RegistryHive.LocalMachine })
+        foreach (var registryView in new[] { Microsoft.Win32.RegistryView.Registry64, Microsoft.Win32.RegistryView.Registry32 })
+        {
+            using var rootKey = Microsoft.Win32.RegistryKey.OpenBaseKey(hive, registryView);
+            foreach (string setting in new[] { "AdditionalBrowserArguments", "BrowserExecutableFolder", "UserDataFolder" })
+            {
+                using var key = rootKey.OpenSubKey(@"Software\Policies\Microsoft\Edge\WebView2\" + setting, writable: false);
+                if (key is null) continue;
+                foreach (string selector in new[] { "*", Path.GetFileName(executable), executable })
+                    if (key.GetValue(selector, null, Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) is not null)
+                        throw new PackageException("RUNTIME_ENVIRONMENT_OVERRIDE_BLOCKED");
+            }
+        }
     }
 
     public void Foreground()
@@ -297,18 +430,19 @@ internal sealed class WebAppHost : IDisposable
     private void Crash(string reason)
     {
         if (disposed) return;
-        view?.Close();
-        container.Children.Clear();
-        view = null;
-        Session.MarkCrashed();
-        closeCapabilities?.Invoke(Session.Instance.Id.Value);
-        stopped.Cancel();
-        status("应用运行中断 · 返回主界面后可重新打开；已提交存档保留");
-        Audit(reason);
-        Dispose();
+        try
+        {
+            Session.MarkCrashed();
+            stopped.Cancel();
+            closeCapabilities?.Invoke(Session.Instance.Id.Value);
+            status("应用运行中断 · 返回主界面后可重新打开；已提交存档保留");
+            Audit(reason);
+        }
+        catch (Exception error) when (error is not OutOfMemoryException) { Audit(reason, error, "crash_cancellation"); }
+        finally { Dispose(); }
     }
 
-    private void Audit(string eventName, Exception? startupError = null)
+    private void Audit(string eventName, Exception? startupError = null, string? cleanupStage = null)
     {
         // Called only with fixed host events; no SDK payload, user content, URLs, or exception text.
         try
@@ -321,10 +455,25 @@ internal sealed class WebAppHost : IDisposable
             byte[] line = JsonSerializer.SerializeToUtf8Bytes(new { timestampUtc = DateTimeOffset.UtcNow,
                 buildId = BrandInfo.BuildId, instanceId = Session.Instance.Id.Value, eventName,
                 state = Session.Instance.State.ToString(), blocksMaintenance = Session.Instance.BlocksMaintenance,
+                appId = Installed?.Manifest.AppId, packageSha256 = Installed?.PackageSha256,
+                networkSandboxVerified = Session.NetworkSandboxVerified,
+                isolationPolicy = RuntimeIsolationPolicy.PolicyId,
+                browserVersion,
+                browserProcessFailure,
+                browserProcessId = keyboardBrowserProcess?.Id,
+                profileNamespace,
                 profilePathLength,
-                startupFailure = startupError is null ? null : new
+                cleanupFailure = cleanupStage is null || startupError is null ? null : new
+                {
+                    stage = cleanupStage,
+                    outer = ErrorMetadata(startupError),
+                    inner = startupError is AggregateException aggregate
+                        ? aggregate.Flatten().InnerExceptions.Take(8).Select(ErrorMetadata).ToArray() : Array.Empty<object>()
+                },
+                startupFailure = startupError is null || cleanupStage is not null ? null : new
                 {
                     stage = startupStage,
+                    missingBoundary = startupError is PackageException { Code: "RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE" } ? "clipboard" : null,
                     errorType = startupError switch
                     {
                         OperationCanceledException => "OperationCanceledException",
@@ -340,8 +489,15 @@ internal sealed class WebAppHost : IDisposable
             stream.Write(line);
             stream.WriteByte((byte)'\n');
         }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
+        // Diagnostic failures must not interrupt revocation or browser/resource cleanup.
+        catch (Exception error) when (error is not OutOfMemoryException) { }
     }
+
+    private static object ErrorMetadata(Exception error) => new
+    {
+        errorType = error.GetType().FullName,
+        hResult = "0x" + unchecked((uint)error.HResult).ToString("X8", System.Globalization.CultureInfo.InvariantCulture)
+    };
 
     private static string MimeType(string name) => Path.GetExtension(name) switch
     {
@@ -370,27 +526,60 @@ internal sealed class WebAppHost : IDisposable
 
     public void Dispose()
     {
-        if (!disposed) { disposed = true; stopped.Cancel(); }
-        keyboardBrowserProcess?.Dispose(); keyboardBrowserProcess = null;
+        if (ResourcesReleased || cleanupInProgress) return;
+        cleanupInProgress = true;
+        cleanupPending = true;
+        disposed = true;
+        bool failed = false;
+        void Release(string stage, Action release)
+        {
+            try { release(); }
+            catch (Exception error) when (error is not OutOfMemoryException)
+            {
+                failed = true;
+                Audit("resource_release_failed", error, stage);
+            }
+        }
         try
         {
-            view?.Close(); view = null;
-            Session.Close();
-            closeCapabilities?.Invoke(Session.Instance.Id.Value);
-            container.Children.Clear();
-            foreach (var stream in responseStreams) stream.Dispose();
-            responseStreams.Clear(); resources.Clear();
-            if (startInProgress) return;
-            Interlocked.Exchange(ref runtimeLease, null)?.Dispose();
-            Interlocked.Exchange(ref maintenanceGameLease, null)?.Dispose();
-            Audit("closed");
+            // End revokes the epoch/proof before invoking cancellation callbacks.
+            // Do this explicitly even when no account service is bound to stopped.
+            Release("session_end", Session.Close);
+            Release("stopped_cancel", () => stopped.Cancel());
+            Release("capabilities", () => closeCapabilities?.Invoke(Session.Instance.Id.Value));
+            // A failed cancellation must not prevent trying to close the actual browser.
+            Release("webview_close", () => { view?.Close(); view = null; });
+            Release("browser_handle", () => { keyboardBrowserProcess?.Dispose(); keyboardBrowserProcess = null; });
+            Release("container", () => container.Children.Clear());
+            Release("response_streams", () =>
+            {
+                foreach (var stream in responseStreams) stream.Dispose();
+                responseStreams.Clear(); resources.Clear();
+            });
+            if (!failed && !startInProgress)
+            {
+                Release("runtime_lease", () =>
+                {
+                    var current = runtimeLease;
+                    current?.Dispose();
+                    Interlocked.CompareExchange(ref runtimeLease, null, current);
+                });
+                if (!failed) Release("maintenance_lease", () =>
+                {
+                    var current = maintenanceGameLease;
+                    current?.Dispose();
+                    Interlocked.CompareExchange(ref maintenanceGameLease, null, current);
+                });
+                cleanupPending = failed;
+                if (!failed) Audit("closed");
+            }
+            if (failed)
+            {
+                // Retain before reporting UI status so a UI error cannot lose the retry.
+                retainForCleanup?.Invoke(this);
+                Release("cleanup_status", () => status("资源尚未释放，更新将继续等待；系统会重试资源清理。"));
+            }
         }
-        catch (Exception error) when (error is not OutOfMemoryException)
-        {
-            // Keep both leases until a later cleanup succeeds; a clicked End is not an exit.
-            Audit("resource_release_failed");
-            status("资源尚未释放，更新将继续等待；系统会重试资源清理。");
-            retainForCleanup?.Invoke(this);
-        }
+        finally { cleanupInProgress = false; }
     }
 }

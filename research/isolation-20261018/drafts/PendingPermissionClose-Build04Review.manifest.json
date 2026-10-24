@@ -1,0 +1,34 @@
+{
+  "review_utc": "2026-10-18T04:49:10.7735346+00:00",
+  "scope": "Build04 static review; not an execution result",
+  "files": [
+    {
+      "path": "src/AutumnOS.Shell/RuntimeServicesUi.cs",
+      "sha256": "b6aee00c1083a782503eebc76efda9b20706c3b8cd40ca5b6ee9b6ebd4fa3e39"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DeveloperPipeUi.cs",
+      "sha256": "d251d85edd46b3159548b282792bcfdb60ff8da2b528ea73e127dafd95ed9972"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DeveloperPreviewUi.cs",
+      "sha256": "c4a0aa49fe4177ff719804401b549afde28487c0d59caf04e77b030a58ed668d"
+    },
+    {
+      "path": "src/AutumnOS.Shell/WebAppHost.cs",
+      "sha256": "5e4fc66a43a578dfcb814a92359d9fde2305e7e4fccc15e7615b31690c9e28f2"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/probe.js",
+      "sha256": "e377ab66df6e94d9e9bc1f80a8e5a61fda2c9bb404b20492b61ce78dbac63e0a"
+    },
+    {
+      "path": "scripts/Test-RuntimeIsolationNative.ps1",
+      "sha256": "4f1f9eb5abd6785730a3113fc09b9f875f22a6b4b4b5cb74f1b25b83deaf0956"
+    },
+    {
+      "path": "artifacts/isolation-20261018/drafts/PendingPermissionClose-Build04Review.md",
+      "sha256": "908df4fe90c31b2799dd6b7120330c9cbf7c8704caa38d7bbbeb82bd8740a830"
+    }
+  ]
+}

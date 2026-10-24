@@ -20,6 +20,11 @@ public sealed partial class MainWindow
     private string? visibleManagedApp;
     private bool localInstallBusy;
 
+    // Only a source/runtime compatibility check. WebAppHost separately requires every
+    // implemented boundary before creating a browser; this cannot authorize execution.
+    private bool HasSupportedApplicationSource(InstalledApplication app) => app.Package.Manifest.Runtime == "web" &&
+        (app.Source.Kind is "github" or "local" or "bundled" || CanRunControlledPackage(app));
+
     private bool StoreHasInstalledRepository(long id) => applicationInstaller?.GetInstalled().Any(a => a.Source.RepositoryId == id && a.Source.Kind == (isolatedStoreSource ? "test" : "github")) == true;
     private bool StoreHasUpdate(CatalogDetails? details) => details?.Store is { } store && applicationInstaller?.Find(store.AppId) is { } app &&
         StoreSourceMatches(app, details.Repository) && details.Versions.Any(v => v.CanInstall && (!v.Prerelease || app.AllowPreview) && ApplicationInstallService.CompareVersions(v.Version, app.Package.Manifest.Version) > 0);
@@ -63,7 +68,7 @@ public sealed partial class MainWindow
             if (app.Source.RepositoryId is { } repoId && app.Source.RepositoryName?.Split('/') is [var owner, var name])
                 actions.Children.Add(ActionButton("查看版本", "InstalledVersions-" + app.AppId, async (_, _) => await OpenStoreDetailsAsync(new(repoId, owner, name, "", [], CatalogCategory.Unclassified))));
             row.Children.Add(actions);
-            if (app.Source.Kind is not "bundled" && !CanRunControlledPackage(app)) row.Children.Add(Paragraph("运行受限：一般第三方 WebView 网络隔离尚未完成验收。安装和版本管理可用，当前不会执行此应用代码。"));
+            if (!HasSupportedApplicationSource(app)) row.Children.Add(Paragraph("此来源当前不能运行；本地集成测试应用需要先开启对应测试源。"));
             storeBody.Children.Add(StoreCard(row));
         }
         if (installed.Length == 0) storeBody.Children.Add(StoreEmpty("还没有安装应用", "可以从发现页查看版本，或选择本地 .autumn。卸载不会删除你的存档。"));
@@ -159,10 +164,10 @@ public sealed partial class MainWindow
     {
         if (appId == "cn.labchronicles.elementpairs") { OnSample(StorePanel, new RoutedEventArgs()); return; }
         if (launching || accountOperation || aboutOpen || permissionService is null || CurrentIdentity.State == IdentitySessionState.SigningIn || applicationInstaller?.Find(appId) is not { } installed) return;
-        if (!CanRunControlledPackage(installed))
+        if (!HasSupportedApplicationSource(installed))
         {
             aboutOpen = true;
-            try { await new ContentDialog { XamlRoot = Root.XamlRoot, Title = "此应用暂时不能运行", Content = "应用已安装。一般第三方 WebView 的完整网络隔离仍待 T01 验证，当前保留运行限制。PM/SQ 分类不改变此限制。", CloseButtonText = "知道了" }.ShowAsync(); }
+            try { await new ContentDialog { XamlRoot = Root.XamlRoot, Title = "此应用暂时不能运行", Content = "此来源当前不可运行。本地集成测试应用需要开启对应测试源；商店分类不授予额外权限。", CloseButtonText = "知道了" }.ShowAsync(); }
             finally { aboutOpen = false; }
             return;
         }
@@ -177,7 +182,7 @@ public sealed partial class MainWindow
             try
             {
                 installed = applicationInstaller.Find(appId) ?? throw new PackageException("APP_NOT_INSTALLED");
-                if (!CanRunControlledPackage(installed)) throw new PackageException("RUNTIME_COMMUNITY_NOT_VERIFIED");
+                if (!HasSupportedApplicationSource(installed)) throw new PackageException("RUNTIME_SOURCE_UNAVAILABLE");
                 host = new WebAppHost(installationRoot, container, RequestSavePermissionAsync, _ => UpdateManagedBadges(), CreateRuntimeServices, CloseFileCapabilities,
                     sdkTrace: RecordDeveloperSdkCall, registeredPackage: installed.Package, runtimeLease: lease, maintenance: criticalOperations, retainForCleanup: RetainUnreleasedHost);
             }
@@ -188,7 +193,7 @@ public sealed partial class MainWindow
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             if (managedApplications.TryRemove(appId, out var failed)) { failed.Host.Dispose(); managedContent.Children.Remove(failed.Content); }
-            ShowPage(DesktopPanel); DesktopError.Title = "应用启动未完成"; DesktopError.Message = SafeStoreCode(error); DesktopError.IsOpen = true;
+            ShowPage(DesktopPanel); DesktopError.Title = "应用启动未完成"; DesktopError.Message = StoreError(SafeStoreCode(error)); DesktopError.IsOpen = true;
         }
         finally { launching = false; UpdateManagedBadges(); }
     }

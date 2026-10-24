@@ -16,6 +16,7 @@ public sealed partial class MainWindow
     private readonly CriticalOperationCoordinator criticalOperations = new();
     private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Instance, bool Write), FileCapabilityBroker> fileBrokers = [];
     private readonly TextBlock permissionResult = Paragraph("");
+    private Guid? activePreviewPermissionInstance;
 
     private IdentitySnapshot CurrentIdentity => identityService?.Snapshot ?? new(IdentitySessionState.SignedOut, "guest", 0, null, null, false, false, "AUTH_NOT_CONFIGURED");
     private RuntimeAccountContext AccountContext(CancellationToken token, Func<IDisposable>? lease = null)
@@ -88,7 +89,7 @@ public sealed partial class MainWindow
         {
             Account = account, Application = app, Permissions = permissions, Identity = identityOverride ?? (suppressIdentity ? null : identityService),
             GetProfile = profileOverride,
-            RequestPermission = RequestApplicationPermissionAsync, Desktop = desktopExtensions,
+            RequestPermission = (prompt, ct) => RequestApplicationPermissionAsync(session().Instance.Id.Value, prompt, ct), Desktop = desktopExtensions,
             Declarations = declarations is null ? new([], [], []) : new(
                 declarations.Shortcuts.Select(s => new DesktopShortcut(s.Id, s.Title, s.Action)).ToArray(), declarations.Links,
                 declarations.Widgets.Select(w => new DesktopWidget(w.Id, w.Title)).ToArray()),
@@ -183,21 +184,27 @@ public sealed partial class MainWindow
         return completion.Task;
     }
 
-    private Task<bool> RequestApplicationPermissionAsync(RuntimePermissionPrompt prompt, CancellationToken token)
+    private Task<bool> RequestApplicationPermissionAsync(Guid instanceId, RuntimePermissionPrompt prompt, CancellationToken token)
     {
         var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         if (!DispatcherQueue.TryEnqueue(async () =>
         {
-            bool foreground = appHost?.Session.Instance.State == AppLifecycleState.Foreground && appHost.Session.Instance.Identity.AppId == prompt.AppId ||
-                developerPreviewHost?.Session.Instance.State == AppLifecycleState.Foreground && developerPreviewHost.Session.Instance.Identity.AppId == prompt.AppId ||
-                managedApplications.TryGetValue(prompt.AppId, out var managed) && managed.Host.Session.Instance.State == AppLifecycleState.Foreground;
+            bool foreground = appHost?.Session.Instance.Id.Value == instanceId && appHost.Session.Instance.State == AppLifecycleState.Foreground ||
+                developerPreviewHost?.Session.Instance.Id.Value == instanceId && developerPreviewHost.Session.Instance.State == AppLifecycleState.Foreground ||
+                managedApplications.TryGetValue(prompt.AppId, out var managed) && managed.Host.Session.Instance.Id.Value == instanceId && managed.Host.Session.Instance.State == AppLifecycleState.Foreground;
             if (token.IsCancellationRequested || aboutOpen || !foreground) { completion.TrySetResult(false); return; }
             aboutOpen = true;
+            // Only this exact preview's live permission dialog may be canceled through
+            // its existing scoped Close command. Other modal operations stay exclusive.
+            activePreviewPermissionInstance = developerPreviewHost is { } preview &&
+                preview.Session.Instance.Id.Value == instanceId &&
+                preview.Session.Instance.State == AppLifecycleState.Foreground
+                ? preview.Session.Instance.Id.Value : null;
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = $"允许 {prompt.DisplayName} 使用{PermissionTitle(prompt.Permission)}？", Content = $"来源：{prompt.Source}\n用途：{prompt.Purpose}\n请求字段：{string.Join("、", prompt.Fields)}\n\n仅对当前账号与此应用来源授权。你可以在设置中撤销；已经交给应用的资料无法收回。", PrimaryButtonText = "允许", CloseButtonText = "拒绝", DefaultButton = ContentDialogButton.Close };
             using var cancellation = token.Register(() => DispatcherQueue.TryEnqueue(dialog.Hide));
             try { completion.TrySetResult(await dialog.ShowAsync() == ContentDialogResult.Primary && !token.IsCancellationRequested); }
             catch (Exception) { completion.TrySetResult(false); }
-            finally { aboutOpen = false; }
+            finally { activePreviewPermissionInstance = null; aboutOpen = false; }
         })) completion.TrySetResult(false);
         return completion.Task;
     }

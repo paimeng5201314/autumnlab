@@ -11,15 +11,15 @@
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.4.1-desktop-multitask, )"
+          "AutumnOS.Contracts": "[0.5.1, )"
         }
       },
       "autumnos.store": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.4.1-desktop-multitask, )",
-          "AutumnOS.Packages": "[0.4.1-desktop-multitask, )",
-          "AutumnOS.Storage": "[0.4.1-desktop-multitask, )"
+          "AutumnOS.Contracts": "[0.5.1, )",
+          "AutumnOS.Packages": "[0.5.1, )",
+          "AutumnOS.Storage": "[0.5.1, )"
         }
       }
     },

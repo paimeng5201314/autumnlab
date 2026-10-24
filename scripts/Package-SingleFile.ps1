@@ -77,6 +77,7 @@ using System.Reflection;
 namespace AutumnOS.SingleFile { internal static class BundleIdentity {
 internal const string PayloadSha256 = "$payloadHash";
 internal const string BuildId = "$BuildId";
+internal const string SourceSnapshotId = "$($build.source_snapshot_id)";
 } }
 "@|Set-Content -LiteralPath $metadata -Encoding utf8NoBOM
 $framework=Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319'
@@ -84,6 +85,8 @@ $compiler=Join-Path $framework 'csc.exe'
 if(-not(Test-Path -LiteralPath $compiler)){throw 'Missing inbox .NET Framework compiler; do not install global components.'}
 $stub=Join-Path $run 'bootstrap.exe'
 $arguments=@('/nologo','/utf8output','/target:winexe','/platform:x64','/optimize+','/warnaserror+',"/out:$([IO.Path]::GetFullPath($stub))","/resource:$([IO.Path]::GetFullPath($index)),AutumnOS.BundleInventory",'/reference:System.dll','/reference:System.Core.dll',"/reference:$([IO.Path]::GetFullPath((Join-Path $framework 'System.IO.Compression.dll')))","/reference:$([IO.Path]::GetFullPath((Join-Path $framework 'System.Runtime.Serialization.dll')))",'/reference:System.Windows.Forms.dll','/reference:System.Drawing.dll',[IO.Path]::GetFullPath((Join-Path $ProjectRoot 'src/AutumnOS.SingleFile/Program.cs')),[IO.Path]::GetFullPath($metadata))
+$arguments += [IO.Path]::GetFullPath((Join-Path $ProjectRoot 'src/AutumnOS.SingleFile/StartupFailure.cs'))
+$arguments += [IO.Path]::GetFullPath((Join-Path $ProjectRoot 'src/AutumnOS.SingleFile/BundleFooter.cs'))
 & $compiler @arguments 2>&1|Tee-Object -FilePath (Join-Path $run 'compile.log')|Out-Host
 if($LASTEXITCODE -ne 0){throw 'Single-file bootstrap compilation failed.'}
 $executable=Join-Path $destination 'AutumnOS.exe'

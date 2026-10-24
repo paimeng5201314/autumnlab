@@ -1,3 +1,5 @@
+> 版本说明（2026-10-17）：本页保留 0.5.1 历史。当前宿主 `0.5.2-local.1` 已实现普通应用每实例原生隔离自检，验收范围与待验证项见 [运行隔离](../../runtime-isolation.md)；SDK 仍为 `0.3.0`、协议仍为 `1`。
+
 # 产品范围与版本
 
 适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。Lab Chronicles AutumnOS 是Windows原生桌面及内部应用宿主；用户入口是 `AutumnOS.exe`，业务进程为同根 `AutumnOS.Client.exe`，安全更新使用独立 `AutumnOS.Updater.exe`。完整目录是运行单位，单拷EXE不构成交付。

@@ -17,6 +17,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using AutumnOS.Startup;
 
 namespace AutumnOS.SingleFile
 {
@@ -33,9 +34,11 @@ namespace AutumnOS.SingleFile
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             string data = null;
+            string stage = "validate_arguments";
             try
             {
                 if (args.Length != 0) throw new IOException("PORTABLE_ARGUMENT_REJECTED");
+                stage = "prepare_payload";
                 string executable = Assembly.GetExecutingAssembly().Location;
                 string entry = Path.GetDirectoryName(executable);
                 Plain(executable);
@@ -88,9 +91,11 @@ namespace AutumnOS.SingleFile
                 launch.UseShellExecute = false;
                 launch.WorkingDirectory = product;
                 launch.EnvironmentVariables["DOTNET_BUNDLE_EXTRACT_BASE_DIR"] = clr;
+                stage = "bootstrap_start";
                 using (var child = Process.Start(launch))
                 {
                     if (child == null) throw new IOException("PORTABLE_CLIENT_START_FAILED");
+                    stage = "bootstrap_wait";
                     Console.Error.WriteLine("AUTUMNOS_SINGLE_FILE role=child pid=" + Process.GetCurrentProcess().Id + " child=" + child.Id + " startTicks=" + child.StartTime.ToUniversalTime().Ticks);
                     child.WaitForExit();
                     return child.ExitCode;
@@ -99,9 +104,12 @@ namespace AutumnOS.SingleFile
             catch (OperationCanceledException) { return 1; }
             catch (Exception error)
             {
-                string code = error is IOException && error.Message.StartsWith("PORTABLE_", StringComparison.Ordinal) ? error.Message : "PORTABLE_START_FAILED";
-                // No arbitrary exception/path/account text in a user-facing error or report.
-                MessageBox.Show(code + "\n用户数据已保留。请确认 EXE 位于可写目录，且程序文件完整。", Caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var failure = StartupFailure.Create(error, "single_file", stage, "AutumnOS.exe",
+                    BundleIdentity.BuildId, BundleIdentity.SourceSnapshotId);
+                string report = failure.TryWrite(data);
+                try { Console.Error.WriteLine("AUTUMNOS_SINGLE_FILE role=failed stage=" + stage + " code=" + failure.Code + " native=" + failure.NativeErrorCode + " hresult=" + failure.HResult); }
+                catch (Exception outputError) { if (outputError is OutOfMemoryException) throw; }
+                MessageBox.Show(failure.Message(report), Caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return 41;
             }
         }
@@ -113,12 +121,8 @@ namespace AutumnOS.SingleFile
             // Failed/cancelled staging is retained under Data; never delete unknown files or saves.
             using (var input = new FileStream(executable, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                if (input.Length < 64) throw new IOException("PORTABLE_PAYLOAD_INVALID");
-                input.Position = input.Length - 64;
-                byte[] footer = new byte[64]; ReadExactly(input, footer, 64);
-                long offset = BitConverter.ToInt64(footer, 0), length = BitConverter.ToInt64(footer, 8);
-                if (Encoding.ASCII.GetString(footer, 48, 16) != "AUTUMNOSBUNDLE01" || offset < 1024 || length <= 0 || offset > input.Length - 64 || length != input.Length - 64 - offset || Hex(footer, 16, 32) != BundleIdentity.PayloadSha256)
-                    throw new IOException("PORTABLE_PAYLOAD_INVALID");
+                long offset, length;
+                BundleFooter.Read(input, BundleIdentity.PayloadSha256, out offset, out length);
                 using (var region = new RegionStream(input, offset, length))
                 {
                     if (HashStream(region, delegate(long read) { progress.Report(0, read, length); }) != BundleIdentity.PayloadSha256) throw new IOException("PORTABLE_PAYLOAD_HASH_FAILED");

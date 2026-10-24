@@ -8,7 +8,7 @@
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.2.2-t02-single-instance, )"
+          "AutumnOS.Contracts": "[0.5.1, )"
         }
       }
     },

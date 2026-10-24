@@ -70,7 +70,8 @@ public sealed class UpdateService : IDisposable
             snapshot = snapshot with { Channel = enabled ? "meta" : "plus", PreviewEnabled = enabled,
                 State = blockPending ? UpdateState.Idle : snapshot.State, Staged = blockPending ? null : snapshot.Staged,
                 Candidate = !enabled && snapshot.Candidate?.Manifest.Channel == "meta" ? null : snapshot.Candidate,
-                ErrorCode = blockPending ? "UPDATE_PREVIEW_PLAN_CANCELLED" : null, CheckComplete = false, ShouldPrompt = false };
+                ErrorCode = blockPending ? "UPDATE_PREVIEW_PLAN_CANCELLED" : null, CheckComplete = false, ShouldPrompt = false,
+                LastReleaseMetadataUtc = null, ReleasesExamined = 0 };
             if (blockPending) try { DeletePending(); } catch (Exception ex) when (Handled(ex)) { snapshot = snapshot with { ErrorCode = "UPDATE_PREVIEW_PLAN_CANCELLED_PENDING_CLEANUP" }; }
         }
         Notify();
@@ -113,21 +114,25 @@ public sealed class UpdateService : IDisposable
     {
         await operation.WaitAsync(token).ConfigureAwait(false);
         int captured; bool preview; StagedUpdate? staged;
-        lock (gate) { captured = generation; preview = persistent.Preview; staged = snapshot.Staged; snapshot = snapshot with { LastCheckUtc = clock(), CheckComplete = false }; }
+        lock (gate) { captured = generation; preview = persistent.Preview; staged = snapshot.Staged; snapshot = snapshot with { LastCheckUtc = clock(), CheckComplete = false,
+            LastReleaseMetadataUtc = null, ReleasesExamined = 0 }; }
         try
         {
             Publish(UpdateState.Checking, null, []); CheckClock();
-            List<UpdateCandidate> candidates = []; List<string> warnings = []; bool complete = true;
+            List<UpdateCandidate> candidates = []; List<string> warnings = []; bool complete = true, releaseMetadataComplete = true;
+            HashSet<long> examinedReleases = [];
             if (!trust.IsConfigured) warnings.Add("UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED");
             try
             {
                 using var latest = JsonDocument.Parse(await metadata.GetAsync(Api("/latest"), GitHubRequestKind.Api, 4 * 1024 * 1024, token).ConfigureAwait(false));
                 var choice = await ReadChoiceAsync(latest.RootElement, UpdateSelectionMode.Upgrade, token).ConfigureAwait(false);
                 if (latest.RootElement.GetProperty("draft").GetBoolean() || choice.IsPreview) throw new UpdateException("UPDATE_LATEST_NOT_STABLE");
+                if (choice.ReleaseId <= 0 || choice.DisabledReason == "UPDATE_RELEASE_INVALID") throw new UpdateException("UPDATE_RELEASE_INVALID");
+                examinedReleases.Add(choice.ReleaseId);
                 if (choice.CanInstall) candidates.Add(choice.Candidate!);
                 else if (choice.DisabledReason is not ("UPDATE_CURRENT_VERSION" or "UPDATE_UPGRADE_REQUIRES_NEWER")) { warnings.Add(choice.DisabledReason ?? "UPDATE_RELEASE_INVALID"); complete = false; }
             }
-            catch (UpdateException ex) when (ex.Code == "UPDATE_NOT_FOUND") { warnings.Add("UPDATE_LATEST_NOT_FOUND"); complete = false; }
+            catch (UpdateException ex) when (ex.Code == "UPDATE_NOT_FOUND") { warnings.Add("UPDATE_LATEST_NOT_FOUND"); complete = false; releaseMetadataComplete = false; }
             if (preview)
             {
                 HashSet<long> seen = []; bool ended = false;
@@ -140,6 +145,8 @@ public sealed class UpdateService : IDisposable
                         if (release.GetProperty("draft").GetBoolean() || !release.GetProperty("prerelease").GetBoolean()) continue;
                         if (!seen.Add(release.GetProperty("id").GetInt64())) continue;
                         var choice = await ReadChoiceAsync(release, UpdateSelectionMode.Upgrade, token).ConfigureAwait(false);
+                        if (choice.ReleaseId <= 0 || choice.DisabledReason == "UPDATE_RELEASE_INVALID") throw new UpdateException("UPDATE_RELEASE_INVALID");
+                        examinedReleases.Add(choice.ReleaseId);
                         if (choice.CanInstall) candidates.Add(choice.Candidate!);
                         else if (choice.DisabledReason is not ("UPDATE_CURRENT_VERSION" or "UPDATE_UPGRADE_REQUIRES_NEWER")) { warnings.Add(choice.DisabledReason ?? "UPDATE_RELEASE_INVALID"); complete = false; }
                     }
@@ -156,7 +163,10 @@ public sealed class UpdateService : IDisposable
                 snapshot = snapshot with { State = staged is not null ? UpdateState.Staged : selected is not null ? UpdateState.Available : complete ? UpdateState.NoCompatibleUpdate : UpdateState.Error,
                     Candidate = staged?.Candidate ?? selected, Staged = staged, BytesReceived = 0, TotalBytes = selected?.Manifest.Payload.Bytes ?? 0,
                     ErrorCode = !trust.IsConfigured ? "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" : complete ? null : warnings.FirstOrDefault(), Warnings = warnings.Distinct().Take(50).ToArray(),
-                    CheckComplete = complete, LastSuccessfulCheckUtc = persistent.LastSuccessfulCheckUtc, RetryAfterUtc = persistent.RetryAfterUtc, ShouldPrompt = staged is null && ShouldPrompt(selected) };
+                    CheckComplete = complete, LastSuccessfulCheckUtc = persistent.LastSuccessfulCheckUtc, RetryAfterUtc = persistent.RetryAfterUtc, ShouldPrompt = staged is null && ShouldPrompt(selected),
+                    // Reading the public Release records is independent of trusting their
+                    // install assets. This evidence is per-check, never a cached success.
+                    LastReleaseMetadataUtc = releaseMetadataComplete ? clock() : null, ReleasesExamined = releaseMetadataComplete ? examinedReleases.Count : 0 };
             }
             Notify();
         }
@@ -208,14 +218,15 @@ public sealed class UpdateService : IDisposable
             if (release.GetProperty("draft").GetBoolean()) throw new UpdateException("UPDATE_RELEASE_WITHDRAWN");
             if (id <= 0 || tag.Length is < 1 or > 200 || tag.Any(char.IsControl)) throw new UpdateException("UPDATE_RELEASE_INVALID");
             var assets = release.GetProperty("assets").EnumerateArray().ToArray();
-            var descriptor = Asset(assets, "autumn.update.json", tag); var signatureAsset = Asset(assets, "autumn.update.sig", tag);
+            var descriptor = Asset(assets, "autumn.update.json", tag, "UPDATE_MANIFEST_MISSING");
+            var signatureAsset = Asset(assets, "autumn.update.sig", tag, "UPDATE_SIGNATURE_MISSING");
             byte[] bytes = await metadata.GetAsync(descriptor.Url, GitHubRequestKind.Asset, UpdateManifestCodec.MaximumManifestBytes, token).ConfigureAwait(false);
             byte[] signature = await metadata.GetAsync(signatureAsset.Url, GitHubRequestKind.Asset, 16 * 1024, token).ConfigureAwait(false);
             if (descriptor.Bytes != bytes.Length || signatureAsset.Bytes != signature.Length) throw new UpdateException("UPDATE_ASSET_SIZE_MISMATCH");
             // Historical discovery verifies identity but grants no replay exemption. Consent and install enforce the ledger.
             var manifest = UpdateSignature.Verify(bytes, signature, trust, clock());
             if (manifest.Payload.ReleaseId != id || (manifest.Channel == "meta") != preview || !TagMatches(manifest, tag)) throw new UpdateException("UPDATE_RELEASE_MANIFEST_MISMATCH");
-            var payload = Asset(assets, manifest.Payload.Asset, tag);
+            var payload = Asset(assets, manifest.Payload.Asset, tag, "UPDATE_PAYLOAD_MISSING");
             if (payload.Id != manifest.Payload.AssetId || payload.Bytes != manifest.Payload.Bytes) throw new UpdateException("UPDATE_ASSET_IDENTITY_MISMATCH");
             var candidate = new UpdateCandidate(id, tag, notes, manifest, payload.Url, payload.Id, bytes, signature, published, name);
             return choice with { Version = manifest.Version, Candidate = candidate, DisabledReason = Ineligible(candidate, mode) };
@@ -434,9 +445,10 @@ public sealed class UpdateService : IDisposable
     private static string Digest(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
     private static Uri Api(string suffix) => new($"https://api.github.com/repos/{Repository}/releases{suffix}");
     private static void ValidateList(JsonElement value) { if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() > 100) throw new UpdateException("UPDATE_RELEASE_LIST_INVALID"); }
-    private static (long Id, long Bytes, Uri Url) Asset(JsonElement[] assets, string name, string tag)
+    private static (long Id, long Bytes, Uri Url) Asset(JsonElement[] assets, string name, string tag, string missingCode)
     {
         var matching = assets.Where(a => a.GetProperty("name").GetString() == name).ToArray();
+        if (matching.Length == 0) throw new UpdateException(missingCode);
         if (matching.Length != 1) throw new UpdateException("UPDATE_ASSET_MISSING_OR_AMBIGUOUS");
         var asset = matching[0]; string expected = $"https://github.com/{Repository}/releases/download/{Uri.EscapeDataString(tag)}/{Uri.EscapeDataString(name)}";
         string source = asset.GetProperty("browser_download_url").GetString() ?? "";

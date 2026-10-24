@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "task_id": "T05",
+  "source_snapshot_id": "not_recorded",
+  "build_id": "local-untracked",
+  "executed_utc": "2026-10-24T03:05:45.5988193+00:00",
+  "environment": "Microsoft Windows NT 10.0.26200.0",
+  "status": "failed",
+  "total": 12,
+  "failed": 2,
+  "filters": [
+    "production_signer"
+  ],
+  "filter": [
+    "production_signer"
+  ],
+  "results": [
+    {
+      "name": "production_signer.dpapi_public_root_and_manifest_signature_roundtrip",
+      "status": "passed",
+      "milliseconds": 1561
+    },
+    {
+      "name": "production_signer.private_directory_and_file_allow_only_current_sid",
+      "status": "passed",
+      "milliseconds": 257
+    },
+    {
+      "name": "production_signer.existing_public_file_rejected_before_key_creation",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "production_signer.existing_identity_is_never_regenerated",
+      "status": "passed",
+      "milliseconds": 156
+    },
+    {
+      "name": "production_signer.explicit_public_reexport_preserves_identity",
+      "status": "passed",
+      "milliseconds": 183
+    },
+    {
+      "name": "production_signer_failed_public_write_retains_recoverable_protected_key",
+      "status": "failed",
+      "milliseconds": 167,
+      "error_type": "UnauthorizedAccessException",
+      "detail": "Access to the path \u0027<USERPROFILE>\\AppData\\Local\\Temp\\AutumnOS-production-signer-fixture-7cbab597e6664b8796500443ff8a50eb\\public-destination\\public.json\u0027 is denied."
+    },
+    {
+      "name": "production_signer_wrong_root_and_test_purpose_cannot_authorize_signature",
+      "status": "passed",
+      "milliseconds": 353
+    },
+    {
+      "name": "production_signer_manifest_key_and_version_must_match",
+      "status": "passed",
+      "milliseconds": 203
+    },
+    {
+      "name": "production_signer_modified_local_public_metadata_does_not_rebind_key",
+      "status": "passed",
+      "milliseconds": 350
+    },
+    {
+      "name": "production_signer_tampered_ciphertext_fails_without_signature",
+      "status": "passed",
+      "milliseconds": 169
+    },
+    {
+      "name": "production_signer_relaxed_private_acl_is_rejected_without_rewriting_it",
+      "status": "passed",
+      "milliseconds": 116
+    },
+    {
+      "name": "production_signer_invalid_paths_and_key_id_create_no_identity",
+      "status": "failed",
+      "milliseconds": 163,
+      "error_type": "InvalidOperationException",
+      "detail": "Expected fixed signer failure: UPDATE_SIGNER_PATH_INVALID"
+    }
+  ]
+}

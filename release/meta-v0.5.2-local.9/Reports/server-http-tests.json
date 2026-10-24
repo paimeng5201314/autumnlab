@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "type": "isolated_synthetic_http_fixture",
+  "executed_utc": "2026-10-24T03:25:16.9389027+00:00",
+  "executable": "<WORKSPACE>\\samples\\server-identity\\bin\\x64\\Release\\net10.0\\win-x64\\AutumnOS.ServerIdentity.Sample.dll",
+  "executable_sha256": "77da524496c9a5b08119a25d4d875d3203f1524f61d6619b1b45c6c30e4a9e51",
+  "command": "scripts/Test-ServerIdentitySample.ps1",
+  "build_id": "T06-20261024-update-04",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "status": "passed",
+  "checks": [
+    {
+      "pid": 23208,
+      "exitCode": 2,
+      "name": "missing configuration exits before listener",
+      "passed": true
+    },
+    {
+      "pid": 10008,
+      "name": "real HTTP configured health does not claim provider verification",
+      "passed": true
+    },
+    {
+      "statusCode": 401,
+      "name": "missing bearer rejected",
+      "passed": true
+    },
+    {
+      "statusCode": 401,
+      "name": "bare user id rejected",
+      "passed": true
+    },
+    {
+      "statusCode": 401,
+      "name": "nickname header rejected",
+      "passed": true
+    },
+    {
+      "statusCode": 401,
+      "name": "query credentials rejected",
+      "passed": true
+    },
+    {
+      "statusCode": 401,
+      "name": "forged challenge without auth rejected",
+      "passed": true
+    }
+  ],
+  "real_logto": "not_run",
+  "cleanup": "Only Process objects created by this script were terminated; no launcher/user processes touched",
+  "source": "samples/server-identity",
+  "owner_pids": [
+    23208,
+    10008
+  ]
+}

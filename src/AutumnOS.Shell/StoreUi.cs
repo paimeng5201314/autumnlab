@@ -267,7 +267,7 @@ public sealed partial class MainWindow
         storeBody.Children.Add(ActionButton("刷新应用信息", "StoreRefreshDetails", async (_, _) => await OpenStoreDetailsAsync(details.Repository)));
         storeBody.Children.Add(Paragraph(details.Store?.Description ?? details.Repository.Description));
         storeBody.Children.Add(Paragraph("开发者：" + (details.Store?.Developer.Name ?? details.Repository.Owner) + "\n来源：" + details.Repository.FullName + "\n应用 ID：" + (details.Store?.AppId ?? "清单不可用") + "\nrepositoryId：" + details.Repository.RepositoryId));
-        storeBody.Children.Add(Paragraph("分类由仓库自行标注。安装校验不会授予运行时权限；一般社区应用的运行隔离仍待验证，当前可浏览、下载和安装，运行入口会说明限制。"));
+        storeBody.Children.Add(Paragraph("分类由仓库自行标注，不授予额外权限。应用使用受限的离线运行环境；存档等权限会在实际使用时单独询问。"));
         foreach (var warning in details.Warnings)
         {
             var message = Paragraph(StoreError(warning)); AutomationProperties.SetAutomationId(message, "StoreWarning-" + warning);
@@ -320,6 +320,11 @@ public sealed partial class MainWindow
         "STORE_TIMEOUT" => "读取 GitHub 超时，请重试或检查网络设置。",
         "RELEASE_INCOMPATIBLE" => "此版本与当前运行环境不兼容。",
         "PACKAGE_APP_RUNNING" => "应用仍在运行，请先保存并结束，再继续安装。",
+        "RUNTIME_ISOLATION_UNAVAILABLE" => "应用的安全运行检查未通过，尚未执行游戏。请重新打开；若仍失败，请检查客户端运行文件。",
+        "RUNTIME_ISOLATION_ENGINE_MISSING" => "客户端运行文件不完整，无法启动应用。请使用完整的 AutumnOS 发行包。",
+        "RUNTIME_ISOLATION_ENGINE_UNSUPPORTED" => "浏览器运行时版本不在此客户端已验证的隔离范围内，应用尚未加载。请使用完整的 AutumnOS 发行包。",
+        "RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE" => "此客户端尚不能阻止第三方页面清空系统剪贴板，因此未加载应用。安装包和存档保留；开启开发模式也不能解除此限制。错误码：RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE。",
+        "RUNTIME_ENVIRONMENT_OVERRIDE_BLOCKED" => "外部 WebView2 配置覆盖了应用运行环境，请恢复客户端默认环境后重试。",
         _ => code + " · 此项尚不可用，原有应用和数据保留。"
     };
 }

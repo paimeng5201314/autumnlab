@@ -60,7 +60,6 @@ public sealed partial class RuntimeSession
     /// <summary>Revalidate a completed response after an awaited UI dispatch, before exposing private data.</summary>
     public string RevalidateResponse(string method, long requestRevision, string response)
     {
-        if (services is null) return response;
         string? requestId = null;
         try
         {
@@ -70,6 +69,22 @@ public sealed partial class RuntimeSession
             lock (stateGate)
             {
                 if (!IsActive) return Error(requestId, "SESSION_EXPIRED");
+                if (services is null)
+                {
+                    if (!root.GetProperty("ok").GetBoolean()) return response;
+                    if (ResponsePermission(method) == "saves")
+                    {
+                        if (savesRevoked) return Error(requestId, "PERMISSION_REVOKED");
+                        if (!savesGranted) return Error(requestId, "PERMISSION_DENIED");
+                    }
+                    if (method is "permissions.query" or "permissions.request")
+                    {
+                        string current = savesRevoked ? "revoked" : savesGranted ? "granted" : savesDenied ? "denied" : "prompt";
+                        if (root.GetProperty("result").GetProperty("state").GetString() != current)
+                            return Error(requestId, "PERMISSION_REVOKED");
+                    }
+                    return response;
+                }
                 services.Account.EnsureCurrent();
             }
             if (!root.GetProperty("ok").GetBoolean()) return response;
@@ -212,7 +227,7 @@ public sealed partial class RuntimeSession
                 if (runtime.Identity is not null || runtime.GetProfile is not null) capabilities.Add("identity.profile");
                 if (runtime.DataRequest is not null) capabilities.AddRange(runtime.DataCapabilities);
                 if (runtime.Desktop is not null) capabilities.AddRange(["appearance", "notifications", "shortcuts", "widgets", "links.internal"]);
-                return new { protocolVersion = 1, capabilities, accountMode = runtime.Account.IsGuest ? "guest" : "account", networkSandboxVerified = false,
+                return new { protocolVersion = 1, capabilities, accountMode = runtime.Account.IsGuest ? "guest" : "account", networkSandboxVerified = NetworkSandboxVerified,
                     limits = new { maximumMessageBytes = MaximumMessageBytes, maximumPendingRequests = MaximumPendingRequests,
                         maximumRequestsPerMinute = MaximumRequestsPerMinute, requestTimeoutMs = (int)requestTimeout.TotalMilliseconds,
                         maximumRememberedRequestIds = MaximumRememberedRequestIds, deduplicationWindowMs = (int)DeduplicationWindow.TotalMilliseconds } };
@@ -384,11 +399,17 @@ public sealed partial class RuntimeSession
         if (runtime is null) return;
         lock (stateGate) { if (servicesDetached) return; servicesDetached = true; gestureAvailable = false; }
         Interlocked.Increment(ref eventRevision);
-        runtime.Permissions.Changed -= PermissionChanged;
-        if (runtime.Identity is not null) runtime.Identity.Changed -= IdentityChanged;
-        if (runtime.Desktop is not null) { runtime.Desktop.Event -= DesktopEvent; runtime.Desktop.Unregister(Instance.Id.Value); }
-        accountRegistration.Unregister();
-        SdkEvent = null;
+        try
+        {
+            runtime.Permissions.Changed -= PermissionChanged;
+            if (runtime.Identity is not null) runtime.Identity.Changed -= IdentityChanged;
+            if (runtime.Desktop is not null) { runtime.Desktop.Event -= DesktopEvent; runtime.Desktop.Unregister(Instance.Id.Value); }
+        }
+        finally
+        {
+            accountRegistration.Unregister();
+            SdkEvent = null;
+        }
     }
     private static string PermissionParameter(JsonElement parameters)
     {

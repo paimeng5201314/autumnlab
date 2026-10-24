@@ -1,6 +1,6 @@
 # ChemLeap · 3D 化学跳一跳
 
-制作人：派蒙。游戏版本0.1.0，应用ID `cn.labchronicles.chemleap`，AutumnOS SDK0.3.0，存档格式1。
+制作人：派蒙。游戏版本0.1.1，应用ID `cn.labchronicles.chemleap`，AutumnOS SDK0.3.0，存档格式1。0.1.1统一包内版本标记及发布说明，保留原有玩法和存档格式；宿主隔离实现不在游戏包中，普通启动的实际验证边界见接入说明。
 
 ## 实现方案与项目结构
 
@@ -103,4 +103,4 @@ node tests/chemleap-browser-tests.cjs --report '<全新报告目录>'
 
 浏览器测试复用工作区现有锁定Playwright；默认本机Headless Chromium路径可由`PLAYWRIGHT_CHROMIUM_EXECUTABLE`覆盖，使用启用sandbox的ANGLE SwiftShader软件WebGL，不冒充硬件GPU/物理触屏验收。模型50项包含48,000组种子平台和500次连续反应。原生脚本使用交付CLI校验并打包真实项目，再通过GUI启用开发模式、确认内部预览、实际跳跃及SDK权限存读档；结果以本轮报告为准。首次自动文件夹选择驱动失败保留，不计为游戏测试通过。
 
-`Package-ChemLeap.ps1`输出`publication/ChemLeap-0.1.0.autumn`、`autumn.store.json`、`autumn.release.json`，复用宿主CLI验证三层一致，并逐个ZIP条目读回SHA-256。它只准备本地文件。仓库上架、公开下载及普通社区运行的状态见`docs/chemleap-integration.md`与`AUTUMNOS_PROGRESS.md`；不把开发预览当作公开商店运行通过。
+`Package-ChemLeap.ps1`按实际manifest版本输出`publication/ChemLeap-0.1.1.autumn`、`autumn.store.json`、`autumn.release.json`，复用宿主CLI验证三层一致，并逐个ZIP条目读回SHA-256。它只准备本地文件。仓库上架、公开下载及普通社区运行的状态见`docs/chemleap-integration.md`与`AUTUMNOS_PROGRESS.md`；不把开发预览当作公开商店运行通过。

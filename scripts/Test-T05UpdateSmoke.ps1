@@ -95,7 +95,10 @@ function Get-T05WindowGeometry($Product,[string]$Reason){
         outer_valid=$hasOuter;outer=@($outer.Left,$outer.Top,$outer.Right,$outer.Bottom);
         client_valid=$hasClient;client=@($client.Left,$client.Top,$client.Right,$client.Bottom);
         uia_bounds=@($uiaBounds.Left,$uiaBounds.Top,$uiaBounds.Width,$uiaBounds.Height);
-        foreground_hwnd=$foreground.ToInt64();foreground_pid=$foregroundOwner;cursor_valid=$hasCursor;cursor=@($cursor.X,$cursor.Y)}
+        foreground_hwnd=$foreground.ToInt64();foreground_pid=$foregroundOwner;
+        foreground_process_name=$(try{[Diagnostics.Process]::GetProcessById([int]$foregroundOwner).ProcessName}catch{'unavailable'});
+        foreground_is_owned_app_process=(Test-AutumnOwnedInputProcess $foregroundOwner $Product.Process);
+        test_driver_pid=$PID;cursor_valid=$hasCursor;cursor=@($cursor.X,$cursor.Y)}
     if($windowGeometry.Count -lt 250){$windowGeometry.Add($state)}
     return $state
 }

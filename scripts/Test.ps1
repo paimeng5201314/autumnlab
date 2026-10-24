@@ -72,4 +72,9 @@ try {
         & "$PSScriptRoot/Test-T04DeveloperTools.ps1" -BuildId $buildId -ReportDirectory (Join-Path $attemptDirectory 't04-tools')
         Copy-Item -LiteralPath (Join-Path $attemptDirectory 't04-tools/report.json') -Destination (Join-Path $directory 't04-tools-tests.json')
     }
+    if ($buildId.StartsWith('T06-')) {
+        $productionToolsReport = Join-Path $attemptDirectory 'production-update-tools.json'
+        & "$PSScriptRoot/Test-ProductionUpdateTools.ps1" -BuildId $buildId -SourceSnapshotId $snapshot -ReportPath $productionToolsReport
+        Copy-Item -LiteralPath $productionToolsReport -Destination (Join-Path $directory 'production-update-tools.json')
+    }
 } finally { Pop-Location }

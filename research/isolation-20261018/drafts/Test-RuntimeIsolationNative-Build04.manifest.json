@@ -1,0 +1,14 @@
+{
+  "created_utc": "2026-10-18T04:51:06.5552157+00:00",
+  "status": "prepared_not_run",
+  "tracked_driver_sha256": "4f1f9eb5abd6785730a3113fc09b9f875f22a6b4b4b5cb74f1b25b83deaf0956",
+  "artifact_driver_sha256": "3754b5d08a68888bb2de2c0c60d9191ac017745ea8295693bda5aebd7343d3b3",
+  "fixture_probe_js_sha256": "e377ab66df6e94d9e9bc1f80a8e5a61fda2c9bb404b20492b61ce78dbac63e0a",
+  "powershell_ast_parse": "passed",
+  "original_assertions_retained_except_evidence_label": "passed",
+  "original_assertion_calls": 29,
+  "artifact_assertion_calls": 30,
+  "helpers_directory": "<WORKSPACE>\\scripts",
+  "fixture_directory": "<WORKSPACE>\\tests\\fixtures\\runtime-isolation",
+  "execution_by_author": "none"
+}

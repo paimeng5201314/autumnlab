@@ -1,0 +1,69 @@
+{
+  "status": "completed_and_preserved_delivery_verified",
+  "utc": "2026-10-24T04:34:40.5794016+00:00",
+  "F_file_bytes_removed": 1559500592,
+  "F_signer_bytes_moved": 2906,
+  "D_file_bytes_removed": 189902731821.0,
+  "D_files_removed": 217518.0,
+  "preserved_delivery": [
+    {
+      "path": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\candidate\\AutumnOS.exe",
+      "status": "passed",
+      "sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11"
+    },
+    {
+      "path": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\extracted\\AutumnOS.exe",
+      "status": "passed",
+      "sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11"
+    },
+    {
+      "path": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\AutumnOS-0.5.2-local.9-code-check.zip",
+      "status": "passed",
+      "sha256": "9315d6c7bdddb5709b3e129f6313936fadd0124b96df565adfa64e240dd2444c"
+    },
+    {
+      "path": "<WORKSPACE>\\AutumnOS.exe",
+      "status": "passed",
+      "sha256": "71d82b083a82c62d159f146fb960c4539f3b9b96070763b2ec910b692166d6b1"
+    },
+    {
+      "path": "<WORKSPACE>\\artifacts\\update-fix-20261024\\AutumnOS-source-T06-20261024-update-04.zip",
+      "status": "passed",
+      "sha256": "d3bd03b3035417d6d1b5f16ae2e8828ada737a82189e038ad2acb76a512c12b3"
+    }
+  ],
+  "data_roots_preserved": 65,
+  "protected_data_content_read": false,
+  "extra_cleanup": [
+    {
+      "path": "<WORKSPACE>\\artifacts\\reports\\single-file-negative-02\\rejected-data-junction\\AutumnOS_Data",
+      "target_traversed": false,
+      "target": "<WORKSPACE>\\artifacts\\reports\\single-file-negative-02\\owned-junction-target",
+      "status": "removed_test_junction_only"
+    },
+    {
+      "path": "<WORKSPACE>\\artifacts\\reports\\t06-final-audit-guard-tests-03\\linked",
+      "target_traversed": false,
+      "target": "<WORKSPACE>\\artifacts\\reports\\t06-final-audit-guard-tests-03\\real",
+      "status": "removed_test_junction_only"
+    },
+    {
+      "path": "<WORKSPACE>\\AutumnOS-代码核验-20261024.lnk",
+      "status": "removed_old_test_shortcut"
+    },
+    {
+      "path": "<WORKSPACE>\\AutumnOS-启动诊断修复-20261024-未签名.lnk",
+      "status": "removed_old_test_shortcut"
+    },
+    {
+      "path": "<WORKSPACE>\\AutumnOS-启动诊断-20261024.lnk",
+      "status": "removed_old_test_shortcut"
+    }
+  ],
+  "signing_key_directory": "<PRIVATE_SIGNING_DIRECTORY>",
+  "key_decryption_verification": "<WORKSPACE>\\artifacts\\update-fix-20261024\\signing-key-moved-to-D.json",
+  "current_shortcut": "<WORKSPACE>\\AutumnOS-更新修复-20261024.lnk",
+  "processes_killed": false,
+  "global_security_policy_changed": false,
+  "test_reports_do_not_claim_new_GUI_acceptance": true
+}

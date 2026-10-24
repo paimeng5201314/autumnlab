@@ -264,7 +264,7 @@ function Test-DeliveredUpdatesPage {
     $report.t05_updates.identity=$identity
     $report.t05_updates.expected_version=$report.binary_before.metadata.ProductVersion
     $report.t05_updates.expected_build=$report.binary_before.metadata.BuildId
-    Add-DeliveredCheck 't05_updates_current_version_matches_actual_contracts' ($lines -contains ('当前版本 '+$report.binary_before.metadata.ProductVersion))
+    Add-DeliveredCheck 't05_updates_current_version_matches_actual_contracts' (@($lines|Where-Object {$_ -eq ('当前版本 '+$report.binary_before.metadata.ProductVersion) -or $_.StartsWith(('当前版本 '+$report.binary_before.metadata.ProductVersion+' · '),[StringComparison]::Ordinal)}).Count -eq 1)
     Add-DeliveredCheck 't05_updates_build_matches_actual_contracts' ($lines -contains ('构建 '+$report.binary_before.metadata.BuildId))
     $updateAssembly=Join-Path $entryRoot 'AutumnOS.Update.dll';Assert-DeliveredPlainPath $updateAssembly
     $assembly=[Reflection.Assembly]::Load([IO.File]::ReadAllBytes($updateAssembly))
@@ -274,8 +274,13 @@ function Test-DeliveredUpdatesPage {
     $report.t05_updates.trust=$status.Current.Name
     if($testBuild){
         Add-DeliveredCheck 't05_test_build_explicitly_labels_test_trust_and_isolated_source' ($identity.Contains('仅本地更新演练 · 测试信任根 / 隔离源'))
+    }elseif($assembly.GetManifestResourceNames() -contains 'AutumnOS.Update.ProductionTrust.json'){
+        $stream=$assembly.GetManifestResourceStream('AutumnOS.Update.ProductionTrust.json')
+        try{$reader=[IO.StreamReader]::new($stream);try{$root=$reader.ReadToEnd()|ConvertFrom-Json}finally{$reader.Dispose()}}finally{$stream.Dispose()}
+        Add-DeliveredCheck 't05_normal_build_embeds_public_production_root' ($root.purpose -eq 'production' -and @($root.keys).Count -gt 0 -and -not $identity.Contains('测试信任根'))
+        Add-DeliveredCheck 't05_configured_build_does_not_report_root_missing' (-not $status.Current.Name.Contains('缺少正式更新可信公钥'))
     }else{
-        Add-DeliveredCheck 't05_normal_build_reports_missing_production_trust_root' ($status.Current.Name.Contains('自动安装尚未配置：缺少生产可信公钥，不能安装未签名更新。') -and -not $identity.Contains('测试信任根'))
+        Add-DeliveredCheck 't05_normal_build_reports_missing_production_trust_root' ($status.Current.Name.Contains('缺少正式更新可信公钥') -and -not $identity.Contains('测试信任根'))
     }
     $report.t05_updates.status='passed'
 }

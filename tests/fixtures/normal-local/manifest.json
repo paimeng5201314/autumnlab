@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "appId": "cn.labchronicles.normallocal",
+  "name": "本地隔离配对",
+  "version": "1.0.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": [
+    "saves"
+  ],
+  "permissionPurposes": {
+    "saves": "仅为独立验证保存和读取自建配对进度，不访问真实存档"
+  },
+  "saveFormatVersion": 1,
+  "minReadableSaveFormatVersion": 1,
+  "maxReadableSaveFormatVersion": 1
+}

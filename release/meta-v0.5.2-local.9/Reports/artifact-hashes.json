@@ -1,0 +1,2218 @@
+[
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/App.xbf",
+    "sha256": "05021b9103b109cad3ad308011c651b2a54fe13ab1f4ef5ff1ac04483030061e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.deps.json",
+    "sha256": "a2db1f2244e901ac4496fe849a2400566ecb29708c739c654454f3a6b56c41c2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.dll",
+    "sha256": "e47086425ceb948efde73cdfbb6efc23cf1eb5d7f5cb43adb3d67ae939519432"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.exe",
+    "sha256": "7871b7e64e0ee7c59cb651a4acf46ad0b9f8a27821a74dbe339c244453a4a748"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.pdb",
+    "sha256": "e2833f3e589ccc1811dc7101d6d50ff9fca88a60c4cd7bf78a68956760be3637"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.pri",
+    "sha256": "654f17bf8bfca276441772bf71273ba711797463a6dad5d114c1787ab1bc3bcd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.runtimeconfig.json",
+    "sha256": "564edfad8990e994033caba1fbfc6d7b10e935cdb4842f9c9a6225a4c09f70aa"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Contracts.dll",
+    "sha256": "9a79e03f30e22bd2d6e35c04f6126779aafd0842e40d8df5be22ba426a77c7d6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Contracts.pdb",
+    "sha256": "30c3c1ce72578ea70dbb2480a576aa12d8a3477273fc30950d3702a28b2e9728"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Identity.dll",
+    "sha256": "e29ede8b0b2f8a2c2a761156d621057f498847a5ff2ab5f03622b680874e7ba4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Identity.pdb",
+    "sha256": "f8c10feabd83f0d99a04ab664de304cd0ff61c5a6bcaa1af894754fdb8c54bdc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Launcher.dll",
+    "sha256": "dfcdada5df378b13065e78e31c862ab54fc8dec5c67506f6fdf4ad0672fc1ad6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Launcher.pdb",
+    "sha256": "0e0385db0e3c8ca27c76bdf7f18ab91a4eb5d8f4b9e07a658023709b6e57a1fc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Packages.dll",
+    "sha256": "905ec21a9026feea49880a0e786735117ba000489a09f49ef400549d41d7f72a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Packages.pdb",
+    "sha256": "0b13d1b742ad51aab694819054619482371be0ea5a1518726df295caeaa3effb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Runtime.dll",
+    "sha256": "efd331efd2af58fa75a6e37ad69cec0e4af25231f6fc97e6cfefb84d2a5beeba"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Runtime.pdb",
+    "sha256": "aaa99c97214cfb8feee8692493b4ee3b077df22e7eec6c41729702fd53b756c6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Storage.dll",
+    "sha256": "e0bab8e500379dcf4ddb14f80733488202350fa6da36cca59db5bcd2c749a5c4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Storage.pdb",
+    "sha256": "21fd96a30ca05944dedcc775dddb8b671febb334375ce451580f3bf76a6449e4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Store.dll",
+    "sha256": "0af871a9a323fae1d2ea434a9315207b98883c06d01eb967f9ea274f9043f89c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Store.pdb",
+    "sha256": "d05ecce9771022da77ad70f7a30d845fc0a5cd047974631fea122dd7f469913e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Update.dll",
+    "sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Update.pdb",
+    "sha256": "5ee53c821c11b52a122305b9500816aafcb8e28a002b7839c72909e28ee84209"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.UpdateProtocol.dll",
+    "sha256": "21e95f858dc7b64b3e0130a1f2ab826db7136fc122186cd31c8c165793c8ceb3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.UpdateProtocol.pdb",
+    "sha256": "b724e7760d675c5c39e4b2140611a7902226afb7dcb0d468e10fa1f4918a9c7b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/clretwrc.dll",
+    "sha256": "7a2186201c87bbc597a1b8b26facd88e68f03be4c4a4211fd65cc6595c72e45b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/clrgc.dll",
+    "sha256": "65e2f97d263824bfb9f75f92e66ebd22229aaf3a5faddef9345811d856c8840e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/clrgcexp.dll",
+    "sha256": "23a8050ec68542989b6da6cc906a90faf8a14e6416fd2871a260b781b1c374ae"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/clrjit.dll",
+    "sha256": "0749d8fc8e944d0576e1bb47120f87add8f875e5cd8968995633063fc79256f6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/coreclr.dll",
+    "sha256": "128aee8c62a673d64739e585e3876b61133571cec83a46240a62581d5465639b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/CoreMessagingXP.dll",
+    "sha256": "72079042dc97f36ac11da1307622887b35fba592c0cfd5c9c984cbf1c075c3f1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/createdump.exe",
+    "sha256": "315307159925d33eb604186a512901d080ecfc4cd8b8198030a7d398c6af2b0b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/dcompi.dll",
+    "sha256": "915ae96ed775483cae5230928a91d59ae8625acc05e3e80456c21ef59e847764"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/DirectML.dll",
+    "sha256": "41ab039644c4ec49844f67c430a78f13f03e9632d8d0ee25c8db77cc49ffe114"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Duende.IdentityModel.dll",
+    "sha256": "eed1048676f05170071638ba18c90c76158a175b838f19db795930dc652b12e6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Duende.IdentityModel.OidcClient.dll",
+    "sha256": "7099aa18bb2d209fc402a9642d35fbafae432be2293bab5bfb501039f9be99fd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/dwmcorei.dll",
+    "sha256": "4ad4974b75a45a95a6b04c3ab26b1855f8d9d92cc0ebda0f036e03c54b95e4e1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/DwmSceneI.dll",
+    "sha256": "2c90541ab2f5b34af90bba4196697b5e57a8e89f49852bfca993dc3681bdb35b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/DWriteCore.dll",
+    "sha256": "599579bd5d0dd27020e5563f9d7908bd9aa5bff4e2df291d06fe5377b233b32a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hostfxr.dll",
+    "sha256": "838591885c5396fb0588a3aedc2f3e841d3afc67570868b1bce615264005a44c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hostpolicy.dll",
+    "sha256": "e92a2e71eeeaf7c574e905935b3e3724ef29bade44317659dbe06f505e99dbe0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/MainWindow.xbf",
+    "sha256": "345b60d5571045717c7552018ec9c1a8b51ef7ce1f7a183894befe914fb5b9f6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/marshal.dll",
+    "sha256": "bccce5f060c3a41334627feaa0395a910b851f70539c5e246bf2894111c4c8ae"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Bcl.Cryptography.dll",
+    "sha256": "91c6bab93638c268569a38bc87770a5e3ef9932676f5b7a6d47aef4208062925"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.CSharp.dll",
+    "sha256": "2000912f2fc52e0c64ed893d79f4e7b143502540fb7170b5ae5fcea7099ba431"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.DiaSymReader.Native.amd64.dll",
+    "sha256": "70e4b89978ce57ef87b28f4921f3140c383b04aa96e7f3bdb3c4ebb898fd8a72"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.DirectManipulation.dll",
+    "sha256": "c1d8656a9db7bed3b45e22d5c82b0997d7c4272c1d5edbb03661922b4d7cbd02"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+    "sha256": "354a07a82f8637016feab9aeb2b0ebf89700c2cba013b78e778a60d19e76b5e2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Extensions.Logging.Abstractions.dll",
+    "sha256": "8c1fa71ca7a7bfcb07c92e81367abda29d6b5c272ddc9c2faabc64114206a8d3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Foundation.winmd",
+    "sha256": "4ef28cd21c1701f60ac6e3613968a88ff16f83cf85f87629dba79a16bfab9c59"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.Display.dll",
+    "sha256": "dd77a9199312acec48a173c3a42ea3f6534b804ed8486c4327589065e1128b83"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.Imaging.dll",
+    "sha256": "d96d9abb4daca3463c26591da455109ecaa5f8b7d860107769c3bb6706831d55"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.Imaging.Projection.dll",
+    "sha256": "a0af93a45d8cb2419e34262e1e764f25a44a39dca797f2749af560730d51e92d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.Imaging.winmd",
+    "sha256": "95aaeeaef3380328f6d1522734352dfe6e793c21914547af19870f65cdf5d4d4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.ImagingInternal.ImageObjectRemover.winmd",
+    "sha256": "bd679534977af80ba7f78c32d3b8d8d2f032e065fdf13b49c7c646b08b4c76fb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.ImagingInternal.winmd",
+    "sha256": "ddd836b4ce83ba0a4b6c6bd92665fed7825484a9ccd9222039d2d0e2678990fe"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.Internal.Imaging.winmd",
+    "sha256": "b063833fac0e27b52c28173911efea2ca13583a3c35fd2cdf9dc691f2b783836"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Graphics.winmd",
+    "sha256": "dd00f949e0a75048c5c0b277fe8fe3af89db88121b479bd62c3690efeb6f3d59"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.IdentityModel.Abstractions.dll",
+    "sha256": "46f14d67dfc1894eb24d80282895526db25a854af227eee2fa06a0383fd09e4c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.IdentityModel.JsonWebTokens.dll",
+    "sha256": "b48515aeaa4a8fadc5fcacb45978c808a4d5bbffaf74f8894cc57c0769a9fb9e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.IdentityModel.Logging.dll",
+    "sha256": "90b6fa70f28a3b7711fe95aa30a0c5551f1e6aa28565187aa7b3681194215c84"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.IdentityModel.Tokens.dll",
+    "sha256": "84409b8c3a52313fe4f4f621fce39544f42074109e870ac2631e627c8b70210f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.InputStateManager.dll",
+    "sha256": "e2eb19aac39af4207c3803ec7273d2b6ac0cb8b535e9f2646f515da4067c0059"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.InteractiveExperiences.Projection.dll",
+    "sha256": "cafde206be7fbfbef8bf1ee5ba60eed4ae10c6a0dd10bcfa83e1f63b14432a5f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Internal.FrameworkUdk.dll",
+    "sha256": "d33a23ef972f1286531fa80977ba018fba8616d70836068ce9338c50aeae3f8b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.ML.OnnxRuntime.dll",
+    "sha256": "e0d75baa747d96da15dfd002b9983f7ad3df04542ac4647004048f17d908d7ad"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Security.Authentication.OAuth.Projection.dll",
+    "sha256": "4027edbf0554e97e0c883921565b450cf9ccdbeb924672641c20b0a3bb5be1e6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Security.Authentication.OAuth.winmd",
+    "sha256": "2613d437d16cd8bf371f6a774bc4452510349a12388c5ea8950723538e57d327"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Composition.OSSupport.dll",
+    "sha256": "7bbc3f9e8055d0217b38495d29be0b657148781c52cfe1afd4e7359b6ac7eeb2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Designer.dll",
+    "sha256": "1eb970e84de208d497029af512116206f1fcb6959640c316dc5b6a548e23801a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.dll",
+    "sha256": "bd017f7b927417a2c67327016556f07e05c7303226b201128cf5475b7d72e976"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Input.dll",
+    "sha256": "c50c9b4b3c13ea81cc22479a58c417326f3b2695b23ebd544b4a1d3144a5511d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.pri",
+    "sha256": "bafb8c79dca23d79bbddb7b22baf000dd88803041cf958a68d9e03979cda946c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Text.winmd",
+    "sha256": "6f80fdc5a8e9790a47141bfb097063282cab718656460305e324ad12c91d95bb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Windowing.Core.dll",
+    "sha256": "ea63f233e80170dbe1a23b18b0b436b9a98fac15a63ead19d8380fbaf3497cb5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Windowing.dll",
+    "sha256": "fad2b58cd913ed7591aa5648a59bcb470d903ea5d9951423c54140bd986d8919"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.winmd",
+    "sha256": "0928d18e08b6c384b3f3003749861cee3c0a177e3e7c618fa291a86a929b5197"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Xaml.Controls.dll",
+    "sha256": "6e41078a44049d0ac8b50dff7ef220cacc7384623b95331bb627620c7749e568"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Xaml.Controls.pri",
+    "sha256": "70b313c42920a82e31abb988a4fdb3c5d9df55a17ac3d6f0c6e8c1994a66d46e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.ui.xaml.dll",
+    "sha256": "95f5f5b7cec1ca2fa30580121f5298122e32db96ed5f04d9d1a74224511e5f0c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Xaml.Internal.dll",
+    "sha256": "82897cc4060173472ef658224cc4e773a670f31c0d2e2db9dbdec9ba2a96b51d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Xaml.Phone.dll",
+    "sha256": "7dff352d1da6b2e4617ac2ba5c909d625de1ce5630deaf3e9c302b4e8bcba77f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.ui.xaml.resources.19h1.dll",
+    "sha256": "ee616f29aeb1d1bc6db71bdb9c265c4edd9f42c43727ebf24f7c1c717cb0e7ca"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.ui.xaml.resources.common.dll",
+    "sha256": "26ba80a0720155e30a0431ef9a6ec9a61ee14e265ecb4e3a58ae4e8e734e52ef"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Xaml.winmd",
+    "sha256": "b981f088601c83b8df33702a6f564f21f7bdf2c1296d5ebb4c89cec648185738"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.VisualBasic.Core.dll",
+    "sha256": "2666b24eb6e295476b44abd057ea250fd5957db9c1c7adee6a223a747ddfe3d2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.VisualBasic.dll",
+    "sha256": "e192508adde6a758138a5a8e28998dccb64e7f45eaf30d8ab3564f87749028b1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Web.WebView2.Core.dll",
+    "sha256": "d02703bbc554a915867bd51c1449719f7a3988683c34fab4426d5975b9171f35"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Web.WebView2.Core.Projection.dll",
+    "sha256": "ebb3b41211ee9126e16e3482ba1ee535d318a70284edf345a03a5e74b2b1e386"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Win32.Primitives.dll",
+    "sha256": "6c21472b0ae2f9b484a97614fad5485a22f18f9f19ee1adb9ceb3ed8ddb072d7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Win32.Registry.dll",
+    "sha256": "76849cfde4369f3ae93e28261fe5e1010dbf1332f7da95c98543cba9b03961c0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.AICapabilities.dll",
+    "sha256": "035b0cd0ff27f6c1ae9281a824c82c649fd7cd3ed0f18fbbaa0cea530b066ffb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.ContentModerationInternal.winmd",
+    "sha256": "572a5b997686f4e22358415c7ce3b896cdab35fad12785f7e85561916be3b4e4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.ContentSafety.dll",
+    "sha256": "0da9c1fe4baf9329c3d065e84291722367c2c56a94177613164132dd3ee54e40"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.ContentSafety.Projection.dll",
+    "sha256": "f66e7b941615d9cf34ea64ec4f2da61f1fabc860766979e3186f419eaeaf6b75"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.ContentSafety.winmd",
+    "sha256": "a54e5d158d20b490e8cff95d6baa17e5874907a406cdd5d085c8c381b5aed380"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Foundation.Projection.dll",
+    "sha256": "d7163488e079d21f9107f2897877a944bed06b8f5a5dce5327f5ed32a26d3c1e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Foundation.winmd",
+    "sha256": "7ee01a65316849a5580c3aa5c86487e1b9150ef4f955f17e17cb7f0a68a31a48"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.FoundationInternal.winmd",
+    "sha256": "019565f7e296d6484750aba84df0f0790a1a975c7f8a3a20b328c51e0382ab68"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.GenerativeInternal.winmd",
+    "sha256": "d3dc7d4b318c2ebfcfcbcdb09dce6c8b5e42f6da82f03a903477df852b6a21dc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Imaging.dll",
+    "sha256": "ad72445f8aff343f062e81101a257f601bd449ad02b2cf9508470b8d59309164"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Imaging.Projection.dll",
+    "sha256": "02032c075a3b4cb0c791d1a60e25350b614b807cec6786810c961ffaefdd81e0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Imaging.winmd",
+    "sha256": "b9a24268ffc0606adec3c725d7af70fc4409adccd8364f9efd8d633458d3985f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.MachineLearning.dll",
+    "sha256": "a4a8cf88801521f091a9210087b1d0ffc3ff4e271bb29294e0b90ae391e279cd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.MachineLearning.Projection.dll",
+    "sha256": "b4955742f470c673efe7c8ac3a4eb6a0e927e5bd46dfd9ffef6e068a22111223"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.MachineLearning.winmd",
+    "sha256": "4a2f744528a593c1d0d291c2e0a1b62178e669a69c5b40d522c0bc1facb1c93b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Projection.dll",
+    "sha256": "0a2d2f7b67d0bec0593f1a47e007b1bafe6081639fe0c1752e6bb3e185490d3c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Text.dll",
+    "sha256": "1f5b738167ba76e518ca2743c6bdc06dd32461a3fe50ee966f8bcbd7cd8dc0ec"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Text.Projection.dll",
+    "sha256": "45a079ca10ae4cbf7a506d83a1f6a8b37524936483e98ff4a244d23c65fa62c0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.Text.winmd",
+    "sha256": "39cad6356d49bdf9c16748df8a2025514fb7af7240f5e3ab5a847f5f9d156a3d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AI.winmd",
+    "sha256": "5d18aa43e6bf1621088ec6323a36870c1c0bb002db4574f5c3a3ed4cef1f41d0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.Background.Projection.dll",
+    "sha256": "d2a60ad1fcdb59208a47d3746fdd4d66b35463eb8f2370cb3a5f81ce0362cc7d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.Background.UniversalBGTask.dll",
+    "sha256": "d757bfdfcfe32b51ae8b7802fa259e71deb33acd897cd0caf2def418f12b026c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.Background.UniversalBGTask.winmd",
+    "sha256": "85774d9a3b0f40d262a2271a0eeba129659791954b76f8ad54af8a93b0550af6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.Background.winmd",
+    "sha256": "0372bf50edba91503fa46258d2382406b514e2c4c847eb7fcbdde1f80b78f4a9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll",
+    "sha256": "e68415adb355d2004fb7c1072c78a25f27e9a12c6ab05562b74950bf0bb10625"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.DynamicDependency.winmd",
+    "sha256": "4e4c97c41e56a47e76c040c95826c24c0d681c3419e290f2f8dc42f4e759a473"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.Resources.dll",
+    "sha256": "3d1f52d4b6401b92ce883ae2d900378be82e37e276d6afab9d47d9aabf2a37c4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.Resources.Projection.dll",
+    "sha256": "57f9f9850969bfa116d417e5b811cd87e989d36184026897b732d1418341dfeb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.Resources.winmd",
+    "sha256": "b1a53eded49a2405b0da2b2fe92956e3b14e1cb51cb8ab4cdad629fa90d3175e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll",
+    "sha256": "2d7359efa69f8aabe7b9e1140716bb3e2a78653c65121118e509d8e75abf62f9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.ApplicationModel.WindowsAppRuntime.winmd",
+    "sha256": "ea8261f704f9a0e092a7795ae66d64855c7f844acc15506db6d632c9c7a31ba6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AppLifecycle.Projection.dll",
+    "sha256": "f2cf6c0e9b7d1b3dcd9f901fb0d1458b9201f7c37b9b784a41f9c367d82a33a8"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AppLifecycle.winmd",
+    "sha256": "677040572276c35ca16e02d8976dc254b43ab0341663d2cff838b70828dce845"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AppNotifications.Builder.Projection.dll",
+    "sha256": "61aa83c2cee8cadda7fe8a06446820929cd4f39cc57fdb8151e0214f7975e00a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AppNotifications.Builder.winmd",
+    "sha256": "ab74285a8aef9639cbde1a7f93711a875b9ce63e9d7c2a07cbe2734d4c9b4aab"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AppNotifications.Projection.dll",
+    "sha256": "0042271caceb4722180a022a38df1497389e6ae8f74053943fb57a5178e5f2d3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.AppNotifications.winmd",
+    "sha256": "27cf5665826dc49eccc86853a4508712dcdc8734121409ad2031c9609c792000"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.BadgeNotifications.Projection.dll",
+    "sha256": "44d11a44bd0054cefb76332a573a540df92a0ff0512e1306839bf01ab4a5300c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.BadgeNotifications.winmd",
+    "sha256": "8bb11b7a846dac30d8bfcbfa7de5932924c23b11b482544c9070d794fce82859"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Foundation.Projection.dll",
+    "sha256": "5a4815d2c5737767ed5fb525986eda53eb77c1a4088268854b3c20795902abf5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Foundation.winmd",
+    "sha256": "1760d11a63f445672e30e9bda1132cabaf66fdc61aee852beaca5154c86278a2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Globalization.winmd",
+    "sha256": "fba9218bb48abbbb022e4c01589c76423dc852577f9658a25389c09949ab8852"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Internal.Vision.winmd",
+    "sha256": "7e108b06825ae41c8dbe6fcbd602ab5c6810bbdb8332cb224ce944b3b8dbea9b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Management.Deployment.Projection.dll",
+    "sha256": "943209cd81457808aac04a3f5fa315835b59bd4793a8b32b59ee1fce705bf9af"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Management.Deployment.winmd",
+    "sha256": "f30c8810077784a3de3db4e66616c9b22bdf96ce4dba7663f87ce3df2d72005a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Media.Capture.Projection.dll",
+    "sha256": "e4000d4026a8459080461129f93666b13f869d20cc947fc7a36c9bb09177dc6b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Media.Capture.winmd",
+    "sha256": "58491592ca827332c400dd8dd4d01dc24a54224b8c51384808be2f51ddc329aa"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Private.Workloads.SessionManager.winmd",
+    "sha256": "b6fae23b80003b7aa80ddaaff28c31a53794099622eebe3f918f66e836347004"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.PrivateCommon.winmd",
+    "sha256": "ee061909fc8bbb5c4549cafad54abf004a66461d6009381c0abbd88579d9dee2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.PushNotifications.Projection.dll",
+    "sha256": "acd535111632088cc650cde0cbc50d200ac6e4531c4855bfa9a20d676b2577b1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.PushNotifications.winmd",
+    "sha256": "1b67f9a9a040dcfdf0eaca6e8fe1cff074d8dc720c70f43170d9d0540c16386f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.SDK.NET.dll",
+    "sha256": "c633ab241cd09846c2aa409f0bee2026962610404a7bf132c75cbd66b0e5a9f4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Security.AccessControl.Projection.dll",
+    "sha256": "d4fae243cfa3786cf3da37dfd31b0325aed139cf79dece5ac58f9aca531455f5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Security.AccessControl.winmd",
+    "sha256": "a16ebb07b443b998acbdc9c71df6d12ee1d512f02d9bf8fb3b2226112d4625f7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.SemanticSearch.winmd",
+    "sha256": "5c9ed64ead31a5982bc7e1d18d7b476a1e2abd461ba5ebd38e6129b453291ffe"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Storage.Pickers.Projection.dll",
+    "sha256": "909d1e9f7ec1cb11e5daf37f3c21b12e3dcc89b1bc143629026adffabddb4152"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Storage.Pickers.winmd",
+    "sha256": "188225142424e4d545d76837e0ad87addf24cb6ca00bf45b46b9e6ac31f652dd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Storage.Projection.dll",
+    "sha256": "12e976249156f9eeed24e78a303dcb7d66a7ed77d371e922a1e6e3d35cf59991"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Storage.winmd",
+    "sha256": "b1e47c22818bd4a25e61efc856bbcb13aec0c96fde498eca8a5719ebb01f48aa"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.System.Power.Projection.dll",
+    "sha256": "f1839898d6e709248ad90aebaa5fcaa6776e65df49ded9c075b616c99cd49e9a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.System.Power.winmd",
+    "sha256": "9044ccc8c20da5d27e4944bc07c9a2c38d7b59f996436c76fde7ce8f320bf521"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.System.Projection.dll",
+    "sha256": "6298061927e762478a58ad736d237ec06172b9e316f63735112c3fe4e4694eaf"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.System.winmd",
+    "sha256": "166f57e79467bb18b48f228b2a69aacca4c858791313417f27ea06cba381f32f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Vision.winmd",
+    "sha256": "192f2a6e6f66efc7a3afeadb52525ad3f5a7504e49dec5ba2d11e0016305f2d0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.VisionInternal.winmd",
+    "sha256": "9fe38a4d5fdc75c7b6f9de2902cb6c480f967248c825043e8b3b261081dc9dc2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Widgets.dll",
+    "sha256": "544784d1eee6ef7c18f5208b879403e888cef8abd9dca11ebeccfa9a7de67d47"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Widgets.Projection.dll",
+    "sha256": "b7cc844de38d3d363f98b5652b57355aaba8804704b9258ef35dfd5d93488966"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Widgets.winmd",
+    "sha256": "08f4676e4440e48f4a46567e802c59f09aa8f7b7d64a0b7a71a60a888befc382"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Workloads.dll",
+    "sha256": "2cf3530a0c2ae585bc343f5422756ac6ee93edaf128db609ce33b9808aeb5d85"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Workloads.Resources_ec.dll",
+    "sha256": "3dbefa883ea9dcbb0fee463afda0121e385bb678652ca2faa19cf2abf517091e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Workloads.Resources.dll",
+    "sha256": "3cabef3388f8fb65b72be3e88f031417c5c878de0c31512d386543e152f92c30"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.Windows.Workloads.winmd",
+    "sha256": "d37857e647aa573d701e86624f5f9ed8f19ac9902c6841304730e74b87140a8f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.WindowsAppRuntime.Bootstrap.dll",
+    "sha256": "280275d5c4d509e85e394ff99bfb271fb0d6426718b1fa0913dce5888f847d14"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.WindowsAppRuntime.Bootstrap.Net.dll",
+    "sha256": "30aee633e05c6f892b119566e1ed0092eb0ccdded3119741b2fda6d81a7fb75c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.WindowsAppRuntime.dll",
+    "sha256": "07ed3f7896fbcfdc0be1c5cdbac2217e6512f3af1846e009336b9a7016f6265c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.WindowsAppRuntime.Insights.Resource.dll",
+    "sha256": "92772df8eb8cff4d4afd6a41b56a77deb4566fb20828273c6df1591b5713dfe3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.WindowsAppRuntime.pri",
+    "sha256": "5fb5d93875efaf28a5321483aa977598b72ea0f887c895fa30460f881ba9603e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.WinUI.dll",
+    "sha256": "701854e3c94a9f83cf08b15db0381fcd715f98871d731ad305a0973443129923"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/MRM.dll",
+    "sha256": "d34a9658f2bfa1369149e5e9261db8ba687cc95b57003d0630aef4aa17fafc7e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mscordaccore_amd64_amd64_10.0.1226.42308.dll",
+    "sha256": "86c29a7b945525135de16c3dcb71e3b8517848c459cbb21395b352d4e6bba09c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mscordaccore.dll",
+    "sha256": "86c29a7b945525135de16c3dcb71e3b8517848c459cbb21395b352d4e6bba09c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mscordbi.dll",
+    "sha256": "753e92805f3886221f56dcfc07191ad7ee44235bf689db0490bdf777f25e9175"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mscorlib.dll",
+    "sha256": "b698595367a7d4fa57ccacab73751fde0bb8f2415345c62cdfe7ced890da2c0c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mscorrc.dll",
+    "sha256": "f0d8c7491d4659a4c5a4c00615255a60e05634f311162c2775a51e03c070c9e0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/msquic.dll",
+    "sha256": "b7158d427b01c70483bb3d80c5211e387dd98e9471c8a70e4484d449de9157e8"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/netstandard.dll",
+    "sha256": "3dc81dbc9dacd28261632c94410859eda24c2db50cd6c14309cbb2a434b50c57"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/onnxruntime_providers_shared.dll",
+    "sha256": "9508ce686d280bd685040d2fca16a5a504dfd500ba59531d8fa719c1f50ed036"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/onnxruntime.dll",
+    "sha256": "1783a2135b91d2344cef8cb94c52dceaac3cb2431c27418d0cecfbe0a286312c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/PushNotificationsLongRunningTask.ProxyStub.dll",
+    "sha256": "208c62d43cfd3a63ef217330e195a63ff938c8fea8836e38763b7d4df6e93152"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/RestartAgent.exe",
+    "sha256": "9ef2e43cb0965762a7265460116bf10fdc718968a66673097c60b0a778195afe"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/SessionHandleIPCProxyStub.dll",
+    "sha256": "00b1460a22820aa0e1e1e50e8265e8f426b282f014126240f1b58f8626673812"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.AppContext.dll",
+    "sha256": "d9dd9fa44e019f27172d6b2662e2b6038f48c270912ac8aae53d4d909da7e9be"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Buffers.dll",
+    "sha256": "a1a35f5524e2f831d08ca55f702fbddcb8c6dfecd264f0f563d81a1c8b8280bd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Collections.Concurrent.dll",
+    "sha256": "082f4bc0da1141eb65111b6da633d75624adfb7bb067d7ee90c5622c8b30885b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Collections.dll",
+    "sha256": "df6f2037eabee28100184e92f7536427ba2f086c1110629804d466b124bc4d54"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Collections.Immutable.dll",
+    "sha256": "b527dd7b2beb82c22aa39787298cbeb33f3eac9eb9b83a0f0271353421db28db"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Collections.NonGeneric.dll",
+    "sha256": "aa4d5216d066c91cb489f63c6cbfcaf1f47b6e74e070db45639d3460454fc60b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Collections.Specialized.dll",
+    "sha256": "e31af1f866e880844e027be59f545b9a6b34108e0b0680ebe3fbc19a53070819"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ComponentModel.Annotations.dll",
+    "sha256": "e3be2d35d81e6475c64110cfc099895b71df22c8b46a18c2d7c76a913b8ba903"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ComponentModel.DataAnnotations.dll",
+    "sha256": "d40e8c7062e6b9ce11ba83eab3d26be0eec8066b99970ea88b8e87fb75f411bd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ComponentModel.dll",
+    "sha256": "e3b6f75864ee944898540937c1f300e04f44a1b2729516f0bbf948589a8b14b2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ComponentModel.EventBasedAsync.dll",
+    "sha256": "cc84fe814ef5e58271d83193e328f8ec220efd4696d90af9a7c4690c10451495"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ComponentModel.Primitives.dll",
+    "sha256": "1e2451184c287409ea25acde3c90f25950bf34d16458a6e52a94ca4292434f62"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ComponentModel.TypeConverter.dll",
+    "sha256": "10dae312a6697718f8ce3dfcdb17d6ae4b74687c765d74d50de8a8e69e08f5e7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Configuration.dll",
+    "sha256": "3952a72e1f18774f16952b46c20e80ed2bc601a06eca01f33fa924c738022a9c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Console.dll",
+    "sha256": "3b85daf02a3d9ed99b84bb1c639fe8b1ced46d8d157fa56f525f6b8c5be43b3e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Core.dll",
+    "sha256": "ac23faf1b37fa49f1b117baad951a65609e799a6e669a6df06d3552677e0c086"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Data.Common.dll",
+    "sha256": "66bdd62047ee460e2ce2c33d15dd1173ac97997b2745864a905179594f821acc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Data.DataSetExtensions.dll",
+    "sha256": "aeeae0755c8c7f6747765cdf82fa43182e320e97f2035e3a0a19f21905e6c113"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Data.dll",
+    "sha256": "49f52958a2a6e461d0fd7a47e54a199eb263c69ecfcc0fc684b73b5918ebf466"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.Contracts.dll",
+    "sha256": "6c05cacd9b61b08ae75f2d783cc402b0b5fc848e3d68c29c10b93897cc083e8b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.Debug.dll",
+    "sha256": "8b160ffe7518588bf64e13c01c6dcb2ef504d64f38bbf0f198d31e7b698db92c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.DiagnosticSource.dll",
+    "sha256": "6267c1bd1bdf2bdd4b5748b885b0adcda10f18697adfea8488a19a009ad44fdb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.FileVersionInfo.dll",
+    "sha256": "e94f158142e93834dec3100bde3313935517d549ff36c65819a06d3104dec427"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.Process.dll",
+    "sha256": "51a57fbe918f8b68930c090792b718fc0850ea12da869d50b97a3796af29a740"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.StackTrace.dll",
+    "sha256": "8f6397c1e2ba9b8b8bfa317962151b5035049ce8d6b3575e5027a0d0eeacc797"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.TextWriterTraceListener.dll",
+    "sha256": "1bf165cee916a854e1150f489e4348ce94755359d5fcdcc0bc2bbbe6a7102bdd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.Tools.dll",
+    "sha256": "841c5e2b6c171fa9aaff0fc6295f3fbc93dc5dcab44118b62f1c942bb674aff2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.TraceSource.dll",
+    "sha256": "8445c7f1bbaae6cffde60e2c9a8753faaa5100255fbe31d0a1927d9d9bb7f194"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Diagnostics.Tracing.dll",
+    "sha256": "9563d5eec35f94d13a5e62eaa9535dbe0e9ea474f055da132fb8af46b0b01263"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.dll",
+    "sha256": "ef135f0bda0c41e142fdbd67b93e5aa7911916cb250f7df302f4151a3bbfa380"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Drawing.dll",
+    "sha256": "585a8da9952d715f8de7a7b1879b59d68ff8608b92f6ed1c5f0e1d251180d3c6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Drawing.Primitives.dll",
+    "sha256": "17585b32ca91bac8ccff2ef1c6ddf62ee9ea5efc552928c3a9d1b868394246e9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Dynamic.Runtime.dll",
+    "sha256": "c0eac30c791db8c1a2b50b61c50d029f4ddd0eadfdd35433745001688a3e7466"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Formats.Asn1.dll",
+    "sha256": "a163fe5f96d1689f1bc1ac531b38c3aba95792ac7dd52231d325d658947fbcfd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Formats.Tar.dll",
+    "sha256": "44c9984f269a158915195fd32007f22c3bb692dcfeb933cda8ea45a3ac6cd1ce"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Globalization.Calendars.dll",
+    "sha256": "e0f3f3f6e4acc7b6755782fed5cb075ecf70beee4fc5d404579ae99bc0883ef2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Globalization.dll",
+    "sha256": "66902cffd057673b4b77aa68faf80d33ffa4c94510e61db2a067943cc53b7702"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Globalization.Extensions.dll",
+    "sha256": "be0390557cc72078a7217cf94fd44b9ab66aa30838c00a92aa78c62469c44aa0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Compression.Brotli.dll",
+    "sha256": "0a59a95787ee15784d73079fdd5dc555b78659a6c560b6cbbf0d7452e638df89"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Compression.dll",
+    "sha256": "c942747f84b730887090f5e0cf86d164c0ee402e524dce2750e06a6df48513fb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Compression.FileSystem.dll",
+    "sha256": "4aeec2c0189f73ba8122f05c0d759008ddae1a8873b167cc8a558d53f2af80e1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Compression.Native.dll",
+    "sha256": "4d174b78aa8b3516c7e3cec0355dfe9ae570894055c377d2e5565d077a9a7a1e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Compression.ZipFile.dll",
+    "sha256": "2da76eb281740be485b5637da8c60fe0ce12bc2848d1a1a81ce144fa74313e18"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.dll",
+    "sha256": "388400ccb189b819d6ec5f1ef70710a39641d93ed5b870fc9324866b75dfb78b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.FileSystem.AccessControl.dll",
+    "sha256": "f7f9ed6cdab35274711e9345266784ec332ae8040db184d141c70e7941fbbec5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.FileSystem.dll",
+    "sha256": "c251f33b29382c47b773d907463edd9fe978a06e39efd5670ef3b3b1d4f8c2b7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.FileSystem.DriveInfo.dll",
+    "sha256": "0a7f3dd2fb6147a3fc046aeac8501d764effe5a3d8cfa56d2b244aa50b874b98"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.FileSystem.Primitives.dll",
+    "sha256": "d3b21b8b38e48c6b4d1cb5cfe9adfe4abad7b3353601febd3c7e4027f9ef9c6b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.FileSystem.Watcher.dll",
+    "sha256": "8ab1704e4bd171056ec5a11e886d5199d05a641c6d0233c53d4766bf30328dd3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.IsolatedStorage.dll",
+    "sha256": "2272a8bde18ed0e7c9e54ece9b849b9be76c90b978909d2b2fc94cf0ccbce427"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.MemoryMappedFiles.dll",
+    "sha256": "6e8b281ecb2f0f5e7aad3980f61d8812caa6b37884737f542f95410a76663e0e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Pipelines.dll",
+    "sha256": "ee9f0fd6c659f50799afd103c6ed9c5e408967e28dfa059bddf4b0a3fd2557dd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Pipes.AccessControl.dll",
+    "sha256": "1102f25a6e88f2fae81e4cd3628d8ef826f847b9c9b6a4d32ff8b37e0300da35"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.Pipes.dll",
+    "sha256": "3804f9992861122e60990b0765d0b50b33cdc2e4d89d26d9dbf8641d1d0134a2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.IO.UnmanagedMemoryStream.dll",
+    "sha256": "ad6a5f859589e1951103a00f45566da079cf87bd8b03f0c6ad985a6f39f19c5a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Linq.AsyncEnumerable.dll",
+    "sha256": "925208e8ac40ac3f7b988aba6ccbbb58adac38ad1876a7d97ee137be6c21a653"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Linq.dll",
+    "sha256": "284d38945b6e92e847129bd28af458b19818d0f2181f79882888ab2003f4c519"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Linq.Expressions.dll",
+    "sha256": "8830f4a6a6982f53cfbb54f992858ee36b4994a6ff6e6078c39627e77bef282f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Linq.Parallel.dll",
+    "sha256": "aa6068e3d8f6b2e492cc63dcaad6b02942edbae445cb2b88c24f1850b25c49f5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Linq.Queryable.dll",
+    "sha256": "b3b3a9c1b87a51dacd46a3f9ec392c5d05e449152d44d6bd495df0994350e2fa"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Memory.dll",
+    "sha256": "f8f9d38efd6b0de30954d6bf1f353e9617bfb36d3d245c013a3b12be9f6bd88a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.dll",
+    "sha256": "481b38c912f8779b3510cd00f079e45096ea22b6defdaab66780d5ac3ae6986a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Http.dll",
+    "sha256": "b98ed0cb80dd54c33fc049f33af5448710752155bbd5cc8cbcd932e01f066801"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Http.Json.dll",
+    "sha256": "a9fe81ba3c048f9977e0099800eefd570a49be723c555725da57ba797c92b4e0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.HttpListener.dll",
+    "sha256": "3dfe11fb30c5f84c911d9562be6c2037113cd8976ef2def3550ac415ae58955b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Mail.dll",
+    "sha256": "b585a55ee67c80d7f02a84d50d626d279c7aa77fd3e38206b434bd20c181eedc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.NameResolution.dll",
+    "sha256": "e786c0940f5322f0ad6e8e34e7b582e5b050df0fb2230329325307e61bfd994c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.NetworkInformation.dll",
+    "sha256": "7e8791833eb2d0aea77b119fed3cab8bf501f6a553155cc1c4e5b1c02f65593b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Ping.dll",
+    "sha256": "06bb307343db955a312634d00ba5e097cf5168a901284437592c28d780804e33"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Primitives.dll",
+    "sha256": "4dbb41a178ef013a898327152eccd146228dd2eb83859b9bb36078333b41f0f1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Quic.dll",
+    "sha256": "af5b52cdee62d014af677c411530a3fde5c1c368adecb8f83dcfe9246e8bbe73"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Requests.dll",
+    "sha256": "ed82d9d0b7942b2b02c5744a4591fbe2316879618adfc5660c9f111f814155f2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Security.dll",
+    "sha256": "a78bd713e807729f15b0e085c67fd6cbfefa85736a2618512d4ff1212759eba5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.ServerSentEvents.dll",
+    "sha256": "c0b1944020d0e5688b90fba9f29209e367674e29d2020f700c302994d5417eda"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.ServicePoint.dll",
+    "sha256": "84fa83cd96e62fda02991b8a8e99fa1c7b3ac08807b04f7486a896cfe6b4a760"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.Sockets.dll",
+    "sha256": "645c56d637ce15976998119e50722a911315682ce141b4aab98874ce1b063f3a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.WebClient.dll",
+    "sha256": "defa7bbf90c77ed01d6add53f678e4adfbcf97f3b1152affec06e652d327f1a2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.WebHeaderCollection.dll",
+    "sha256": "74d66f776b4c15936a7b887f47ceb8bf277dbe82e71a78dd3ea5d02502b081e7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.WebProxy.dll",
+    "sha256": "408e3daabb3f42b4f1b72a1e1def38f12ba58eb9d23dca620086819cf7484195"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.WebSockets.Client.dll",
+    "sha256": "f308a69b9ee1ac982f53d1d94374f4972a7e3c700742901ff7c2bbfb570019d2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Net.WebSockets.dll",
+    "sha256": "c014a074d408c71011e26eac69be85003a852cfe115e8608bb5d4fd70536eb2e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Numerics.dll",
+    "sha256": "35adc9360421b3b7a3d50399cb2c651c160158d7e8c302907acbce5f61f4a4f7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Numerics.Tensors.dll",
+    "sha256": "9d96dc759fdb54cbc3c26ee65cfd78ff32e3745f418119cc0811e63d3f29ecb9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Numerics.Vectors.dll",
+    "sha256": "a9a980ee33ed0c798a5e1960c4557521f465ac9e0987dfd2c3049d53b1f2fa5a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ObjectModel.dll",
+    "sha256": "2179bb19f335b4fcacd0994ad2ccfdac6840deff09c7889debfe9dbb5b88a3e6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Private.CoreLib.dll",
+    "sha256": "1125acc8106c43fc8bad2d203c4c4485df6182d292846c2fff415c1040c54678"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Private.DataContractSerialization.dll",
+    "sha256": "8c07a5333c4e938cad8ac8f24b5965121bc0622442a352cbe81c58f17c2349a8"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Private.Uri.dll",
+    "sha256": "b15c84d2120e1ec9612c66ba59bc3d7e67d841e2bce7b7d0478cb212537539b4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Private.Xml.dll",
+    "sha256": "d71e72a7a9de324352edd281a46466b51bd0bdd2831b1573f8d3bae8bd2dd4a6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Private.Xml.Linq.dll",
+    "sha256": "c832b73de9783e6929ca5ff4863fc313e13ef7cfb5965c52587c4f77f6e037a7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.DispatchProxy.dll",
+    "sha256": "bf93a361c0bba8497889c9f7713add5968ba39394f9e6bda27e86294c6c43560"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.dll",
+    "sha256": "95059346d6271dd6d0322cc321e5fb8cceab662f550c67aee7615059e41739bb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.Emit.dll",
+    "sha256": "09059981bbeea0fdc5df589be5d7e3937d57e22bec4d78ceb492c587926fc238"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.Emit.ILGeneration.dll",
+    "sha256": "6b42ddd05b0ca1c7342d73ea9f401fe588044215d65c67b756deb780f0894a26"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.Emit.Lightweight.dll",
+    "sha256": "d2724a2b7b46146877ec1f6e400c49ea05f84bdd31f3bba52ae139ee68a4f779"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.Extensions.dll",
+    "sha256": "ceb1b81e1eb488d87bd43d16dc54450b2a78e0b653c44c988aae2a20abc162bc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.Metadata.dll",
+    "sha256": "82973e772017944a0548e445f30757595d95fe99e1f5c4a446df8c4db04b1c18"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.Primitives.dll",
+    "sha256": "c2bbd885d03da5e880667c228ac1f56a5f3a72ea37d43f010ada000adc33da28"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Reflection.TypeExtensions.dll",
+    "sha256": "7cac73ed746ce05a4a2f1e61dd52d41322ecc6ba84cfec463380f49487031459"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Resources.Reader.dll",
+    "sha256": "20bdb5d302b5e28f6042c9f281cfa3ae2f2358544cc40783052fe5abf6aa859b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Resources.ResourceManager.dll",
+    "sha256": "f709eb5cf16e26679782784c428825019785fcc7085562092425d4999bece03d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Resources.Writer.dll",
+    "sha256": "684836486b9ba2817efa3099118860d259fd16db0c4c0533d42cad8c6c165b62"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.CompilerServices.Unsafe.dll",
+    "sha256": "6e685ec0477b21a688cd38bfcafc673888cdf186c99df3c96fab352e96d6fdc8"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.CompilerServices.VisualC.dll",
+    "sha256": "5fd85d3d7b47a921bdf48bf938c6615a49a4a3d493e1ea199f1b997c709618f4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.dll",
+    "sha256": "76be53624f64b23d0249dfa0bbe85390086de7c44bfd490642ea86c6faaf44af"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Extensions.dll",
+    "sha256": "3d7b517d4fd89ee58c53e0f642cc9be42e7a8669b51a85e861dafe118067cbfd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Handles.dll",
+    "sha256": "985457a3e6a67e96a445ee0fb69b2d58bcdadc4c964253fb63e2d5061a36b050"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.InteropServices.dll",
+    "sha256": "e5eb1679f3579c9141e2bb9dbdce62624a623f38d299805cc1de07bacd21841f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.InteropServices.JavaScript.dll",
+    "sha256": "5ba32bcde2d72362db2d6e02763ece79fa35bc878b50493e956ce594307e997f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.InteropServices.RuntimeInformation.dll",
+    "sha256": "c26d9f94329422bd000f28f6c65fdc162bf9397a6d29e418a189d4ca49c5c3ec"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Intrinsics.dll",
+    "sha256": "b07694ec91f3a200acf0f8b37c6ce5fcf05126a9198ae156d839fa5ca8439dc5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Loader.dll",
+    "sha256": "9b9b2a4f0358d9146e76178ddb87d019be380c78baa7dac853493d45df089f03"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Numerics.dll",
+    "sha256": "8ac94fb810c092a9297a903762e79a75ae07d7229d0721540c391f86d3d5d220"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Serialization.dll",
+    "sha256": "d565fc261ca98cbd14833821f777860291e8a0f775de7aee91778a9f6647f6f4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Serialization.Formatters.dll",
+    "sha256": "5e8e957c6b7a63132555ede5bcf5fe6a59934c83300e28074ec6e9845ecdd17f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Serialization.Json.dll",
+    "sha256": "2fd71e3545dab4fc89b3fe54d13a1142f26a0cf187ebe375b3f7fa210fcb2596"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Serialization.Primitives.dll",
+    "sha256": "f96093940e64d8eead98c86de9773d3c9d12c2b033bc6b1312ac88398303fdf3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Runtime.Serialization.Xml.dll",
+    "sha256": "eedb66ea2cd1a26cc45a46d6631209ccbec959af82208872a93b3ae52f189222"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.AccessControl.dll",
+    "sha256": "cdc304f9ddb32023adb8db8953e56711c9b64462e4341d0b62e87ccd19dc7b10"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Claims.dll",
+    "sha256": "c53c8a7e95d8296f951872fdd2e6334d11c20bffd4322f1a088773bf9dcaa3c2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.Algorithms.dll",
+    "sha256": "eb99ae7dbe058a1b015aba6769ce1f65155b7ff51ff9a7203fcf6d7cdea5fef7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.Cng.dll",
+    "sha256": "7319f97896d92a7d0729cf28dc6c4d1f797c1520b656ee01a780eec726ec2c16"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.Csp.dll",
+    "sha256": "4002af141e9cb29875b677841adf64a9681e5672c2595492dcbc161460d4e121"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.dll",
+    "sha256": "e0a839a540e47343b53a936b32d91599a3470005228d50fd0b896f8bbdcc65b0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.Encoding.dll",
+    "sha256": "994494aec7760f40fade2264aa7c13eebae36360f0b1399a7134bb19c9d58fda"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.OpenSsl.dll",
+    "sha256": "1a8902bbad1b577a98bec62a8472105dc1e9a253e390f69fbe3d167e93206968"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.Primitives.dll",
+    "sha256": "194cccea9354bb248e44c954b5373f9069163f8f21524b3ee4b3185fe436bc15"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.ProtectedData.dll",
+    "sha256": "7ccc461b061d8e45acf41219809c8773028274037906180c77495571a305734b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Cryptography.X509Certificates.dll",
+    "sha256": "7439c3b90bc2ee49a9275b28ed29052b4d48b45999ac1b7d25593033b1bb8dd6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.dll",
+    "sha256": "d8efd304765e859369698efef9b3ca707defa8e142721fe5605d7a2de7d38375"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Principal.dll",
+    "sha256": "1d3e351058be3a33214b23b308fe57f78cd6fd4d8fad448fc84cbbe7376129f9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.Principal.Windows.dll",
+    "sha256": "2311a3f92971de918943573dfb66e04e25c1d543663951eb24e8eb1a0dcd4251"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Security.SecureString.dll",
+    "sha256": "73aac97072b7deefa4de9647bf822162224f1452ad467841b989ff89d4d94595"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ServiceModel.Web.dll",
+    "sha256": "ce91013ee3a9a9d69a85e258f7749e6ece488295d7cb66f7c1079f2e8678fc5e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ServiceProcess.dll",
+    "sha256": "63fc498c9d04e3c4345dfdb8016ad0639d54562dd7d8c707c072792c854df944"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Text.Encoding.CodePages.dll",
+    "sha256": "226e216e33c94ef7594bdffe670ba4dc5907151c113cb41ac9e9d570227e1765"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Text.Encoding.dll",
+    "sha256": "5e347db6b4f9b2746d50e1ac85be2d9cc7dc4038fde98ac4295bc7030c83cda9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Text.Encoding.Extensions.dll",
+    "sha256": "8f51b9535db64fe027a40d6076200b1a6b0889bf05f62bb8e68c3eb083c7f113"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Text.Encodings.Web.dll",
+    "sha256": "d20431f20d992e71a4e82e5f25c822474e2f4097d8527972d3d78ea1f26e47c3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Text.Json.dll",
+    "sha256": "fa99f413be21ed5f484a09093fe5f0beba7de3062cf9cc9f847dbf8108dba55a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Text.RegularExpressions.dll",
+    "sha256": "060bcc88a688e687ff1404b83b5fb5cf17e19ec57f33d5b8a48ab494da83c134"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.AccessControl.dll",
+    "sha256": "66d618b5522b3e4f7a3c7f2bd872fc378fa6f9bbdca3636854eb1a8cb948e631"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Channels.dll",
+    "sha256": "afc5deb3c32b3f64bced2025d0b01b316d41b691ebc6ccb1a2ec445ad4c15e39"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.dll",
+    "sha256": "6c32ed1bf8067e4169e8feddd15e6489b89d19d1c7aae1520a551b57745d0a60"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Overlapped.dll",
+    "sha256": "89fde15f8e520c4bcbc6cbfdceba2baed8670cdf52399a4cd7a21c6efb276c1a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Tasks.Dataflow.dll",
+    "sha256": "a895b0c73d3a1afc4d89c1d9e445ed447af12864c25aad2c4cb7398ff50aa934"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Tasks.dll",
+    "sha256": "f80b21f7dae04377b73945456cabe25e2ab1f4b564095aed546c2aa571644567"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Tasks.Extensions.dll",
+    "sha256": "f148e3a1414b7c2763ae21529ad79ad759f7cfd3c885256b64b0d2209dec2613"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Tasks.Parallel.dll",
+    "sha256": "6fa359bdbebb56be96339f244ed41658afcead5e010074da470df1115d1e7699"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Thread.dll",
+    "sha256": "ce71949bb1ea67b686e799128582015ebf8758f1107e59e43f342ece3f662930"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.ThreadPool.dll",
+    "sha256": "58fbc6c4b9c72087152fd0f0670a527098c00b0c19ba8d0979d3ca5ce07c6936"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Threading.Timer.dll",
+    "sha256": "9e4620846572f49aeb476aa99405071b4bbd0df4323e4e232787ed73642b1ee5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Transactions.dll",
+    "sha256": "56abfca0350c111d077b3d86a2469ea3da4fccc1871f7c51a8b4fdb664bb0ede"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Transactions.Local.dll",
+    "sha256": "8d0283a311a16333ffb6f966d9765e4d8b866777ad99291a93b30db349a15bc4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.ValueTuple.dll",
+    "sha256": "07a5347f6a597e5e0d72109efa1a525697e8c3f74fb0029005500f8ebbf9187a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Web.dll",
+    "sha256": "bc260b3db247ad9a6e4a82a275da85c3691a41272cc745cb7eaefcf1f31cc817"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Web.HttpUtility.dll",
+    "sha256": "2cedef51b0a2c2b84240583339ecf2422c650e3388aa46f3494160b93b673887"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Windows.dll",
+    "sha256": "716eee98ceee87d38f0b301224462f8442aa793f4b1b9c3ffac315753320ab37"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.dll",
+    "sha256": "277a84ba155fe7808a514f32694a8157ec9f0eeeef00ef9643e5250004054ff0"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.Linq.dll",
+    "sha256": "ae04903b25717fa4695e7e63489091f0d461e791e0bd264c6c85250d668f540d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.ReaderWriter.dll",
+    "sha256": "8e48fed4d12bcffff01e8059caafb564697275797d2f5ec6823fdd82b87fe938"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.Serialization.dll",
+    "sha256": "489694401c60905cb6dca8ef0bf738cb609cd45b337126a01c825b913086ba43"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.XDocument.dll",
+    "sha256": "3ff858607de5146051498a7124ef983bea280d86e165f993516c6c26af81cfb5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.XmlDocument.dll",
+    "sha256": "a50b9b3a03596e36e73e7a7d54f4d018e8dcfaa7fe79e8cf900af8838ef3ec36"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.XmlSerializer.dll",
+    "sha256": "0b7d057c2b5b2272e8d4096a755edfd96f3cf03ab9aaa3fef54b462bf48d517e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.XPath.dll",
+    "sha256": "c817b11c58d95fa942fbc62a4cfa8219e16dafa5641eb004cb2be424028ed5d8"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/System.Xml.XPath.XDocument.dll",
+    "sha256": "5bcd27a7e93515b745993f6dda51391033883cb8a1a8a2e3dad5caed3548f0da"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WebView2Loader.dll",
+    "sha256": "3426dcc55fdfb8b5e7ac623cf33b4ccf283fbf68a0c5a65bddfdb4d749a8abee"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WindowsAppRuntime.DeploymentExtensions.OneCore.dll",
+    "sha256": "c1911226e08adce52fb3ae55ca90af5fb98e70d8b84609e98820e4be86c624f7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WindowsAppRuntime.png",
+    "sha256": "c702c6a10a5bbde4dbfe1a607367c4f1bd88b44a576eb95394a9d70753694503"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WindowsAppSdk.AppxDeploymentExtensions.Desktop-EventLog-Instrumentation.dll",
+    "sha256": "60aa271a4ceaf951b2676f0c6e071a53e63b01e0567c96210b5c6db7488418ad"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll",
+    "sha256": "cd6a6b23cf904b25ac678e68fc8b4a880662ad3ffa0d3803bf2463666c0f3821"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WindowsBase.dll",
+    "sha256": "0ec46a38f29a234b9a4d0ae9364c8322f661a47c831c5b948f2787b7ca12dbbd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WinRT.Runtime.dll",
+    "sha256": "bcf3a14e8712a90837fc5c0d8c8a24696af2bd7f74e9767597ec81ededfb23db"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/WinUIEdit.dll",
+    "sha256": "66c66a9e08b001bde110c9186f51bd48dd505e57496730079065e160a46aa85f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/workloads.365.json",
+    "sha256": "ef1e3099dcc7a65bba094302c4d4b2bb383ac3060ae5d2c16c6568a39b8bbcf5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/workloads.j32.json",
+    "sha256": "db22ac4c9f9d51ce608bf6d0d0d5b7d9944eeb65168f481e1d28679041876b9a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/workloads.json",
+    "sha256": "cb7343d7529ce168867685075c4bb0843c8ceb02c1df5b6b5d704a5efc2f8766"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/workloads.lnl.json",
+    "sha256": "464dee359d65b2226f4c1cf5b89bfdbada1faf57537f85072e199629922ce16e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/workloads.qnn.json",
+    "sha256": "aaf75b3ed0824be825c49c096080c9a07d33c323684f63eecd6ac83f70282e7b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/workloads.stx.json",
+    "sha256": "54b8339754205f96ede94f7fb8f8e108c89481b9f99c47fdc098d580e6fcb673"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/wuceffectsi.dll",
+    "sha256": "fa41b515fe88736b31bdbf02b966b204b5776d5a6f0f5efdd4c6cbc8943ac509"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/af-ZA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "e254827b4fc47f80a53f9f42e93d55e2faea4cad99e710fca52317db67d8b9e1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/af-ZA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "a83339d6c79795b7a94cf3e93f4405e6e0098ded5361b6afbd78a537efed9ff1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/am-ET/Microsoft.ui.xaml.dll.mui",
+    "sha256": "b75339b251f6b490bad27a67decaa7907fef727046aa4091be24694564fff621"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/am-ET/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "b9ff2e3b37bebd27ff14a3ea22c32523b062ad0a31f123b8e5b17792ef653326"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ar-SA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "ee565af356232d908567f307485fee13d2d93c4838d341087cfd9b3546a26bbc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ar-SA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "ae8655cb3cbd683dbef1d3ad8c90e0da8db2177f44f2ae2710ded50c1d5111a4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/as-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "48507b32d5c745f2fe03c38090a1a52ef2d70a6d045abbe31cf5be0d55e52879"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/as-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "c466e8c3a9be8171b12abef6e286caf1e3dae42f812a476e5889b81a3b9cb7e4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/az-Latn-AZ/Microsoft.ui.xaml.dll.mui",
+    "sha256": "1215da9bf43bc2ab7ce1b3b3b7708153ab71d2e2fb7403d92683cd7ba809f419"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/az-Latn-AZ/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "c70eb710b8f46ad24ce601bd2f8f8317bbbd0ca02923ef1c1546015dd259178d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/bg-BG/Microsoft.ui.xaml.dll.mui",
+    "sha256": "6ac8407594209b8858aea89713968256d1f6f49ed1c10a6d1922096952b96527"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/bg-BG/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "69e1122738c6efa5e24b54806bae7f4db54cf2ae0ae9c665f16846ff65b21c38"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/bn-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "b993efbf499d540f3cb25ccc225033948f48a174ca1854a516c81a613378bb70"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/bn-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "c34b4d8cef7d4cec1c588acf788008a423d3aa618bdfbb46f1b82429c1a4aba4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/bs-Latn-BA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "8db20f567c5f0f2679d29107ec24f1f4c4f54bb13077b5bd5549eda7aac5e4fb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/bs-Latn-BA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "eec88a377b03f006ed59c090468ee55a40df7da8547bdf211629be36443a989d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ca-ES/Microsoft.ui.xaml.dll.mui",
+    "sha256": "be824fb7b58123d94ebcc02a7f80af12c03be9f269397ab100f98058cf07e4c2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ca-ES/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "45bcd3f29a455e86e6c03d076386b80c08a170cf59e15f838bb0d3e08180798c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ca-Es-VALENCIA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "b3932bd78808724d4a0e7fd19dc756219e9739e95b5176d296f96711ffbdd00b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ca-Es-VALENCIA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "abfadb3fe5d5b38409f532e91e2a65bff70a14a7fa7195545220b1eded045748"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/config/logto.public.json",
+    "sha256": "1723776a22b94e2ccebc4c022bccff0fd89e6503806eb23b42e9a1abfea06063"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/config/registration.json",
+    "sha256": "38640af8e83f91b10083168492a5a5bcbfb5cb600806bf9a403e0e130d1ea62d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/cs-CZ/Microsoft.ui.xaml.dll.mui",
+    "sha256": "10f1e70b183247256fc73fca43d114167589ccd7337b697b1e7885da36bb5330"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/cs-CZ/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "219ce8d947df426fb654b5b557f19ab576ffd43dde28b54a3cbe9ff5fa675c80"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/cy-GB/Microsoft.ui.xaml.dll.mui",
+    "sha256": "5603002365a80f1e3f50804e1b99c60d8dfb21b9562d150e203abf8e956ce621"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/cy-GB/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "49ffce9f2cd5baf8d7b033931774bd77cbb767d167a390961060d7616389bdad"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/da-DK/Microsoft.ui.xaml.dll.mui",
+    "sha256": "575a83871da1d3cb929d26eddcca887cfecd09238ad3b5ffbc45d8ed6e8acee6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/da-DK/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "8259b35fa2871754f1af3fdbc29fe0429903eaf5f35d2a6110ca4d915d64b393"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/de-DE/Microsoft.ui.xaml.dll.mui",
+    "sha256": "1cdc5d007f796f20e54395052d77e5f34f0eb517554076ae70048a482f7c9d59"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/de-DE/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "fdb79254c6545d382893daca17a131fcda85a9eba2f31adf3f266cb699e63981"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/el-GR/Microsoft.ui.xaml.dll.mui",
+    "sha256": "fc44fa195c32c80d8517260068bf1952d9e86e482dc5f96e87f09c8618b98020"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/el-GR/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "f4e3da9f2e7f43bcc3d4056a2499449cba5052eb71dd5b9daa4f6fa7c52f6c4b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/en-GB/Microsoft.ui.xaml.dll.mui",
+    "sha256": "8c67e404c2fc65e81f6dfec0c16fc8c4ee04c78b2a329bd17abb0b93f49e8de8"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/en-GB/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "43a04b5d2e09a44dd95e73773534cdaad129f150fdf8c7f2910bebc824dddb1a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/en-us/Microsoft.ui.xaml.dll.mui",
+    "sha256": "df8175aeea1f71f8523b27c3472c963ddd61d0b71c1c5d875c46db07e8f8910a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/en-us/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "f24554804988cfdf72fee9c9dabed864e02781a846fa7bd8e513392691a43ee5"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/es-ES/Microsoft.ui.xaml.dll.mui",
+    "sha256": "39e0cae6f876deb5f2f2d7fc42c45062f2f6cc311e57c05fbaa6534e01816666"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/es-ES/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "4be42f887df436199548f9082c714774f5b0f78a29d5ecdbcf83a0ac921bc3af"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/es-MX/Microsoft.ui.xaml.dll.mui",
+    "sha256": "d27dab5e8449d091e1c41f66a73fab31ffb532b5103de9317d221cfd19c67f87"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/es-MX/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "71575a74146612efaab795b1e72e67ccaf4d167040180d7abd98c83d3035b21f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/et-EE/Microsoft.ui.xaml.dll.mui",
+    "sha256": "77291662a80f00a218095efc8e208d5ac765776ed5a3e1f43b7c0b173c75a6be"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/et-EE/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "bd91fa1977070bf7709e53c62fafb6dcaf2090ffe67371866e582cede27613cd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/eu-ES/Microsoft.ui.xaml.dll.mui",
+    "sha256": "492bd11f822a9d13b7a7d3cced752509e04de6bed8a5cd6ee6a64908ef485250"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/eu-ES/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "11eb0145a48f9a687dbdde810fd22b293472adaa8f7d39f567b35ae4261c1c82"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fa-IR/Microsoft.ui.xaml.dll.mui",
+    "sha256": "839433be67f794c35cd4a4e3d6423c30621f191f80ccfa372fb27b6abec465a6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fa-IR/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "83a270ca1f62f86869163ca96f5612826c076aaceed56ffc0688c5be4e334a91"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fi-FI/Microsoft.ui.xaml.dll.mui",
+    "sha256": "9a56bd1ee78255bc4c21f9c56d8932c0e81262603a52cc73805f1d1f6deed72a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fi-FI/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "4f2329bb9b07efeec747484e1b4f43a8a54a08b436874b789efe72deec88c095"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fil-PH/Microsoft.ui.xaml.dll.mui",
+    "sha256": "c94d239caf270505194bf2216554eac0a0b693f76ed59e59b680d3c6017114a9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fil-PH/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "840a47c5486b169e59aaad942bd9e405381465a865e31b9a0421a9bbfc9dd6b2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fr-CA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "c5a0607abf07d7e90d494a853ee1163a14a571107d18c65c098c140ed5f23eae"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fr-CA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "7d0fcfe85cf26c77088503063f534f91b8bb21f67a2cd999cafc515b50156450"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fr-FR/Microsoft.ui.xaml.dll.mui",
+    "sha256": "fd1af0f9e9f90cfa99658b48c14028bfe356bb7ce532976ef73ed6bb54dddd70"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/fr-FR/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "17720403c390795123d99c2e8f74d2a587a9ea64ccb9585e746cc3d0eeb493ce"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ga-IE/Microsoft.ui.xaml.dll.mui",
+    "sha256": "8b9f9be8adeee74c132db73fb15c0e935b9a5499347755af5367ca3cd8ecb723"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ga-IE/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "40c49b0b92816475113de64a2a92a6563f632705b67a1d275845d740fa84feb4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/gd-gb/Microsoft.ui.xaml.dll.mui",
+    "sha256": "d27264d5127632103426466c4a35a37ef227db04d991d0a03aad035aa937640b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/gd-gb/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "c88c7e27f7e8e0ebeed26d35ecf86d50416dc5b6938a821b4d317f0b522abf32"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/gl-ES/Microsoft.ui.xaml.dll.mui",
+    "sha256": "236b3fce29b3cc30b825cb89de2709e3281381eab3836d8010c1edd7f450c9e4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/gl-ES/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "42e2011425118e760bf48c423c07374306c1f056e290e2b2b267669869e06ef2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/gu-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "d119b347ffdfd31ecf201f1ab80135e3e92768b6d0c7ed954dff7a9be50ed0bc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/gu-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "cfd547b31ac327848e98353fe7afccef82ceca5b30c00e986c68db9985564f54"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/he-IL/Microsoft.ui.xaml.dll.mui",
+    "sha256": "dff4701f52c665030fba811c234b9e9dd0d044b8e88d4597c372c7b383ae7f34"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/he-IL/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "ad30068a8d665435481a3c9ff5cd395ec9056a51af10088880d9aa73c4b08f53"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hi-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "2fa998a08526e5244f2cd5cc9f6d5c1d277dfef15cd9cebbd464ec47ccf7c154"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hi-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "63fc6ddf80d3ecb8b744e3cce068effe31b74d61bc7fdbf196b7673716a06fbc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hr-HR/Microsoft.ui.xaml.dll.mui",
+    "sha256": "0f4d06fc2c5906bd3a09dd8024f35125d3cf2f3edec9119438f75830e2f503fe"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hr-HR/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "1006f17318598f0b8cef26e311f820e4dc8ad36af0d6b9bf7aa5542964165f42"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hu-HU/Microsoft.ui.xaml.dll.mui",
+    "sha256": "83c39ee3e21d57d880452be45afbbb39ce538443a4f34e010d3d74af485c0677"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hu-HU/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "3df1dd5c37739924fb42e723e61d37bf7df8f2858983e2cdf4f6f5d8ec83a78d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hy-AM/Microsoft.ui.xaml.dll.mui",
+    "sha256": "c22be57d9bdd924f257eae74745b725e1a4d0524071671e3a03d4296e799c8ae"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/hy-AM/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "214abf7dfafbb464bb0063e81f6cae36d3ce4adfbee5d47f475a5345b78873c4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/id-ID/Microsoft.ui.xaml.dll.mui",
+    "sha256": "9acdd0dc27bc40400eb804ecee822a881b3025d5d46a919e6c140b20ac73aa3e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/id-ID/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "e1b52765ecec9543ad65b240ef336ff438af98314f5253c16d003228c96eb5c6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/is-IS/Microsoft.ui.xaml.dll.mui",
+    "sha256": "413a7fb4349d655b7205dd0acc5d8d6988754edf8ecd2cd06d965d285f4e8dc9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/is-IS/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "a015bd5fc480c5c4ca1c6d48e2744b0553d62923cdc718c3d761226acad7ad61"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/it-IT/Microsoft.ui.xaml.dll.mui",
+    "sha256": "8c0b36d90bdab6b85e35ad226efea3f2e6b7275f36435f632f6c77f957b0754a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/it-IT/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "b21888fd3d8895880fc5ae4d7011668ce7c3e7a01f495e15c31d89dbd5f01608"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ja-JP/Microsoft.ui.xaml.dll.mui",
+    "sha256": "55637bddd9d12691787abe7703bfdd1b448ecae19c20fd2ab714123c16ba421e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ja-JP/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "d0e4ab6bde94b72ed9e08a72c5b6c46dbefa76a0119023119163cc4a73610dd1"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ka-GE/Microsoft.ui.xaml.dll.mui",
+    "sha256": "64e694f1373b292a7622d260b95c3772f4be1bbe0a3aca9cfd3e2e80db3e9769"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ka-GE/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "d2fbae9db16f3829adf1847578db7c461b4c89cc3139e0919f046f6f79aa8b85"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/kk-KZ/Microsoft.ui.xaml.dll.mui",
+    "sha256": "ffb59201b00ee0e28a63d41360b9fd3b47a99344e3a9e23a709d3efde3c823ad"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/kk-KZ/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "515f0fd195cf0ef27f61155af694cb2fe366840dac7a32b55c8f1581eafca0a7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/km-KH/Microsoft.ui.xaml.dll.mui",
+    "sha256": "ed4f31fed883c35056cfea2b7d78ab9db5446371fff32d2d0300bc6e1fa8908b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/km-KH/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "244ab040f8bc842df6f32d61566f49d2de39c0bf0b222aa72ae72b6fa9a0dcd8"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/kn-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "e462e06d5c9c77b0abf88ea100559592ed4c780964979c90eeafed8d919efb26"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/kn-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "462d5a9fbe7380271926e4029a636cc5e3e990d298fe5d67280e53509ec924ea"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ko-KR/Microsoft.ui.xaml.dll.mui",
+    "sha256": "f7701dc242596598d135d5419136dd16389dcb7d68540764d5e47570acf58e20"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ko-KR/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "edea730cbd8efb266fd03ac7197896042b0341f721da3b9cf428c36f766f2596"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/kok-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "2a79c475bf4ce6dbf2082e565412b6672dc390fb4df670c97fc5c9cdb8dcfa95"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/kok-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "39bd241a6a16c32d91d48ecd0fa2f465dfb1b42a56a7e1314611691c21e1fe12"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lb-LU/Microsoft.ui.xaml.dll.mui",
+    "sha256": "bfafaa5634df983a860db5a99dbc4e1710caa6898b04b2a3f88934cd865990e7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lb-LU/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "f2c43274da59534fdeb6334349db60ef2a3c108bfccf0f39e606b91ceb54498a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lo-LA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "46de124c4ea039b711aabdc640464d2579e9ee28bd0202e7539c87c7e5e3d513"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lo-LA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "6d41df1b0b5a6c96cc54819e16ca71fe7a47a0670e8137df232874fc70b87697"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lt-LT/Microsoft.ui.xaml.dll.mui",
+    "sha256": "579953f90e957f2d5f849fe2514d65696cc89216bcb69e7d224fa21510e5c05a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lt-LT/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "02897e3371c8732ec4ce726446089d855f8ecea7592788e94680c40023ce9ebf"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lv-LV/Microsoft.ui.xaml.dll.mui",
+    "sha256": "710116bdab769fa6a1a0e16d6177df055badffc8a95bcf2a08f88d8037c92a74"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/lv-LV/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "7b06d4887a7d6a5e8dd10b3305716e7bf05ac7d6d940afb83d705ad733633701"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mi-NZ/Microsoft.ui.xaml.dll.mui",
+    "sha256": "24674bc2755d58c0d89e6ec82591fff64f47e3fe47588e011387abb011af430c"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mi-NZ/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "843eb1fcdc05ad7dac5c405c10dfd28a2a6c1dade57aa45640a79d70375ac744"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Xaml/Assets/map.html",
+    "sha256": "1c48985f80bf626fabe1b7e2be7d7c53c271c5f75f5800eba47587505d73f99d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Microsoft.UI.Xaml/Assets/NoiseAsset_256x256_PNG.png",
+    "sha256": "4f2aa94a2e345a32dae689176b86c644bef87081ff9daef8c77417731862031b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mk-MK/Microsoft.ui.xaml.dll.mui",
+    "sha256": "0729c6053df1dd892782ad6ec26c6591ab928168fc487e78bc833e33f1530727"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mk-MK/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "6f18c893177083e0a97a8e5fc0deb2564061eb99228960e16130d3f8f0d64760"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ml-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "fbd48d4283f0ac0472435df056acb0b253f08a9c45960048068054d2450be308"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ml-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "fbeb0d4de847695191cf15923374224082bbba95d71eb0b06d8a5ac5166f460b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mr-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "54512f76d2a461ea788246b78f96edeb8dc017f28c4b5e8c165344f2bb7f3924"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mr-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "87f8dd1f451283e5b6704d535653ba10d4e43fdee79bf23591711d661ae50d26"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ms-MY/Microsoft.ui.xaml.dll.mui",
+    "sha256": "160658433ccb3e5f3001b21b999d71ac5b1526707532807520903188e8e25d3a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ms-MY/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "d8bbf9b4a3ffa04c18837a5931a1403f5aba225f856c6b2e64ab14ca43a01ccd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mt-MT/Microsoft.ui.xaml.dll.mui",
+    "sha256": "dde546a3f4dd20810a837d40f4da891e8d7aeee26400c267e7a91cad1d8e0433"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/mt-MT/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "b8997c04022e424dfb7d480ae4f23b003a80aa83b93b56b86b29184c41e1dafc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/nb-NO/Microsoft.ui.xaml.dll.mui",
+    "sha256": "b08397ae344b0da6e16e68dd3a71033f0215417a51e0875f3906a102eb452f8f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/nb-NO/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "b534e4d17fbc74d9d435363915a291d46ac6cf61c5c7463208c653deb641a38e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ne-NP/Microsoft.ui.xaml.dll.mui",
+    "sha256": "9f915ff21621cd9e99d06039de02d372829e413ed82943bfea70b07a698d32f3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ne-NP/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "93f6fa59360240510503b34b1e3afd1470827fa5bcbcaf65edab165685e07bd9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/nl-NL/Microsoft.ui.xaml.dll.mui",
+    "sha256": "039432e0b28ddcf63e3092a324b85219f3af50c47f2e58b1b056957a6d69d1df"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/nl-NL/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "eb3b8c4460d4b193c699584eebe1807574aa5cfd7e881cf5af43235e0042d757"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/nn-NO/Microsoft.ui.xaml.dll.mui",
+    "sha256": "87ef6f2df5fc7dd1027aa467fea9824c95d0b5038ab51895c62f9586c95aa9d4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/nn-NO/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "f534e660005023e9f46287d4dc1136df0ebdf1836b616fcd7ec0a900e2544a55"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/NpuDetect/NPUDetect.dll",
+    "sha256": "89fadd04c5f41aabc105d35b9cd8356a0d5823560738991aaab5223723c7b504"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/or-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "a0a526889c36adf78d6f6e03e936c25a76f7658b6870cfcc158fbfe7fba4fe83"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/or-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "67a5001a81040ac3cb8c693db0a6f54411a556059a21563c2bfd58c69382adaa"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pa-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "3ad722d4f9618bb949bf7795f17205104f59630a3edf0685418d5546945a4afd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pa-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "e91f56ce126ffb6a1cd4bd80285126221e0f7da4260aa8a32b1cda03210028ea"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pl-PL/Microsoft.ui.xaml.dll.mui",
+    "sha256": "f45c1126f2cf1bb46403c7bf22692ab624b5a2c6dae8812263777ef9680b16bf"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pl-PL/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "03c726c50f9bcf728209b1501e336acd2bb5ed0cf53786169f9aac39ddead0de"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pt-BR/Microsoft.ui.xaml.dll.mui",
+    "sha256": "92bab27d1c0acfd40b998986722d1c2da6770cdc6e14873568bf305e88b38703"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pt-BR/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "dc74719bf551400c521ae5a99e36e827ae9ee4420bc41c048c7a65163a3c0681"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pt-PT/Microsoft.ui.xaml.dll.mui",
+    "sha256": "04a5856233e6304b95152ed6f4a2b0d76385047bc4e3f2f072eae4444caa0943"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/pt-PT/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "8a79aba0d202afc6da21f53fd7bb0e1238ae6e01bacb26d89568dd2dcfb6c5be"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/quz-PE/Microsoft.ui.xaml.dll.mui",
+    "sha256": "27d651ce3b1c0b1b69b18065d354f9e5919f53af164a354e6a773b831a6536c4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/quz-PE/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "afb2f79328277e9a84a6ffb32cb25e03d62cd759ec200b93ec5734bcda61b070"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ro-RO/Microsoft.ui.xaml.dll.mui",
+    "sha256": "154b2fd413d049cf4afd97200780caa1e80d7bd9d174216dd1242515d5c4ad3e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ro-RO/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "4714dd5184a6b1a3e31d3379b09554a1a0636fef6b2586b9bb4a3de123705aaa"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ru-RU/Microsoft.ui.xaml.dll.mui",
+    "sha256": "d02ab29056e1b3b4878e6fe162e9d8f027282a5fcb608b54ced96a24651c95f7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ru-RU/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "3a7ac6c99a02085df0322bc170df4b8a1b345149e9d4849c5f8a7be9503fddcd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/element-pairs.autumn",
+    "sha256": "f3a3815ae0048ddc9e4a13c1b580a39532c3816632d1f1b487b08cfa48c8fadf"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/autumn.store.json",
+    "sha256": "8fc788b622bca67d5c20da89eb3a058e3c62b01e0d30de13f59f04b12077a058"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/fixture-index.json",
+    "sha256": "fe532ac84223cc652d0843ec2a6b2939d285f2376a8ac5db3881f5a0bdb10abf"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/release-1.0.0.json",
+    "sha256": "d12fa75b36e273a31af8426bcbce829d90bf7711d8e949559cab91d665798c9d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/release-1.1.0.json",
+    "sha256": "8d4769b7c5db5848103dc892e952a23868bc1414b71d4fe480c15230a18dbb26"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/release-1.2.0-preview.1.json",
+    "sha256": "bbe19ee811eb47b559b8b882a384a3473ba50179333373236a22b4f521d93844"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/release-1.9.0.json",
+    "sha256": "5d43375d13e401d525932074e5f66ca62c0a67f9288dbe852c582919ce891ad2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/release-2.0.0.json",
+    "sha256": "be832f2323d2e3d4ec0b82746d5dc5aaa90beee90e9a3fd22f6ed3faf28ac33e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/store-probe-1.0.0.autumn",
+    "sha256": "2f68ded8c33cae31b59148859c97ced91c2cab2731d753147e21d8251ba373bd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/store-probe-1.1.0.autumn",
+    "sha256": "1145e93dad1cae5121ad9107a8fa82b90bb90bb747fef95d2c8c888ca1f52cbc"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/store-probe-1.2.0-preview.1.autumn",
+    "sha256": "8b0abc79558e721998a95f7cc0d906bd0c1bdc77fcd2a0873e64aa68f600fad2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/store-probe-1.9.0.autumn",
+    "sha256": "b77c5778c3bb575473794eeff58c45fe57b1e7138e2bd686f3e57416413980b6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/Samples/StoreFixture/store-probe-2.0.0.autumn",
+    "sha256": "1e1628969a09a362d3fa6235c7b2a98717bd50c818ffc49b979dd45a26a32345"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sk-SK/Microsoft.ui.xaml.dll.mui",
+    "sha256": "3c88d26d83882d8e932b0116292da0be0543b0476960971249f2a9002d16022f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sk-SK/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "54bc5dfb6c7f442828cb5a513f98b9aef56880e4c2bb954ba2db52238c2dffb3"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sl-SI/Microsoft.ui.xaml.dll.mui",
+    "sha256": "769a8349154735b5fa96e88475f74a111c704ff118c43f901d132451b009cce6"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sl-SI/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "f30b605db89fc72dfd730bd9e0afea3d20957db8579ee2923d5baa5189463c16"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sq-AL/Microsoft.ui.xaml.dll.mui",
+    "sha256": "1f00d9153d502f0782e032a10b7e747980776d01dc6b7947dc44524d3291bbb2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sq-AL/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "5d458c6954255c8e93c39a3552790ace914c953e01e89d85697b8d63e53dca86"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sr-Cyrl-BA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "53e9f689b8241233f097ce603a9b4cd6eed82e4aa4b8860f7a71423b0d441838"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sr-Cyrl-BA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "de0b70acd92a0251b9e1b1f59a6bdc5aabc942ad725e6fd7bc8dcce6e58a9bd7"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sr-Cyrl-RS/Microsoft.ui.xaml.dll.mui",
+    "sha256": "1c7af3fefc00254ecc1048987ace86f18424459700fd94505209b1d6413ad9ed"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sr-Cyrl-RS/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "c6425bb6602d613309f9037f910e737a1fb15f0d12d45e505731f3190163b526"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sr-Latn-RS/Microsoft.ui.xaml.dll.mui",
+    "sha256": "a8bac367c1c77f051829abdcbf8d7982b806d74305e60fb9ee48e76331ef29fd"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sr-Latn-RS/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "4d81cc3a5a2d457e3a253f3c71e9b1b90a45a64f66f6a0ac457935099217af8e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sv-SE/Microsoft.ui.xaml.dll.mui",
+    "sha256": "3eebe51478519ae2ccae08b78a20779694400c0cf18e095afcef27fef16b7b6f"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/sv-SE/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "89a7084484bf2d4097e2d9e04ddeb8494cbc2b9eb3374210975b39bd1a619917"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ta-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "57873df1bbd27529bc80c5a9aa13fb17ae89d94ba18286c966900c4a99193019"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ta-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "069f601ac4b8e83267020beb4fa9279766574dcc0334e087e783815081623f49"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/te-IN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "546f0546ab9c5ef323274509d81f33afd5ed422edab2dc419cfd5b55d0b17f46"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/te-IN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "225038ba4bf33afdf066e3cefd5ed4db382cffad9789111a03f5a188224667a9"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/th-TH/Microsoft.ui.xaml.dll.mui",
+    "sha256": "80099aafd66a730d35a2c5ae9e6accbb77f2f9950cc0e86a7e1e25eca8e6393e"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/th-TH/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "bcc18668562c34d1099ea9ec213432c651102778378c17ee40c2547f61506a24"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/tr-TR/Microsoft.ui.xaml.dll.mui",
+    "sha256": "bb73ad285260514b42659e4f51e2df7155612cc62730ca824bcf4e6f5adde6ea"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/tr-TR/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "d0015de9680a4092564625ef9fc26eaf0c9ae87b6bef76efd4eccc9421176b33"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/tt-RU/Microsoft.ui.xaml.dll.mui",
+    "sha256": "f7621941bb971297fbb7027ec9152e34cc4a5336b652e9452fb0d287a259d1e4"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/tt-RU/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "4980ac3e44c6a89e0fc2ac6a0d7acf1cb8b6f8908213e5ebe72b8c32832c4746"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ug-CN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "eac8a074fb692bc94571be63735b72cd86d5accf8d2ac25ba77947b804affb63"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ug-CN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "905ac0e53dafafac31a6d0a70562e0b24c2b0eb845e2d5a299008947a1f4b9bb"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/uk-UA/Microsoft.ui.xaml.dll.mui",
+    "sha256": "31394d16ff2616d07fccec8d77afa6d57f5b2f3122dc37f220d52ccc7ca1574a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/uk-UA/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "0170c107b8b28727f49522105012c339170b0b816ee424e071614d19a8cdf243"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ur-PK/Microsoft.ui.xaml.dll.mui",
+    "sha256": "ea861a3e2477531519b313d998392f08fbc96a741aac84f54a0c24cf0b140c0d"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/ur-PK/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "a2099a6ad6a72a7dcb9f0e267865f7a464d789d118f0083db638660383ecdc45"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/uz-Latn-UZ/Microsoft.ui.xaml.dll.mui",
+    "sha256": "9a6d60b52fab86d260bae2cea4587bbf32a4f37445fe2bc09e9a621d11f4c41a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/uz-Latn-UZ/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "cfaa4f767efdf251aa3270b3ec8ddb448d748b3b4e8212d4a4295406285dc2ff"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/vi-VN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "20cf9c42a7b2a231e7cfa9bc76bc3e6f57d37e44ce7935ffd68d242888c943f2"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/vi-VN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "0b49018560ca56da41d732dc66e00d8a2690409df97b5e043d99e27c0a8fd410"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/zh-CN/Microsoft.ui.xaml.dll.mui",
+    "sha256": "4393f88a69ba4f9efc05a8d091474d8a0c7a9f60da8c97560678d81ed2e1eb77"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/zh-CN/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "6e00d9a182f103f21288c7a815c6ffa637b786c95bfde92c94ae7f30ab3f9c1a"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/zh-TW/Microsoft.ui.xaml.dll.mui",
+    "sha256": "abb699f2867e68398bb0053a8144616e265ae77f2ce9ed70bf5b625cf668414b"
+  },
+  {
+    "path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/zh-TW/Microsoft.UI.Xaml.Phone.dll.mui",
+    "sha256": "b323ccdedaf1894da14283b0c4e9f882dc3058f6956468cfede7dbec82190dba"
+  }
+]

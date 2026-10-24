@@ -1,0 +1,14 @@
+{
+  "status": "prepared",
+  "build_id": "T06-20261024-update-04",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "executable": "<WORKSPACE>\\artifacts\\packages\\T06-20261024-update-04\\AutumnOS-0.5.2-local.9-win-x64-development\\AutumnOS.exe",
+  "executable_sha256": "b683b3dfb2030c45ad60e35079affa724a4e30b27bc5d04735fb2b6bb72c127e",
+  "test_build": false,
+  "native_tests": "not_run",
+  "zip": "not_created",
+  "setup": "not_created",
+  "public_release": false,
+  "authenticode": "not_signed",
+  "fixed_webview2": "154.0.4258.53"
+}

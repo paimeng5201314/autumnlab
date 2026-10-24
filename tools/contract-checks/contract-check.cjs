@@ -81,6 +81,10 @@ async function main() {
   }
   for (const [method, params] of [["saves.read", { slot: "../other" }], ["storage.read", { key: "CON" }], ["preferences.get", { key: "x".repeat(60) }], ["notifications.setBadge", { count: -1 }], ["files.read", { handle: "C:/private" }], ["widgets.update", { id: "note", lines: Array(5).fill("x") }], ["links.openInternal", { action: "file:///private", arguments: {} }]])
     schemaCheck(method + " security boundary", schemas.message.validate, { protocolVersion: 1, requestId: "negative1", method, params }, false);
+  const capabilitiesCase = methods.find(item => item.method === "platform.getCapabilities");
+  const capabilityResult = ajv.compile({ $ref: schemas.message.id + "#/$defs/capabilities" });
+  schemaCheck("native verified capability boolean accepted", capabilityResult, { ...capabilitiesCase.result, networkSandboxVerified: true });
+  schemaCheck("truthy string cannot claim native verification", capabilityResult, { ...capabilitiesCase.result, networkSandboxVerified: "true" }, false);
   const eventValues = { "appearance.changed": { theme: "dark", language: "zh-CN", scale: 1, reduceMotion: false }, "permissions.changed": { name: "saves", state: "revoked" }, "identity.changed": { state: "signed_in" }, "links.opened": { action: "focus", arguments: {} }, "shortcuts.invoked": { id: "focus", action: "focus" }, "lifecycle.changed": { state: "background", blocksMaintenance: true } };
   check("six event names match schema", equal(Object.keys(eventValues).sort(), schemas.message.value.$defs.sdkEvent.oneOf.map(x => x.properties.event.const).sort()));
   for (const [event, data] of Object.entries(eventValues)) { schemaCheck(event + " valid", schemas.message.validate, { event, data }); schemaCheck(event + " foreign payload rejected", schemas.message.validate, { event, data: { ...data, userId: "other" } }, false); }

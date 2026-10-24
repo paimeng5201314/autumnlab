@@ -40,6 +40,7 @@ internal static class T03RuntimeTests
         yield return ("t03.runtime.revocation_rechecked_after_data_request", RevokeData);
         yield return ("t03.runtime.revocation_blocks_queued_write_before_commit", RevokeQueuedCommit);
         yield return ("t03.runtime.cancellation_cleans_subscriptions", CancelSubscriptions);
+        yield return ("t03.runtime.throwing_cancellation_callback_still_detaches_and_rejects_late_approval", ThrowingCancellationCleanup);
         yield return ("t03.runtime.capabilities_only_advertise_wired_services", ActualCapabilities);
         yield return ("t03.desktop.notifications_permission_and_bounded_deduplication", NotificationDeduplication);
         yield return ("t03.desktop.notification_mute_persists_and_clears_badge", NotificationMute);
@@ -366,6 +367,46 @@ internal static class T03RuntimeTests
         desktop.SetAppearance(new("dark", "zh-CN", 1, false)); Equal(events, 1);
         cancellation.Cancel(); Equal(session.Instance.State, AppLifecycleState.Closed); Equal(desktop.Apps.Count, 0);
         desktop.SetAppearance(new("light", "en-US", 1, true)); Equal(events, 1);
+    });
+    private static void ThrowingCancellationCleanup() => InTemp(root =>
+    {
+        var account = Account(); var app = App(); var permissions = new PermissionService(root);
+        var desktop = new DesktopExtensionService(root); var entered = Signal<bool>(); var answer = Signal<bool>();
+        var injectedFailure = new InvalidOperationException("Controlled cancellation callback failure.");
+        CancellationTokenRegistration callback = default; int cancellations = 0;
+        var services = new RuntimeSessionServices
+        {
+            Account = account, Application = app, Permissions = permissions, Desktop = desktop,
+            RequestPermission = (_, token) =>
+            {
+                callback = token.Register(() => { Interlocked.Increment(ref cancellations); throw injectedFailure; });
+                entered.TrySetResult(true); return answer.Task;
+            }
+        };
+        var session = Session(root, services); int events = 0; session.SdkEvent += (_, _) => events++;
+        try
+        {
+            Grant(services, "notifications");
+            Ok(Send(session, "notifications.show", new { id = "before-close", title = "Controlled", body = "Test", action = (string?)null }));
+            Equal(desktop.Apps.Count, 1); Equal(desktop.Notifications.Count, 1);
+            desktop.SetAppearance(new("dark", "zh-CN", 1, false)); Assert(events > 0, "Live native events have a positive control.");
+            session.HostUserGesture(); Task<string> pending = SendAsync(session, "permissions.request", new { name = "saves" });
+            Assert(entered.Task.Wait(TimeSpan.FromSeconds(2)), "The real permission request reached its pending callback.");
+            AggregateException? cancellationError = null;
+            try { session.Close(); } catch (AggregateException error) { cancellationError = error; }
+            Assert(cancellationError is not null && cancellationError.Flatten().InnerExceptions.Any(error => ReferenceEquals(error, injectedFailure)),
+                "Close preserves the cancellation failure instead of claiming successful cancellation.");
+            Equal(cancellations, 1); Equal(desktop.Apps.Count, 0); Equal(desktop.Notifications.Count, 0);
+            Throws("SESSION_EXPIRED", () => desktop.ActivateShortcut(session.Instance.Id.Value, "resume"));
+            Throws("SESSION_EXPIRED", () => session.EnterCommitLease());
+            Error(Send(session, "platform.getCapabilities"), "SESSION_EXPIRED");
+            int eventsAfterClose = events; desktop.SetAppearance(new("light", "en-US", 1, true)); Equal(events, eventsAfterClose);
+            answer.TrySetResult(true);
+            Error(pending.WaitAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult(), "SESSION_EXPIRED");
+            Equal(permissions.Query(account, app, "saves"), PermissionDecision.Prompt);
+            session.Close(); Equal(cancellations, 1); Equal(desktop.Apps.Count, 0);
+        }
+        finally { answer.TrySetResult(false); callback.Dispose(); session.Close(); }
     });
     private static void RevokeQueuedCommit() => InTemp(root =>
     {

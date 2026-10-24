@@ -23,7 +23,8 @@ public sealed record UpdateSnapshot(UpdateState State, string Channel, string Cu
     long BytesReceived, long TotalBytes, string? ErrorCode, IReadOnlyList<string> Warnings, StagedUpdate? Staged,
     bool AutomaticInstallConfigured, bool IsTestBuild, bool PreviewEnabled = false, string? PinnedVersion = null,
     DateTimeOffset? LastCheckUtc = null, DateTimeOffset? LastSuccessfulCheckUtc = null, DateTimeOffset? RetryAfterUtc = null,
-    bool CheckComplete = false, bool ShouldPrompt = false);
+    bool CheckComplete = false, bool ShouldPrompt = false,
+    DateTimeOffset? LastReleaseMetadataUtc = null, int ReleasesExamined = 0);
 public enum UpdateSelectionMode { Upgrade, Rollback }
 public sealed record UpdateReleaseChoice(long ReleaseId, string Tag, string Name, string Notes, bool IsPreview,
     DateTimeOffset? PublishedAtUtc, string? Version, UpdateCandidate? Candidate, string? DisabledReason)

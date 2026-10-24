@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "prepared_utc": "2026-10-18T04:36:02.2779231+00:00",
+  "scope": "compile_only_pending_specific_trial_authorization",
+  "candidate_source_id": "921bea038c5bd347663166a59a0b836e9e0dbc6574aedeaa9fde6d85d86631e4",
+  "os": "Microsoft Windows NT 10.0.26200.0",
+  "source_files": [
+    {
+      "path": "Program.cs",
+      "bytes": 23144,
+      "sha256": "1c03b831a49e5f0fb2383e9785d35fcdd116bf55cca1ee0b1c2301217f614f9d"
+    },
+    {
+      "path": "RestrictedTokenLaunchProbe.csproj",
+      "bytes": 239,
+      "sha256": "b333112aed67106772089ff88dae21075a031adb75b7e2dac1216fe9d425564d"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 7616,
+      "sha256": "76a5ffd0325faaff4e9b2f2e026ec126440bda4c5e53d10d4e88e204526e6e7b"
+    }
+  ],
+  "inherited_build_inputs": [
+    {
+      "path": "Directory.Build.props",
+      "sha256": "3ecdb7c2967dd08e0b080ced2162af664ca52d5972a68c2c7b2d8f85f140443f"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "a6959272a5e17dca1c15b6fbe50bb65bd1b0109c7bb271e140b1b143a112ebd3"
+    },
+    {
+      "path": "global.json",
+      "sha256": "4e7d5022b2a5a8d02bb951bb264a4c8613eabc332572a0af5f9743d23f23d84e"
+    }
+  ],
+  "binaries": [
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenLaunchProbe.deps.json",
+      "bytes": 553,
+      "sha256": "bf0e253d2fbc0e0e549fe8d24177dba8beb1eb62198ebe5a1667b9e42acd2146"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenLaunchProbe.dll",
+      "bytes": 52224,
+      "sha256": "7494519b3920327fc225c6b7fedc4272220e9c7f9b8631261cf860d740fe7ff8"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenLaunchProbe.exe",
+      "bytes": 162816,
+      "sha256": "5a6ddd657fb62d8b0218ae52ccb81a449281ca77025d60c4d07e3cef9c196021"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenLaunchProbe.pdb",
+      "bytes": 15996,
+      "sha256": "1a24bec69bbd65c8c925d6a066be0d4359ffda163ccf44af033d1f5d796b611f"
+    },
+    {
+      "path": "bin\\x64\\Release\\net10.0-windows\\win-x64\\AutumnOS.RestrictedTokenLaunchProbe.runtimeconfig.json",
+      "bytes": 399,
+      "sha256": "3e965cd7cfd553c2ff4e842d8d8019aaae2da0a21d92ff85a87573dd8d1b95c6"
+    }
+  ],
+  "build": {
+    "status": "passed",
+    "warnings": 0,
+    "errors": 0,
+    "command": ".tools/dotnet/dotnet.exe build artifacts/isolation-20261018/drafts/RestrictedTokenLaunchProbe/RestrictedTokenLaunchProbe.csproj -c Release -p:Platform=x64 --no-restore",
+    "log_sha256": "3d9c620397ce58ecf90bb2827daddd2ff3cb1f9495c4b91484d575e93200f858"
+  },
+  "runtime_checks": {
+    "ordinary_child": "not_run",
+    "restricted_token_creation": "not_run",
+    "restricted_child": "not_run",
+    "winsta0_access_metadata": "not_run",
+    "clipboard_isolation": "not_run",
+    "webview": "not_run"
+  },
+  "authorization": "Preparation and compilation only; no executable invocation performed",
+  "production_integration": "none"
+}

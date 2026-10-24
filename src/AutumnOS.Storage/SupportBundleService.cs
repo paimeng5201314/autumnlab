@@ -22,7 +22,8 @@ public sealed class SupportBundleService(InstallationRoot root, CriticalOperatio
     { "starting", "started", "foreground", "background", "suspended", "resumed", "closing", "closed", "crashed", "process_failed", "resource_cleanup_pending", "resources_released",
       "installed", "navigation_completed", "navigation_failed", "navigation_completion_ignored", "new_window_denied", "download_denied", "external_protocol_denied", "navigation_denied", "frame_denied", "message_too_large", "response_not_delivered", "lifecycle_not_delivered", "resource_release_failed",
       "saves_write_ok", "saves_write_rejected", "saves_read_ok", "saves_read_rejected", "permissions_request_ok", "permissions_request_rejected",
-      "profile_prepared", "environment_created", "controller_created", "startup_failed", "startup_cancelled" };
+      "profile_prepared", "environment_created", "controller_created", "startup_failed", "startup_cancelled",
+      "isolation_check_started", "isolation_verified", "browser_permission_denied" };
     private static readonly HashSet<string> Phases = new(StringComparer.Ordinal)
     { "prepared", "backedUp", "applying", "health", "committed", "rollingBack", "rolledBack", "aborted" };
 
@@ -161,7 +162,7 @@ public sealed class SupportBundleService(InstallationRoot root, CriticalOperatio
                 {
                     Dictionary<string, object> detail = [];
                     string? stage = Text(failure, "stage"), type = Text(failure, "errorType"), hresult = Text(failure, "hResult");
-                    if (stage is "package" or "session" or "resources" or "profile" or "environment" or "controller" or "settings" or "navigation") detail["stage"] = stage;
+                    if (stage is "package" or "session" or "resources" or "profile" or "environment" or "controller" or "settings" or "network_isolation" or "navigation") detail["stage"] = stage;
                     if (type is "OperationCanceledException" or "COMException" or "UnauthorizedAccessException" or "IOException" or "ArgumentException" or "Other") detail["errorType"] = type;
                     if (hresult is { Length: 10 } && hresult.StartsWith("0x", StringComparison.Ordinal) && hresult.AsSpan(2).IndexOfAnyExcept("0123456789ABCDEF") < 0) detail["hResult"] = hresult;
                     if (detail.Count != 0) item["startupFailure"] = detail;

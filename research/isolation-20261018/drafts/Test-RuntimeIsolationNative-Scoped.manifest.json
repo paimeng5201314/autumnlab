@@ -1,0 +1,16 @@
+{
+  "prepared_utc": "2026-10-18T13:00:08.9599621+08:00",
+  "status": "prepared_not_run",
+  "source_driver": "<WORKSPACE>\\artifacts\\isolation-20261018\\drafts\\Test-RuntimeIsolationNative-Build04.ps1",
+  "source_driver_sha256": "3754b5d08a68888bb2de2c0c60d9191ac017745ea8295693bda5aebd7343d3b3",
+  "scoped_driver": "<WORKSPACE>\\artifacts\\isolation-20261018\\drafts\\Test-RuntimeIsolationNative-Scoped.ps1",
+  "scoped_driver_sha256": "fe337917acbdca1fa1ef187a29bc149c7f92d8a1ad888319b95468eb3b437b8d",
+  "native11_report_sha256": "3a2f7bebbc808bbbf28a391ef8283f422d1fd858032a9241d28b6b885ff038ad",
+  "powershell_ast_parse": "passed",
+  "original_assertions_retained_verbatim": "passed",
+  "original_assertion_calls": 30,
+  "scoped_assertion_calls": 30,
+  "expected_partial_success_status": "passed_scope_limited",
+  "full_suite_passed_in_partial_scope": false,
+  "execution_by_author": "none"
+}

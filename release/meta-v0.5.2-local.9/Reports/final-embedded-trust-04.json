@@ -1,0 +1,128 @@
+{
+  "status": "passed",
+  "kind": "static_final_binary_resource_verification",
+  "utc": "2026-10-24T03:34:44.9581398+00:00",
+  "build_id": "T06-20261024-update-04",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "public_root_path": "<WORKSPACE>\\build\\update-trust.production.json",
+  "public_root_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+  "public_root_key_ids": [
+    "autumnos-release-20261024"
+  ],
+  "outer_executable": "<WORKSPACE>\\artifacts\\single-file\\T06-20261024-update-04\\AutumnOS.exe",
+  "outer_executable_sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+  "outer_payload_sha256": "42d4cf9c5d351ad0ebe7d027880ff7a568b89c3d62dc423cf9bc6f3be97421fe",
+  "final_copies": [
+    {
+      "kind": "candidate",
+      "path": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\candidate\\AutumnOS.exe",
+      "sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+      "matches_outer_executable": true
+    },
+    {
+      "kind": "extracted",
+      "path": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\extracted\\AutumnOS.exe",
+      "sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+      "matches_outer_executable": true
+    }
+  ],
+  "checks": [
+    {
+      "location": "<WORKSPACE>\\artifacts\\packages\\T06-20261024-update-04\\AutumnOS-0.5.2-local.9-win-x64-development\\AutumnOS.Update.dll",
+      "status": "passed",
+      "update_dll_sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970",
+      "production_resource_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+      "test_trust_or_feed": "absent",
+      "bundle": null
+    },
+    {
+      "location": "<WORKSPACE>\\artifacts\\packages\\T06-20261024-update-04\\AutumnOS-0.5.2-local.9-win-x64-development\\AutumnOS.exe!AutumnOS.Update.dll",
+      "status": "passed",
+      "update_dll_sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970",
+      "production_resource_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+      "test_trust_or_feed": "absent",
+      "bundle": {
+        "major": 6,
+        "minor": 0,
+        "header_offset": 37894501,
+        "entry_offset": 37772915,
+        "compressed_bytes": 57431,
+        "bundle_id": "PE0bGO1Ai4bk"
+      }
+    },
+    {
+      "location": "<WORKSPACE>\\artifacts\\packages\\T06-20261024-update-04\\AutumnOS-0.5.2-local.9-win-x64-development\\AutumnOS.Updater.exe!AutumnOS.Update.dll",
+      "status": "passed",
+      "update_dll_sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970",
+      "production_resource_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+      "test_trust_or_feed": "absent",
+      "bundle": {
+        "major": 6,
+        "minor": 0,
+        "header_offset": 37892649,
+        "entry_offset": 37771039,
+        "compressed_bytes": 57431,
+        "bundle_id": "GLz9EFdfj1jX"
+      }
+    },
+    {
+      "location": "<WORKSPACE>\\artifacts\\single-file\\T06-20261024-update-04\\AutumnOS.exe!AutumnOS.Update.dll",
+      "status": "passed",
+      "update_dll_sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970",
+      "production_resource_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+      "test_trust_or_feed": "absent",
+      "bundle": null
+    },
+    {
+      "location": "<WORKSPACE>\\artifacts\\single-file\\T06-20261024-update-04\\AutumnOS.exe!AutumnOS.exe!AutumnOS.Update.dll",
+      "status": "passed",
+      "update_dll_sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970",
+      "production_resource_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+      "test_trust_or_feed": "absent",
+      "bundle": {
+        "major": 6,
+        "minor": 0,
+        "header_offset": 37894501,
+        "entry_offset": 37772915,
+        "compressed_bytes": 57431,
+        "bundle_id": "PE0bGO1Ai4bk"
+      }
+    },
+    {
+      "location": "<WORKSPACE>\\artifacts\\single-file\\T06-20261024-update-04\\AutumnOS.exe!AutumnOS.Updater.exe!AutumnOS.Update.dll",
+      "status": "passed",
+      "update_dll_sha256": "46a6893bcc576ea8108e1c18637ceada7d7c49d52f3a1bebacee22d333294970",
+      "production_resource_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+      "build_id": "T06-20261024-update-04",
+      "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+      "test_trust_or_feed": "absent",
+      "bundle": {
+        "major": 6,
+        "minor": 0,
+        "header_offset": 37892649,
+        "entry_offset": 37771039,
+        "compressed_bytes": 57431,
+        "bundle_id": "GLz9EFdfj1jX"
+      }
+    }
+  ],
+  "product_entry_executed": false,
+  "product_assembly_loaded": false,
+  "private_key_accessed": false,
+  "gui_or_update_transaction": "not_run",
+  "format_sources": [
+    "https://github.com/dotnet/runtime/blob/v10.0.0/src/installer/managed/Microsoft.NET.HostModel/Bundle/Manifest.cs",
+    "https://github.com/dotnet/runtime/blob/v10.0.0/src/installer/managed/Microsoft.NET.HostModel/Bundle/FileEntry.cs",
+    "https://github.com/dotnet/runtime/blob/v10.0.0/src/installer/managed/Microsoft.NET.HostModel/Bundle/Bundler.cs"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "review_utc": "2026-10-18T12:32:19.9418824+08:00",
+  "scope": "read-only source review; no new test execution",
+  "files": [
+    {
+      "path": "scripts/Test-RuntimeIsolationNative.ps1",
+      "sha256": "18e3edc628ad8a1b2844e42d2f17589d33a4aaa3bd1605ecff0e2c037f6a2882"
+    },
+    {
+      "path": "scripts/Test-T03FeaturesSmoke.ps1",
+      "sha256": "55df59cc0c2a48ae22b4b07f447be480cf2141d0a1e6d860443d11217f853789"
+    },
+    {
+      "path": "scripts/Test-T06DeveloperSmoke.ps1",
+      "sha256": "bd8a830a4c803fb20ba44d79faed0dc355db8142a67181ea4be81303b42fdcf2"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/probe.js",
+      "sha256": "91cbbe4d7b1fd7af00f3a091647b773ced241ad3cfff75ae98474b7f96027317"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/T03RuntimeTests.cs",
+      "sha256": "b752b36f581fa7c911f0b3d62c9daac83ad4e33efe3049f0d6aaf05ba5ff4844"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeIsolationSessionTests.cs",
+      "sha256": "f5d6eadd18e4d64f44ed5dfcdbca81b4de287af94af64cdca30a3a446aec7c10"
+    },
+    {
+      "path": "src/AutumnOS.Shell/WebAppHost.cs",
+      "sha256": "710aa856431f23ac27c8c1982059e341429f6d1f98672e325d7699d06658f776"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeSession.Managed.cs",
+      "sha256": "79d520f626139290507a94625a0c1cc2333e5cb287ba33b2049ce39beaddbe5b"
+    },
+    {
+      "path": "artifacts/isolation-20261018/drafts/RuntimeIsolationDriver-Review.md",
+      "sha256": "c5bc6a3f14ee85796e42e08700ffcd33cd4a6474d64faef78611dd2b6bfbeff8"
+    }
+  ]
+}

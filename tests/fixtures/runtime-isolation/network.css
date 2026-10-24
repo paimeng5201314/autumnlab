@@ -1,0 +1,4 @@
+/* The runner replaces __HTTP_BASE__ with its own loopback observer URL. */
+@import url("__HTTP_BASE__/probe/css-import");
+@font-face{font-family:AutumnIsolationRemote;src:url("__HTTP_BASE__/probe/css-font") format("woff2")}
+.probe-background{background-image:url("__HTTP_BASE__/probe/css-background");width:1px;height:1px}

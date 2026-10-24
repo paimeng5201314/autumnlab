@@ -32,6 +32,7 @@ public sealed partial class RuntimeSession
     private bool savesRevoked;
     private long permissionRevision;
     private long suspensionRevision;
+    private bool networkIsolationVerified;
     private AppInstance instance;
 
     public RuntimeSession(string appId, IEnumerable<string> declaredPermissions, string savesRoot,
@@ -56,6 +57,22 @@ public sealed partial class RuntimeSession
     public string Origin { get; }
     public string PageUri { get; }
     public AppInstance Instance { get { lock (stateGate) return instance; } }
+
+    /// <summary>Proof belongs to this live native instance, never to its app ID or store category.</summary>
+    public bool NetworkSandboxVerified { get { lock (stateGate) return IsActive && networkIsolationVerified; } }
+
+    /// <summary>Called by the native host only after its private startup document was evaluated.</summary>
+    public bool ConfirmNetworkIsolation(RuntimeIsolationProof proof)
+    {
+        ArgumentNullException.ThrowIfNull(proof);
+        lock (stateGate)
+        {
+            if (instance.State != AppLifecycleState.Starting || networkIsolationVerified ||
+                proof.InstanceId != instance.Id.Value || !string.Equals(proof.Origin, Origin, StringComparison.Ordinal)) return false;
+            networkIsolationVerified = true;
+            return true;
+        }
+    }
 
     public static bool IsValidAppId(string? appId)
     {
@@ -116,10 +133,11 @@ public sealed partial class RuntimeSession
             if (!IsActive) return;
             instance = instance with { State = state, Epoch = new(instance.Epoch.Value + 1) };
             savesGranted = false;
+            networkIsolationVerified = false;
         }
         // Cancel outside stateGate: cancellation callbacks must not run under the lifecycle lock.
-        ended.Cancel();
-        DetachServices();
+        try { ended.Cancel(); }
+        finally { DetachServices(); }
     }
 
     private bool IsActive => instance.State is not (AppLifecycleState.Closed or AppLifecycleState.Crashed or AppLifecycleState.Closing);
@@ -235,7 +253,7 @@ public sealed partial class RuntimeSession
                 {
                     case "platform.getCapabilities":
                         if (!ExactProperties(parameters)) return Error(requestId, "INVALID_REQUEST");
-                        result = new { protocolVersion = 1, capabilities = new[] { "lifecycle", "permissions", "saves" }, accountMode = "guest", networkSandboxVerified = false,
+                        result = new { protocolVersion = 1, capabilities = new[] { "lifecycle", "permissions", "saves" }, accountMode = "guest", networkSandboxVerified = NetworkSandboxVerified,
                             limits = new { maximumMessageBytes = MaximumMessageBytes, maximumPendingRequests = MaximumPendingRequests,
                                 maximumRequestsPerMinute = MaximumRequestsPerMinute, requestTimeoutMs = (int)requestTimeout.TotalMilliseconds,
                                 maximumRememberedRequestIds = MaximumRememberedRequestIds, deduplicationWindowMs = (int)DeduplicationWindow.TotalMilliseconds } };

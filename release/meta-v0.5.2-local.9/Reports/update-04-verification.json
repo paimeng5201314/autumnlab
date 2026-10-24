@@ -1,0 +1,157 @@
+{
+  "status": "local_code_and_package_verification_passed_GUI_pending",
+  "build_id": "T06-20261024-update-04",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "version": "0.5.2-local.9",
+  "release_label": "0.0.5-20261024-update",
+  "producer": "派蒙",
+  "windows": "25H2 26200.8037",
+  "dotnet_sdk": "10.0.401",
+  "fixed_webview2": "154.0.4258.53",
+  "webview2_sdk": "1.0.4258.31",
+  "update_trust_version": 1,
+  "isolation_policy": "autumn-local-web-v2",
+  "executable": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\candidate\\AutumnOS.exe",
+  "executable_sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+  "zip": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\AutumnOS-0.5.2-local.9-code-check.zip",
+  "zip_sha256": "9315d6c7bdddb5709b3e129f6313936fadd0124b96df565adfa64e240dd2444c",
+  "extracted_executable": "<WORKSPACE>\\artifacts\\code-handoff\\T06-20261024-update-04\\extracted\\AutumnOS.exe",
+  "archive_roundtrip": "passed",
+  "verified_files": 18,
+  "shortcut": "<WORKSPACE>\\AutumnOS-更新修复-20261024.lnk",
+  "source_zip": "<WORKSPACE>\\artifacts\\update-fix-20261024\\AutumnOS-source-T06-20261024-update-04.zip",
+  "source_zip_sha256": "d3bd03b3035417d6d1b5f16ae2e8828ada737a82189e038ad2acb76a512c12b3",
+  "source_files": 439,
+  "test_groups": [
+    {
+      "name": "tests",
+      "status": "passed",
+      "total": 890,
+      "failed": 0,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\tests.json"
+    },
+    {
+      "name": "sdk-tests",
+      "status": "passed",
+      "total": null,
+      "failed": null,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\sdk-tests.json"
+    },
+    {
+      "name": "machine-contracts",
+      "status": "passed",
+      "total": null,
+      "failed": null,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\machine-contracts.json"
+    },
+    {
+      "name": "sample-tests",
+      "status": "passed",
+      "total": null,
+      "failed": null,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\sample-tests.json"
+    },
+    {
+      "name": "chemleap-model-tests",
+      "status": "passed",
+      "total": null,
+      "failed": null,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\chemleap-model-tests.json"
+    },
+    {
+      "name": "native-client-tests",
+      "status": "passed",
+      "total": null,
+      "failed": null,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\native-client-tests.json"
+    },
+    {
+      "name": "server-http-tests",
+      "status": "passed",
+      "total": null,
+      "failed": null,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\server-http-tests.json"
+    },
+    {
+      "name": "t04-tools-tests",
+      "status": "passed",
+      "total": 12,
+      "failed": 0,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\t04-tools-tests.json"
+    },
+    {
+      "name": "production-update-tools",
+      "status": "passed",
+      "total": 17,
+      "failed": 0,
+      "report": "<WORKSPACE>\\artifacts\\builds\\T06-20261024-update-04\\production-update-tools.json"
+    }
+  ],
+  "static_source_checks": 86,
+  "embedded_production_root": "<WORKSPACE>\\artifacts\\update-fix-20261024\\final-embedded-trust-04.json",
+  "live_check": "<WORKSPACE>\\artifacts\\update-fix-20261024\\live-check-10e055609dab4e3fb3f001452a85dcad\\check-result.json",
+  "live_check_result": {
+    "kind": "headless_real_update_service_metadata_check_not_GUI_or_install",
+    "repository": "paimeng5201314/autumnlab",
+    "automaticInstallConfigured": true,
+    "lastReleaseMetadataUtc": "2026-10-24T11:24:09.6736705+08:00",
+    "releasesExamined": 2,
+    "checkComplete": false,
+    "lastSuccessfulCheckUtc": null,
+    "errorCode": "UPDATE_MANIFEST_MISSING",
+    "warnings": [
+      "UPDATE_MANIFEST_MISSING"
+    ],
+    "candidate": null,
+    "bytesReceived": 0,
+    "totalBytes": 0,
+    "installation": "not_run"
+  },
+  "update_preparation": {
+    "status": "prepared_unbound_unsigned",
+    "build_id": "T06-20261024-update-04",
+    "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+    "channel": "meta",
+    "tag": "meta-v0.5.2-local.9",
+    "sequence": 1,
+    "production_public_key_id": "autumnos-release-20261024",
+    "production_trust_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+    "draft": "<WORKSPACE>\\artifacts\\update-preparation\\T06-20261024-update-04\\autumn.update.draft.json",
+    "payload": "<WORKSPACE>\\artifacts\\update-preparation\\T06-20261024-update-04\\AutumnOS-0.5.2-local.9-win-x64-payload.zip",
+    "payload_sha256": "87ed4d54ef028df8bf3bdb807c3101e7af2ce126d78cb83423ee626727a0dc30",
+    "release_id": "not_assigned",
+    "asset_id": "not_assigned",
+    "signature": "not_created",
+    "payload_verification": "passed",
+    "delivery_file_table_verification": "passed",
+    "managed_files": 1703,
+    "GUI_upgrade": "not_run",
+    "public_release": false,
+    "uploaded": false,
+    "private_key_included": false,
+    "next_step": "After separately authorized release upload, bind real release/asset IDs, sign-production, verify and publish metadata. Do not upload the draft as autumn.update.json."
+  },
+  "public_key_id": "autumnos-release-20261024",
+  "production_root_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+  "private_key_in_delivery": false,
+  "private_key_read_by_report": false,
+  "authenticode": "NotSigned",
+  "SAC_acceptance": "not_run",
+  "final_GUI": "not_run_left_to_user",
+  "extracted_GUI": "not_run",
+  "live_signed_update_install": "not_run_missing_published_protocol_assets",
+  "ChemLeap_normal_mode": "not_run_still_denied_by_unfinished_isolation_boundary",
+  "original_root_sha256": "71d82b083a82c62d159f146fb960c4539f3b9b96070763b2ec910b692166d6b1",
+  "user_startup_02": "user_supplied_screenshot_shows_Settings_only",
+  "existing_user_data_touched": false,
+  "git_used": false,
+  "uploaded": false,
+  "release_published": false,
+  "global_policy_changed": false,
+  "failure_evidence": [
+    "signer-bootstrap-tests.json",
+    "artifacts/builds/T06-20261024-update-03/test-runs/*/production-update-tools.json"
+  ],
+  "original_isolation_prompt_file": "missing_Previously_disclosed_not_read",
+  "all_historical_phases_complete": false
+}

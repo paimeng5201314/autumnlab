@@ -1,0 +1,26 @@
+{
+  "build_id": "T06-20261024-update-04",
+  "task_id": "T06",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "commit": "not_applicable",
+  "status": "passed",
+  "configuration": "Release",
+  "rid": "win-x64",
+  "sdk": "10.0.401",
+  "environment": "Microsoft Windows NT 10.0.26200.0",
+  "started_utc": "2026-10-24T03:22:55.4759572+00:00",
+  "product_tests": "not_run",
+  "output_path": "src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.exe",
+  "release_label": "0.0.5-20261024-update",
+  "additional_inputs": [
+    "<WORKSPACE>\\build\\update-trust.production.json"
+  ],
+  "build_properties": [
+    "-p:AutumnVersion=0.5.2-local.9",
+    "-p:AutumnReleaseLabel=0.0.5-20261024-update",
+    "-p:ProductionUpdateTrustFile=<WORKSPACE>\\build\\update-trust.production.json"
+  ],
+  "test_build": false,
+  "version": "0.5.2-local.9",
+  "finished_utc": "2026-10-24T03:23:28.9087445+00:00"
+}

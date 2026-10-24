@@ -1,0 +1,4465 @@
+{
+  "schema_version": 1,
+  "task_id": "T06",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "build_id": "T06-20261024-update-04",
+  "executed_utc": "2026-10-24T03:25:04.9683261+00:00",
+  "environment": "Microsoft Windows NT 10.0.26200.0",
+  "status": "passed",
+  "total": 890,
+  "failed": 0,
+  "filters": [],
+  "filter": [],
+  "results": [
+    {
+      "name": "storage.entry_path_uses_appcontext",
+      "status": "passed",
+      "milliseconds": 515
+    },
+    {
+      "name": "storage.rejects_relative_installation",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "storage.creates_all_twelve_directories",
+      "status": "passed",
+      "milliseconds": 68
+    },
+    {
+      "name": "storage.existing_data_and_probe_cleanup",
+      "status": "passed",
+      "milliseconds": 91
+    },
+    {
+      "name": "storage.working_directory_does_not_select_data_root",
+      "status": "passed",
+      "milliseconds": 45
+    },
+    {
+      "name": "storage.directory_file_conflict_is_recoverable",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "storage.cancelled_initialization_preserves_data",
+      "status": "passed",
+      "milliseconds": 91
+    },
+    {
+      "name": "storage.first_run_resumes_and_finishes",
+      "status": "passed",
+      "milliseconds": 439
+    },
+    {
+      "name": "storage.first_run_enforces_order_and_idempotency",
+      "status": "passed",
+      "milliseconds": 236
+    },
+    {
+      "name": "storage.corrupt_json_never_overwritten",
+      "status": "passed",
+      "milliseconds": 134
+    },
+    {
+      "name": "storage.future_schema_never_overwritten",
+      "status": "passed",
+      "milliseconds": 133
+    },
+    {
+      "name": "storage.invalid_records_never_overwritten",
+      "status": "passed",
+      "milliseconds": 1449
+    },
+    {
+      "name": "storage.interrupted_staging_preserves_last_commit",
+      "status": "passed",
+      "milliseconds": 193
+    },
+    {
+      "name": "storage.busy_checkpoint_is_retryable",
+      "status": "passed",
+      "milliseconds": 138
+    },
+    {
+      "name": "storage.readonly_checkpoint_preserves_bytes",
+      "status": "passed",
+      "milliseconds": 100
+    },
+    {
+      "name": "storage.diagnostics_accepts_only_known_fields",
+      "status": "passed",
+      "milliseconds": 75
+    },
+    {
+      "name": "storage.diagnostics_rotates_and_bounds_retained_history",
+      "status": "passed",
+      "milliseconds": 104
+    },
+    {
+      "name": "storage.diagnostics_failed_rotation_preserves_log_and_reports_recovery",
+      "status": "passed",
+      "milliseconds": 64
+    },
+    {
+      "name": "storage.diagnostics_preserves_unexpected_oversized_input",
+      "status": "passed",
+      "milliseconds": 53
+    },
+    {
+      "name": "storage.diagnostics_serializes_concurrent_logger_instances",
+      "status": "passed",
+      "milliseconds": 239
+    },
+    {
+      "name": "storage.windows_acl_write_denial_is_recoverable",
+      "status": "passed",
+      "milliseconds": 126
+    },
+    {
+      "name": "storage.windows_root_junction_is_rejected",
+      "status": "passed",
+      "milliseconds": 46
+    },
+    {
+      "name": "storage.windows_child_junction_is_rejected",
+      "status": "passed",
+      "milliseconds": 52
+    },
+    {
+      "name": "storage.windows_state_junction_is_rejected",
+      "status": "passed",
+      "milliseconds": 157
+    },
+    {
+      "name": "desktop_preferences.defaults_do_not_overwrite_or_persist",
+      "status": "passed",
+      "milliseconds": 56
+    },
+    {
+      "name": "desktop_preferences.persist_and_reload_all_choices",
+      "status": "passed",
+      "milliseconds": 805
+    },
+    {
+      "name": "desktop_preferences.repeating_choice_preserves_bytes",
+      "status": "passed",
+      "milliseconds": 103
+    },
+    {
+      "name": "desktop_preferences.invalid_values_do_not_change_state",
+      "status": "passed",
+      "milliseconds": 59
+    },
+    {
+      "name": "desktop_preferences.corrupt_state_is_preserved",
+      "status": "passed",
+      "milliseconds": 129
+    },
+    {
+      "name": "desktop_preferences.future_schema_is_preserved",
+      "status": "passed",
+      "milliseconds": 134
+    },
+    {
+      "name": "desktop_preferences.strict_schema_and_size_are_enforced",
+      "status": "passed",
+      "milliseconds": 2032
+    },
+    {
+      "name": "desktop_preferences.cancelled_write_preserves_commit",
+      "status": "passed",
+      "milliseconds": 64
+    },
+    {
+      "name": "desktop_preferences.stale_staging_is_never_promoted",
+      "status": "passed",
+      "milliseconds": 141
+    },
+    {
+      "name": "desktop_preferences.concurrent_writer_is_retryable",
+      "status": "passed",
+      "milliseconds": 194
+    },
+    {
+      "name": "desktop_preferences.readonly_destination_preserves_commit",
+      "status": "passed",
+      "milliseconds": 101
+    },
+    {
+      "name": "desktop_preferences.path_conflict_preserves_directory",
+      "status": "passed",
+      "milliseconds": 124
+    },
+    {
+      "name": "desktop_preferences.data_is_beside_entry_not_current_directory",
+      "status": "passed",
+      "milliseconds": 55
+    },
+    {
+      "name": "desktop_preferences.revision_overflow_preserves_commit",
+      "status": "passed",
+      "milliseconds": 100
+    },
+    {
+      "name": "desktop_preferences.windows_acl_denial_is_recoverable",
+      "status": "passed",
+      "milliseconds": 192
+    },
+    {
+      "name": "desktop_preferences.windows_config_junction_is_rejected",
+      "status": "passed",
+      "milliseconds": 90
+    },
+    {
+      "name": "desktop_preferences.windows_state_junction_is_rejected",
+      "status": "passed",
+      "milliseconds": 175
+    },
+    {
+      "name": "desktop_preferences.windows_lock_junction_is_rejected",
+      "status": "passed",
+      "milliseconds": 124
+    },
+    {
+      "name": "desktop_layout.defaults_do_not_persist",
+      "status": "passed",
+      "milliseconds": 43
+    },
+    {
+      "name": "desktop_layout.save_reorder_and_reload",
+      "status": "passed",
+      "milliseconds": 158
+    },
+    {
+      "name": "desktop_layout.identical_save_preserves_bytes",
+      "status": "passed",
+      "milliseconds": 95
+    },
+    {
+      "name": "desktop_layout.new_ids_append_and_hidden_ids_restore",
+      "status": "passed",
+      "milliseconds": 96
+    },
+    {
+      "name": "desktop_layout.full_capacity_ids_round_trip",
+      "status": "passed",
+      "milliseconds": 195
+    },
+    {
+      "name": "desktop_layout.illegal_and_duplicate_ids_rejected",
+      "status": "passed",
+      "milliseconds": 52
+    },
+    {
+      "name": "desktop_layout.resolver_enforces_capacity_and_uniqueness",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "desktop_layout.corrupt_state_preserved",
+      "status": "passed",
+      "milliseconds": 128
+    },
+    {
+      "name": "desktop_layout.future_schema_preserved",
+      "status": "passed",
+      "milliseconds": 129
+    },
+    {
+      "name": "desktop_layout.strict_schema_and_size_enforced",
+      "status": "passed",
+      "milliseconds": 2447
+    },
+    {
+      "name": "desktop_layout.cancelled_save_preserves_bytes",
+      "status": "passed",
+      "milliseconds": 54
+    },
+    {
+      "name": "desktop_layout.concurrent_writer_is_retryable",
+      "status": "passed",
+      "milliseconds": 180
+    },
+    {
+      "name": "desktop_layout.readonly_failure_preserves_commit",
+      "status": "passed",
+      "milliseconds": 102
+    },
+    {
+      "name": "desktop_layout.stale_staging_never_promoted",
+      "status": "passed",
+      "milliseconds": 139
+    },
+    {
+      "name": "desktop_layout.state_path_conflict_is_preserved",
+      "status": "passed",
+      "milliseconds": 133
+    },
+    {
+      "name": "desktop_layout.revision_cannot_overflow",
+      "status": "passed",
+      "milliseconds": 81
+    },
+    {
+      "name": "desktop_layout.save_cannot_change_appearance",
+      "status": "passed",
+      "milliseconds": 157
+    },
+    {
+      "name": "desktop_layout.windows_config_junction_rejected",
+      "status": "passed",
+      "milliseconds": 97
+    },
+    {
+      "name": "desktop_layout.windows_state_junction_rejected",
+      "status": "passed",
+      "milliseconds": 178
+    },
+    {
+      "name": "desktop_layout.windows_lock_junction_rejected",
+      "status": "passed",
+      "milliseconds": 126
+    },
+    {
+      "name": "Identity: valid public configuration is typed and not login proof",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "Identity: offline_access requires explicit remember choice",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe Endpoint variant C9584708",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "Identity: rejects unsafe Endpoint variant 3E29B96C",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe Endpoint variant F2B99CE0",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe Endpoint variant DDD0780B",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe Authority variant 52CDBAB7",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe Authority variant 6DBA4819",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe Authority variant 7E4798DC",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe MetadataAddress variant 775FFE67",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe MetadataAddress variant 2CB94BC2",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe MetadataAddress variant 68268A74",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe MetadataAddress variant 1843627E",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe MetadataAddress variant 5D454D55",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe RedirectUri variant AB397010",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe RedirectUri variant D5A236BD",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe RedirectUri variant CB81E85B",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe RedirectUri variant 975E612C",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe RedirectUri variant 3F9AB3FB",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe PostLogoutRedirectUri variant 071899BF",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe ClientId variant D99B1485",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe ResponseType variant 7EDF2F53",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe PkceMethod variant A116C9ED",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: rejects unsafe ClientAuthenticationMethod variant EFE6632C",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: PKCE cannot be disabled",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: secrets and unknown properties are rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: root secret fields are rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: duplicate properties cannot override trusted authority",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: nested duplicate properties are rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: unsupported schema is rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: missing required fields are rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: default email scope is rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: default refresh scope is rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: duplicate scopes are rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: malformed non-object JSON and excessive content are rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Identity: local file loading and absent file errors are safe",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "Discovery: valid metadata retains exact trusted endpoints",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "Discovery: rejects unsafe issuer variant 7E4798DC",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe issuer variant D8F282B9",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe token_endpoint variant DD312107",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe authorization_endpoint variant D810D867",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe jwks_uri variant 99DAB13F",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe userinfo_endpoint variant 5E59E322",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe end_session_endpoint variant 2002BDE9",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe revocation_endpoint variant B2521DD8",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: rejects unsafe device_authorization_endpoint variant 60D5E5C3",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: requires response_types_supported",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: requires code_challenge_methods_supported",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: requires token_endpoint_auth_methods_supported",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: requires id_token_signing_alg_values_supported",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: duplicate issuer cannot replace trusted value",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: ES384 deployment is accepted without permitting weak algorithms",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: missing endpoint fails closed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: unsupported scope fails clearly",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: default sign-in does not require offline access",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: omitted optional scope advertisement remains usable",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: malformed and oversize documents fail safely",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Discovery: pre-cancelled probe cannot become authentication",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "Registration: notes never establish authentication",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "Registration: mismatched app and unsafe content are not trusted",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: shipped public configuration and notes remain readable without authentication",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "Registration: bounded history remains optional and never supersedes the current probe",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history 74234E98",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history 44136FA3",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history FCBCF165",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history 6B86B273",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history 43C36327",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history 1D8FC6CE",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history CF1CBB66",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: rejects malformed history E10808D4",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: discovery_probe requires a correctly typed status",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: discovery_probe requires a correctly typed attempted_read_only",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: discovery_probe requires a correctly typed reason",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: discovery_probe requires a correctly typed product_login_test_executed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: discovery_probe rejects unknown fields and unsafe or excessive text",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: probe_history requires a correctly typed status",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: probe_history requires a correctly typed attempted_read_only",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: probe_history requires a correctly typed reason",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: probe_history requires a correctly typed product_login_test_executed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: probe_history rejects unknown fields and unsafe or excessive text",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: unknown root fields and duplicate history properties fail safely",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: source notes and console change flag have bounded required types",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "Registration: history count and total UTF-8 document size are bounded",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "runtime.rejects_invalid_identity_and_entry",
+      "status": "passed",
+      "milliseconds": 574
+    },
+    {
+      "name": "runtime.webview_profile_compact_path_preserves_complete_binding",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.webview_profile_isolates_account_application_source_and_signer",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.webview_profile_rejects_relative_or_forged_binding",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.navigation_initial_success_binds_only_one_trusted_native_id",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.navigation_initial_failure_remains_failure_and_cannot_revive",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.navigation_denied_completion_preserves_original_session_and_input",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "runtime.navigation_foreign_completion_races_cannot_complete_initial_page",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.entry_and_origin_bound_to_host",
+      "status": "passed",
+      "milliseconds": 19
+    },
+    {
+      "name": "runtime.rejects_forged_identity_and_duplicate_fields",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "runtime.message_limit_counts_utf8_bytes",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "runtime.capabilities_report_actual_limits",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.lifecycle_preserves_live_background_and_suspend",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "runtime.ended_epoch_cannot_resume",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.permission_requires_manifest_declaration",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "runtime.denial_does_not_reopen_prompt",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "runtime.replayed_request_is_rejected",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.save_persists_across_session_restart",
+      "status": "passed",
+      "milliseconds": 17
+    },
+    {
+      "name": "runtime.save_namespaces_are_app_specific",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "runtime.rejects_arbitrary_save_paths",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "runtime.corrupt_and_foreign_saves_preserve_bytes",
+      "status": "passed",
+      "milliseconds": 37
+    },
+    {
+      "name": "runtime.busy_save_is_retryable",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "runtime.readonly_save_preserves_commit",
+      "status": "passed",
+      "milliseconds": 25
+    },
+    {
+      "name": "runtime.cancelled_request_cannot_grant_or_write",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "runtime.close_cancels_pending_permission",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "runtime.permission_request_has_finite_timeout",
+      "status": "passed",
+      "milliseconds": 116
+    },
+    {
+      "name": "runtime.pending_queue_is_bounded",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "runtime.request_rate_is_bounded",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "runtime.long_session_12000_requests_keeps_bounded_replay_memory",
+      "status": "passed",
+      "milliseconds": 101
+    },
+    {
+      "name": "runtime.replay_window_expires_without_ending_session",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.pending_duplicate_never_expires_or_reexecutes",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.revoke_denies_future_save_access",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "runtime.revoke_invalidates_pending_permission",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "runtime.suspend_rejects_pending_grant",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "runtime.path_conflict_has_safe_error",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "runtime.save_junction_cannot_escape_namespace",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "packages.install_commits_verified_resources_and_record",
+      "status": "passed",
+      "milliseconds": 619
+    },
+    {
+      "name": "packages.repeat_install_is_idempotent",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "packages.reject_same_version_different_archive",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "packages.modified_install_is_not_silently_repaired",
+      "status": "passed",
+      "milliseconds": 37
+    },
+    {
+      "name": "packages.unregistered_and_extra_files_are_rejected",
+      "status": "passed",
+      "milliseconds": 20
+    },
+    {
+      "name": "packages.install_record_must_be_unambiguous",
+      "status": "passed",
+      "milliseconds": 23
+    },
+    {
+      "name": "packages.reject_non_autumn_extension_and_relative_paths",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "packages.reject_invalid_archive_and_crc",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "packages.reject_traversal_and_windows_device_paths",
+      "status": "passed",
+      "milliseconds": 24
+    },
+    {
+      "name": "packages.reject_duplicate_and_case_colliding_paths",
+      "status": "passed",
+      "milliseconds": 8
+    },
+    {
+      "name": "packages.reject_links_and_nonregular_entries",
+      "status": "passed",
+      "milliseconds": 8
+    },
+    {
+      "name": "packages.reject_native_executable_content",
+      "status": "passed",
+      "milliseconds": 14
+    },
+    {
+      "name": "packages.reject_missing_or_ambiguous_manifest",
+      "status": "passed",
+      "milliseconds": 25
+    },
+    {
+      "name": "packages.app_identity_matches_runtime_contract",
+      "status": "passed",
+      "milliseconds": 78
+    },
+    {
+      "name": "packages.semver_rejects_noncanonical_versions",
+      "status": "passed",
+      "milliseconds": 49
+    },
+    {
+      "name": "packages.unsupported_runtime_and_permissions_fail",
+      "status": "passed",
+      "milliseconds": 9
+    },
+    {
+      "name": "packages.entry_must_be_packaged_html",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "packages.archive_limits_prevent_resource_exhaustion",
+      "status": "passed",
+      "milliseconds": 48
+    },
+    {
+      "name": "packages.busy_install_does_not_commit",
+      "status": "passed",
+      "milliseconds": 23
+    },
+    {
+      "name": "packages.cancelled_install_does_not_create_state",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "packages.file_conflicts_preserve_existing_data",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "packages.install_leaves_saves_unchanged",
+      "status": "passed",
+      "milliseconds": 71
+    },
+    {
+      "name": "packages.install_junction_cannot_escape_apps",
+      "status": "passed",
+      "milliseconds": 89
+    },
+    {
+      "name": "Brand metadata is available to every module",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "All live game states block maintenance",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_accepts_short_name",
+      "status": "passed",
+      "milliseconds": 560
+    },
+    {
+      "name": "store.repository_lookup_accepts_trimmed_short_name",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "store.repository_lookup_accepts_https_url",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "store.repository_lookup_accepts_trailing_slash",
+      "status": "passed",
+      "milliseconds": 13
+    },
+    {
+      "name": "store.repository_lookup_accepts_host_case",
+      "status": "passed",
+      "milliseconds": 11
+    },
+    {
+      "name": "store.repository_lookup_accepts_trimmed_https_url",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "store.repository_lookup_preserves_returned_id_and_canonical_name",
+      "status": "passed",
+      "milliseconds": 9
+    },
+    {
+      "name": "store.repository_lookup_can_inspect_public_repository_without_topic",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "store.repository_lookup_rejects_null_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_empty_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_whitespace_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_missing_owner_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_missing_name_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_missing_separator_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_http_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_ftp_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_scheme_relative_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_foreign_host_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_host_suffix_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_api_host_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_credentials_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_username_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_explicit_default_port_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_nondefault_port_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_query_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_empty_query_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_fragment_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_empty_fragment_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_encoded_owner_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_encoded_separator_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_encoded_dot_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_encoded_backslash_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_backslash_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_short_backslash_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_parent_segment_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_current_segment_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_dot_name_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_parent_name_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_double_separator_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_extra_path_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_double_trailing_slash_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_git_suffix_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_git_suffix_case_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_invalid_owner_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_owner_leading_hyphen_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_invalid_name_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_space_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_unicode_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_embedded_control_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_owner_too_long_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_unicode_casefold_owner_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_unicode_casefold_name_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_unicode_casefold_url_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_unicode_casefold_scheme_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_name_too_long_before_network",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_rejects_input_too_long_before_network",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.repository_lookup_rejects_private_response",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "store.repository_lookup_rejects_invalid_response_identity",
+      "status": "passed",
+      "milliseconds": 9
+    },
+    {
+      "name": "store.repository_lookup_rejects_malformed_response",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "store.repository_lookup_not_found_is_not_an_empty_result",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_first_offline_is_explicit",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.repository_lookup_cancelled_request_never_returns_cached_success",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "store.repository_lookup_cancellation_reaches_transport",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "store.repository_lookup_details_report_each_missing_requirement",
+      "status": "passed",
+      "milliseconds": 547
+    },
+    {
+      "name": "store.repository_lookup_missing_topic_disables_otherwise_valid_release",
+      "status": "passed",
+      "milliseconds": 656
+    },
+    {
+      "name": "store.repository_lookup_historical_page_rechecks_removed_topic",
+      "status": "passed",
+      "milliseconds": 1023
+    },
+    {
+      "name": "runtime.isolation_accepts_only_the_validated_engine_version",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_headers_deny_both_async_clipboard_directions",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_challenges_bind_unique_nonce_instance_and_origin",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "runtime.isolation_accepts_complete_native_result_for_current_challenge",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.isolation_rejects_replay_between_challenges_and_instances",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_replay_between_origins",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_raw_webmessage_and_pending_results",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_duplicate_and_unknown_properties",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_result_limit_counts_utf8_bytes",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_challenge_is_not_caller_constructible_or_mutable",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_proof_is_not_caller_constructible_or_mutable",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_missing_protocolVersion",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_missing_nonce",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_missing_instanceId",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_missing_origin",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_missing_completed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_missing_secureContext",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_missing_probes",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_protocol_number",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_protocol_string",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_nonce_case_change",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_empty_nonce",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_instance_case_change",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_instance_other",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_origin_path",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_origin_no_slash",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_origin_suffix",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_incomplete",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_insecure",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_truthy_completed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_null_probes",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_empty_probes",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_single_peer",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_extra_peer",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_reorder",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_unknown_root",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_unknown_peer",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_label",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_nativeConstructor",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_filteredIceServers",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_relayOnly",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_iceConnectionState",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_connectionState",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_candidates",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_requires_both_peers_restartedIceConnectionState",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_shim",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_retained_ice_servers",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_all_interfaces",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_ice_new",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_ice_disconnected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_ice_connected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_connection_connected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_connection_closed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_candidate_escaped",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_negative_candidate_count",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_peer_restarted_ice",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_challenge_origin_",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_challenge_origin_687474703A2F2F626F756E642E617574756D6E2E696E76616C69642F",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_challenge_origin_68747470733A2F2F626F756E642E617574756D6E2E696E76616C6964",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_challenge_origin_68747470733A2F2F626F756E642E617574756D6E2E696E76616C69642F70617468",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_challenge_origin_68747470733A2F2F7573657240626F756E642E617574756D6E2E696E76616C69642F",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_challenge_origin_68747470733A2F2F626F756E642E617574756D6E2E696E76616C69642F3F7175657279",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_rejects_challenge_origin_68747470733A2F2F626F756E642E617574756D6E2E696E76616C69642F23667261676D656E74",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_session_proof_does_not_transfer_to_another_instance",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "runtime.isolation_close_and_crash_revoke_attestation",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.isolation_attestation_cannot_be_added_after_game_execution",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "runtime.isolation_sdk_cannot_self_attest_or_smuggle_verified_state",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.isolation_legacy_session_close_rejects_already_completed_response",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "runtime.isolation_legacy_revocation_rejects_already_completed_save_read",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "storage.t03.guest_accounts_and_sources_are_distinct",
+      "status": "passed",
+      "milliseconds": 180
+    },
+    {
+      "name": "storage.t03.slots_private_keys_and_quota",
+      "status": "passed",
+      "milliseconds": 276
+    },
+    {
+      "name": "storage.t03.rejects_paths_and_reserved_names",
+      "status": "passed",
+      "milliseconds": 50
+    },
+    {
+      "name": "storage.t03.atomic_backup_and_explicit_restore",
+      "status": "passed",
+      "milliseconds": 270
+    },
+    {
+      "name": "storage.t03.duplicate_save_keeps_bytes_revision_backup",
+      "status": "passed",
+      "milliseconds": 592
+    },
+    {
+      "name": "storage.t03.cancel_after_flush_preserves_old",
+      "status": "passed",
+      "milliseconds": 155
+    },
+    {
+      "name": "storage.t03.interrupted_staging_preserves_old",
+      "status": "passed",
+      "milliseconds": 181
+    },
+    {
+      "name": "storage.t03.injected_disk_full_preserves_old",
+      "status": "passed",
+      "milliseconds": 146
+    },
+    {
+      "name": "storage.t03.corrupt_record_not_overwritten",
+      "status": "passed",
+      "milliseconds": 252
+    },
+    {
+      "name": "storage.t03.future_record_not_overwritten",
+      "status": "passed",
+      "milliseconds": 148
+    },
+    {
+      "name": "storage.t03.legacy_guest_read_then_backed_up_upgrade",
+      "status": "passed",
+      "milliseconds": 169
+    },
+    {
+      "name": "storage.t03.explicit_guest_migration_preserves_source_and_conflicts",
+      "status": "passed",
+      "milliseconds": 218
+    },
+    {
+      "name": "storage.t03.guest_import_interruption_retry_preserves_backup",
+      "status": "passed",
+      "milliseconds": 209
+    },
+    {
+      "name": "storage.t03.format_migration_failure_then_success",
+      "status": "passed",
+      "milliseconds": 199
+    },
+    {
+      "name": "storage.t03.account_switch_at_commit_rejects_old_write",
+      "status": "passed",
+      "milliseconds": 105
+    },
+    {
+      "name": "storage.t03.session_guard_linearizes_before_switch",
+      "status": "passed",
+      "milliseconds": 109
+    },
+    {
+      "name": "storage.t03.critical_operations_block_maintenance",
+      "status": "passed",
+      "milliseconds": 52
+    },
+    {
+      "name": "storage.t03.private_delete_only_changes_own_key",
+      "status": "passed",
+      "milliseconds": 248
+    },
+    {
+      "name": "storage.preferences.private_keys_are_independent",
+      "status": "passed",
+      "milliseconds": 525
+    },
+    {
+      "name": "storage.preferences.account_and_source_bindings",
+      "status": "passed",
+      "milliseconds": 334
+    },
+    {
+      "name": "storage.preferences.legacy_migration_preserves_bytes_and_backup",
+      "status": "passed",
+      "milliseconds": 307
+    },
+    {
+      "name": "storage.preferences.corrupt_legacy_and_current_records_are_preserved",
+      "status": "passed",
+      "milliseconds": 395
+    },
+    {
+      "name": "storage.preferences.duplicate_keys_and_excessive_depth_are_rejected",
+      "status": "passed",
+      "milliseconds": 368
+    },
+    {
+      "name": "storage.preferences.migration_conflict_preserves_both_records",
+      "status": "passed",
+      "milliseconds": 153
+    },
+    {
+      "name": "storage.preferences.interrupted_migration_retries_without_losing_source",
+      "status": "passed",
+      "milliseconds": 268
+    },
+    {
+      "name": "storage.preferences.cancelled_write_and_stale_migration_preserve_bytes",
+      "status": "passed",
+      "milliseconds": 213
+    },
+    {
+      "name": "storage.preferences.file_and_aggregate_quotas_include_migration",
+      "status": "passed",
+      "milliseconds": 513
+    },
+    {
+      "name": "storage.preferences.logical_key_boundaries_and_device_names",
+      "status": "passed",
+      "milliseconds": 665
+    },
+    {
+      "name": "storage.preferences.account_lock_serializes_storage_and_migration",
+      "status": "passed",
+      "milliseconds": 246
+    },
+    {
+      "name": "storage.preferences.unsafe_paths_are_rejected",
+      "status": "passed",
+      "milliseconds": 197
+    },
+    {
+      "name": "storage.t03.capability_owner_account_epoch_instance_bound",
+      "status": "passed",
+      "milliseconds": 51
+    },
+    {
+      "name": "storage.t03.capability_expiry_and_revocation",
+      "status": "passed",
+      "milliseconds": 53
+    },
+    {
+      "name": "storage.t03.capability_capacity_and_cleanup",
+      "status": "passed",
+      "milliseconds": 64
+    },
+    {
+      "name": "storage.t03.capability_size_and_readonly_pinning",
+      "status": "passed",
+      "milliseconds": 56
+    },
+    {
+      "name": "storage.t03.export_is_one_shot_atomic_and_keeps_backup",
+      "status": "passed",
+      "milliseconds": 65
+    },
+    {
+      "name": "storage.t03.export_rejects_changed_target_and_cross_access",
+      "status": "passed",
+      "milliseconds": 60
+    },
+    {
+      "name": "storage.t03.export_cancel_preserves_original",
+      "status": "passed",
+      "milliseconds": 48
+    },
+    {
+      "name": "storage.t03.configuration_old_version_requires_migration",
+      "status": "passed",
+      "milliseconds": 179
+    },
+    {
+      "name": "storage.t03.configuration_migration_failure_preserves_old",
+      "status": "passed",
+      "milliseconds": 140
+    },
+    {
+      "name": "storage.t03.configuration_corrupt_recovery_keeps_damaged",
+      "status": "passed",
+      "milliseconds": 237
+    },
+    {
+      "name": "storage.t03.configuration_future_schema_is_preserved",
+      "status": "passed",
+      "milliseconds": 135
+    },
+    {
+      "name": "storage.t03.save_recovery_inspection_validates_backup_without_main",
+      "status": "passed",
+      "milliseconds": 156
+    },
+    {
+      "name": "storage.t03.config_recovery_inspection_validates_backup_without_main",
+      "status": "passed",
+      "milliseconds": 152
+    },
+    {
+      "name": "t03.permissions.persist_grants_and_denials_by_source_and_account",
+      "status": "passed",
+      "milliseconds": 31
+    },
+    {
+      "name": "t03.permissions.new_permissions_require_new_approval",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "t03.permissions.native_user_gesture_required",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "t03.permissions.denial_and_revocation_stop_repeated_prompts",
+      "status": "passed",
+      "milliseconds": 39
+    },
+    {
+      "name": "t03.permissions.revoke_invalidates_pending_approval",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "t03.permissions.concurrent_prompt_is_bounded",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "t03.permissions.corrupt_records_are_preserved",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "t03.permissions.atomic_replacement_preserves_backup",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "t03.identity.profile_guest_requires_login",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "t03.identity.profile_has_only_minimum_fields_and_scoped_id",
+      "status": "passed",
+      "milliseconds": 26
+    },
+    {
+      "name": "t03.identity.revocation_discards_delayed_profile",
+      "status": "passed",
+      "milliseconds": 17
+    },
+    {
+      "name": "t03.identity.epoch_discards_delayed_profile",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "t03.identity.host_snapshot_offline_profile_is_minimal",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "t03.identity.host_epoch_change_closes_session_and_cancels_events",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "t03.runtime.forged_identity_and_epoch_rejected",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "t03.runtime.native_gesture_expires_and_is_single_use",
+      "status": "passed",
+      "milliseconds": 13
+    },
+    {
+      "name": "t03.runtime.suspend_invalidates_pending_permission",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "t03.runtime.queued_events_revalidate_permission_revision",
+      "status": "passed",
+      "milliseconds": 23
+    },
+    {
+      "name": "t03.runtime.event_delivery_requires_current_declared_permissions",
+      "status": "passed",
+      "milliseconds": 61
+    },
+    {
+      "name": "t03.runtime.native_event_post_linearizes_before_revocation",
+      "status": "passed",
+      "milliseconds": 312
+    },
+    {
+      "name": "t03.runtime.native_event_post_linearizes_before_account_epoch_change",
+      "status": "passed",
+      "milliseconds": 61
+    },
+    {
+      "name": "t03.runtime.native_event_post_linearizes_before_close",
+      "status": "passed",
+      "milliseconds": 63
+    },
+    {
+      "name": "t03.runtime.managed_response_size_is_bounded",
+      "status": "passed",
+      "milliseconds": 14
+    },
+    {
+      "name": "t03.runtime.malformed_base64_or_numeric_adapter_input_is_safe_error",
+      "status": "passed",
+      "milliseconds": 19
+    },
+    {
+      "name": "t03.runtime.completed_private_reply_rechecks_revocation_before_delivery",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "t03.runtime.first_profile_approval_remains_deliverable",
+      "status": "passed",
+      "milliseconds": 28
+    },
+    {
+      "name": "t03.runtime.native_response_post_linearizes_before_revocation",
+      "status": "passed",
+      "milliseconds": 77
+    },
+    {
+      "name": "t03.runtime.delayed_permission_events_cannot_revive_old_reply",
+      "status": "passed",
+      "milliseconds": 19
+    },
+    {
+      "name": "t03.runtime.close_prevents_data_commit_and_events",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "t03.runtime.revocation_rechecked_after_data_request",
+      "status": "passed",
+      "milliseconds": 13
+    },
+    {
+      "name": "t03.runtime.revocation_blocks_queued_write_before_commit",
+      "status": "passed",
+      "milliseconds": 24
+    },
+    {
+      "name": "t03.runtime.cancellation_cleans_subscriptions",
+      "status": "passed",
+      "milliseconds": 11
+    },
+    {
+      "name": "t03.runtime.throwing_cancellation_callback_still_detaches_and_rejects_late_approval",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "t03.runtime.capabilities_only_advertise_wired_services",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "t03.desktop.notifications_permission_and_bounded_deduplication",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "t03.desktop.notification_mute_persists_and_clears_badge",
+      "status": "passed",
+      "milliseconds": 24
+    },
+    {
+      "name": "t03.desktop.revoke_removes_notification_and_click_capability",
+      "status": "passed",
+      "milliseconds": 21
+    },
+    {
+      "name": "t03.desktop.notification_click_requires_declared_action",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "t03.desktop.appearance_snapshot_and_scoped_change_event",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "t03.desktop.shortcut_registration_and_native_invocation",
+      "status": "passed",
+      "milliseconds": 13
+    },
+    {
+      "name": "t03.desktop.widget_data_is_bounded_plain_text",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "t03.desktop.internal_links_cannot_target_other_apps_or_commands",
+      "status": "passed",
+      "milliseconds": 15
+    },
+    {
+      "name": "t03.desktop.close_removes_all_desktop_extensions",
+      "status": "passed",
+      "milliseconds": 19
+    },
+    {
+      "name": "t03.desktop.stale_account_cannot_receive_or_write_extensions",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "bridge.data.chinese_7000_characters_round_trip",
+      "status": "passed",
+      "milliseconds": 237
+    },
+    {
+      "name": "bridge.data.emoji_controls_and_html_remain_literal_data",
+      "status": "passed",
+      "milliseconds": 514
+    },
+    {
+      "name": "bridge.data.maximum_message_depth_round_trip",
+      "status": "passed",
+      "milliseconds": 241
+    },
+    {
+      "name": "bridge.saves.exact_response_budget_and_one_byte_over",
+      "status": "passed",
+      "milliseconds": 184
+    },
+    {
+      "name": "bridge.preferences.exact_response_budget_and_one_byte_over",
+      "status": "passed",
+      "milliseconds": 263
+    },
+    {
+      "name": "bridge.data.surrogate_expansion_rejected_before_commit",
+      "status": "passed",
+      "milliseconds": 168
+    },
+    {
+      "name": "bridge.storage.maximum_20kib_write_can_be_read",
+      "status": "passed",
+      "milliseconds": 121
+    },
+    {
+      "name": "bridge.preferences.private_storage_cannot_overwrite_or_delete_preferences",
+      "status": "passed",
+      "milliseconds": 411
+    },
+    {
+      "name": "bridge.preferences.logical_key_contract_is_preserved",
+      "status": "passed",
+      "milliseconds": 393
+    },
+    {
+      "name": "bridge.data.cancellation_after_staging_preserves_committed_bytes",
+      "status": "passed",
+      "milliseconds": 633
+    },
+    {
+      "name": "bridge.data.timeout_after_staging_preserves_committed_bytes",
+      "status": "passed",
+      "milliseconds": 1125
+    },
+    {
+      "name": "bridge.data.oversized_existing_values_are_preserved",
+      "status": "passed",
+      "milliseconds": 225
+    },
+    {
+      "name": "bridge.guest.exact_response_budget_and_one_byte_over",
+      "status": "passed",
+      "milliseconds": 68
+    },
+    {
+      "name": "bridge.guest.oversized_existing_value_returns_bounded_error",
+      "status": "passed",
+      "milliseconds": 54
+    },
+    {
+      "name": "maintenance.t05.all_game_states_and_closed_resources_block",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "maintenance.t05.live_game_defers_without_blocking_its_saves",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "maintenance.t05.preparation_blocks_new_launch_and_write",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "maintenance.t05.cancel_reopens_without_releasing_existing_write",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "maintenance.t05.timeout_reopens_without_aborting_work",
+      "status": "passed",
+      "milliseconds": 45
+    },
+    {
+      "name": "maintenance.t05.launch_versus_maintenance_atomic_race",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "maintenance.t05.disposal_is_idempotent_and_diagnostics_fail_closed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "maintenance.t05.desktop_first_run_layout_refuse_writes_preserve_bytes",
+      "status": "passed",
+      "milliseconds": 242
+    },
+    {
+      "name": "maintenance.t05.actual_save_commit_drains_before_maintenance",
+      "status": "passed",
+      "milliseconds": 124
+    },
+    {
+      "name": "maintenance.t05.configuration_migration_restore_named_leases",
+      "status": "passed",
+      "milliseconds": 204
+    },
+    {
+      "name": "maintenance.t05.identity_fixture_login_includes_callback_and_commit",
+      "status": "passed",
+      "milliseconds": 28
+    },
+    {
+      "name": "maintenance.t05.identity_fixture_refresh_rotation_drains_before_maintenance",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "maintenance.t05.identity_fixture_new_actions_defer_preserve_credentials",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "maintenance.t05.real_dpapi_fixture_vault_write_clear_denied_during_maintenance",
+      "status": "passed",
+      "milliseconds": 158
+    },
+    {
+      "name": "support_bundle.startup_failure_keeps_fixed_diagnostics_without_exception_text",
+      "status": "passed",
+      "milliseconds": 245
+    },
+    {
+      "name": "support_bundle.hostile_startup_details_are_omitted",
+      "status": "passed",
+      "milliseconds": 80
+    },
+    {
+      "name": "support_bundle.projection_omits_secrets_paths_and_unknown_fields",
+      "status": "passed",
+      "milliseconds": 69
+    },
+    {
+      "name": "support_bundle.corrupt_and_duplicate_json_never_export_raw_lines",
+      "status": "passed",
+      "milliseconds": 68
+    },
+    {
+      "name": "support_bundle.retains_bounded_recent_projection_without_rotating_logs",
+      "status": "passed",
+      "milliseconds": 58
+    },
+    {
+      "name": "support_bundle.retains_recent_valid_records_across_rotations",
+      "status": "passed",
+      "milliseconds": 66
+    },
+    {
+      "name": "support_bundle.includes_safe_process_log_failure_status",
+      "status": "passed",
+      "milliseconds": 59
+    },
+    {
+      "name": "support_bundle.oversized_log_is_omitted_not_copied",
+      "status": "passed",
+      "milliseconds": 57
+    },
+    {
+      "name": "support_bundle.existing_output_is_never_overwritten",
+      "status": "passed",
+      "milliseconds": 44
+    },
+    {
+      "name": "support_bundle.cancellation_creates_no_output",
+      "status": "passed",
+      "milliseconds": 55
+    },
+    {
+      "name": "support_bundle.maintenance_refuses_export_and_releases_write_lease",
+      "status": "passed",
+      "milliseconds": 56
+    },
+    {
+      "name": "support_bundle.busy_log_is_labeled_without_touching_its_owner",
+      "status": "passed",
+      "milliseconds": 55
+    },
+    {
+      "name": "support_bundle.update_journal_projects_only_known_phase",
+      "status": "passed",
+      "milliseconds": 57
+    },
+    {
+      "name": "portable.same_adjacent_data_survives_runtime_relocation",
+      "status": "passed",
+      "milliseconds": 68
+    },
+    {
+      "name": "portable.marker_cannot_select_an_arbitrary_root",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "portable.corrupt_marker_never_creates_a_nested_data_root",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "portable.update_handoff_uses_actual_data_and_protects_layout",
+      "status": "passed",
+      "milliseconds": 578
+    },
+    {
+      "name": "startup.native_error_577_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.native_error_1260_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.native_error_4551_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.native_error_5_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.native_error_2_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.native_error_3_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.native_error_126_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.native_error_193_has_distinct_classification",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.policy_not_inferred_from_exception_text_or_hresult",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.only_exact_product_error_codes_are_retained",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "startup.report_contains_numeric_and_build_evidence_without_exception_secrets",
+      "status": "passed",
+      "milliseconds": 85
+    },
+    {
+      "name": "startup.arbitrary_outer_and_inner_exception_text_is_not_written",
+      "status": "passed",
+      "milliseconds": 15
+    },
+    {
+      "name": "startup.repeated_reports_do_not_replace_reports_or_existing_saves",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "startup.report_write_failure_has_no_fictitious_report_path",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "startup.missing_data_root_reports_write_unavailable",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.unsigned_pe32_and_pe32plus_preserve_region",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "bundle_footer.certificate_layout_accepts_all_alignment_padding",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.certificate_layout_pe32_supported",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.multiple_certificate_records_walk_exact_table",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.unsigned_does_not_search_before_trailing_bytes",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.malformed_certificate_never_falls_back_to_eof",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.certificate_offset_or_size_missing_rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.certificate_misaligned_truncated_or_overlay_rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.certificate_length_cannot_wrap_or_cross_table",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.certificate_record_kind_and_padding_checked",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.pre_certificate_padding_zero_and_at_most_seven",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.dos_pe_header_and_optional_magic_required",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.optional_directory_and_sections_stay_in_bounds",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.footer_region_rejects_header_overlap_and_overflow",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.hash_binding_and_marker_required",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "bundle_footer.truncated_input_and_short_reads_handled",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "production_signer.dpapi_public_root_and_manifest_signature_roundtrip",
+      "status": "passed",
+      "milliseconds": 247
+    },
+    {
+      "name": "production_signer.private_directory_and_file_allow_only_current_sid",
+      "status": "passed",
+      "milliseconds": 425
+    },
+    {
+      "name": "production_signer.existing_public_file_rejected_before_key_creation",
+      "status": "passed",
+      "milliseconds": 8
+    },
+    {
+      "name": "production_signer.existing_identity_is_never_regenerated",
+      "status": "passed",
+      "milliseconds": 226
+    },
+    {
+      "name": "production_signer.explicit_public_reexport_preserves_identity",
+      "status": "passed",
+      "milliseconds": 158
+    },
+    {
+      "name": "production_signer_failed_public_write_retains_recoverable_protected_key",
+      "status": "passed",
+      "milliseconds": 157
+    },
+    {
+      "name": "production_signer_wrong_root_and_test_purpose_cannot_authorize_signature",
+      "status": "passed",
+      "milliseconds": 243
+    },
+    {
+      "name": "production_signer_manifest_key_and_version_must_match",
+      "status": "passed",
+      "milliseconds": 154
+    },
+    {
+      "name": "production_signer_modified_local_public_metadata_does_not_rebind_key",
+      "status": "passed",
+      "milliseconds": 351
+    },
+    {
+      "name": "production_signer_tampered_ciphertext_fails_without_signature",
+      "status": "passed",
+      "milliseconds": 152
+    },
+    {
+      "name": "production_signer_relaxed_private_acl_is_rejected_without_rewriting_it",
+      "status": "passed",
+      "milliseconds": 187
+    },
+    {
+      "name": "production_signer_invalid_paths_and_key_id_create_no_identity",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T06 developer simulation: protocol permits only fixed preview-scoped simulation commands",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T06 developer simulation: account switch invalidates epoch without reviving old requests",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T06 developer simulation: forced denial and preview approval never write persistent grants",
+      "status": "passed",
+      "milliseconds": 59
+    },
+    {
+      "name": "T06 developer simulation: deny then restore still invalidates a pending approval",
+      "status": "passed",
+      "milliseconds": 52
+    },
+    {
+      "name": "T06 developer simulation: minimum profile and offline event use explicit synthetic identity only",
+      "status": "passed",
+      "milliseconds": 49
+    },
+    {
+      "name": "T06 developer simulation: guest remains auth required and mode teardown closes test runtime",
+      "status": "passed",
+      "milliseconds": 44
+    },
+    {
+      "name": "T06 developer simulation: account A B and live saves use existing store with separate ownership",
+      "status": "passed",
+      "milliseconds": 216
+    },
+    {
+      "name": "T06 developer simulation: real grant revision changes discard completed preview response",
+      "status": "passed",
+      "milliseconds": 72
+    },
+    {
+      "name": "update.signature_raw_bytes_pss_roundtrip",
+      "status": "passed",
+      "milliseconds": 205
+    },
+    {
+      "name": "update.sha256_and_feed_key_never_replace_trust",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "update.unknown_revoked_and_old_root_rejected",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "update.expiry_future_clock_sequence_checks",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "update.strict_json_duplicates_unknown_bom_missing",
+      "status": "passed",
+      "milliseconds": 20
+    },
+    {
+      "name": "update.product_channel_architecture_migration_binding",
+      "status": "passed",
+      "milliseconds": 20
+    },
+    {
+      "name": "update.paths_reject_traversal_ads_reserved_data_stable",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "update.inventory_excludes_private_keys_credentials_and_uninstaller",
+      "status": "passed",
+      "milliseconds": 26
+    },
+    {
+      "name": "update.file_table_case_collision_parent_and_stable_delete_rejected",
+      "status": "passed",
+      "milliseconds": 20
+    },
+    {
+      "name": "update.payload_roundtrip_and_file_tampering",
+      "status": "passed",
+      "milliseconds": 33
+    },
+    {
+      "name": "update.payload_unlisted_and_symlink_entries_rejected",
+      "status": "passed",
+      "milliseconds": 11
+    },
+    {
+      "name": "update.production_no_root_still_reads_latest",
+      "status": "passed",
+      "milliseconds": 56
+    },
+    {
+      "name": "update.asset_role_specific_rejection_missing-manifest",
+      "status": "passed",
+      "milliseconds": 23
+    },
+    {
+      "name": "update.asset_role_specific_rejection_missing-signature",
+      "status": "passed",
+      "milliseconds": 29
+    },
+    {
+      "name": "update.asset_role_specific_rejection_missing-payload",
+      "status": "passed",
+      "milliseconds": 20
+    },
+    {
+      "name": "update.asset_role_specific_rejection_duplicate-manifest",
+      "status": "passed",
+      "milliseconds": 28
+    },
+    {
+      "name": "update.asset_role_specific_rejection_duplicate-signature",
+      "status": "passed",
+      "milliseconds": 23
+    },
+    {
+      "name": "update.asset_role_specific_rejection_duplicate-payload",
+      "status": "passed",
+      "milliseconds": 21
+    },
+    {
+      "name": "update.real_executable_and_checksums_only_are_not_a_signed_update",
+      "status": "passed",
+      "milliseconds": 39
+    },
+    {
+      "name": "update.valid_signature_records_both_metadata_and_installable_check",
+      "status": "passed",
+      "milliseconds": 38
+    },
+    {
+      "name": "update.preview_metadata_success_requires_every_release_page",
+      "status": "passed",
+      "milliseconds": 41
+    },
+    {
+      "name": "update.stable_follows_github_latest_only",
+      "status": "passed",
+      "milliseconds": 45
+    },
+    {
+      "name": "update.strict_plus_meta_and_no_downgrade",
+      "status": "passed",
+      "milliseconds": 84
+    },
+    {
+      "name": "update.paginates_to_later_release_page",
+      "status": "passed",
+      "milliseconds": 33
+    },
+    {
+      "name": "update.prerelease_release_id_size_source_missing_assets_rejected",
+      "status": "passed",
+      "milliseconds": 84
+    },
+    {
+      "name": "update.download_verification_stage_channel_switch_blocks_commit",
+      "status": "passed",
+      "milliseconds": 202
+    },
+    {
+      "name": "update.persisted_sequence_digest_replay_and_failed_build",
+      "status": "passed",
+      "milliseconds": 68
+    },
+    {
+      "name": "update.unknown_signature_bad_bytes_no_candidate",
+      "status": "passed",
+      "milliseconds": 22
+    },
+    {
+      "name": "update.updater_ledger_survives_data_state_reset",
+      "status": "passed",
+      "milliseconds": 56
+    },
+    {
+      "name": "update.failed_critical_write_does_not_change_preview_in_memory",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "update.critical_state_save_uses_common_lease",
+      "status": "passed",
+      "milliseconds": 18
+    },
+    {
+      "name": "update.preview_pool_keeps_latest_stable_and_semver_order",
+      "status": "passed",
+      "milliseconds": 104
+    },
+    {
+      "name": "update.preview_disabled_never_automatically_downgrades",
+      "status": "passed",
+      "milliseconds": 31
+    },
+    {
+      "name": "update.build_metadata_does_not_create_upgrade_loop",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "update.opaque_release_requires_signed_tag_mapping",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "update.history_disabled_previews_current_and_old_protocol_are_visible",
+      "status": "passed",
+      "milliseconds": 54
+    },
+    {
+      "name": "update.history_pagination_deduplicates_and_can_cancel",
+      "status": "passed",
+      "milliseconds": 43
+    },
+    {
+      "name": "update.unconfirmed_never_enqueues_payload",
+      "status": "passed",
+      "milliseconds": 37
+    },
+    {
+      "name": "update.consent_pins_exact_release_when_latest_changes",
+      "status": "passed",
+      "milliseconds": 173
+    },
+    {
+      "name": "update.withdrawn_or_replaced_target_blocks_download",
+      "status": "passed",
+      "milliseconds": 50
+    },
+    {
+      "name": "update.cancel_consent_does_not_leave_authorized_plan",
+      "status": "passed",
+      "milliseconds": 58
+    },
+    {
+      "name": "update.staged_survives_restart_without_automatic_install",
+      "status": "passed",
+      "milliseconds": 211
+    },
+    {
+      "name": "update.delayed_rollback_preserves_consent_refreshes_handoff_only",
+      "status": "passed",
+      "milliseconds": 201
+    },
+    {
+      "name": "update.startup_once_and_manual_coalesce",
+      "status": "passed",
+      "milliseconds": 164
+    },
+    {
+      "name": "update.busy_metadata_releases_unstarted_consent_but_duplicate_preserves_download",
+      "status": "passed",
+      "milliseconds": 368
+    },
+    {
+      "name": "update.conditional_304_is_validated_but_offline_is_not_success",
+      "status": "passed",
+      "milliseconds": 41
+    },
+    {
+      "name": "update.corrupt_cache_with_null_bytes_is_refetched",
+      "status": "passed",
+      "milliseconds": 32
+    },
+    {
+      "name": "update.rate_limit_backoff_persists_across_instances",
+      "status": "passed",
+      "milliseconds": 24
+    },
+    {
+      "name": "update.pin_is_committed_only_after_matching_health_receipt",
+      "status": "passed",
+      "milliseconds": 40
+    },
+    {
+      "name": "update.host_download_profile_does_not_relax_community_autumn_limit",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "onboarding.decision_required_before_completion",
+      "status": "passed",
+      "milliseconds": 261
+    },
+    {
+      "name": "onboarding.login_success_does_not_finish_configuration",
+      "status": "passed",
+      "milliseconds": 286
+    },
+    {
+      "name": "onboarding.skip_survives_restart_without_login",
+      "status": "passed",
+      "milliseconds": 324
+    },
+    {
+      "name": "onboarding.legacy_completed_users_do_not_repeat_welcome",
+      "status": "passed",
+      "milliseconds": 125
+    },
+    {
+      "name": "onboarding.legacy_interrupted_migrates_on_next_decision",
+      "status": "passed",
+      "milliseconds": 137
+    },
+    {
+      "name": "onboarding.rejects_inconsistent_v2.Completed.Pending",
+      "status": "passed",
+      "milliseconds": 128
+    },
+    {
+      "name": "onboarding.rejects_inconsistent_v2.Initializing.NotOffered",
+      "status": "passed",
+      "milliseconds": 128
+    },
+    {
+      "name": "onboarding.rejects_inconsistent_v2.Hello.Skipped",
+      "status": "passed",
+      "milliseconds": 135
+    },
+    {
+      "name": "onboarding.rejects_inconsistent_v2.Initializing.Unknown",
+      "status": "passed",
+      "milliseconds": 134
+    },
+    {
+      "name": "onboarding.duplicate_login_coalesces_and_skip_rejects_late_callback",
+      "status": "passed",
+      "milliseconds": 351
+    },
+    {
+      "name": "onboarding.cancel_then_skip",
+      "status": "passed",
+      "milliseconds": 349
+    },
+    {
+      "name": "onboarding.login_failure_allows_skip.OFFLINE",
+      "status": "passed",
+      "milliseconds": 346
+    },
+    {
+      "name": "onboarding.login_failure_allows_skip.AUTH_TIMEOUT",
+      "status": "passed",
+      "milliseconds": 352
+    },
+    {
+      "name": "onboarding.login_failure_allows_skip.USER_CANCELLED",
+      "status": "passed",
+      "milliseconds": 367
+    },
+    {
+      "name": "onboarding.login_failure_allows_skip.AUTH_INVALID_TOKEN",
+      "status": "passed",
+      "milliseconds": 361
+    },
+    {
+      "name": "onboarding.failed_choice_save_keeps_real_pending_state",
+      "status": "passed",
+      "milliseconds": 186
+    },
+    {
+      "name": "onboarding.logout_preserves_completion_and_restart_stays_guest",
+      "status": "passed",
+      "milliseconds": 317
+    },
+    {
+      "name": "identity.local_restore_ready_before_network_and_offline_keeps_vault",
+      "status": "passed",
+      "milliseconds": 46
+    },
+    {
+      "name": "identity.revoked_session_clears_vault_without_affecting_onboarding",
+      "status": "passed",
+      "milliseconds": 278
+    },
+    {
+      "name": "onboarding.close_rejects_late_callback_without_finish",
+      "status": "passed",
+      "milliseconds": 263
+    },
+    {
+      "name": "rollback.exact_signed_target_consent_does_not_disable_sequence_floor",
+      "status": "passed",
+      "milliseconds": 96
+    },
+    {
+      "name": "rollback.supported_schema_pair_upgrade_use_and_manual_rollback_preserves_data",
+      "status": "passed",
+      "milliseconds": 474
+    },
+    {
+      "name": "rollback.snapshot_excludes_account_onboarding_policy_games_and_rejects_corruption",
+      "status": "passed",
+      "milliseconds": 31
+    },
+    {
+      "name": "rollback.failed_lower_sequence_keeps_highest_digest_and_security_floor",
+      "status": "passed",
+      "milliseconds": 19
+    },
+    {
+      "name": "rollback.portable_original_entry_has_durable_binding_outside_runtime",
+      "status": "passed",
+      "milliseconds": 14
+    },
+    {
+      "name": "rollback.old_protocol_and_unknown_data_schema_remain_disabled",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "rollback.independent_apply_guard_rejects_withdrawn_or_replaced_release",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "rollback.independent_apply_guard_revalidates_build_metadata_urls_and_exact_manifest",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "updater.physical_root_shared_leases_block_exclusive_across_handles",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "updater.exclusive_physical_root_blocks_business_start",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "updater.receipt_rejects_stable_bootstrap_and_data_paths",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "updater.receipt_rejects_case_collisions",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "updater.handoff_expiry_rejected_before_process_or_file_mutation",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "updater.handoff_replay_rejected_before_mutation",
+      "status": "passed",
+      "milliseconds": 14
+    },
+    {
+      "name": "updater.handoff_wrong_root_rejected_without_touching_target",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "updater.interrupted_file_replacement_recovers_verified_backup_and_preserves_data",
+      "status": "passed",
+      "milliseconds": 724
+    },
+    {
+      "name": "updater.recovery_retains_unknown_changed_new_file_and_failure_report",
+      "status": "passed",
+      "milliseconds": 61
+    },
+    {
+      "name": "updater.corrupt_backup_stops_recovery_before_restoration",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "updater.duplicate_or_unknown_record_fields_rejected",
+      "status": "passed",
+      "milliseconds": 9
+    },
+    {
+      "name": "updater.unauthorized_health_argument_never_creates_data",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "updater.recovery_handles_backed_up_applying_health_and_partial_rollback_boundaries",
+      "status": "passed",
+      "milliseconds": 290
+    },
+    {
+      "name": "updater.committed_and_aborted_journals_are_not_replayed",
+      "status": "passed",
+      "milliseconds": 119
+    },
+    {
+      "name": "updater.missing_managed_resource_is_restored_from_prior_build",
+      "status": "passed",
+      "milliseconds": 74
+    },
+    {
+      "name": "updater.active_maintenance_excludes_concurrent_recovery_and_double_launch",
+      "status": "passed",
+      "milliseconds": 50
+    },
+    {
+      "name": "updater.live_exact_child_identity_delays_recovery_without_kill",
+      "status": "passed",
+      "milliseconds": 35
+    },
+    {
+      "name": "updater.journal_target_root_mismatch_cannot_write_other_directory",
+      "status": "passed",
+      "milliseconds": 53
+    },
+    {
+      "name": "updater.actual_apply_replaces_windows_files_while_occupancy_guards_are_held",
+      "status": "passed",
+      "milliseconds": 111
+    },
+    {
+      "name": "updater.actual_apply_failure_restores_A_and_reports_relative_safe_diagnostics",
+      "status": "passed",
+      "milliseconds": 129
+    },
+    {
+      "name": "updater.actual_apply_external_read_handle_aborts_before_first_replacement",
+      "status": "passed",
+      "milliseconds": 76
+    },
+    {
+      "name": "updater.new_file_created_after_preflight_is_neither_replaced_nor_retired",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "updater.content_changed_before_guard_acquisition_is_rechecked_on_exact_held_stream",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "setup.reserved_windows_names_and_data_paths_rejected",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "setup.zip_special_entries_case_and_parent_collisions_rejected",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "setup.interrupted_copy_has_no_stable_entry_and_same_installer_resumes",
+      "status": "passed",
+      "milliseconds": 164
+    },
+    {
+      "name": "setup.nonconflicting_unknown_files_and_data_survive_install_uninstall_reinstall",
+      "status": "passed",
+      "milliseconds": 264
+    },
+    {
+      "name": "setup.unknown_target_conflict_rejected_before_program_writes",
+      "status": "passed",
+      "milliseconds": 53
+    },
+    {
+      "name": "setup.changed_program_file_survives_uninstall_and_blocks_conflicting_reinstall",
+      "status": "passed",
+      "milliseconds": 167
+    },
+    {
+      "name": "setup.interrupted_uninstall_resumes_even_after_current_receipt_deleted",
+      "status": "passed",
+      "milliseconds": 137
+    },
+    {
+      "name": "setup.interrupted_install_rejects_different_embedded_payload_identity",
+      "status": "passed",
+      "milliseconds": 58
+    },
+    {
+      "name": "setup.completed_install_is_idempotent_without_duplicate_data",
+      "status": "passed",
+      "milliseconds": 167
+    },
+    {
+      "name": "setup.private_journal_root_binding_rejects_alternate_target",
+      "status": "passed",
+      "milliseconds": 62
+    },
+    {
+      "name": "T03 server JWT fixture: valid",
+      "status": "passed",
+      "milliseconds": 556
+    },
+    {
+      "name": "T03 server JWT fixture: signature",
+      "status": "passed",
+      "milliseconds": 70
+    },
+    {
+      "name": "T03 server JWT fixture: issuer",
+      "status": "passed",
+      "milliseconds": 55
+    },
+    {
+      "name": "T03 server JWT fixture: audience",
+      "status": "passed",
+      "milliseconds": 43
+    },
+    {
+      "name": "T03 server JWT fixture: expired",
+      "status": "passed",
+      "milliseconds": 57
+    },
+    {
+      "name": "T03 server JWT fixture: client",
+      "status": "passed",
+      "milliseconds": 35
+    },
+    {
+      "name": "T03 server JWT fixture: scope",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "T03 server JWT fixture: unsigned",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 server JWT fixture: bare-user",
+      "status": "passed",
+      "milliseconds": 33
+    },
+    {
+      "name": "T03 server JWT fixture: nickname",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "T03 server JWT fixture: id-token",
+      "status": "passed",
+      "milliseconds": 38
+    },
+    {
+      "name": "T03 server JWT fixture: missing-exp",
+      "status": "passed",
+      "milliseconds": 47
+    },
+    {
+      "name": "T03 server ES384 P-384 fixture: valid resource token accepted",
+      "status": "passed",
+      "milliseconds": 18
+    },
+    {
+      "name": "T03 server ES384 P-384 fixture: wrong signature rejected",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "T03 server fixture: missing resource configuration fails closed",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 server fixture: challenge is account bound and consumed once",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "T03 server fixture: expired challenge rejected and capacity bounded",
+      "status": "passed",
+      "milliseconds": 27
+    },
+    {
+      "name": "T06 developer: real same-version rebuild installs in a hash-specific preview cache and preserves business install",
+      "status": "passed",
+      "milliseconds": 95
+    },
+    {
+      "name": "T06 developer: identical app ID preview source cannot read or overwrite installed saves preferences or file handles",
+      "status": "passed",
+      "milliseconds": 280
+    },
+    {
+      "name": "T06 developer: create uses only supplied templates and SDK, preserves original and produces a real valid project",
+      "status": "passed",
+      "milliseconds": 59
+    },
+    {
+      "name": "T06 developer: creation rejects invalid identity, unsupported template and existing output without replacing user files",
+      "status": "passed",
+      "milliseconds": 20
+    },
+    {
+      "name": "T06 developer: create validates delivered SDK bytes and rejects masquerading native payload before commit",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "T06 developer: independent validation leaves selected project byte-identical and creates no output package",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "T06 developer: preview stages independently verified exact bytes and rejects changed expected hash",
+      "status": "passed",
+      "milliseconds": 23
+    },
+    {
+      "name": "T06 developer: mode revocation is immediate and callbacks may re-enter service without deadlocking",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T06 developer: shared publication service generates exact bytes and rechecks all three layers",
+      "status": "passed",
+      "milliseconds": 27
+    },
+    {
+      "name": "T06 developer: dedicated preview protocol permits only exact package or scoped preview actions",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T06 developer: protocol rejects oversized, duplicate and unknown fields without accepting a command",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "T06 developer: CLI refuses a spoofed current-user pipe whose server is not the selected native client",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "T03 developer: disabled mode rejects capabilities and cancellation revokes work",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 developer: project builds real independently inspectable packages without overwriting old output",
+      "status": "passed",
+      "milliseconds": 25
+    },
+    {
+      "name": "T03 developer: rejects unsafe project entry game.exe",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "T03 developer: rejects unsafe project entry disguised.js",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "T03 developer: rejects unsafe project entry .env",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "T03 developer: permission declaration checked by existing package parser",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "T03 developer: output cannot contaminate project and selected user-data root rejected",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "T03 developer: SDK trace bounded and allowlist prevents token and arbitrary payload logging",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 developer: release metadata checks exact package hash size identity permissions",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "T03 developer: persisted mode restores without touching existing desktop preference file",
+      "status": "passed",
+      "milliseconds": 105
+    },
+    {
+      "name": "packages.t03_real_sample_declares_nine_permissions_purposes_and_desktop",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "packages.t03_inspection_is_read_only_and_hashes_actual_archive",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "packages.t03_desktop_sections_require_specific_permissions",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "packages.t03_purposes_require_declared_permission_and_bounded_text",
+      "status": "passed",
+      "milliseconds": 17
+    },
+    {
+      "name": "packages.t03_duplicate_desktop_identifiers_are_rejected",
+      "status": "passed",
+      "milliseconds": 13
+    },
+    {
+      "name": "packages.t03_action_and_widget_identifiers_are_restricted",
+      "status": "passed",
+      "milliseconds": 49
+    },
+    {
+      "name": "packages.t03_shortcut_action_must_be_declared_link",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "packages.t03_desktop_collections_are_bounded",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "packages.t03_desktop_titles_reject_controls_and_oversize",
+      "status": "passed",
+      "milliseconds": 19
+    },
+    {
+      "name": "packages.t03_desktop_shape_is_exact_and_unambiguous",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "packages.t03_inspection_enforces_resource_path_and_executable_restrictions",
+      "status": "passed",
+      "milliseconds": 11
+    },
+    {
+      "name": "packages.t03_inspection_cancellation_preserves_archive",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.release_save_format_bounds_match_install_contract",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.semver_numeric_preview_build_order",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.query_keeps_topic_and_rejects_operator_injection",
+      "status": "passed",
+      "milliseconds": 19
+    },
+    {
+      "name": "store.empty_search_is_real_empty_not_error",
+      "status": "passed",
+      "milliseconds": 11
+    },
+    {
+      "name": "store.topics_four_classifications_and_repository_id_deduplication",
+      "status": "passed",
+      "milliseconds": 13
+    },
+    {
+      "name": "store.search_incomplete_and_1000_cap_are_explicit",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "store.search_pagination_bounded_and_current_page",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "store.etag_304_and_offline_cache_survive_catalog_restart",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "store.first_offline_is_error_not_empty_results",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "store.rate_limit_blocks_repeat_without_network_storm",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "store.cancelled_request_never_returns_cached_success",
+      "status": "passed",
+      "milliseconds": 13
+    },
+    {
+      "name": "store.rejects_oversize_and_html_api_response",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "store.root_manifest_unknown_duplicate_and_future_schema_rejected",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "store.release_shared_parser_unknown_schema_permissions_hash_channel",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store.default_branch_contents_sha_etag_and_valid_release_asset",
+      "status": "passed",
+      "milliseconds": 519
+    },
+    {
+      "name": "store.no_releases_is_explicit",
+      "status": "passed",
+      "milliseconds": 409
+    },
+    {
+      "name": "store.release_rejects_no-manifest",
+      "status": "passed",
+      "milliseconds": 401
+    },
+    {
+      "name": "store.release_rejects_no-package",
+      "status": "passed",
+      "milliseconds": 518
+    },
+    {
+      "name": "store.release_rejects_wrong-app",
+      "status": "passed",
+      "milliseconds": 509
+    },
+    {
+      "name": "store.release_rejects_wrong-url",
+      "status": "passed",
+      "milliseconds": 510
+    },
+    {
+      "name": "store.release_rejects_wrong-size",
+      "status": "passed",
+      "milliseconds": 526
+    },
+    {
+      "name": "store.release_rejects_wrong-digest",
+      "status": "passed",
+      "milliseconds": 520
+    },
+    {
+      "name": "store.release_rejects_ambiguous",
+      "status": "passed",
+      "milliseconds": 511
+    },
+    {
+      "name": "store.release_rejects_preview-mismatch",
+      "status": "passed",
+      "milliseconds": 520
+    },
+    {
+      "name": "store.release_rejects_wrong-tag",
+      "status": "passed",
+      "milliseconds": 389
+    },
+    {
+      "name": "store.release_rejects_future-host",
+      "status": "passed",
+      "milliseconds": 506
+    },
+    {
+      "name": "store.release_rejects_unknown-runtime",
+      "status": "passed",
+      "milliseconds": 519
+    },
+    {
+      "name": "store.repository_recreation_cannot_take_selected_identity",
+      "status": "passed",
+      "milliseconds": 6
+    },
+    {
+      "name": "store.repository_identity_rechecked_on_historical_page",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "store.image_rejects_foreign_repository_and_svg_before_network",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "store.generator_and_inspection_share_all_release_fields",
+      "status": "passed",
+      "milliseconds": 28
+    },
+    {
+      "name": "store.isolated_fixture_real_http_catalog_download_and_hash",
+      "status": "passed",
+      "milliseconds": 1430
+    },
+    {
+      "name": "store.fixture_index_replacement_cannot_authorize_arbitrary_runtime",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T04 transport: private, loopback, link-local and IPv4-mapped private DNS addresses rejected",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T04 download: settings persist separately; invalid templates never replace saved settings",
+      "status": "passed",
+      "milliseconds": 17
+    },
+    {
+      "name": "T04 download: templates reject credentials, loopback, missing/duplicate placeholders and nested raw URL",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T04 transport: Logto, local paths, EXE origin and non-GitHub source rejected before HTTP",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "T04 transport: synthetic Authorization and Cookie cannot be forwarded",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "T04 transport: redirect only to fixed HTTPS asset hosts, no arbitrary host or downgrade",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T04 transport: acceleration failure explicitly falls back to original public source",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "T04 transport: disabled fallback never issues a second request",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "T04 transport: caller cancellation never triggers direct fallback",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "T04 download: exact bytes/hash commit atomically; duplicate enqueue one task; install state separate",
+      "status": "passed",
+      "milliseconds": 68
+    },
+    {
+      "name": "T04 download: MIME/sniffed HTML, bad digest and mismatched length never become installable",
+      "status": "passed",
+      "milliseconds": 129
+    },
+    {
+      "name": "T04 download: pause then strong ETag/If-Range resumes same stable asset",
+      "status": "passed",
+      "milliseconds": 673
+    },
+    {
+      "name": "T04 download: process restart keeps paused task and resumes stable resource without a second task",
+      "status": "passed",
+      "milliseconds": 164
+    },
+    {
+      "name": "T04 download: Range 200 or changed ETag/malformed Content-Range safely restart instead of appending",
+      "status": "passed",
+      "milliseconds": 2218
+    },
+    {
+      "name": "T04 download: no strong ETag means pause resumes by safe full download",
+      "status": "passed",
+      "milliseconds": 758
+    },
+    {
+      "name": "T04 download: disk-space failure performs no HTTP and does not touch unrelated data",
+      "status": "passed",
+      "milliseconds": 35
+    },
+    {
+      "name": "T04 download: transient network failure retries at most three attempts then explicit retry succeeds",
+      "status": "passed",
+      "milliseconds": 1297
+    },
+    {
+      "name": "T04 download: long Retry-After does not trigger early automatic retry",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "T04 download: broken HTTP body retries from actual partial with strong identity",
+      "status": "passed",
+      "milliseconds": 464
+    },
+    {
+      "name": "T04 download: queue concurrency and global byte limit are enforced",
+      "status": "passed",
+      "milliseconds": 1684
+    },
+    {
+      "name": "T04 download: cancel deletes only owned partial and cannot finish as installable",
+      "status": "passed",
+      "milliseconds": 127
+    },
+    {
+      "name": "T04 download: persisted verified cache is rehashed and tampering is not accepted on restart",
+      "status": "passed",
+      "milliseconds": 46
+    },
+    {
+      "name": "store_install.confirmation_and_single_post_commit_event",
+      "status": "passed",
+      "milliseconds": 73
+    },
+    {
+      "name": "store_install.release_all_fields_must_match_real_package",
+      "status": "passed",
+      "milliseconds": 14
+    },
+    {
+      "name": "store_install.repository_id_continuity_survives_rename",
+      "status": "passed",
+      "milliseconds": 76
+    },
+    {
+      "name": "store_install.local_source_cannot_take_over_github",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "store_install.historical_version_bytes_are_immutable",
+      "status": "passed",
+      "milliseconds": 69
+    },
+    {
+      "name": "store_install.pin_and_preview_are_persistent_app_policies",
+      "status": "passed",
+      "milliseconds": 100
+    },
+    {
+      "name": "store_install.foreground_background_starting_leases_block_mutation",
+      "status": "passed",
+      "milliseconds": 72
+    },
+    {
+      "name": "store_install.launch_waits_for_commit_not_stale_resource",
+      "status": "passed",
+      "milliseconds": 163
+    },
+    {
+      "name": "store_install.repair_uses_current_exact_archive_and_retains_old_content",
+      "status": "passed",
+      "milliseconds": 76
+    },
+    {
+      "name": "store_install.uninstall_retains_saves_and_source_tombstone",
+      "status": "passed",
+      "milliseconds": 45
+    },
+    {
+      "name": "store_install.interrupted_update_keeps_previous_registry",
+      "status": "passed",
+      "milliseconds": 63
+    },
+    {
+      "name": "store_install.interrupted_first_install_has_no_ghost_icon",
+      "status": "passed",
+      "milliseconds": 33
+    },
+    {
+      "name": "store_install.disk_full_keeps_previous_registry_bytes",
+      "status": "passed",
+      "milliseconds": 50
+    },
+    {
+      "name": "store_install.commit_survives_missing_receipt",
+      "status": "passed",
+      "milliseconds": 38
+    },
+    {
+      "name": "store_install.bundle_adoption_does_not_override_selection_or_uninstall",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "store_install.downgrade_checks_all_accounts_and_backups_exact_bytes",
+      "status": "passed",
+      "milliseconds": 91
+    },
+    {
+      "name": "store_install.downgrade_incompatible_or_corrupt_save_is_blocked",
+      "status": "passed",
+      "milliseconds": 48
+    },
+    {
+      "name": "store_install.absent_save_guard_fails_closed",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "store_install.future_save_compatibility_is_explicit",
+      "status": "passed",
+      "milliseconds": 74
+    },
+    {
+      "name": "store_install.cancelled_input_never_registers",
+      "status": "passed",
+      "milliseconds": 5
+    },
+    {
+      "name": "store_install.registry_duplicate_fields_are_rejected",
+      "status": "passed",
+      "milliseconds": 39
+    },
+    {
+      "name": "store_install.provenance_saved_without_claiming_signature_verification",
+      "status": "passed",
+      "milliseconds": 41
+    },
+    {
+      "name": "store_install.failed_backup_does_not_commit_downgrade",
+      "status": "passed",
+      "milliseconds": 38
+    },
+    {
+      "name": "store_install.semver_numeric_preview_order",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "store_pipeline.real_archive_download_verify_register_event_order",
+      "status": "passed",
+      "milliseconds": 107
+    },
+    {
+      "name": "store_pipeline.queue_rejects_cross_repository_asset",
+      "status": "passed",
+      "milliseconds": 9
+    },
+    {
+      "name": "store_pipeline.queue_rejects_asset_digest_size_name_disagreement",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "store_pipeline.package_permission_mismatch_preserves_existing_save",
+      "status": "passed",
+      "milliseconds": 54
+    },
+    {
+      "name": "store_pipeline.bad_download_hash_never_installs",
+      "status": "passed",
+      "milliseconds": 38
+    },
+    {
+      "name": "store_pipeline.persisted_intent_resumes_after_service_restart",
+      "status": "passed",
+      "milliseconds": 90
+    },
+    {
+      "name": "store_pipeline.tampered_repository_intent_is_rejected",
+      "status": "passed",
+      "milliseconds": 29
+    },
+    {
+      "name": "store_pipeline.repeated_commit_is_idempotent",
+      "status": "passed",
+      "milliseconds": 88
+    },
+    {
+      "name": "store_pipeline.completed_task_still_rejects_changed_permissions",
+      "status": "passed",
+      "milliseconds": 90
+    },
+    {
+      "name": "store_pipeline.duplicate_persisted_source_fields_are_rejected",
+      "status": "passed",
+      "milliseconds": 28
+    },
+    {
+      "name": "store_pipeline.running_instance_blocks_update_and_retry_preserves_source",
+      "status": "passed",
+      "milliseconds": 156
+    },
+    {
+      "name": "store_pipeline.interrupted_registry_commit_retries_without_data_loss",
+      "status": "passed",
+      "milliseconds": 117
+    },
+    {
+      "name": "store_pipeline.shutdown_after_registry_commit_keeps_success",
+      "status": "passed",
+      "milliseconds": 89
+    },
+    {
+      "name": "store_pipeline.restart_reconciles_only_verified_committed_install",
+      "status": "passed",
+      "milliseconds": 120
+    },
+    {
+      "name": "launcher.request_roundtrip_has_only_fixed_recall_message",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "launcher.request_rejects_unknown_protocol_and_reserved_fields",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "launcher.request_rejects_empty_nonce_and_nonexact_lengths",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "launcher.response_roundtrips_all_defined_outcomes",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "launcher.response_rejects_wrong_nonce_pid_and_session",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "launcher.response_rejects_malformed_header_outcome_and_extent",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "launcher.scope_is_stable_user_session_bound_and_rejects_names",
+      "status": "passed",
+      "milliseconds": 18
+    },
+    {
+      "name": "launcher.forward_budget_must_be_positive_and_bounded",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "launcher.secondary_recalls_ready_primary_without_owning_mutex",
+      "status": "passed",
+      "milliseconds": 26
+    },
+    {
+      "name": "launcher.secondary_waits_for_primary_readiness",
+      "status": "passed",
+      "milliseconds": 139
+    },
+    {
+      "name": "launcher.unready_primary_times_out_without_second_owner",
+      "status": "passed",
+      "milliseconds": 330
+    },
+    {
+      "name": "launcher.invalid_pipe_frames_cannot_invoke_recall",
+      "status": "passed",
+      "milliseconds": 149
+    },
+    {
+      "name": "launcher.concurrent_secondary_burst_retains_single_owner",
+      "status": "passed",
+      "milliseconds": 29
+    },
+    {
+      "name": "launcher.released_owner_allows_clean_reentry",
+      "status": "passed",
+      "milliseconds": 33
+    },
+    {
+      "name": "launcher.unresponsive_handler_obeys_secondary_deadline",
+      "status": "passed",
+      "milliseconds": 332
+    },
+    {
+      "name": "launcher.begin_stop_keeps_ownership_until_owner_dispose",
+      "status": "passed",
+      "milliseconds": 349
+    },
+    {
+      "name": "launcher.handler_fault_rejects_only_that_request_and_listener_recovers",
+      "status": "passed",
+      "milliseconds": 82
+    },
+    {
+      "name": "launcher.lost_ack_disconnects_recover_without_transport_spin",
+      "status": "passed",
+      "milliseconds": 183
+    },
+    {
+      "name": "launcher.buffered_ack_survives_delayed_client_read",
+      "status": "passed",
+      "milliseconds": 214
+    },
+    {
+      "name": "T03 identity fixture: strict callback accepts transaction code only",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "T03 identity fixture: rejects wrong state",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects wrong path",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects traversal path",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects duplicate state",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects code plus error",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects arbitrary parameter",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects bad escaping",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects control character",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects POST method",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects foreign host",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects HTTP body",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: rejects overlarge request",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: real loopback rejects wrong state then consumes valid callback with secret-free page",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "T03 identity fixture: occupied port is not killed or replaced",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: cancellation and timeout release real loopback port",
+      "status": "passed",
+      "milliseconds": 60
+    },
+    {
+      "name": "T03 identity JWT fixture: valid",
+      "status": "passed",
+      "milliseconds": 161
+    },
+    {
+      "name": "T03 identity JWT fixture: signature",
+      "status": "passed",
+      "milliseconds": 105
+    },
+    {
+      "name": "T03 identity JWT fixture: issuer",
+      "status": "passed",
+      "milliseconds": 60
+    },
+    {
+      "name": "T03 identity JWT fixture: audience",
+      "status": "passed",
+      "milliseconds": 45
+    },
+    {
+      "name": "T03 identity JWT fixture: nonce",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "T03 identity JWT fixture: expired",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "T03 identity JWT fixture: subject",
+      "status": "passed",
+      "milliseconds": 32
+    },
+    {
+      "name": "T03 identity JWT fixture: azp",
+      "status": "passed",
+      "milliseconds": 47
+    },
+    {
+      "name": "T03 identity JWT fixture: unsigned",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity ES384 P-384 fixture: valid ID token accepted",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "T03 identity ES384 P-384 fixture: wrong signature rejected",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity fixture: login cancellation does not authenticate and concurrent calls reuse transaction",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity fixture: remember persists verified session without inventing refresh credentials",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: ignored login cancellation cannot leave SigningIn or authenticate late",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity fixture: encrypted session restoration refresh none",
+      "status": "passed",
+      "milliseconds": 26
+    },
+    {
+      "name": "T03 identity fixture: encrypted session restoration refresh OFFLINE",
+      "status": "passed",
+      "milliseconds": 14
+    },
+    {
+      "name": "T03 identity fixture: encrypted session restoration refresh SESSION_EXPIRED",
+      "status": "passed",
+      "milliseconds": 15
+    },
+    {
+      "name": "T06 setup identity: protected local session is ready while refresh remains pending",
+      "status": "passed",
+      "milliseconds": 3
+    },
+    {
+      "name": "T06 identity messages: unknown remote text never appears in user diagnostics",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: malformed restored fields fail closed without null crash",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity fixture: late refresh after logout cannot restore session or credentials",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity fixture: invalid grant expires session while offline retains marked cached profile",
+      "status": "passed",
+      "milliseconds": 36
+    },
+    {
+      "name": "T03 identity fixture: late A refresh cannot contaminate newly signed in B",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity fixture: concurrent refreshes are serialized",
+      "status": "passed",
+      "milliseconds": 123
+    },
+    {
+      "name": "T03 identity fixture: browser logout failure still leaves local logout and preserves saves",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity fixture: account namespace stable by issuer and subject without nickname",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 identity fixture: final commit lease linearizes account logout and rejects stale epoch",
+      "status": "passed",
+      "milliseconds": 57
+    },
+    {
+      "name": "T03 identity Windows fixture: DPAPI encrypted atomic replacement and logout leaves unrelated saves",
+      "status": "passed",
+      "milliseconds": 29
+    },
+    {
+      "name": "T03 identity Windows fixture: damaged credential fails closed without deleting saves",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 identity Windows fixture: logout tombstone prevents restore if encrypted file deletion is interrupted",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "T03 persistence Windows NTFS: inherited Modify owner can enforce private DACL without WRITE_OWNER",
+      "status": "passed",
+      "milliseconds": 30
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: close and new service restore with refresh token",
+      "status": "passed",
+      "milliseconds": 22
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: close and new service restore without refresh token",
+      "status": "passed",
+      "milliseconds": 29
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: enabling after session-only login saves immediately without login or epoch change",
+      "status": "passed",
+      "milliseconds": 14
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: disabling persistence keeps current account but prevents restart restore",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: valid non-refreshable session restores as offline cache and survives another restart",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: explicit logout remains logged out after close and reopen",
+      "status": "passed",
+      "milliseconds": 12
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: late refresh respects disabled persistence",
+      "status": "passed",
+      "milliseconds": 11
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: late refresh respects enabled persistence",
+      "status": "passed",
+      "milliseconds": 39
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: late refresh after explicit logout cannot resurrect next service",
+      "status": "passed",
+      "milliseconds": 16
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: cancellation and write failure do not falsely change persistence",
+      "status": "passed",
+      "milliseconds": 10
+    },
+    {
+      "name": "T03 persistence fixture: unauthenticated persistence does not invent session",
+      "status": "passed",
+      "milliseconds": 1
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: failed deletion leaves tombstone and late refresh cannot rewrite credentials",
+      "status": "passed",
+      "milliseconds": 27
+    },
+    {
+      "name": "T03 persistence Windows DPAPI with injected pre-marker failure: error remains until durable removal succeeds",
+      "status": "passed",
+      "milliseconds": 22
+    },
+    {
+      "name": "T03 persistence Windows DPAPI: refresh storage failure keeps verified memory session and rotated token for retry",
+      "status": "passed",
+      "milliseconds": 17
+    },
+    {
+      "name": "T03 persistence fixture: successful offline persistence retry clears only storage error",
+      "status": "passed",
+      "milliseconds": 24
+    },
+    {
+      "name": "T03 persistence protocol: known expired token without refresh fails before offline discovery",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 callback page: invalid document permits only its exact inline CSS hash",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "T03 callback page: received document permits only its exact inline CSS hash",
+      "status": "passed",
+      "milliseconds": 0
+    },
+    {
+      "name": "T03 callback real TCP: received response has exact UTF8 length and never reflects code or state",
+      "status": "passed",
+      "milliseconds": 7
+    },
+    {
+      "name": "T03 callback real TCP: invalid HTTP400 and provider error never reflect hostile descriptions or URLs",
+      "status": "passed",
+      "milliseconds": 4
+    },
+    {
+      "name": "T03 callback real TCP: logout uses the same neutral receipt document without exposing transaction",
+      "status": "passed",
+      "milliseconds": 2
+    },
+    {
+      "name": "T03 OIDC protocol fixture: valid",
+      "status": "passed",
+      "milliseconds": 128
+    },
+    {
+      "name": "T03 OIDC protocol fixture: nonce",
+      "status": "passed",
+      "milliseconds": 50
+    },
+    {
+      "name": "T03 OIDC protocol fixture: userinfo-sub",
+      "status": "passed",
+      "milliseconds": 49
+    },
+    {
+      "name": "T03 OIDC protocol fixture: issuer",
+      "status": "passed",
+      "milliseconds": 38
+    },
+    {
+      "name": "T03 OIDC protocol fixture: audience",
+      "status": "passed",
+      "milliseconds": 32
+    },
+    {
+      "name": "T03 OIDC protocol fixture: signature",
+      "status": "passed",
+      "milliseconds": 62
+    },
+    {
+      "name": "T03 OIDC protocol fixture: expired",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "T03 OIDC protocol fixture: denied",
+      "status": "passed",
+      "milliseconds": 51
+    },
+    {
+      "name": "T03 OIDC protocol fixture: token-invalid-grant",
+      "status": "passed",
+      "milliseconds": 70
+    },
+    {
+      "name": "T03 OIDC protocol fixture: callback-unavailable",
+      "status": "passed",
+      "milliseconds": 41
+    },
+    {
+      "name": "T03 OIDC protocol fixture: callback-invalid-client",
+      "status": "passed",
+      "milliseconds": 110
+    },
+    {
+      "name": "T03 OIDC protocol fixture: callback-invalid-redirect",
+      "status": "passed",
+      "milliseconds": 34
+    },
+    {
+      "name": "T03 OIDC protocol fixture: token-invalid-client",
+      "status": "passed",
+      "milliseconds": 48
+    },
+    {
+      "name": "T03 OIDC protocol fixture: login parameters are independent and no remember omits offline scope",
+      "status": "passed",
+      "milliseconds": 53
+    },
+    {
+      "name": "T06 OIDC login recovery: discovery 502 releases callback and permits a fresh retry",
+      "status": "passed",
+      "milliseconds": 38
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh profile-503",
+      "status": "passed",
+      "milliseconds": 81
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh profile-429",
+      "status": "passed",
+      "milliseconds": 81
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh profile-offline",
+      "status": "passed",
+      "milliseconds": 78
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh profile-invalid-sub",
+      "status": "passed",
+      "milliseconds": 52
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh profile-401",
+      "status": "passed",
+      "milliseconds": 72
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh token-503",
+      "status": "passed",
+      "milliseconds": 84
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh token-429",
+      "status": "passed",
+      "milliseconds": 50
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh token-server-error",
+      "status": "passed",
+      "milliseconds": 82
+    },
+    {
+      "name": "T03 OIDC restart Windows DPAPI fixture: refresh token-temporarily-unavailable",
+      "status": "passed",
+      "milliseconds": 84
+    }
+  ]
+}

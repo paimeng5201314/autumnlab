@@ -1,3 +1,5 @@
+> 版本说明（2026-10-17）：本页保留 0.5.1 历史。当前宿主 `0.5.2-local.1`、SDK `0.3.0` / 协议 `1` 使用每实例原生证明，`networkSandboxVerified` 为动态布尔值；现版实现与验证范围见 [运行隔离](../../runtime-isolation.md)。
+
 # 网络能力与来源限制
 
 适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。platform.getCapabilities明确返回networkSandboxVerified=false。当前公开SDK没有network.request、network.getStatus、任意外部URI或主机命令能力，未知方法返回CAPABILITY_UNAVAILABLE。不得只看某条SDK请求拒绝就宣称WebView所有网络通道隔离通过。

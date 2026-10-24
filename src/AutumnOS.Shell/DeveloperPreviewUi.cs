@@ -94,7 +94,8 @@ public sealed partial class MainWindow
     {
         if (!DeveloperModeEnabled) return new(false, "DEVELOPER_MODE_DISABLED");
         WebAppHost? preview = developerPreviewHost;
-        if (preview is null || sessionId is null || sessionId != developerPreviewSessionId || !preview.IsDeveloperPreview)
+        if (preview is null || sessionId is null || sessionId != developerPreviewSessionId || !preview.IsDeveloperPreview ||
+            preview.Session.Instance.State is AppLifecycleState.Closed or AppLifecycleState.Crashed)
             return new(false, "DEVELOPER_PREVIEW_SESSION_EXPIRED");
         string appId = preview.Session.Instance.Identity.AppId;
         switch (command)

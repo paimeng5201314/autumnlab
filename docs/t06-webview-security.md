@@ -1,5 +1,9 @@
 # T06 原生 WebView 负面验证
 
+2026-10-18执行状态：Build04诊断副本的 `native-11` 在17项检查后触发渲染进程退出，网络批量尝试未完成，报告保持failed；不能把无额外接收计数当作通道通过。当前源码随后加入缺少剪贴板边界时的统一启动拒绝，覆盖所有开发预览。下面启动应用的驱动必须在真实支持相应受限配置的构建上执行；不能为跑通测试在产品加入例外。中间诊断版本、独立引擎探针、产品失败关闭与最终发行包验收分开记录。
+
+0.5.2新增全面通道驱动 `scripts/Test-RuntimeIsolationNative.ps1`，覆盖TCP/UDP连接观察、27种浏览器尝试、权限/伪造/关闭及iframe故障；另有普通商店游戏驱动 `scripts/Test-ChemLeapStoreSmoke.ps1`。当前策略与证据边界见[运行隔离](runtime-isolation.md)。本文六通道驱动继续保留，其capabilities断言已改为必须具备当前实例的原生证明；历史报告不重写，也不代表新驱动已运行。
+
 `scripts/Test-T06WebViewSecurity.ps1` 在最终交付完整副本中执行；已有任何 AutumnOS 实例时拒绝开始。它通过随包开发者 CLI 校验、打包一个无声明权限的自建应用，经过真实原生确认进入普通开发预览的 `WebAppHost`。没有测试专用运行权限，没有修改 CSP、宿主资源响应或系统安全设置。维护源码位于 `scripts/security-probes/`，全部辅助路径来自参数或脚本目录。
 
 驱动只绑定自己创建的 `127.0.0.1` 随机端口监听器。独立 `control-before` 与 `control-after` 请求证明监听正常；每次演练另有随机 correlation token，零请求断言仅统计该 token 下的 `/probe/` 路由。应用通过真实点击尝试 fetch、XHR、beacon、WebSocket、img、iframe；保存页面自己观察到的 CSP 事件和动作结果，再检查监听请求表。

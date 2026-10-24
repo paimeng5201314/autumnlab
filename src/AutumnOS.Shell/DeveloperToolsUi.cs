@@ -137,7 +137,7 @@ public sealed partial class MainWindow
         work.CancelAfter(TimeSpan.FromMinutes(5));
         try { await action(work.Token); }
         catch (OperationCanceledException) { developerResult.Text = "USER_CANCELLED · 操作已取消，已有包和数据保留。"; }
-        catch (PackageException error) { developerResult.Text = error.Code + " · 校验未通过，没有执行项目代码。"; }
+        catch (PackageException error) { developerResult.Text = error.Code == "RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE" ? StoreError(error.Code) : error.Code + " · 校验未通过，没有执行项目代码。"; }
         catch (CatalogException error) { developerResult.Text = error.Code + " · 发布资料未通过，原文件保留。"; }
         catch (Exception error) when (error is not OutOfMemoryException) { developerResult.Text = "DEVELOPER_OPERATION_FAILED · 检查所选文件与访问权限；原文件保留。"; }
         finally { developerBusy = false; RefreshDeveloperButtons(); }

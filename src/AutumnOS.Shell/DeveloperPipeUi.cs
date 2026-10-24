@@ -68,6 +68,11 @@ public sealed partial class MainWindow
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (!DeveloperModeEnabled) return new(false, "DEVELOPER_MODE_DISABLED");
+        if (aboutOpen && !developerBusy && !accountOperation && (request.Command is "status" or "close") &&
+            activePreviewPermissionInstance is { } pendingInstance &&
+            developerPreviewHost?.Session.Instance.Id.Value == pendingInstance &&
+            request.SessionId == developerPreviewSessionId)
+            return await ApplyDeveloperDebugAsync(request.Command, request.SessionId, cancellationToken);
         if (developerBusy || aboutOpen || accountOperation) return new(false, "DEVELOPER_BUSY");
         developerBusy = true; RefreshDeveloperButtons();
         try

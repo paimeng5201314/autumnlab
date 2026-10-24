@@ -1,3 +1,5 @@
+> 版本说明（2026-10-17）：本页保留 0.5.1 历史。当前宿主 `0.5.2-local.1`、SDK `0.3.0` / 协议 `1` 使用每实例原生证明，`networkSandboxVerified` 类型为 `boolean`，验证后返回 `true`；现版行为与范围见 [运行隔离](../../runtime-isolation.md)。
+
 # SDK 0.3.0 完整接口参考
 
 适用 AutumnOS **0.5.1** 系列，SDK **0.3.0**，消息协议 **1**；制作人：派蒙。以下26方法与6事件均对应交付SDK/autumn-sdk.d.ts、message.schema.json及宿主已接通方法。类型方法从SDK0.3.0可用；平台仍应先检测实际capabilities。内部C#管理接口不在本页导出，identity.beginAppSession/network/任意命令不支持，返回CAPABILITY_UNAVAILABLE。
