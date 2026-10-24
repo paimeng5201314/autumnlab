@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "status": "prepublication_assets_and_signature_verified",
+  "producer": "派蒙",
+  "github_account": "paimeng5201314",
+  "repository": "paimeng5201314/autumnlab",
+  "release_id": 422539615,
+  "tag": "meta-v0.5.2-local.9",
+  "channel": "meta",
+  "prerelease": true,
+  "make_latest": false,
+  "build_id": "T06-20261024-update-04",
+  "version": "0.5.2-local.9",
+  "release_label": "0.0.5-20261024-update",
+  "source_snapshot_id": "sha256:5bcc9db971e6cda62f823b8301a1bb8e6bcf788a1c11505e189213ef1b421a58",
+  "source_commit": "95b830c24f1ee396c8eb2605948ac63e4c69c64a",
+  "public_source_file_count": 577,
+  "preserved_remote_files": 17,
+  "current_source_change": "Only production-update-signing.md changed after build for private-key migration; public exports separately redact paths and add publication notes.",
+  "assets": [
+    {
+      "name": "AutumnOS.exe",
+      "id": 671383794,
+      "bytes": 488770298,
+      "sha256": "6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+      "download_url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS.exe"
+    },
+    {
+      "name": "AutumnOS-0.5.2-local.9-public.zip",
+      "id": 671387710,
+      "bytes": 487913978,
+      "sha256": "5f8e9db514a1f98fe93ff806c8214e68c977cf6fe01ddebd14a27a0776d5bbd2",
+      "download_url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-0.5.2-local.9-public.zip"
+    },
+    {
+      "name": "AutumnOS-source-T06-20261024-update-04.zip",
+      "id": 671385396,
+      "bytes": 1428354,
+      "sha256": "d3bd03b3035417d6d1b5f16ae2e8828ada737a82189e038ad2acb76a512c12b3",
+      "download_url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-source-T06-20261024-update-04.zip"
+    },
+    {
+      "name": "AutumnOS-0.5.2-local.9-public-source.zip",
+      "id": 671398293,
+      "bytes": 2138196,
+      "sha256": "76f236e2b39493630224162775bedb3e58e90c894838495d6856d835840a104b",
+      "download_url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-0.5.2-local.9-public-source.zip"
+    },
+    {
+      "name": "AutumnOS-0.5.2-local.9-win-x64-payload.zip",
+      "id": 671383797,
+      "bytes": 535950413,
+      "sha256": "87ed4d54ef028df8bf3bdb807c3101e7af2ce126d78cb83423ee626727a0dc30",
+      "download_url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-0.5.2-local.9-win-x64-payload.zip"
+    },
+    {
+      "name": "autumn.update.json",
+      "id": 671426780,
+      "bytes": 321845,
+      "sha256": "83e55ce8ae781c2c21c8573f2fd947fc15efad0b5d6276b9966a9e707d03533d",
+      "download_url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/autumn.update.json"
+    },
+    {
+      "name": "autumn.update.sig",
+      "id": 671426771,
+      "bytes": 679,
+      "sha256": "d65e459d6ee39eb205ec5ad86239232a9e3fca4bce6f639df2e26b159e249f3e",
+      "download_url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/autumn.update.sig"
+    }
+  ],
+  "update_signature_verification": {
+    "status": "passed",
+    "Version": "0.5.2-local.9",
+    "BuildId": "T06-20261024-update-04",
+    "ReleaseTag": "meta-v0.5.2-local.9",
+    "MinimumUpdaterVersion": "1.1.0",
+    "ReleaseId": 422539615,
+    "AssetId": 671383797,
+    "trust_purpose": "production"
+  },
+  "csharp_tests": "890/890 passed",
+  "production_update_CLI_tests": "17/17 passed",
+  "other_automatic_groups": "7 passed",
+  "static_checks": "86 passed",
+  "final_embedded_roots": "6 passed",
+  "public_zip_roundtrip": "18 files passed",
+  "windows": "11 25H2 26200.8037",
+  "dotnet_sdk": "10.0.401",
+  "fixed_webview2": "154.0.4258.53",
+  "webview2_sdk": "1.0.4258.31",
+  "isolation_policy": "autumn-local-web-v2",
+  "authenticode": "NotSigned",
+  "SAC_acceptance": "not_run",
+  "new_product_GUI": "not_run",
+  "real_GUI_update_and_rollback": "not_run",
+  "ChemLeap_normal_mode": "still_denied_by_missing_boundary",
+  "old_client_migration": "Complete EXE required for the first embedded trust root. Payload does not replace the stable updater.",
+  "public_root_sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c",
+  "private_key_uploaded": false,
+  "credentials_uploaded": false,
+  "user_data_uploaded": false,
+  "verification_boundary": "Remote upload receipts and local full payload verification; actual public feed verification follows publishing. Not a claim that every historical stage passed."
+}

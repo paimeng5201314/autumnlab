@@ -1,0 +1,7 @@
+{
+  "status": "rejected_before_signing",
+  "reason": "GitHub draft tag changed to temporary untagged name after metadata patch; caught by strict actual release binding",
+  "private_key_used": false,
+  "manifest_created": false,
+  "corrective_action": "PATCH explicitly carries tag_name; subsequent GET must match before signing"
+}
