@@ -1,0 +1,102 @@
+{
+  "status": "passed",
+  "kind": "actual_public_GitHub_release_assets_digest_author_and_tag_verification",
+  "release_id": 422539615,
+  "tag": "meta-v0.5.2-local.9",
+  "url": "https://github.com/paimeng5201314/autumnlab/releases/tag/meta-v0.5.2-local.9",
+  "draft": false,
+  "prerelease": true,
+  "author": "paimeng5201314",
+  "published_at": "2026-10-24T06:05:56Z",
+  "source_commit": "753b26b13869fd27cd6e70122cc9113cf08b145e",
+  "assets_verified": 10,
+  "stable_latest_unchanged": true,
+  "stable_tag": "plus0.0.4-20261017",
+  "assets": [
+    {
+      "id": 671426780,
+      "name": "autumn.update.json",
+      "bytes": 321845,
+      "digest": "sha256:83e55ce8ae781c2c21c8573f2fd947fc15efad0b5d6276b9966a9e707d03533d",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/autumn.update.json",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671426771,
+      "name": "autumn.update.sig",
+      "bytes": 679,
+      "digest": "sha256:d65e459d6ee39eb205ec5ad86239232a9e3fca4bce6f639df2e26b159e249f3e",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/autumn.update.sig",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671398293,
+      "name": "AutumnOS-0.5.2-local.9-public-source.zip",
+      "bytes": 2138196,
+      "digest": "sha256:76f236e2b39493630224162775bedb3e58e90c894838495d6856d835840a104b",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-0.5.2-local.9-public-source.zip",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671387710,
+      "name": "AutumnOS-0.5.2-local.9-public.zip",
+      "bytes": 487913978,
+      "digest": "sha256:5f8e9db514a1f98fe93ff806c8214e68c977cf6fe01ddebd14a27a0776d5bbd2",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-0.5.2-local.9-public.zip",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671383797,
+      "name": "AutumnOS-0.5.2-local.9-win-x64-payload.zip",
+      "bytes": 535950413,
+      "digest": "sha256:87ed4d54ef028df8bf3bdb807c3101e7af2ce126d78cb83423ee626727a0dc30",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-0.5.2-local.9-win-x64-payload.zip",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671385396,
+      "name": "AutumnOS-source-T06-20261024-update-04.zip",
+      "bytes": 1428354,
+      "digest": "sha256:d3bd03b3035417d6d1b5f16ae2e8828ada737a82189e038ad2acb76a512c12b3",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS-source-T06-20261024-update-04.zip",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671383794,
+      "name": "AutumnOS.exe",
+      "bytes": 488770298,
+      "digest": "sha256:6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/AutumnOS.exe",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671427402,
+      "name": "publication.json",
+      "bytes": 4686,
+      "digest": "sha256:253a73e1c904642aee370256f9f951efd9cae4495f40fee8e84e545c72ed902d",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/publication.json",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671427397,
+      "name": "RELEASE_NOTES.md",
+      "bytes": 3613,
+      "digest": "sha256:d3f8bc59d77cf27d514e6852dab39b904ccc9c49e8d2fa6e2334a5933943a926",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/RELEASE_NOTES.md",
+      "uploader": "paimeng5201314"
+    },
+    {
+      "id": 671427394,
+      "name": "SHA256SUMS.txt",
+      "bytes": 848,
+      "digest": "sha256:472ae8e8257639ad67a862cceb5ad5279985429a0faaae5c4fb5e62bb6088f52",
+      "url": "https://github.com/paimeng5201314/autumnlab/releases/download/meta-v0.5.2-local.9/SHA256SUMS.txt",
+      "uploader": "paimeng5201314"
+    }
+  ],
+  "GUI_update": "not_run",
+  "authenticode": "NotSigned",
+  "private_key_uploaded": false,
+  "user_data_uploaded": false,
+  "verified_utc": "2026-10-24T06:06:00.7628170+00:00"
+}

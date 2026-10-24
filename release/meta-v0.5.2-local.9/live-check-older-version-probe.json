@@ -1,0 +1,17 @@
+{
+  "kind": "headless_real_update_service_metadata_check_not_GUI_or_install",
+  "repository": "paimeng5201314/autumnlab",
+  "automaticInstallConfigured": true,
+  "lastReleaseMetadataUtc": "2026-10-24T06:06:34.5485031+00:00",
+  "releasesExamined": 3,
+  "checkComplete": false,
+  "lastSuccessfulCheckUtc": null,
+  "errorCode": "UPDATE_MANIFEST_MISSING",
+  "warnings": [
+    "UPDATE_MANIFEST_MISSING"
+  ],
+  "candidate": "meta-v0.5.2-local.9",
+  "bytesReceived": 0,
+  "totalBytes": 535950413,
+  "installation": "not_run"
+}

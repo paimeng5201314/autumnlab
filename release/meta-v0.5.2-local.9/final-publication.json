@@ -1,0 +1,51 @@
+{
+  "status": "published_and_verified",
+  "producer": "派蒙",
+  "github_account": "paimeng5201314",
+  "release_url": "https://github.com/paimeng5201314/autumnlab/releases/tag/meta-v0.5.2-local.9",
+  "source_commit": "95b830c24f1ee396c8eb2605948ac63e4c69c64a",
+  "release_commit": "753b26b13869fd27cd6e70122cc9113cf08b145e",
+  "asset_count": 10,
+  "stable_latest_unchanged": true,
+  "older_version_probe": {
+    "kind": "headless_real_update_service_metadata_check_not_GUI_or_install",
+    "repository": "paimeng5201314/autumnlab",
+    "automaticInstallConfigured": true,
+    "lastReleaseMetadataUtc": "2026-10-24T14:06:34.5485031+08:00",
+    "releasesExamined": 3,
+    "checkComplete": false,
+    "lastSuccessfulCheckUtc": null,
+    "errorCode": "UPDATE_MANIFEST_MISSING",
+    "warnings": [
+      "UPDATE_MANIFEST_MISSING"
+    ],
+    "candidate": "meta-v0.5.2-local.9",
+    "bytesReceived": 0,
+    "totalBytes": 535950413,
+    "installation": "not_run"
+  },
+  "older_probe_scope": "new client embedded production trust plus explicitly declared older-version input; not actual old-client or GUI upgrade",
+  "current_version_check": {
+    "kind": "headless_real_update_service_metadata_check_not_GUI_or_install",
+    "repository": "paimeng5201314/autumnlab",
+    "automaticInstallConfigured": true,
+    "lastReleaseMetadataUtc": "2026-10-24T14:06:34.4081695+08:00",
+    "releasesExamined": 3,
+    "checkComplete": false,
+    "lastSuccessfulCheckUtc": null,
+    "errorCode": "UPDATE_MANIFEST_MISSING",
+    "warnings": [
+      "UPDATE_MANIFEST_MISSING"
+    ],
+    "candidate": null,
+    "bytesReceived": 0,
+    "totalBytes": 0,
+    "installation": "not_run"
+  },
+  "public_metadata_signature": "passed",
+  "real_update_restart": "not_run",
+  "authenticode": "NotSigned",
+  "ChemLeap": "still_denied",
+  "private_key_uploaded": false,
+  "user_data_uploaded": false
+}

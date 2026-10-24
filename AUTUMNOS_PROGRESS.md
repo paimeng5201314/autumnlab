@@ -4,6 +4,12 @@
 
 ## 当前阶段
 
+2026-10-24 派蒙明确授权“将所有内容以派蒙的身份上传到github对应仓库”，本轮已完成。GitHub连接与本机凭据均核实为paimeng5201314（派蒙），对应paimeng5201314/autumnlab；提交作者/提交者、Release作者和10个附件上传者均归该账号。源码/SDK/规范/自有隔离探针/保留报告共577公开文件，经远端Git blob逐项核对；main源码提交95b830c24f1ee396c8eb2605948ac63e4c69c64a，发布材料提交753b26b13869fd27cd6e70122cc9113cf08b145e，保留17个远端既有LICENSE/工作流/历史文件。预览Release meta-v0.5.2-local.9（422539615）于2026-10-24T06:05:56Z公开，未设Latest，原稳定Latest保持plus0.0.4-20261017。EXE、公开交付ZIP、两份源码ZIP、payload、真实绑定清单/签名及校验说明全部上传，10项远端长度/摘要/ID/身份核验passed。签名使用既有D盘生产身份，真实payload Asset ID671383797，完整载荷验签通过；未导出或上传私钥、凭据、真实用户数据。
+
+发布后真实UpdateService检查已识别并验签meta-v0.5.2-local.9。诊断用新客户端根+明确标识的较旧版本参数0.5.2-local.8识别候选；实际当前版本0.5.2-local.9不提示同版本升级。旧发行缺清单警告仍保留，checkComplete=false，不宣称全部历史更新可安装。两次下载0、installation=not_run，GUI升级/回滚未执行。Windows Authenticode仍NotSigned，ChemLeap原隔离缺口仍未完成。新公开ZIP仅脱敏8份文本，原EXE与本地ZIP保留；当前源码对构建快照只有维护文档密钥迁移说明变化。初次草稿标签变化被严格签名前校验拒绝，修正tag后重新读取确认，失败证据保留。完整记录 `artifacts/github-upload-20261024/UPLOADED.md` 和 `published-release-verification.json`，GitHub发布页 https://github.com/paimeng5201314/autumnlab/releases/tag/meta-v0.5.2-local.9 。本次授权只用于本轮发布，没有初始化工作根Git、改全局策略或启动云端构建，旧入口和用户数据未覆盖。
+
+
+
 2026-10-24 F/D清理已完成。派蒙明确授权D盘旧测试和构建也清理、当前交付与报告保留，并确认正常退出startup-02；没有强杀用户程序。F盘清理1559500592字节测试/缓存，签名密钥2906字节已迁D；D盘按核对清单删除217518文件、189902731821字节（约176.86GiB），两个旧负面测试junction仅移除链接本身，三个旧测试快捷方式已移除。当前update-04 EXE、ZIP、解压副本、源码ZIP及原根入口哈希复核通过；65个AutumnOS_Data根原位保留，根真实数据与D盘私钥目录不在清理范围内。工程源码/SDK/开发者项目/唯一探针源码与当前报告依赖保留。详见 `artifacts/update-fix-20261024/CLEANUP-HANDOFF.md`、`cleanup-final-verification.json`、`d-cleanup-result-04.json`。大量旧生成物/旧报告已依本轮授权删除，以下历史记录引用的部分路径不再存在；这不改变历史失败或not_run状态。当前GUI、在线更新安装及第三方隔离没有新增验收。密钥实际位置为 `<PRIVATE_SIGNING_DIRECTORY>`。
 
 2026-10-24 派蒙明确授权“签名密钥转移到D，删除所有测试资料所有残留”。密钥已安全迁到 `<PRIVATE_SIGNING_DIRECTORY>`：新目录创建时仅当前用户ACL，两个文件受保护字节一致，实际调用本地签名工具完成DPAPI解密及现有公钥匹配验证后删除F盘原件与已空父目录；未输出私钥明文、未更换签名身份。详见 `artifacts/update-fix-20261024/signing-key-moved-to-D.json`。维护文档已更正实际位置；旧交付ZIP中的文档是迁移前快照，EXE/ZIP字节未改。F盘其余明确测试残留正在核对清理；D盘历史测试/构建是否也删已单独询问，未答前保留。
