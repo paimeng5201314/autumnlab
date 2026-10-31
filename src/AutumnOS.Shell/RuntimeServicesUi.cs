@@ -81,9 +81,33 @@ public sealed partial class MainWindow
             if (fileBrokers.TryGetValue(key, out var existing)) return existing;
             var broker = new FileCapabilityBroker(scope => Current(scope) &&
                 permissions.Query(account, app, write ? "files.save" : "files.open") == PermissionDecision.Granted,
-                commitLease: _ => session().EnterCommitLease(), coordinator: criticalOperations);
-            fileBrokers[key] = broker;
-            return broker;
+                commitLease: _ => session().EnterCommitLease(write ? "files.save" : "files.open"), coordinator: criticalOperations,
+                permissionRevision: _ => permissions.GetRevision(account, app, write ? "files.save" : "files.open"));
+            var owned = fileBrokers.GetOrAdd(key, broker);
+            if (!ReferenceEquals(owned, broker)) broker.Dispose();
+            else
+            {
+                // Changed can be delayed or reentrant under another caller's permission lease.
+                // Queue cleanup, then inspect current revisions; never clear from the old decision.
+                void PermissionChanged(PermissionChange change)
+                {
+                    if (change.AccountKey != account.AccountKey || change.BindingKey != app.BindingKey ||
+                        change.Permission != (write ? "files.save" : "files.open")) return;
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        try { owned.PruneRevoked(); }
+                        catch (Exception error) when (error is not OutOfMemoryException)
+                        {
+                            // Keep per-operation authorization checks active; report failed cleanup
+                            // instead of crashing the UI or treating a failed provider as success.
+                            permissionResult.Text = "FILE_CAPABILITY_CLEANUP_FAILED · 文件授权清理未完成，请结束并重新打开该应用。";
+                        }
+                    });
+                }
+                permissions.Changed += PermissionChanged;
+                token.Register(() => permissions.Changed -= PermissionChanged);
+            }
+            return owned;
         }
         return new RuntimeSessionServices
         {
@@ -99,9 +123,12 @@ public sealed partial class MainWindow
                 if (method == "files.pickOpen")
                 {
                     Exact(p);
+                    StorageScope pickerScope = Scope();
+                    long pickerRevision = permissions.GetRevision(account, app, "files.open");
                     string? selected = await PickOpenFileAsync(ct);
+                    ct.ThrowIfCancellationRequested();
                     if (selected is null) throw new RuntimeCapabilityException("USER_CANCELLED");
-                    return Require(Files().RegisterPickedFile(selected, Scope()))!;
+                    return Require(Files().RegisterPickedFile(selected, pickerScope, expectedPermissionRevision: pickerRevision))!;
                 }
                 if (method == "files.read")
                 {
@@ -111,9 +138,13 @@ public sealed partial class MainWindow
                 }
                 if (method == "files.pickSave")
                 {
-                    Exact(p); string? selected = await PickSaveFileAsync(ct);
+                    Exact(p);
+                    StorageScope pickerScope = Scope();
+                    long pickerRevision = permissions.GetRevision(account, app, "files.save");
+                    string? selected = await PickSaveFileAsync(ct);
+                    ct.ThrowIfCancellationRequested();
                     if (selected is null) throw new RuntimeCapabilityException("USER_CANCELLED");
-                    return Require(Files(true).RegisterPickedSaveFile(selected, Scope()))!;
+                    return Require(Files(true).RegisterPickedSaveFile(selected, pickerScope, expectedPermissionRevision: pickerRevision))!;
                 }
                 if (method == "files.write")
                 {
@@ -156,7 +187,7 @@ public sealed partial class MainWindow
             {
                 token.ThrowIfCancellationRequested();
                 var picker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(AppWindow.Id);
-                var file = await picker.PickSingleFileAsync().AsTask(token);
+                var file = await RunOwnedPickerAsync(() => picker.PickSingleFileAsync(), token);
                 token.ThrowIfCancellationRequested(); completion.TrySetResult(file?.Path);
             }
             catch (OperationCanceledException) { completion.TrySetCanceled(token); }
@@ -175,7 +206,7 @@ public sealed partial class MainWindow
                 token.ThrowIfCancellationRequested();
                 var picker = new Microsoft.Windows.Storage.Pickers.FileSavePicker(AppWindow.Id) { SuggestedFileName = "AutumnOS-export" };
                 picker.FileTypeChoices.Add("JSON 数据", new List<string> { ".json" });
-                var file = await picker.PickSaveFileAsync().AsTask(token);
+                var file = await RunOwnedPickerAsync(() => picker.PickSaveFileAsync(), token);
                 token.ThrowIfCancellationRequested(); completion.TrySetResult(file?.Path);
             }
             catch (OperationCanceledException) { completion.TrySetCanceled(token); }
@@ -201,8 +232,7 @@ public sealed partial class MainWindow
                 preview.Session.Instance.State == AppLifecycleState.Foreground
                 ? preview.Session.Instance.Id.Value : null;
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = $"允许 {prompt.DisplayName} 使用{PermissionTitle(prompt.Permission)}？", Content = $"来源：{prompt.Source}\n用途：{prompt.Purpose}\n请求字段：{string.Join("、", prompt.Fields)}\n\n仅对当前账号与此应用来源授权。你可以在设置中撤销；已经交给应用的资料无法收回。", PrimaryButtonText = "允许", CloseButtonText = "拒绝", DefaultButton = ContentDialogButton.Close };
-            using var cancellation = token.Register(() => DispatcherQueue.TryEnqueue(dialog.Hide));
-            try { completion.TrySetResult(await dialog.ShowAsync() == ContentDialogResult.Primary && !token.IsCancellationRequested); }
+            try { completion.TrySetResult(await ShowOwnedDialogAsync(dialog, token) == ContentDialogResult.Primary && !token.IsCancellationRequested); }
             catch (Exception) { completion.TrySetResult(false); }
             finally { activePreviewPermissionInstance = null; aboutOpen = false; }
         })) completion.TrySetResult(false);
@@ -266,7 +296,7 @@ public sealed partial class MainWindow
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "复制游客存档？", Content = "保留游客原档和备份，仅复制到当前账号。目标存在存档时将拒绝，不会覆盖。", PrimaryButtonText = "确认复制", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         try
         {
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary) return;
             var account = AccountContext(lifetime.Token); var app = BindApplication(installedSample);
             var scope = new StorageScope(app.Identity, account.AccountKey, new(Guid.NewGuid()), new(account.Epoch), app.BindingKey);
             var store = new AccountDataStore(installationRoot, scope, _ => account.IsCurrent(), account.EnterCommitLease, allowLegacyGuest: true, coordinator: criticalOperations);

@@ -25,6 +25,83 @@ public static class IdentitySessionTests
     private static string Request(string target) => $"GET {target} HTTP/1.1\r\nHost: 127.0.0.1:17853\r\n\r\n";
     public static IEnumerable<(string Name, Action Run)> Cases()
     {
+        yield return ("T03 identity shutdown: pending initialization admission cancellation drains without vault access", () => Run(async () =>
+        {
+            var coordinator = new AutumnOS.Storage.CriticalOperationCoordinator();
+            var vault = new MemoryVault { Value = Session() };
+            var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var release = new ManualResetEventSlim();
+            var service = new LogtoIdentityService(Options(), vault, new FixtureFlow(), enterCriticalOperation: reason =>
+            {
+                entered.TrySetResult();
+                if (!release.Wait(TimeSpan.FromSeconds(3))) throw new TimeoutException("Owned admission fixture was not released.");
+                return coordinator.EnterWrite(reason);
+            });
+            Task<IdentitySnapshot> initialization = service.InitializeAsync();
+            try
+            {
+                await entered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                coordinator.BeginShutdownAdmission();
+                Task shutdown = service.DisposeAsync().AsTask();
+                release.Set();
+                try { await initialization.WaitAsync(TimeSpan.FromSeconds(2)); throw new Exception("Shutdown admission did not cancel pending initialization."); }
+                catch (OperationCanceledException) { }
+                await shutdown.WaitAsync(TimeSpan.FromSeconds(2));
+                Assert(vault.ReadCount == 0 && vault.Value is not null && coordinator.ActiveWrites == 0, "Initialization touched the vault after admission closed.");
+            }
+            finally { release.Set(); await service.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2)); }
+        }));
+        yield return ("T03 identity shutdown: waits for actual callback completion after cancellation", () => Run(async () =>
+        {
+            var vault = new MemoryVault();
+            var flow = new FixtureFlow { IgnoreSignInCancellation = true };
+            var service = new LogtoIdentityService(Options(), vault, flow);
+            Task<IdentitySnapshot> pending = service.SignInAsync(true);
+            try
+            {
+                await flow.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                Task first = service.DisposeAsync().AsTask(), second = service.DisposeAsync().AsTask();
+                await flow.SignInCancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                Assert(!first.IsCompleted && !second.IsCompleted, "Shutdown completed while owned callback was still running.");
+                try { await service.SignInAsync(false); throw new Exception("New callback admitted after shutdown."); }
+                catch (ObjectDisposedException) { }
+                flow.SignInCompleted.TrySetResult(Session());
+                await pending.WaitAsync(TimeSpan.FromSeconds(2));
+                await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(2));
+                Assert(vault.Value is null, "Late callback committed credentials after shutdown.");
+            }
+            finally
+            {
+                flow.SignInCompleted.TrySetResult(Session());
+                await service.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+            }
+        }));
+        yield return ("T03 identity shutdown: initialization refresh drains before completion without clearing stored identity", () => Run(async () =>
+        {
+            ProtectedIdentitySession stored = Session();
+            var vault = new MemoryVault { Value = stored };
+            var flow = new FixtureFlow { HoldRefresh = true };
+            var service = new LogtoIdentityService(Options(), vault, flow);
+            Task<IdentitySnapshot> pending = service.InitializeAsync();
+            try
+            {
+                await flow.RefreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                Task shutdown = service.DisposeAsync().AsTask();
+                await flow.RefreshCancellationObserved.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                Assert(!shutdown.IsCompleted && flow.ActiveRefresh == 1, "Shutdown lost an in-flight initialization refresh.");
+                flow.RefreshCompleted.TrySetResult(stored with { RefreshToken = "fixture-late-rotation" });
+                await pending.WaitAsync(TimeSpan.FromSeconds(2));
+                await shutdown.WaitAsync(TimeSpan.FromSeconds(2));
+                Assert(flow.ActiveRefresh == 0 && vault.Value == stored, "Shutdown erased stored identity or committed a late rotation.");
+                try { await service.RefreshAsync(); throw new Exception("New refresh admitted after shutdown."); }
+                catch (ObjectDisposedException) { }
+            }
+            finally
+            {
+                flow.RefreshCompleted.TrySetResult(stored);
+                await service.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+            }
+        }));
         yield return ("T03 identity fixture: strict callback accepts transaction code only", () =>
         {
             string valid = "/callback/?code=fixture-code&state=" + State;
@@ -327,7 +404,8 @@ public static class IdentitySessionTests
     private sealed class MemoryVault : ICredentialVault
     {
         public ProtectedIdentitySession? Value;
-        public ProtectedIdentitySession? Read() => Value;
+        public int ReadCount;
+        public ProtectedIdentitySession? Read() { ReadCount++; return Value; }
         public void Write(ProtectedIdentitySession session) => Value = session;
         public void Clear() => Value = null;
     }
@@ -340,11 +418,14 @@ public static class IdentitySessionTests
         public TaskCompletionSource Started = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource<ProtectedIdentitySession> SignInCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource RefreshStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource SignInCancellationObserved = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource RefreshCancellationObserved = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource<ProtectedIdentitySession> RefreshCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public async Task<ProtectedIdentitySession> SignInAsync(bool remember, bool reauthenticate, CancellationToken cancellationToken)
-        { LoginCount++; Started.TrySetResult(); if (IgnoreSignInCancellation) return await SignInCompleted.Task; if (HoldSignIn) await Task.Delay(Timeout.Infinite, cancellationToken); return Next; }
+        { using var observed = cancellationToken.Register(() => SignInCancellationObserved.TrySetResult()); LoginCount++; Started.TrySetResult(); if (IgnoreSignInCancellation) return await SignInCompleted.Task; if (HoldSignIn) await Task.Delay(Timeout.Infinite, cancellationToken); return Next; }
         public async Task<ProtectedIdentitySession> RefreshAsync(ProtectedIdentitySession session, CancellationToken cancellationToken)
         {
+            using var observed = cancellationToken.Register(() => RefreshCancellationObserved.TrySetResult());
             RefreshCount++; PeakRefresh = Math.Max(PeakRefresh, Interlocked.Increment(ref ActiveRefresh));
             RefreshStarted.TrySetResult();
             try

@@ -131,6 +131,7 @@ public sealed partial class MainWindow
     { foreach (Button button in developerActions) button.IsEnabled = DeveloperModeEnabled && !developerBusy; }
     private async Task DeveloperOperationAsync(Func<CancellationToken, Task> action)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (!DeveloperModeEnabled || developerBusy) return;
         developerBusy = true; RefreshDeveloperButtons();
         using CancellationTokenSource work = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token, developerTools!.CapabilityToken);
@@ -145,7 +146,7 @@ public sealed partial class MainWindow
     private async void OnDeveloperPickProject(object sender, RoutedEventArgs e) => await DeveloperOperationAsync(async token =>
     {
         var picker = new Microsoft.Windows.Storage.Pickers.FolderPicker(AppWindow.Id);
-        var result = await picker.PickSingleFolderAsync().AsTask(token);
+        var result = await RunOwnedPickerAsync(() => picker.PickSingleFolderAsync(), token);
         token.ThrowIfCancellationRequested();
         if (result is null) return;
         developerProject = result.Path; developerPackage = null;
@@ -165,7 +166,7 @@ public sealed partial class MainWindow
     {
         var picker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(AppWindow.Id);
         picker.FileTypeFilter.Add(extension);
-        var result = await picker.PickSingleFileAsync().AsTask(token);
+        var result = await RunOwnedPickerAsync(() => picker.PickSingleFileAsync(), token);
         token.ThrowIfCancellationRequested(); return result?.Path;
     }
     private async void OnDeveloperInspectPackage(object sender, RoutedEventArgs e) => await DeveloperOperationAsync(async token =>

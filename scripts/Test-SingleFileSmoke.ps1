@@ -1,7 +1,8 @@
 #requires -Version 7.4
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$BuildId,[Parameter(Mandatory)][string]$ReportDirectory,[switch]$InPlace)
+param([Parameter(Mandatory)][string]$BuildId,[Parameter(Mandatory)][string]$ReportDirectory,[switch]$InPlace,[switch]$ExtractedHandoff)
 $ErrorActionPreference='Stop';$projectRoot=Split-Path $PSScriptRoot -Parent
+if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$' -or ($InPlace -and $ExtractedHandoff)){throw 'Use a tracked T06 build and one test location mode.'}
 . "$PSScriptRoot/Smoke-NativeAppInput.ps1"
 . "$PSScriptRoot/T06-NativeHelpers.ps1"
 $helperAst=Import-T06Functions (Join-Path $PSScriptRoot 'Test-DesktopInteractionSmoke.ps1')
@@ -11,13 +12,33 @@ $desktopRuntime=Join-Path $projectRoot '.tools/dotnet/shared/Microsoft.WindowsDe
 foreach($name in @('WindowsBase.dll','UIAutomationTypes.dll','UIAutomationClient.dll','System.Drawing.Common.dll')){Add-Type -Path (Join-Path $desktopRuntime $name)}
 if(-not ('AutumnDesktopInteractionSmoke.NativeWindows' -as [type])){Add-Type -TypeDefinition $native[0].Value}
 $package=Get-Content -LiteralPath (Join-Path $projectRoot "artifacts/builds/$BuildId/package-single-file.json") -Raw|ConvertFrom-Json
+if($package.build_id -cne $BuildId -or $package.status -ne 'prepared'){throw 'A matching prepared package is required.'}
 $expectedReleaseLabel=[string]$package.release_label
 if([string]::IsNullOrWhiteSpace($expectedReleaseLabel)){throw 'Package release label is missing; an exact version assertion is required.'}
 $ReportDirectory=[IO.Path]::GetFullPath($ReportDirectory)
 if(Test-Path -LiteralPath $ReportDirectory){throw 'Use a new report directory; previous evidence is immutable.'}
 New-Item -ItemType Directory -Path $ReportDirectory|Out-Null
-$testRoot=if($InPlace){Split-Path $package.executable -Parent}else{Join-Path $ReportDirectory '中文 空格'}
-if(-not $InPlace){New-Item -ItemType Directory -Path $testRoot|Out-Null;Copy-Item -LiteralPath $package.executable -Destination (Join-Path $testRoot 'AutumnOS.exe')}
+$testRoot=if($ExtractedHandoff){Join-Path $projectRoot "artifacts/code-handoff/$BuildId/extracted"}elseif($InPlace){Split-Path $package.executable -Parent}else{Join-Path $ReportDirectory '中文 空格'}
+if(-not $InPlace -and -not $ExtractedHandoff){New-Item -ItemType Directory -Path $testRoot|Out-Null;Copy-Item -LiteralPath $package.executable -Destination (Join-Path $testRoot 'AutumnOS.exe')}
+$handoffInventory=@()
+if($ExtractedHandoff){
+    $handoffRoot=Split-Path $testRoot -Parent
+    $handoff=Get-Content -LiteralPath (Join-Path $handoffRoot 'handoff-result.json') -Raw|ConvertFrom-Json
+    if($handoff.build_id -cne $BuildId -or $handoff.source_snapshot_id -cne $package.source_snapshot_id -or $handoff.executable_sha256 -cne $package.executable_sha256 -or $handoff.archive_roundtrip -ne 'passed'){throw 'Matching verified handoff required.'}
+    $handoffInventory=@(Get-Content -LiteralPath (Join-Path $handoffRoot 'file-hashes.json') -Raw|ConvertFrom-Json)
+    if(Test-Path -LiteralPath (Join-Path $testRoot 'AutumnOS_Data')){throw 'The extracted copy already has data; preserve it and use a fresh handoff.'}
+    for($cursor=[IO.Path]::GetFullPath($testRoot);$cursor;$cursor=[IO.Path]::GetDirectoryName($cursor)){
+        if((Get-Item -LiteralPath $cursor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Redirected extracted test root.'}
+    }
+    $files=@(Get-ChildItem -LiteralPath $testRoot -Recurse -Force)
+    if(@($files|Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint}).Count -or @($files|Where-Object {!$_.PSIsContainer}).Count -ne $handoffInventory.Count){throw 'Unexpected extracted inventory.'}
+    $verifiedPaths=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach($item in $handoffInventory){
+        $path=[IO.Path]::GetFullPath((Join-Path $testRoot $item.path))
+        if(-not $path.StartsWith([IO.Path]::GetFullPath($testRoot).TrimEnd('\')+'\',[StringComparison]::OrdinalIgnoreCase) -or -not $verifiedPaths.Add($path) -or (Get-Item -LiteralPath $path).Length -ne $item.bytes -or (Get-FileHash -LiteralPath $path).Hash.ToLowerInvariant() -cne $item.sha256){throw 'Extracted inventory bytes or path mismatch.'}
+    }
+}
+$initialRootNames=@(Get-ChildItem -LiteralPath $testRoot -Force|Select-Object -ExpandProperty Name)
 $programDirectory=Join-Path $testRoot $package.program_relative_path
 $dataDirectory=Join-Path $testRoot 'AutumnOS_Data'
 $WindowTimeoutSeconds=90
@@ -25,6 +46,31 @@ $checks=[Collections.Generic.List[object]]::new();$screenshots=[Collections.Gene
 $ownedProcesses=[Collections.Generic.List[Diagnostics.Process]]::new();$ownedEntryProcesses=[Collections.Generic.List[Diagnostics.Process]]::new()
 $script:initialPointerPosition=$null;$script:preparationWindowCaptured=$false;$first=$null;$second=$null
 $report=[ordered]@{schema_version=1;task_id='T06';checkpoint='actual_single_file_first_start_game_save_and_recall';status='failed';build_id=$BuildId;source_snapshot_id=$package.source_snapshot_id;release_label=$package.release_label;source_executable=$package.executable;tested_executable=(Join-Path $testRoot 'AutumnOS.exe');test_scope=$testRoot;started_utc=[DateTimeOffset]::UtcNow.ToString('o');checks=$checks;screenshots=$screenshots;input_actions=$inputActions;window_geometry=$windowGeometry;process_ids=@();bootstrap_process_ids=@();remaining_processes=@();cleanup='not_run';installer='deferred_by_user';public_release=$false;full_t06='in_progress';cold_start='not_run';clean_os='not_run'}
+function Wait-SmokeBrowserCleanup([string]$LogPath,[string]$InstanceId){
+    return Wait-SmokeCondition {
+        $events=@(Read-SmokeEvents $LogPath|Where-Object instanceId -EQ $InstanceId)
+        $closed=@($events|Where-Object eventName -EQ 'closed'|Select-Object -Last 1)
+        if($closed.Count -eq 0){return $null}
+        $record=$closed[0];$native=$record.browserCleanup
+        if($record.state -ne 'Closed' -or $record.blocksMaintenance -or -not $native.browserExitObserved -or
+            -not $native.browserResourcesReleased -or -not $native.heldBrowserNativeExitConfirmed -or
+            $native.heldBrowserProcessId -le 0 -or $native.heldBrowserProcessId -ne $native.exitedBrowserProcessId -or
+            $native.browserExitKind -ne 'Normal' -or $native.cleanupPending -or $native.holdsRuntimeLease -or $native.holdsMaintenanceLease){
+            throw 'Closed was recorded without confirmed native browser exit and released leases.'
+        }
+        $group=@($events|Where-Object {$_.eventName -eq 'browser_group_exited' -and
+            $_.browserCleanup.exitedBrowserProcessId -eq $native.heldBrowserProcessId -and
+            $_.browserCleanup.browserExitKind -eq 'Normal' -and
+            [DateTimeOffset]$_.timestampUtc -le [DateTimeOffset]$record.timestampUtc})
+        if($group.Count -ne 1){throw 'A unique matching native group-exit event must precede resource release.'}
+        $pending=@($events|Where-Object eventName -EQ 'browser_cleanup_pending')
+        if(@($pending|Where-Object {-not $_.browserCleanup.holdsRuntimeLease -or -not $_.browserCleanup.holdsMaintenanceLease}).Count){
+            throw 'Cleanup pending lost the package or maintenance lease.'
+        }
+        return [ordered]@{instance_id=$InstanceId;browser_pid=$native.heldBrowserProcessId;native_group_exit_utc=$group[0].timestampUtc;
+            resources_released_utc=$record.timestampUtc;held_process_exit_confirmed=$true;pending_records=$pending.Count;leases_released=$true}
+    } 'native browser group exits before package and maintenance leases are released'
+}
 function Start-SmokeProduct([string]$WorkingDirectory){
     $clock=[Diagnostics.Stopwatch]::StartNew()
     $entry=Start-Process -FilePath $report.tested_executable -WorkingDirectory $WorkingDirectory -WindowStyle Normal -PassThru
@@ -62,7 +108,9 @@ function Start-SmokeProduct([string]$WorkingDirectory){
 }
 function Assert-OneDataFolder([string]$Label){
     $items=@(Get-ChildItem -LiteralPath $testRoot -Force)
-    Add-SmokeCheck ($Label+'_only_exe_and_one_data_folder') ($items.Count -eq 2 -and @($items|Where-Object {$_.Name -eq 'AutumnOS.exe' -and -not $_.PSIsContainer}).Count -eq 1 -and @($items|Where-Object {$_.Name -eq 'AutumnOS_Data' -and $_.PSIsContainer}).Count -eq 1)
+    $expected=@($initialRootNames)+@('AutumnOS_Data')
+    Add-SmokeCheck ($Label+'_only_delivery_and_one_data_folder') ($items.Count -eq $expected.Count -and @($items|Where-Object {$_.Name -notin $expected}).Count -eq 0 -and @($items|Where-Object {$_.Name -eq 'AutumnOS_Data' -and $_.PSIsContainer}).Count -eq 1)
+    if($ExtractedHandoff){foreach($item in $handoffInventory){if((Get-FileHash -LiteralPath (Join-Path $testRoot $item.path)).Hash.ToLowerInvariant() -cne $item.sha256){throw 'Running extracted copy modified a delivery file.'}}}
     Add-SmokeCheck ($Label+'_no_nested_data_root') (!(Test-Path -LiteralPath (Join-Path $programDirectory 'AutumnOS_Data')))
 }
 try{
@@ -70,7 +118,7 @@ try{
     Add-SmokeCheck 'standard_user' (!$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
     if(@(Get-Process -Name AutumnOS,AutumnOS.Client -ErrorAction SilentlyContinue|Where-Object SessionId -eq ([Diagnostics.Process]::GetCurrentProcess().SessionId)).Count){throw 'Existing user product instance; test refuses to activate or close it.'}
     Add-SmokeCheck 'source_single_exe_hash_matches_package' ((Get-FileHash -LiteralPath $report.tested_executable).Hash.ToLowerInvariant() -eq $package.executable_sha256)
-    Add-SmokeCheck 'before_first_start_only_one_exe' (@(Get-ChildItem -LiteralPath $testRoot -Force).Count -eq 1 -and !(Test-Path -LiteralPath $dataDirectory))
+    Add-SmokeCheck 'before_first_start_clean_delivery' (($ExtractedHandoff -or $initialRootNames.Count -eq 1) -and 'AutumnOS.exe' -in $initialRootNames -and !(Test-Path -LiteralPath $dataDirectory))
     Add-SmokeCheck 'compiled_product_version_exact' ((Get-Item -LiteralPath $report.tested_executable).VersionInfo.ProductVersion -eq $expectedReleaseLabel)
     $working=Join-Path $ReportDirectory 'unrelated-working-directory';New-Item -ItemType Directory -Path $working|Out-Null
     $first=Start-SmokeProduct $working
@@ -169,7 +217,7 @@ try{
     Add-SmokeCheck 'held_escape_in_end_dialog_keeps_game_visible' ($null -eq (Find-VisibleSmokeElement $first.Element 'SampleButton'))
     $input.SetFocus()
     Invoke-AutumnGameShortcut $first 'Close';Invoke-SmokeNamedButton $first.Element '确认结束'
-    $null=Wait-SmokeCondition {@(Read-SmokeEvents $runtimeLog|Where-Object {$_.instanceId -eq $instance -and $_.state -eq 'Closed' -and !$_.blocksMaintenance}).Count -gt 0} 'real game resources released'
+    $firstCleanup=Wait-SmokeBrowserCleanup $runtimeLog $instance
     Add-SmokeCheck 'true_end_releases_maintenance_blocker' $true
     Close-SmokeProduct $first
     Add-SmokeCheck 'inner_bootstrap_exits_after_normal_client_close' ($first.InnerProcess.WaitForExit(10000) -and $first.InnerProcess.ExitCode -eq 0)
@@ -178,6 +226,23 @@ try{
     Assert-OneDataFolder 'restart'
     Add-SmokeCheck 'single_exe_never_modified_by_first_start' ((Get-FileHash -LiteralPath $report.tested_executable).Hash.ToLowerInvariant() -eq $package.executable_sha256)
     $null=Save-SmokeScreenshot $second '05-single-file-restored-desktop'
+    Invoke-SmokePointer $second 'SampleButton' 'single_click'
+    $restoredInput=Wait-SmokeCondition {Find-SmokeNamedElement $second.Element '玩家昵称' ([Windows.Automation.ControlType]::Edit)} 'reopened game in a new browser instance'
+    $newInstance=Wait-SmokeCondition {
+        $fresh=@(Read-SmokeEvents $runtimeLog|Where-Object {$_.state -eq 'Foreground' -and $_.instanceId -ne $instance})
+        if($fresh.Count -gt 0){return $fresh[-1].instanceId};return $null
+    } 'new game reaches foreground before SDK read'
+    Add-SmokeCheck 'reopened_game_has_new_instance' ($newInstance -ne $instance)
+    Add-SmokeCheck 'reopened_game_does_not_fake_automatic_restore' ($restoredInput.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne '派蒙·单文件验证')
+    $null=Wait-SmokeCondition {$load=Find-SmokeNamedElement $second.Element '读取存档' ([Windows.Automation.ControlType]::Button);$load -and $load.Current.IsEnabled} 'new SDK handshake enables save read'
+    Invoke-SmokeNamedButton $second.Element '读取存档'
+    $null=Wait-SmokeCondition {$restoredInput.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -eq '派蒙·单文件验证'} 'real SDK save read restores nickname'
+    Add-SmokeCheck 'new_game_instance_reads_saved_progress' ((Get-FileHash -LiteralPath $savePath).Hash.ToLowerInvariant() -eq $saveHash)
+    $null=Save-SmokeScreenshot $second '06-single-file-restored-game'
+    $restoredInput.SetFocus();Invoke-AutumnGameShortcut $second 'Close';Invoke-SmokeNamedButton $second.Element '确认结束'
+    $secondCleanup=Wait-SmokeBrowserCleanup $runtimeLog $newInstance
+    $report.browser_cleanup_evidence=@($firstCleanup,$secondCleanup)
+    Add-SmokeCheck 'reopened_game_ends_cleanly' $true
     Close-SmokeProduct $second
     Add-SmokeCheck 'restarted_inner_bootstrap_exits_normally' ($second.InnerProcess.WaitForExit(10000) -and $second.InnerProcess.ExitCode -eq 0)
     $report.status='passed'

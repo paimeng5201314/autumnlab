@@ -65,6 +65,7 @@ public sealed partial class MainWindow
 
     private void InitializeUpdateServices()
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (updates is not null) return;
         loadingUpdateSettings = true;
         try
@@ -103,7 +104,7 @@ public sealed partial class MainWindow
         try
         {
             updates.ReconcileCommittedPolicy();
-            await updates.CheckOnStartupAsync(lifetime.Token);
+            await TrackOwnedNetworkAsync(updates.CheckOnStartupAsync(lifetime.Token));
         }
         catch (OperationCanceledException) { }
         catch (Exception error) when (error is not OutOfMemoryException) { updateWait.Text = SafeUpdateError(error); }
@@ -160,7 +161,7 @@ public sealed partial class MainWindow
         updateBusy = true;
         ResetUpdateCancellation();
         RenderUpdateState();
-        try { await updates.CheckAsync(updates.Snapshot.PreviewEnabled, updateOperation!.Token); }
+        try { await TrackOwnedNetworkAsync(updates.CheckAsync(updates.Snapshot.PreviewEnabled, updateOperation!.Token)); }
         catch (OperationCanceledException) { updateWait.Text = "本次检查已取消。"; }
         catch (Exception error) when (error is not OutOfMemoryException) { updateWait.Text = SafeUpdateError(error); }
         finally { updateBusy = false; RenderUpdateState(); }
@@ -182,7 +183,7 @@ public sealed partial class MainWindow
         {
             // Consent binds this exact object/identity. No later lookup of /latest/download is permitted.
             updates.ConfirmTarget(candidate, mode, pinAfterSuccess);
-            await updates.DownloadAndStageAsync(updateOperation!.Token);
+            await TrackOwnedNetworkAsync(updates.DownloadAndStageAsync(updateOperation!.Token));
         }
         catch (OperationCanceledException) { updateWait.Text = "下载或验证已取消。再次下载需要重新确认目标版本。"; }
         catch (Exception error) when (error is not OutOfMemoryException) { updateWait.Text = SafeUpdateError(error); }

@@ -96,7 +96,7 @@ $report = [ordered]@{
     source_snapshot_id=$null; executable=$null; executable_sha256=$null; native_smoke='not_run'
     native_tests=$(if ($SkipNativeSmoke) { 'not_run_ci_no_interactive_desktop' } else { 'not_run' })
     skip_native_smoke=[bool]$SkipNativeSmoke
-    signature='not_signed'; production_update_trust='unconfigured'; complete_release_acceptance='not_run'
+    signature='not_signed'; production_update_trust='embedded_existing_public_root_private_signing_local'; complete_release_acceptance='not_run'
 }
 function Save-PipelineReport { $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $summaryPath -Encoding utf8NoBOM }
 function Invoke-PipelineStage([string]$Name, [scriptblock]$Action) {
@@ -113,7 +113,8 @@ Push-Location $projectRoot
 try {
     Start-Transcript -LiteralPath (Join-Path $pipelineDirectory 'pipeline.log') -NoClobber | Out-Null
     $transcriptStarted = $true
-    $report.source_snapshot_id = & "$pipelineScripts/New-SourceSnapshot.ps1" -OutputDirectory (Join-Path $pipelineDirectory 'source-before')
+    $publicInputs = @(); if (Test-Path -LiteralPath 'build/update-trust.production.json') { $publicInputs = @((Join-Path $projectRoot 'build/update-trust.production.json')) }
+    $report.source_snapshot_id = & "$pipelineScripts/New-SourceSnapshot.ps1" -OutputDirectory (Join-Path $pipelineDirectory 'source-before') -AdditionalInputs $publicInputs
     Save-PipelineReport
     # NuGet.Config registers this local source even on a fresh source-only checkout.
     # The directory may be empty; official network restore and frozen locks remain authoritative.
@@ -158,7 +159,7 @@ try {
             $report.native_tests = 'passed'
         }
     }
-    $after = & "$pipelineScripts/New-SourceSnapshot.ps1" -OutputDirectory (Join-Path $pipelineDirectory 'source-after')
+    $after = & "$pipelineScripts/New-SourceSnapshot.ps1" -OutputDirectory (Join-Path $pipelineDirectory 'source-after') -AdditionalInputs $publicInputs
     if ($after -ne $report.source_snapshot_id) { throw 'Source changed during the pipeline; preserve outputs and use a new build ID after review.' }
     $package = Get-Content -LiteralPath "artifacts/builds/$BuildId/package-single-file.json" -Raw | ConvertFrom-Json
     if ($package.version -ne $BuildVersion -or $package.release_label -ne $ReleaseLabel -or
@@ -181,3 +182,4 @@ try {
     if ($transcriptStarted) { Stop-Transcript | Out-Null }
     Pop-Location
 }
+

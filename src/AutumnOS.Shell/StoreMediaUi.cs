@@ -11,6 +11,7 @@ public sealed partial class MainWindow
     private readonly Dictionary<long, int> storeVersionPages = [];
     private void AddStoreScreenshots(CatalogDetails details)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (details.Store is not { Screenshots.Length: > 0 } store || storeCatalog is null) return;
         var strip = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
         storeBody.Children.Add(new ScrollViewer { Content = strip, HorizontalScrollMode = ScrollMode.Enabled,
@@ -28,7 +29,7 @@ public sealed partial class MainWindow
         {
             try
             {
-                var image = await storeCatalog.GetScreenshotAsync(details.Repository, url, token);
+                var image = await TrackOwnedNetworkAsync(storeCatalog.GetScreenshotAsync(details.Repository, url, token));
                 if (token.IsCancellationRequested || revision != storeRevision) return;
                 using var bytes = new MemoryStream(image.Bytes);
                 var bitmap = new BitmapImage { DecodePixelWidth = 560 };
@@ -42,14 +43,15 @@ public sealed partial class MainWindow
     }
     private async Task LoadMoreStoreVersionsAsync(CatalogDetails details)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (storeCatalog is null || storeBusy) return;
         long revision = storeRevision;
         var token = storeQuery?.Token ?? lifetime.Token;
         storeBusy = true; storeStatus.Text = "正在读取更早的版本…";
         try
         {
-            var page = await storeCatalog.GetVersionsAsync(details.Repository, details.Store,
-                storeVersionPages.GetValueOrDefault(details.Repository.RepositoryId, 1) + 1, token);
+            var page = await TrackOwnedNetworkAsync(storeCatalog.GetVersionsAsync(details.Repository, details.Store,
+                storeVersionPages.GetValueOrDefault(details.Repository.RepositoryId, 1) + 1, token));
             if (token.IsCancellationRequested || revision != storeRevision) return;
             if (page.Repository is { } current && current.Topics.Contains("autumnos-app", StringComparer.Ordinal) !=
                 details.Repository.Topics.Contains("autumnos-app", StringComparer.Ordinal))

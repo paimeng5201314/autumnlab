@@ -52,10 +52,13 @@ if (args.Contains("--probe-logto"))
 }
 
 var cases = StorageTests.Cases().Concat(DesktopPreferencesTests.Cases()).Concat(DesktopLayoutTests.Cases()).Concat(IdentityTests.Cases()).Concat(RuntimeTests.Cases()).Concat(PackageTests.Cases()).Concat(ContractCases());
+cases = cases.Concat(RuntimeViewBackendEventTests.Cases());
+cases = cases.Concat(RuntimeDeliveryCoordinatorTests.Cases());
 cases = cases.Concat(StoreRepositoryLookupTests.Cases());
 cases = cases.Concat(RuntimeIsolationPolicyTests.Cases());
 cases = cases.Concat(RuntimeIsolationSessionTests.Cases());
 cases = cases.Concat(ScopedStorageTests.Cases()).Concat(T03RuntimeTests.Cases()).Concat(DataBridgeTests.Cases());
+cases = cases.Concat(PermissionRevisionTests.Cases());
 cases = cases.Concat(MaintenanceTests.Cases());
 cases = cases.Concat(SupportBundleTests.Cases());
 cases = cases.Concat(PortableLayoutTests.Cases());
@@ -63,6 +66,7 @@ cases = cases.Concat(StartupFailureTests.Cases()).Concat(BundleFooterTests.Cases
 if (OperatingSystem.IsWindows()) cases = cases.Concat(ProductionUpdateSignerTests.Cases());
 cases = cases.Concat(DeveloperSimulationTests.Cases());
 cases = cases.Concat(UpdateCoreTests.Cases());
+cases = cases.Concat(UpdateShutdownTests.Cases());
 cases = cases.Concat(FirstRunAccountTests.Cases());
 if (OperatingSystem.IsWindows()) cases = cases.Concat(UpdateRollbackTests.Cases()).Concat(UpdateProtocolTests.Cases()).Concat(SetupTransactionTests.Cases());
 cases = cases.Concat(ServerIdentityTests.Cases()).Concat(DeveloperToolsTests.Cases()).Concat(PackageDesktopTests.Cases());

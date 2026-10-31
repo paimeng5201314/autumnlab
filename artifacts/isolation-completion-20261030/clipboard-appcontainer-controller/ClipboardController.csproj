@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework><OutputType>WinExe</OutputType>
+    <AssemblyName>AutumnOS.OwnedClipboardController</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems><TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs"/><Compile Include="PipeChild.cs"/><Compile Include="StationLease.cs"/><Compile Include="JobEvidence.cs"/>
+    <Compile Include="EvidenceGates.cs"/><Compile Include="ProtocolSelfTests.cs"/>
+    <Compile Include="DesktopFreshness.cs"/>
+    <Compile Include="CleanupJournal.cs"/><Compile Include="CleanupSelfTests.cs"/>
+    <Compile Include="StationReadMatrix.cs"/><Compile Include="StationMatrixPolicy.cs"/><Compile Include="StationMatrixSelfTests.cs"/>
+    <Compile Include="ClipboardReadControlBoundary.cs"/><Compile Include="ReadControlBoundaryPolicy.cs"/><Compile Include="ReadControlBoundarySelfTests.cs"/>
+    <Compile Include="../desktop-native-controller/NativeChild.cs" Link="Shared/NativeChild.cs"/>
+    <Compile Include="../desktop-native-controller/NativeProtocolSelfTests.cs" Link="Shared/NativeProtocolSelfTests.cs"/>
+    <Compile Include="../appcontainer-browser-parent/Native.cs" Link="Shared/Native.cs"/>
+    <Compile Include="../appcontainer-browser-parent/OwnedFiles.cs" Link="Shared/OwnedFiles.cs"/>
+    <Compile Include="../appcontainer-browser-parent/ProcessAudit.cs" Link="Shared/ProcessAudit.cs"/>
+  </ItemGroup>
+</Project>

@@ -30,6 +30,7 @@ public sealed partial class MainWindow
 
     private void InitializeStoreServices()
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (applicationInstaller is not null) return;
         try
         {
@@ -67,6 +68,7 @@ public sealed partial class MainWindow
     }
     private void StartStoreInfrastructure(string dataRoot, IGitHubTransport transport, bool test)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) throw new OperationCanceledException(lifetime.Token);
         if (installingStoreTask || localInstallBusy) throw new InvalidOperationException("PACKAGE_INSTALL_BUSY");
         var nextDownloads = new DownloadService(dataRoot, transport, () => networkSettings);
         StoreInstallCoordinator nextInstaller;
@@ -77,7 +79,7 @@ public sealed partial class MainWindow
             nextCatalog = new GitHubStoreCatalog(Path.Combine(dataRoot, "Cache", "GitHubStore"), BrandInfo.Version, "0.3.0", transport);
         }
         catch { nextDownloads.Dispose(); throw; }
-        storeQuery?.Cancel(); storeRevision++; storeDownloads?.Dispose(); approvedDownloadInstalls.Clear();
+        storeQuery?.Cancel(); storeRevision++; RetireStoreDownloads(); approvedDownloadInstalls.Clear();
         isolatedStoreSource = test;
         storeRepositories.Clear(); storeDetails.Clear(); storeVersionPages.Clear(); storeHasMore = false;
         storeDownloads = nextDownloads; storeInstallCoordinator = nextInstaller; storeCatalog = nextCatalog;
@@ -122,7 +124,7 @@ public sealed partial class MainWindow
         {
             if (!SaveNetworkSettings() || githubTransport is null) return;
             networkSettingsResult.Text = "正在检查 GitHub 公开接口…";
-            var result = await githubTransport.TestConnectionAsync(lifetime.Token);
+            var result = await TrackOwnedNetworkAsync(githubTransport.TestConnectionAsync(lifetime.Token));
             networkSettingsResult.Text = result.Succeeded ? "连接成功 · " + result.Route + " · HTTP " + result.StatusCode : result.Code + " · 连接未成功；TLS 验证保持启用。";
         }));
         actions.Children.Add(ActionButton("测试所选附件连接", "GitHubTestAssetConnection", async (_, _) =>
@@ -132,7 +134,7 @@ public sealed partial class MainWindow
             var asset = storeDetails.Values.SelectMany(d => d.Versions).FirstOrDefault(v => v.CanInstall)?.Asset;
             if (asset is null) { networkSettingsResult.Text = "请先在公开商店读取含合规附件的应用详情，再测试该附件连接。"; return; }
             networkSettingsResult.Text = "正在检查实际 Release 附件连接…";
-            var result = await githubTransport.TestAssetConnectionAsync(asset.DownloadUri, lifetime.Token);
+            var result = await TrackOwnedNetworkAsync(githubTransport.TestAssetConnectionAsync(asset.DownloadUri, lifetime.Token));
             networkSettingsResult.Text = result.Succeeded ? "附件连接成功 · " + result.Route + " · HTTP " + result.StatusCode : result.Code + " · 附件连接未成功。";
         }));
         GitHubContent.Children.Add(actions); GitHubContent.Children.Add(networkSettingsResult);
@@ -165,7 +167,7 @@ public sealed partial class MainWindow
             Content = $"来源：{details.Repository.FullName}\n版本：{release.Version}\n{details.Repository.CategoryLabel}\n权限：{string.Join("、", release.Permissions.Select(PermissionTitle))}\n{StorePermissionChanges(release)}\n\n安装不会自动授予敏感权限。包摘要一致不代表发布者经过审核。", PrimaryButtonText = "下载并安装", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         try
         {
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary) return;
             var task = storeInstallCoordinator.Queue(details, version);
             if (task.State == DownloadState.Completed) { await InstallStoreTaskAsync(task.Id); ShowStoreSection("installed"); return; }
             approvedDownloadInstalls.Add(task.Id); ShowStoreSection("downloads");
@@ -188,7 +190,7 @@ public sealed partial class MainWindow
                 try
                 {
                     var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "检查存档并降级？", Content = "将检查此应用所有账号及游客的真实存档格式，并先建立备份。不兼容或备份失败时会阻止降级。", PrimaryButtonText = "检查并降级", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
-                    if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+                    if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary) return;
                 }
                 finally { aboutOpen = false; }
             }

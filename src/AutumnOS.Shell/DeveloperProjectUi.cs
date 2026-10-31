@@ -21,9 +21,9 @@ public sealed partial class MainWindow
         ContentDialog dialog = new() { XamlRoot = Root.XamlRoot, Title = "创建本地应用项目", Content = fields,
             PrimaryButtonText = "选择父文件夹", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         aboutOpen = true;
-        try { if (await dialog.ShowAsync().AsTask(token) != ContentDialogResult.Primary) return; }
-        finally { if (token.IsCancellationRequested) dialog.Hide(); aboutOpen = false; }
-        var selected = await new Microsoft.Windows.Storage.Pickers.FolderPicker(AppWindow.Id).PickSingleFolderAsync().AsTask(token);
+        try { if (await ShowOwnedDialogAsync(dialog, token) != ContentDialogResult.Primary) return; }
+        finally { aboutOpen = false; }
+        var selected = await RunOwnedPickerAsync(() => new Microsoft.Windows.Storage.Pickers.FolderPicker(AppWindow.Id).PickSingleFolderAsync(), token);
         token.ThrowIfCancellationRequested(); if (selected is null) return;
         string resources = Path.Combine(AppContext.BaseDirectory, "Developer");
         using IDisposable operation = criticalOperations.EnterWrite("创建开发者项目");
@@ -53,9 +53,9 @@ public sealed partial class MainWindow
         ContentDialog dialog = new() { XamlRoot = Root.XamlRoot, Title = "生成本地发布材料", Content = fields,
             PrimaryButtonText = "选择输出父文件夹", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         aboutOpen = true;
-        try { if (await dialog.ShowAsync().AsTask(token) != ContentDialogResult.Primary) return; }
-        finally { if (token.IsCancellationRequested) dialog.Hide(); aboutOpen = false; }
-        var selected = await new Microsoft.Windows.Storage.Pickers.FolderPicker(AppWindow.Id).PickSingleFolderAsync().AsTask(token);
+        try { if (await ShowOwnedDialogAsync(dialog, token) != ContentDialogResult.Primary) return; }
+        finally { aboutOpen = false; }
+        var selected = await RunOwnedPickerAsync(() => new Microsoft.Windows.Storage.Pickers.FolderPicker(AppWindow.Id).PickSingleFolderAsync(), token);
         token.ThrowIfCancellationRequested(); if (selected is null) return;
         var options = new DeveloperPublicationOptions(author.Text, description.Text, Offline: offline.IsChecked == true);
         string output = Path.Combine(selected.Path, "publication-" + Guid.NewGuid().ToString("N"));

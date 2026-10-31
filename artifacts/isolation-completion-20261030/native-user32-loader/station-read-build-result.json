@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "build_id": "station-read-loader-7c3de20b59b1f692",
+  "compile_status": "passed",
+  "source_snapshot_id": "sha256:7c3de20b59b1f69265208051b7b69e4baa45ed4d3e15a8b0bd1f8896221bccf5",
+  "source_files": [
+    {
+      "path": "StationReadLoader.c",
+      "bytes": 8723,
+      "sha256": "133a51d36c17de0053c2516f8010329419280a25c9c65957033e0cb1e09ab217"
+    },
+    {
+      "path": "STATION-READ-REVIEW.md",
+      "bytes": 4895,
+      "sha256": "202ea875877c16e24d41abfc79349d5ae1b134b957bf08703f43b04b8b5fe23b"
+    }
+  ],
+  "output_files": [
+    {
+      "path": "native/AutumnOS.NativeStationReadLoader.exe",
+      "sha256": "1c2462a61b7a7d38f901b4fd8627894be82beee5b0b3c56d9406e63c6d87cff2",
+      "bytes": 12800
+    }
+  ],
+  "compiler": "existing Zig 0.15.2 x86_64-windows-gnu",
+  "flags": [
+    "-O1",
+    "-ffreestanding",
+    "-fno-builtin",
+    "-fno-stack-protector",
+    "-nostdlib",
+    "--entry=probe_entry",
+    "--subsystem=windows",
+    "--dynamicbase",
+    "--nxcompat",
+    "-lkernel32",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "pe_static_imports": "only_KERNEL32.dll_11_functions_TLS0_delay0",
+  "cases": [
+    "A23",
+    "B23",
+    "B20023",
+    "B20123",
+    "B20323",
+    "B23-restored",
+    "A23-restored"
+  ],
+  "original_native_source_sha256": "14fc6fb0560786f515cdd09a1a6e8df10d0521d751bef956576a8e284c8cd67c",
+  "original_native_exe_sha256": "559ed509f9f73aefae8f96824009c24d357112b10cd5927d9ab0e1670530609f",
+  "child_execution": "not_run",
+  "profile_operations": "not_run",
+  "station_operations": "not_run",
+  "clipboard_operations": "none_in_source",
+  "browser_operations": "none_in_source",
+  "uac": "not_run",
+  "existing_ACL_changes": "none_in_source",
+  "complete_isolation": "not_claimed"
+}

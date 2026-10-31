@@ -21,6 +21,10 @@ public static class MaintenanceTests
         yield return ("maintenance.t05.desktop_first_run_layout_refuse_writes_preserve_bytes", ConfigurationProtection);
         yield return ("maintenance.t05.actual_save_commit_drains_before_maintenance", ActualSaveDrain);
         yield return ("maintenance.t05.configuration_migration_restore_named_leases", ConfigurationMigrations);
+        yield return ("maintenance.shutdown_keeps_admitted_resources_and_permanently_closes_admission", ShutdownAdmission);
+        yield return ("maintenance.shutdown_wakes_pending_preparation_without_releasing_its_write", ShutdownPreparation);
+        yield return ("maintenance.shutdown_preserves_existing_exclusive_lease", ShutdownExclusive);
+        yield return ("maintenance.shutdown_and_new_work_serialize_under_the_same_gate", ShutdownRace);
         if (OperatingSystem.IsWindows())
         {
             yield return ("maintenance.t05.identity_fixture_login_includes_callback_and_commit", IdentityLogin);
@@ -51,6 +55,65 @@ public static class MaintenanceTests
         game.Dispose();
         using IDisposable? maintenance = coordinator.TryEnterMaintenance();
         Assert(maintenance is not null, "Released resources still block.");
+    }
+    private static void ShutdownAdmission()
+    {
+        var coordinator = new CriticalOperationCoordinator();
+        IDisposable write = coordinator.EnterWrite("已提交写入"), game = coordinator.EnterGame("test.shutdown");
+        coordinator.BeginShutdownAdmission(); coordinator.BeginShutdownAdmission();
+        Assert(coordinator.IsShuttingDown && coordinator.ActiveWrites == 1 && coordinator.ActiveGames == 1, "Shutdown released admitted work.");
+        Reject(() => coordinator.EnterWrite("迟到写入"), "CLIENT_SHUTTING_DOWN");
+        Reject(() => coordinator.EnterGame("test.late"), "CLIENT_SHUTTING_DOWN");
+        Reject(() => coordinator.PrepareMaintenanceAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult(), "CLIENT_SHUTTING_DOWN");
+        Assert(coordinator.TryEnterMaintenance() is null, "Shutdown admitted maintenance.");
+        write.Dispose(); game.Dispose();
+        var snapshot = coordinator.GetSnapshot();
+        Assert(snapshot.IsShuttingDown && !snapshot.IsIdle && snapshot.ActiveGames == 0 && snapshot.ActiveWrites == 0, "Draining work reopened shutdown admission.");
+        Reject(() => coordinator.EnterWrite("退出后的写入"), "CLIENT_SHUTTING_DOWN");
+    }
+    private static void ShutdownPreparation()
+    {
+        var coordinator = new CriticalOperationCoordinator();
+        using IDisposable write = coordinator.EnterWrite("准备前的真实操作");
+        Task<IDisposable> preparation = coordinator.PrepareMaintenanceAsync(TimeSpan.FromSeconds(3));
+        Assert(coordinator.IsPreparing && !preparation.IsCompleted, "Preparation did not wait for admitted work.");
+        coordinator.BeginShutdownAdmission();
+        Reject(() => preparation.WaitAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult(), "CLIENT_SHUTTING_DOWN");
+        Assert(!coordinator.IsPreparing && !coordinator.IsMaintenance && coordinator.IsShuttingDown && coordinator.ActiveWrites == 1, "Preparation abort lost work or reopened admission.");
+        Reject(() => coordinator.EnterGame("test.afterabort"), "CLIENT_SHUTTING_DOWN");
+    }
+    private static void ShutdownExclusive()
+    {
+        var coordinator = new CriticalOperationCoordinator();
+        IDisposable maintenance = coordinator.TryEnterMaintenance() ?? throw new InvalidOperationException("Positive maintenance control failed.");
+        Assert(coordinator.IsMaintenance, "Positive maintenance control failed.");
+        coordinator.BeginShutdownAdmission();
+        Assert(coordinator.IsMaintenance, "Shutdown prematurely released an existing exclusive lease.");
+        maintenance.Dispose();
+        Assert(!coordinator.IsMaintenance && coordinator.IsShuttingDown && coordinator.TryEnterMaintenance() is null, "Exclusive release reopened shutdown admission.");
+    }
+    private static void ShutdownRace()
+    {
+        for (int index = 0; index < 120; index++)
+        {
+            var coordinator = new CriticalOperationCoordinator();
+            using var start = new ManualResetEventSlim();
+            Task<IDisposable?> write = Task.Run(() =>
+            {
+                start.Wait();
+                try { return coordinator.EnterWrite("并发退出写入"); }
+                catch (DataStoreException error) when (error.Code == "CLIENT_SHUTTING_DOWN") { return null; }
+            });
+            Task shutdown = Task.Run(() => { start.Wait(); coordinator.BeginShutdownAdmission(); });
+            start.Set(); Task.WhenAll(write, shutdown).WaitAsync(TimeSpan.FromSeconds(3)).GetAwaiter().GetResult();
+            try
+            {
+                Assert(coordinator.IsShuttingDown && coordinator.ActiveWrites == (write.Result is null ? 0 : 1), "Concurrent shutdown lost an admitted lease.");
+                Reject(() => coordinator.EnterWrite("后续并发写入"), "CLIENT_SHUTTING_DOWN");
+                Assert(coordinator.TryEnterMaintenance() is null, "Concurrent shutdown admitted maintenance.");
+            }
+            finally { write.Result?.Dispose(); }
+        }
     }
     private static void LiveGameDefers()
     {

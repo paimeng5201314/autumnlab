@@ -1,0 +1,15 @@
+# 独立新desktop的USER32读权限对照草案
+
+制作人：派蒙。此变体单独保存为 `NativeDesktopLoader.c` / `AutumnOS.NativeDesktopLoader.exe`，不修改原私有station分层探针源码或已授权字节。当前仅编译与静态检查，不运行child、profile/desktop创建、UAC、ACL或剪贴板动作。
+
+目标是将desktop变量从私有station变量中分离。普通父程序未来只在当前WinSta0中创建带新nonce的三个独立自有desktop/case：A87为普通用户正控；B87和B200C7为精确新AppContainer SID分别授0x87与0x200C7的受测进程。不改变WinSta0/Default或任何既有对象ACL，不加入AllApplicationPackages/World，不授clipboard位或新进程能力。0x200C7仅比0x87多READ_CONTROL和DESKTOP_ENUMERATE，这不是已证修复，只是依据官方desktop GENERIC_READ映射提出的可验证对照。
+
+新子程序只接受 `AUTUMN_PROBE_STATION=WinSta0`、`AUTUMN_PROBE_DESKTOP=AutumnOS_DesktopLoader_<32位小写hex>`，加既定nonce/side两个环境字段；全部命令行参数忽略。ENV只作父绑定声明，不能自证实际对象。父程序必须在CreateProcess前固定准确lpDesktop，并独立验证身份、原始句柄、原子Job、退出与新对象精确清理。
+
+入口、信封、固定DLL加载阶段与原探针相同；先通过ENV格式绑定，只有USER32加载成功后才能动态查询实际current station/desktop并精确比对，之后才继续GDI32和SHELL32。不能声称已在USER32加载前从子端核验实际GUI对象。三个case必须共用完全相同原生字节；ENV SIDE仍严格为A或B，case标签A87/B87/B200C7由父程序另记。
+
+静态导入仅KERNEL32，无CRT、CLR、USER32或SHELL32。DLL只用LoadLibraryExW的SYSTEM32搜索标记；成功loaded行native_error固定0，失败才报告原始GetLastError；成功后的未定义LastError不当作失败。协议kind/schema、最多16行和每行1024字节上界与原探针一致，失败完整报告后普通ExitProcess20，成功ExitProcess0。
+
+没有clipboard、窗口创建、输入、显示切换、COM、浏览器、profile/ACL或子进程API。该变体位于真实WinSta0，但只读已知系统DLL和自身GUI绑定元数据；不得据此访问或探测用户clipboard。Windows DLL内部初始化仍由真实系统执行，源码无显式动作不能被解释为DLL无内部活动。
+
+成功只证明该权限组合允许这几层DLL初始化，不能证明私有station隔离、禁止clipboard、WinUI/WebView2内部呈现或产品准入。若两个分支都失败，不加权限掩盖；若只有0x200C7成功，后续仍需分别测试READ_CONTROL与ENUMERATE以确定最小原因，再返回私有station路线单独验收。未运行项目一律not_run。

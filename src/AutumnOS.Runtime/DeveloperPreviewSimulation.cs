@@ -117,6 +117,7 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
     private readonly IPermissionService original;
     private readonly Dictionary<(string Account, string Binding, string Permission), PermissionRecord> decisions = [];
     private readonly Dictionary<(string Account, string Binding), long> revisions = [];
+    private readonly Dictionary<(string Account, string Binding, string Permission), long> permissionRevisions = [];
     private readonly HashSet<(string Account, string Binding, string Permission)> pending = [];
     private bool denied;
     private long denialRevision;
@@ -163,10 +164,43 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
     public long GetRevision(RuntimeAccountContext account, RuntimeApplication app)
     { lock (gate) return denialRevision + revisions.GetValueOrDefault((account.AccountKey, app.BindingKey))
         + (account.AccountKey.StartsWith("developer-preview:", StringComparison.Ordinal) ? 0 : original.GetRevision(account, app)); }
+    public long GetRevision(RuntimeAccountContext account, RuntimeApplication app, string permission)
+    {
+        lock (gate)
+        {
+            Validate(account, app, permission);
+            return denialRevision + permissionRevisions.GetValueOrDefault((account.AccountKey, app.BindingKey, permission))
+                + (IsTestAccount(account) ? 0 : original.GetRevision(account, app, permission));
+        }
+    }
     public IDisposable EnterUsageLease(RuntimeAccountContext account, RuntimeApplication app, string permission)
-    { Monitor.Enter(gate); try { Demand(account, app, permission); return new GateLease(gate); } catch { Monitor.Exit(gate); throw; } }
+        => EnterLease(account, app, permission, requireGranted: true);
     public IDisposable EnterDecisionLease(RuntimeAccountContext account, RuntimeApplication app, string permission)
-    { Monitor.Enter(gate); try { Validate(account, app, permission); return new GateLease(gate); } catch { Monitor.Exit(gate); throw; } }
+        => EnterLease(account, app, permission, requireGranted: false);
+    private IDisposable EnterLease(RuntimeAccountContext account, RuntimeApplication app, string permission, bool requireGranted)
+    {
+        Monitor.Enter(gate);
+        IDisposable? inherited = null;
+        try
+        {
+            Validate(account, app, permission);
+            // A local preview grant may override Prompt, so retain the original decision lease,
+            // not its usage lease. Both locks remain held through the caller's final commit.
+            inherited = EnterOriginalDecisionLease(account, app, permission);
+            if (requireGranted) Demand(account, app, permission);
+            return new GateLease(gate, inherited);
+        }
+        catch
+        {
+            try { inherited?.Dispose(); }
+            finally { Monitor.Exit(gate); }
+            throw;
+        }
+    }
+    private IDisposable? EnterOriginalDecisionLease(RuntimeAccountContext account, RuntimeApplication app, string permission)
+        => IsTestAccount(account) ? null : original.EnterDecisionLease(account, app, permission);
+    private static bool IsTestAccount(RuntimeAccountContext account)
+        => account.AccountKey.StartsWith("developer-preview:", StringComparison.Ordinal);
     public void SetDenied(bool value, RuntimeAccountContext account, RuntimeApplication app)
     {
         account.EnsureCurrent();
@@ -182,11 +216,12 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         long revision;
         lock (gate)
         {
+            using var inherited = EnterOriginalDecisionLease(account, app, permission);
             PermissionDecision existing = Query(account, app, permission);
             if (existing != PermissionDecision.Prompt) return existing;
             if (!userGesture) throw new RuntimeCapabilityException("USER_GESTURE_REQUIRED");
+            revision = GetRevision(account, app, permission);
             if (!pending.Add(key)) throw new RuntimeCapabilityException("REQUEST_BUSY");
-            revision = GetRevision(account, app);
         }
         using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, account.Invalidated);
         try
@@ -198,8 +233,10 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
             PermissionChange change;
             lock (gate)
             {
+                using var inherited = EnterOriginalDecisionLease(account, app, permission);
+                using var lease = account.EnterCommitLease?.Invoke();
                 linked.Token.ThrowIfCancellationRequested(); account.EnsureCurrent();
-                if (revision != GetRevision(account, app)) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
+                if (revision != GetRevision(account, app, permission)) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
                 change = Save(account, app, permission, accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
             }
             Changed?.Invoke(change); return change.Decision;
@@ -218,14 +255,22 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
     {
         if (decisions.Count >= 4096 && !decisions.ContainsKey((account.AccountKey, app.BindingKey, permission)))
             throw new RuntimeCapabilityException("QUOTA_EXCEEDED");
-        decisions[(account.AccountKey, app.BindingKey, permission)] = new(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName, app.Source, permission, decision);
+        var key = (account.AccountKey, app.BindingKey, permission);
+        decisions[key] = new(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName, app.Source, permission, decision);
+        permissionRevisions[key] = permissionRevisions.GetValueOrDefault(key) + 1;
         var binding = (account.AccountKey, app.BindingKey); revisions[binding] = revisions.GetValueOrDefault(binding) + 1;
         return new(account.AccountKey, app.BindingKey, permission, decision);
     }
     public void Dispose() { original.Changed -= OriginalChanged; Changed = null; }
-    private sealed class GateLease(object gate) : IDisposable
+    private sealed class GateLease(object gate, IDisposable? inherited = null) : IDisposable
     {
         private bool disposed;
-        public void Dispose() { if (!disposed) { disposed = true; Monitor.Exit(gate); } }
+        public void Dispose()
+        {
+            if (disposed) return;
+            disposed = true;
+            try { inherited?.Dispose(); }
+            finally { Monitor.Exit(gate); }
+        }
     }
 }

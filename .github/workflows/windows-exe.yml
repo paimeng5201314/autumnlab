@@ -169,32 +169,7 @@ jobs:
           Source commit: $env:GITHUB_SHA
           Download the EXE from this run's Artifacts when the build job succeeds.
           Native interactive smoke tests: not_run_ci_no_interactive_desktop.
-          The EXE is not signed with Authenticode; production self-update trust is unconfigured.
-          The separate preview publication job requires this build and all noninteractive tests to succeed.
+          The EXE is not signed with Authenticode; the existing production public key is embedded; the signing private key remains local.
+          This workflow uploads build artifacts only; it does not publish a Release.
           "@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
 
-  publish-preview:
-    needs: build
-    if: startsWith(github.ref, 'refs/heads/codex/update-first-login-')
-    runs-on: windows-2025
-    timeout-minutes: 30
-    permissions:
-      actions: read
-      contents: write
-    env:
-      AUTUMN_BUILD_ID: T06-actions-${{ github.run_id }}-${{ github.run_attempt }}
-      AUTUMN_BUILD_VERSION: ${{ inputs.build_version || '0.5.1' }}
-      AUTUMN_RELEASE_LABEL: ${{ inputs.release_label || 'plus0.0.4-20261017' }}
-      AUTUMN_ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
-      POWERSHELL_TELEMETRY_OPTOUT: '1'
-    steps:
-      - name: Check out the exact release source
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-        with:
-          persist-credentials: false
-
-      - name: Verify the build and publish the complete preview
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: ./scripts/Publish-GitHubRelease.ps1 -ArtifactId $env:AUTUMN_ARTIFACT_ID -BuildId $env:AUTUMN_BUILD_ID -BuildVersion $env:AUTUMN_BUILD_VERSION -ReleaseLabel $env:AUTUMN_RELEASE_LABEL

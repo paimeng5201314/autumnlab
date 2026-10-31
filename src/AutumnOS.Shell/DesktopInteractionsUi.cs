@@ -274,7 +274,7 @@ public sealed partial class MainWindow
                         try
                         {
                             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "结束开发者预览？", Content = "请先保存进度，未保存的输入会丢失。已保存的数据保留。", PrimaryButtonText = "确认结束", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
-                            if (await dialog.ShowAsync() == ContentDialogResult.Primary && StillCurrent()) CloseDeveloperPreview();
+                            if (await ShowOwnedDialogAsync(dialog) == ContentDialogResult.Primary && StillCurrent()) CloseDeveloperPreview();
                         }
                         finally { aboutOpen = false; }
                     });

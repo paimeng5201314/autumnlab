@@ -36,7 +36,15 @@ internal static class T03RuntimeTests
         yield return ("t03.runtime.first_profile_approval_remains_deliverable", FirstProfileDelivery);
         yield return ("t03.runtime.native_response_post_linearizes_before_revocation", DeliveryLease);
         yield return ("t03.runtime.delayed_permission_events_cannot_revive_old_reply", DelayedPermissionEvents);
+        yield return ("t03.runtime.delayed_grant_notification_cannot_report_revoked_permission_as_granted", DelayedGrantNotification);
+        yield return ("t03.runtime.delayed_revoke_notification_cannot_replace_regranted_state", DelayedRevokeNotification);
+        yield return ("t03.runtime.delayed_same_decision_callback_is_coalesced_after_regrant", DelayedGrantAfterRegrant);
+        yield return ("t03.runtime.permission_event_revision_precedes_desktop_callbacks", PermissionEventBeforeDesktopCallback);
+        yield return ("t03.runtime.reentrant_permission_callbacks_cannot_refresh_queued_event_revision", ReentrantPermissionNotification);
+        yield return ("t03.runtime.event_notification_allows_close_and_account_invalidation_without_lock_inversion", NotificationCloseAndAccountInvalidation);
         yield return ("t03.runtime.close_prevents_data_commit_and_events", ClosedCommit);
+        yield return ("t03.runtime.background_file_commit_requires_explicit_current_permission", BackgroundFileCommitPermission);
+        yield return ("t03.runtime.background_file_commit_lease_blocks_permission_commit_not_only_notification", BackgroundFileCommitSerialization);
         yield return ("t03.runtime.revocation_rechecked_after_data_request", RevokeData);
         yield return ("t03.runtime.revocation_blocks_queued_write_before_commit", RevokeQueuedCommit);
         yield return ("t03.runtime.cancellation_cleans_subscriptions", CancelSubscriptions);
@@ -229,7 +237,7 @@ internal static class T03RuntimeTests
     });
     private static void EventPostLease() => InTemp(root =>
     {
-        foreach (var (name, permission) in new[] { ("identity.changed", "identity.profile"), ("links.opened", "links"), ("shortcuts.invoked", "shortcuts"), ("permissions.changed", "storage") })
+        foreach (var (name, permission) in new[] { ("identity.changed", "identity.profile"), ("links.opened", "links"), ("shortcuts.invoked", "shortcuts"), ("permissions.changed", "storage"), ("appearance.changed", "storage"), ("lifecycle.changed", "storage") })
         {
             var services = Services(root); Grant(services, permission); var session = Session(root, services);
             using var started = new ManualResetEventSlim(); using var completed = new ManualResetEventSlim(); Task? mutation = null;
@@ -335,6 +343,174 @@ internal static class T03RuntimeTests
         }
         finally { releaseCallbacks.Set(); revoke?.GetAwaiter().GetResult(); grant?.GetAwaiter().GetResult(); session.Close(); }
     });
+    private static void DelayedGrantNotification() => InTemp(root =>
+    {
+        var services = Services(root);
+        using var grantCommitted = new ManualResetEventSlim(); using var releaseGrant = new ManualResetEventSlim();
+        int intercepted = 0;
+        services.Permissions.Changed += change =>
+        {
+            if (change.Permission != "saves" || change.Decision != PermissionDecision.Granted || Interlocked.Increment(ref intercepted) != 1) return;
+            grantCommitted.Set();
+            if (!releaseGrant.Wait(TimeSpan.FromSeconds(5))) throw new InvalidOperationException("Delayed grant callback budget exceeded.");
+        };
+        var session = Session(root, services);
+        var notifications = new System.Collections.Concurrent.ConcurrentQueue<RuntimeSdkEvent>();
+        session.SdkEventReady += notifications.Enqueue;
+        Task? grant = null;
+        try
+        {
+            grant = Task.Run(() => Grant(services, "saves"));
+            Assert(grantCommitted.Wait(TimeSpan.FromSeconds(2)), "Grant really committed before its Runtime callback is paused.");
+            services.Permissions.SetDecision(services.Account, services.Application, "saves", PermissionDecision.Revoked);
+            RuntimeSdkEvent revoked = notifications.Single(); Equal(PermissionEventState(revoked), "revoked");
+            Assert(session.DeliverEvent(revoked.Name, revoked.Revision, () => { }), "Current revoked decision has a deliverable positive control.");
+            releaseGrant.Set(); grant.GetAwaiter().GetResult();
+            Equal(notifications.Count, 1); Equal(services.Permissions.Query(services.Account, services.Application, "saves"), PermissionDecision.Revoked);
+            Grant(services, "saves"); RuntimeSdkEvent latest = notifications.Last();
+            Equal(notifications.Count, 2); Equal(PermissionEventState(latest), "granted");
+            Assert(!session.DeliverEvent(revoked.Name, revoked.Revision, () => throw new InvalidOperationException("Old decision posted")), "Regrant invalidates the queued revoked snapshot.");
+            Assert(session.DeliverEvent(latest.Name, latest.Revision, () => { }), "A new explicit grant remains deliverable.");
+        }
+        finally { releaseGrant.Set(); grant?.GetAwaiter().GetResult(); session.Close(); }
+    });
+    private static void DelayedRevokeNotification() => InTemp(root =>
+    {
+        var services = Services(root); Grant(services, "saves");
+        using var revokeCommitted = new ManualResetEventSlim(); using var releaseRevoke = new ManualResetEventSlim();
+        services.Permissions.Changed += change =>
+        {
+            if (change.Permission != "saves" || change.Decision != PermissionDecision.Revoked) return;
+            revokeCommitted.Set();
+            if (!releaseRevoke.Wait(TimeSpan.FromSeconds(5))) throw new InvalidOperationException("Delayed revoke callback budget exceeded.");
+        };
+        var session = Session(root, services);
+        var notifications = new System.Collections.Concurrent.ConcurrentQueue<RuntimeSdkEvent>();
+        session.SdkEventReady += notifications.Enqueue;
+        Task? revoke = null;
+        try
+        {
+            revoke = Task.Run(() => services.Permissions.SetDecision(services.Account, services.Application, "saves", PermissionDecision.Revoked));
+            Assert(revokeCommitted.Wait(TimeSpan.FromSeconds(2)), "Revocation really committed before its Runtime callback is paused.");
+            Grant(services, "saves"); RuntimeSdkEvent granted = notifications.Single();
+            Equal(PermissionEventState(granted), "granted");
+            releaseRevoke.Set(); revoke.GetAwaiter().GetResult();
+            Equal(notifications.Count, 1);
+            Assert(session.DeliverEvent(granted.Name, granted.Revision, () => { }), "The current regrant remains deliverable after the obsolete revoke callback.");
+        }
+        finally { releaseRevoke.Set(); revoke?.GetAwaiter().GetResult(); session.Close(); }
+    });
+    private static void PermissionEventBeforeDesktopCallback() => InTemp(root =>
+    {
+        var desktop = new DesktopExtensionService(root); var services = Services(root, desktop: desktop);
+        var session = Session(root, services); bool revoked = false;
+        var notifications = new List<RuntimeSdkEvent>(); session.SdkEventReady += notifications.Add;
+        desktop.Changed += () =>
+        {
+            if (revoked) return;
+            revoked = true;
+            services.Permissions.SetDecision(services.Account, services.Application, "saves", PermissionDecision.Revoked);
+        };
+        try
+        {
+            Grant(services, "saves");
+            RuntimeSdkEvent current = notifications.Single(); Equal(PermissionEventState(current), "revoked");
+            Assert(session.DeliverEvent(current.Name, current.Revision, () => { }), "The reentrant current decision posts normally.");
+            Grant(services, "saves"); Equal(notifications.Count, 2); RuntimeSdkEvent granted = notifications.Last();
+            Equal(PermissionEventState(granted), "granted");
+            Assert(session.DeliverEvent(granted.Name, granted.Revision, () => { }), "Later current grant is not suppressed.");
+        }
+        finally { session.Close(); }
+    });
+    private static void DelayedGrantAfterRegrant() => InTemp(root =>
+    {
+        var services = Services(root);
+        using var firstGrantCommitted = new ManualResetEventSlim(); using var releaseFirst = new ManualResetEventSlim();
+        int grants = 0;
+        services.Permissions.Changed += change =>
+        {
+            if (change.Permission != "saves" || change.Decision != PermissionDecision.Granted || Interlocked.Increment(ref grants) != 1) return;
+            firstGrantCommitted.Set();
+            if (!releaseFirst.Wait(TimeSpan.FromSeconds(5))) throw new InvalidOperationException("Delayed same-decision callback budget exceeded.");
+        };
+        var session = Session(root, services);
+        var notifications = new System.Collections.Concurrent.ConcurrentQueue<RuntimeSdkEvent>();
+        session.SdkEventReady += notifications.Enqueue; Task? firstGrant = null;
+        try
+        {
+            firstGrant = Task.Run(() => Grant(services, "saves"));
+            Assert(firstGrantCommitted.Wait(TimeSpan.FromSeconds(2)), "Original grant callback is paused after commit.");
+            services.Permissions.SetDecision(services.Account, services.Application, "saves", PermissionDecision.Revoked);
+            Grant(services, "saves"); Equal(notifications.Count, 2);
+            RuntimeSdkEvent latest = notifications.Last(); Equal(PermissionEventState(latest), "granted");
+            releaseFirst.Set(); firstGrant.GetAwaiter().GetResult();
+            Equal(notifications.Count, 2);
+            Assert(session.DeliverEvent(latest.Name, latest.Revision, () => { }), "The real current regrant remains deliverable without an extra old grant event.");
+        }
+        finally { releaseFirst.Set(); firstGrant?.GetAwaiter().GetResult(); session.Close(); }
+    });
+    private static void ReentrantPermissionNotification() => InTemp(root =>
+    {
+        var services = Services(root); var session = Session(root, services); bool changed = false;
+        var notifications = new List<RuntimeSdkEvent>(); session.SdkEventReady += notifications.Add;
+        session.SdkEvent += (name, _) =>
+        {
+            if (name != "permissions.changed" || changed) return;
+            changed = true;
+            services.Permissions.SetDecision(services.Account, services.Application, "saves", PermissionDecision.Revoked);
+            Grant(services, "saves");
+        };
+        try
+        {
+            Grant(services, "saves"); Equal(notifications.Count, 3);
+            RuntimeSdkEvent original = notifications.MinBy(item => item.Revision)!;
+            RuntimeSdkEvent latest = notifications.MaxBy(item => item.Revision)!;
+            Equal(PermissionEventState(original), "granted"); Equal(PermissionEventState(latest), "granted");
+            Assert(original.Revision < latest.Revision && latest.Revision == session.EventRevision, "Grant/revoke/regrant keeps the original grant's earlier revision.");
+            int posted = 0;
+            foreach (RuntimeSdkEvent notification in notifications)
+            {
+                bool delivered = session.DeliverEvent(notification.Name, notification.Revision, () => posted++);
+                Equal(delivered, notification.Revision == latest.Revision);
+            }
+            Equal(posted, 1);
+        }
+        finally { session.Close(); }
+    });
+    private static void NotificationCloseAndAccountInvalidation() => InTemp(root =>
+    {
+        foreach (bool invalidateAccount in new[] { false, true })
+        {
+            using var invalidated = new CancellationTokenSource();
+            string fixture = Path.Combine(root, invalidateAccount ? "account" : "close");
+            var account = Account() with { Invalidated = invalidated.Token };
+            var services = Services(fixture, account); var session = Session(fixture, services);
+            Grant(services, "saves");
+            Assert(session.DeliverEvent("permissions.changed", session.EventRevision, () => { }), "Live decision delivery works before invalidation.");
+            RuntimeSdkEvent? queued = null; Task? ending = null;
+            session.SdkEventReady += _ =>
+            {
+                ending = Task.Run(() => { if (invalidateAccount) invalidated.Cancel(); else session.Close(); });
+                Assert(ending.Wait(TimeSpan.FromSeconds(2)), "A subscriber can wait for close/account invalidation without holding the Runtime state lock.");
+            };
+            session.SdkEventReady += notification => queued = notification;
+            try
+            {
+                services.Permissions.SetDecision(account, services.Application, "saves", PermissionDecision.Revoked);
+                Assert(queued is not null, "The second captured subscriber receives the already-created notification.");
+                Equal(session.Instance.State, AppLifecycleState.Closed);
+                Assert(!session.DeliverEvent(queued!.Name, queued.Revision, () => throw new InvalidOperationException("Ended session posted")), "Closing or invalidating the account rejects that queued event.");
+            }
+            finally { ending?.GetAwaiter().GetResult(); session.Close(); }
+        }
+    });
+    private static string PermissionEventState(RuntimeSdkEvent notification)
+    {
+        Equal(notification.Name, "permissions.changed");
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(notification.Data));
+        Equal(document.RootElement.GetProperty("name").GetString()!, "saves");
+        return document.RootElement.GetProperty("state").GetString()!;
+    }
     private static void GestureLifetime() => InTemp(root =>
     {
         var clock = new TestClock(); var services = Services(root); var session = Session(root, services, clock);
@@ -349,6 +525,87 @@ internal static class T03RuntimeTests
         var session = Session(root, Services(root)); using (session.EnterCommitLease()) { }
         session.Close(); Throws("SESSION_EXPIRED", () => session.EnterCommitLease());
         Error(Send(session, "saves.write", new { slot = "game", value = 4 }), "SESSION_EXPIRED");
+    });
+    private static void BackgroundFileCommitPermission() => InTemp(root =>
+    {
+        // This is a direct background host call; no SDK DataRequest has set activeDataPermission.
+        var services = Services(root); var session = Session(root, services);
+        try
+        {
+            Equal(services.Permissions.Query(services.Account, services.Application, "files.open"), PermissionDecision.Prompt);
+            using (session.EnterCommitLease()) { }
+            Throws("PERMISSION_DENIED", () => { using var lease = session.EnterCommitLease("files.open"); });
+            services.Permissions.SetDecision(services.Account, services.Application, "files.open", PermissionDecision.Denied);
+            Throws("PERMISSION_DENIED", () => { using var lease = session.EnterCommitLease("files.open"); });
+            Grant(services, "files.open");
+            using (session.EnterCommitLease("files.open")) { }
+            Throws("PERMISSION_DENIED", () => { using var lease = session.EnterCommitLease("files.save"); });
+            services.Permissions.SetDecision(services.Account, services.Application, "files.open", PermissionDecision.Revoked);
+            using (session.EnterCommitLease()) { }
+            Equal(services.Permissions.Query(services.Account, services.Application, "files.open"), PermissionDecision.Revoked);
+            Throws("PERMISSION_REVOKED", () => { using var lease = session.EnterCommitLease("files.open"); });
+            Grant(services, "files.open");
+            using (session.EnterCommitLease("files.open")) { }
+            session.Close();
+            Throws("SESSION_EXPIRED", () => { using var lease = session.EnterCommitLease("files.open"); });
+        }
+        finally { session.Close(); }
+    });
+    private static void BackgroundFileCommitSerialization() => InTemp(root =>
+    {
+        // The default-lease control deliberately holds the same stateGate. Revocation must still
+        // commit there, proving a blocked Changed callback is not being mistaken for a commit lock.
+        foreach (bool explicitPermission in new[] { false, true })
+        {
+            string scenarioRoot = Path.Combine(root, explicitPermission ? "explicit-files" : "state-only-control");
+            var services = Services(scenarioRoot); Grant(services, "files.open");
+            using var started = new ManualResetEventSlim(); using var committed = new ManualResetEventSlim();
+            services.Permissions.Changed += change =>
+            {
+                if (change.Permission == "files.open" && change.Decision == PermissionDecision.Revoked) committed.Set();
+            };
+            // Subscribe our persisted-decision observer before Runtime installs its own callback.
+            var session = Session(scenarioRoot, services); Task? mutation = null;
+            string recordPath = Path.Combine(scenarioRoot, "application-permissions.v1.json");
+            byte[] before = File.ReadAllBytes(recordPath);
+            long revision = services.Permissions.GetRevision(services.Account, services.Application);
+            try
+            {
+                using (session.EnterCommitLease(explicitPermission ? "files.open" : null))
+                {
+                    mutation = Task.Factory.StartNew(() =>
+                    {
+                        started.Set();
+                        services.Permissions.SetDecision(services.Account, services.Application, "files.open", PermissionDecision.Revoked);
+                    }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                    Assert(started.Wait(TimeSpan.FromSeconds(2)), "The real concurrent permission writer started.");
+                    if (explicitPermission)
+                    {
+                        Assert(!committed.Wait(TimeSpan.FromMilliseconds(100)), "Explicit files lease blocks the permission commit itself.");
+                        Assert(File.ReadAllBytes(recordPath).SequenceEqual(before), "Persisted permission bytes cannot change while files commit is leased.");
+                        Equal(services.Permissions.GetRevision(services.Account, services.Application), revision);
+                        Equal(services.Permissions.Query(services.Account, services.Application, "files.open"), PermissionDecision.Granted);
+                    }
+                    else
+                    {
+                        Assert(committed.Wait(TimeSpan.FromSeconds(2)), "State-only default lease cannot stand in for a files permission lease.");
+                        Equal(new PermissionService(scenarioRoot).Query(services.Account, services.Application, "files.open"), PermissionDecision.Revoked);
+                        Assert(services.Permissions.GetRevision(services.Account, services.Application) > revision, "Actual permission revision advanced despite the still-held state lease.");
+                    }
+                }
+                mutation!.WaitAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+                Assert(committed.IsSet, "Revocation commits after releasing the explicit files lease.");
+                Equal(new PermissionService(scenarioRoot).Query(services.Account, services.Application, "files.open"), PermissionDecision.Revoked);
+                Throws("PERMISSION_REVOKED", () => { using var lease = session.EnterCommitLease("files.open"); });
+                Grant(services, "files.open");
+                using (session.EnterCommitLease("files.open")) { }
+            }
+            finally
+            {
+                try { mutation?.WaitAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult(); }
+                finally { session.Close(); }
+            }
+        }
     });
     private static void RevokeData() => InTemp(root =>
     {

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "source_snapshot_id": "sha256:7c3de20b59b1f69265208051b7b69e4baa45ed4d3e15a8b0bd1f8896221bccf5",
+  "files": [
+    {
+      "path": "StationReadLoader.c",
+      "bytes": 8723,
+      "sha256": "133a51d36c17de0053c2516f8010329419280a25c9c65957033e0cb1e09ab217"
+    },
+    {
+      "path": "STATION-READ-REVIEW.md",
+      "bytes": 4895,
+      "sha256": "202ea875877c16e24d41abfc79349d5ae1b134b957bf08703f43b04b8b5fe23b"
+    }
+  ],
+  "canonical_format": "sorted path; sha256 two spaces byte_count two spaces path; UTF-8 LF, no final LF"
+}

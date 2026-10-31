@@ -1,6 +1,6 @@
 # ChemLeap · 3D 化学跳一跳
 
-制作人：派蒙。游戏版本0.1.1，应用ID `cn.labchronicles.chemleap`，AutumnOS SDK0.3.0，存档格式1。0.1.1统一包内版本标记及发布说明，保留原有玩法和存档格式；宿主隔离实现不在游戏包中，普通启动的实际验证边界见接入说明。
+制作人：派蒙。当前本地游戏版本0.1.2，应用ID `cn.labchronicles.chemleap`，AutumnOS SDK0.3.0，存档格式1。0.1.2修复宿主生命周期适配，保留原有玩法、反应表、平台生成和存档格式；宿主隔离实现不在游戏包中，普通启动的实际验证边界见接入说明。0.1.1发布记录保留在接入说明中；0.1.2尚未公开发布。
 
 ## 实现方案与项目结构
 
@@ -18,6 +18,7 @@ samples/chemleap/
   autumn-sdk.js    与根sdk/字节一致的固定SDK副本
 tests/
   chemleap-model-tests.cjs
+  chemleap-lifecycle-tests.cjs
   chemleap-browser-tests.cjs
 scripts/
   Package-ChemLeap.ps1
@@ -84,9 +85,13 @@ const result = ChemLeapModel.land(state);
 
 动画用透视世界坐标中的起终点插值与正弦高度，只有动画抵达后结算。暂停、页面隐藏、AutumnOS后台或WebGL上下文丢失时停止RAF及蓄力；恢复后继续未结算的同一跳，不把后台时间补算。指针取消和焦点丢失会取消蓄力，不偷偷跳跃。
 
+在AutumnOS中，游戏先保持暂停，收到当前实例的前台状态后才启用开始、跳跃和存档。控制器同时处理SDK0.3.0的`lifecycle.changed`与旧`onLifecycle`通道；初始`lifecycle.getState`的迟到回复不能覆盖已收到的新事件。`closing`、`closed`和`crashed`使本页永久结束：停止动画、释放渲染器、取消等待的SDK请求并禁用操作；迟到前台事件不会恢复旧游戏会话。普通浏览器试玩不等待宿主生命周期。
+
 ## 存档与权限
 
 在AutumnOS中仅声明`saves`，第一次主动保存/读取时申请权限。通过真实SDK `saves.write/read`使用`game`槽，按宿主的来源和当前用户隔离；拒绝授权不影响游玩。没有身份或网络权限，不接收宿主登录凭据。普通浏览器试玩使用明确标注的真实localStorage，宿主请求失败不会转写浏览器存储。
+
+若权限请求等待期间进入后台，游戏不会继续发起新的存档读写，回到前台后由用户重新操作。已经交给宿主的写入可能完成，取消等待不表示回滚已提交存档。0.1.2仍使用原存档键、`game`槽与格式1，不迁移或覆写已安装0.1.1包；新版必须按新版本与摘要安装。开发预览的来源由包摘要绑定，重新打包后的预览不自动借用旧来源的存档。
 
 存档包含物质、得分、最高分、轮次、种子、选择与最多32条历史。读取严格核对格式、值域、分数/轮次关系、历史反应和真实生成物；平台根据种子重建，不相信存档自报的平台。非法或未来格式不改变当前局面。跳跃期间UI禁用保存与读取，模型的序列化也不会提前结算。
 
@@ -96,6 +101,7 @@ const result = ChemLeapModel.land(state);
 
 ```powershell
 node --test tests/chemleap-model-tests.cjs
+node --test tests/chemleap-lifecycle-tests.cjs
 node tests/chemleap-browser-tests.cjs --report '<全新报告目录>'
 ./scripts/Package-ChemLeap.ps1 -OutputDirectory '<全新发布材料目录>'
 ./scripts/Test-ChemLeapNativeSmoke.ps1 -ExecutablePath '<本轮完整发行目录>/AutumnOS.exe' -GameProjectPath '<工作根>/samples/chemleap' -ReportDirectory '<全新报告目录>'
@@ -103,4 +109,6 @@ node tests/chemleap-browser-tests.cjs --report '<全新报告目录>'
 
 浏览器测试复用工作区现有锁定Playwright；默认本机Headless Chromium路径可由`PLAYWRIGHT_CHROMIUM_EXECUTABLE`覆盖，使用启用sandbox的ANGLE SwiftShader软件WebGL，不冒充硬件GPU/物理触屏验收。模型50项包含48,000组种子平台和500次连续反应。原生脚本使用交付CLI校验并打包真实项目，再通过GUI启用开发模式、确认内部预览、实际跳跃及SDK权限存读档；结果以本轮报告为准。首次自动文件夹选择驱动失败保留，不计为游戏测试通过。
 
-`Package-ChemLeap.ps1`按实际manifest版本输出`publication/ChemLeap-0.1.1.autumn`、`autumn.store.json`、`autumn.release.json`，复用宿主CLI验证三层一致，并逐个ZIP条目读回SHA-256。它只准备本地文件。仓库上架、公开下载及普通社区运行的状态见`docs/chemleap-integration.md`与`AUTUMNOS_PROGRESS.md`；不把开发预览当作公开商店运行通过。
+2026-10-30本地0.1.2回归：50项模型与8项生命周期控制器测试合计58/58通过，结果在`artifacts/chemleap-20261030/tests-after-01.log`。新增测试执行游戏原控制器、原模型和原SDK，DOM、渲染器及宿主消息由内存夹具提供；只验证游戏的状态、请求和取消行为，不能证明真实WebView2、剪贴板、原生输入或系统隔离。修复前6项失败、2项通过的对照保留在`lifecycle-before-02.log`；本轮浏览器渲染和原生UI保持`not_run`。
+
+`Package-ChemLeap.ps1`按实际manifest版本输出`publication/ChemLeap-0.1.2.autumn`、`autumn.store.json`、`autumn.release.json`，复用宿主CLI验证三层一致，并逐个ZIP条目读回SHA-256。它只准备本地文件。仓库上架、公开下载及普通社区运行的状态见`docs/chemleap-integration.md`与`AUTUMNOS_PROGRESS.md`；不把开发预览当作公开商店运行通过。

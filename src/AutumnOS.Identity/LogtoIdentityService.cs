@@ -7,7 +7,7 @@ namespace AutumnOS.Identity;
 
 /// <summary>One host-owned identity coordinator. Tokens never leave this assembly's internal session objects.</summary>
 [SupportedOSPlatform("windows")]
-public sealed class LogtoIdentityService : IIdentityService, IDisposable
+public sealed class LogtoIdentityService : IIdentityService, IDisposable, IAsyncDisposable
 {
     private readonly object _gate = new();
     private readonly SemaphoreSlim _refresh = new(1, 1);
@@ -26,6 +26,9 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
     private bool _persistenceFailure;
     private IdentitySnapshot _snapshot = new(IdentitySessionState.SignedOut, "guest", 0, null, null, false, false, null);
     private readonly Task _refreshLoop;
+    private int _activeOperations;
+    private TaskCompletionSource _operationsDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private Task? _shutdownTask;
     public LogtoIdentityService(LogtoPublicOptions options, string dataRoot, Func<string, IDisposable>? enterCriticalOperation = null)
         : this(options, new WindowsCredentialVault(dataRoot, options), new NativeOidcFlow(options), enterCriticalOperation: enterCriticalOperation) { }
     internal LogtoIdentityService(LogtoPublicOptions options, ICredentialVault vault, INativeOidcFlow flow, TimeProvider? clock = null,
@@ -73,6 +76,7 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
         // Reading the DPAPI vault may repair its restrictive ACL; it participates in maintenance too.
         try
         {
+            lock (_gate) if (_disposed) return _snapshot;
             using IDisposable? operation = TryEnterCriticalOperation("恢复身份凭据");
             if (operation is null) return MaintenanceDeferred();
             lock (_gate)
@@ -100,6 +104,8 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
 
     public async Task<IdentitySnapshot> SignInAsync(bool rememberSignIn, bool reauthenticate = false, CancellationToken cancellationToken = default)
     {
+        using var active = BeginActiveOperation(cancellationToken);
+        cancellationToken = active.Token;
         // Keep the lease through callback, token validation and durable commit. A browser login that is
         // not safely abortable defers maintenance; the updater never cancels it or discards its result.
         using IDisposable? operation = TryEnterCriticalOperation("登录回调与身份提交");
@@ -214,6 +220,8 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
 
     public async Task<IdentitySnapshot> RefreshAsync(CancellationToken cancellationToken = default)
     {
+        using var active = BeginActiveOperation(cancellationToken);
+        cancellationToken = active.Token;
         await _refresh.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -295,6 +303,8 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
 
     public async Task<IdentitySnapshot> SignOutAsync(bool browserSession = false, CancellationToken cancellationToken = default)
     {
+        using var active = BeginActiveOperation(cancellationToken);
+        cancellationToken = active.Token;
         using IDisposable? operation = TryEnterCriticalOperation("账号退出与凭据清理");
         if (operation is null) return MaintenanceDeferred();
         ProtectedIdentitySession? previous;
@@ -392,6 +402,8 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
     {
         try { return _enterCriticalOperation?.Invoke(reason) ?? NoopLease.Instance; }
         catch (IOException error) when (error.Message == "MAINTENANCE_IN_PROGRESS") { return null; }
+        catch (IOException error) when (error.Message == "CLIENT_SHUTTING_DOWN")
+        { throw new OperationCanceledException("The client has stopped accepting identity operations.", error, _lifetime.Token); }
     }
     private IdentitySnapshot MaintenanceDeferred()
     {
@@ -415,13 +427,63 @@ public sealed class LogtoIdentityService : IIdentityService, IDisposable
         { try { observer(this, state); } catch (Exception) { /* UI observers cannot turn verified results into uncaught authentication faults. */ } }
     }
     private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
-    public void Dispose()
+    private ActiveOperation BeginActiveOperation(CancellationToken cancellationToken)
     {
         lock (_gate)
         {
-            if (_disposed) return;
-            _disposed = true; _lifetime.Cancel(); _epochCancellation.Cancel(); _login?.Cancel(); _session = null; Changed = null;
+            ThrowIfDisposed();
+            var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lifetime.Token);
+            if (_activeOperations++ == 0) _operationsDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            return new(linked, () =>
+            {
+                lock (_gate) if (--_activeOperations == 0) _operationsDrained.TrySetResult();
+            });
         }
-        // Do not synchronously block the UI on callback/HTTP/refresh completion.
     }
+    private sealed class ActiveOperation(CancellationTokenSource cancellation, Action completed) : IDisposable
+    {
+        private Action? finish = completed;
+        internal CancellationToken Token => cancellation.Token;
+        public void Dispose()
+        {
+            Action? current = Interlocked.Exchange(ref finish, null);
+            if (current is null) return;
+            try { cancellation.Dispose(); } finally { current(); }
+        }
+    }
+    private Task BeginShutdown()
+    {
+        lock (_gate)
+        {
+            if (_shutdownTask is not null) return _shutdownTask;
+            _disposed = true; _session = null; Changed = null;
+            Task initialization = _initialization ?? Task.CompletedTask;
+            Task operations = _activeOperations == 0 ? Task.CompletedTask : _operationsDrained.Task;
+            CancellationTokenSource? login = _login;
+            // Keep the UI message pump available to finish native callbacks and owned dialogs.
+            return _shutdownTask = Task.Run(() => DrainAsync(initialization, operations, login));
+        }
+    }
+    private async Task DrainAsync(Task initialization, Task operations, CancellationTokenSource? login)
+    {
+        List<Exception> failures = [];
+        foreach (var source in new[] { _lifetime, _epochCancellation, login })
+        {
+            try { source?.Cancel(); }
+            catch (ObjectDisposedException) when (ReferenceEquals(source, login)) { /* Login may have completed normally. */ }
+            catch (Exception error) { failures.Add(error); }
+        }
+        async Task Observe(Task task)
+        {
+            try { await task.ConfigureAwait(false); }
+            catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+            catch (ObjectDisposedException) when (_disposed) { }
+            catch (Exception error) { lock (failures) failures.Add(error); }
+        }
+        await Task.WhenAll(Observe(initialization), Observe(_refreshLoop), Observe(operations)).ConfigureAwait(false);
+        _refresh.Dispose(); _epochCancellation.Dispose(); _lifetime.Dispose();
+        if (failures.Count != 0) throw new AggregateException("Identity shutdown did not finish cleanly.", failures);
+    }
+    public void Dispose() { _ = BeginShutdown(); }
+    public ValueTask DisposeAsync() => new(BeginShutdown());
 }

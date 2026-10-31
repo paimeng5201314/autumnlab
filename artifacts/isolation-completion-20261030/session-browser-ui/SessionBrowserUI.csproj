@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><AssemblyName>AutumnOS.SessionBrowserUI</AssemblyName>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework><TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWinUI>true</UseWinUI><WindowsPackageType>None</WindowsPackageType><WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained><PublishSingleFile>false</PublishSingleFile><PublishTrimmed>false</PublishTrimmed>
+    <ApplicationManifest>app.manifest</ApplicationManifest><DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <RootNamespace>AutumnOS.SessionBrowserUI</RootNamespace><EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems><TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK"/><PackageReference Include="Microsoft.Windows.SDK.BuildTools" PrivateAssets="all"/>
+    <ApplicationDefinition Remove="App.xaml"/><Page Remove="App.xaml"/><None Remove="App.xaml"/>
+    <ApplicationDefinition Include="App.xaml"><Generator>MSBuild:Compile</Generator><XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime></ApplicationDefinition>
+    <Compile Include="Program.cs"/><Compile Include="ViewerWindow.cs"/><Compile Include="SessionClient.cs"/><Compile Include="ViewerNative.cs"/><Compile Include="UiStartupCheck.cs"/>
+    <Compile Include="../session-browser-protocol/SessionProtocol.cs" Link="Shared/SessionProtocol.cs"/>
+    <Compile Include="../session-browser-protocol/SessionProtocolSelfTests.cs" Link="Shared/SessionProtocolSelfTests.cs"/>
+    <Compile Include="../session-browser-protocol/OwnedReportFile.cs" Link="Shared/OwnedReportFile.cs"/>
+    <Compile Include="../session-browser-protocol/OwnedReportFileSelfTests.cs" Link="Shared/OwnedReportFileSelfTests.cs"/>
+    <Compile Include="../session-browser-protocol/NativeCompositionTransaction.cs" Link="Shared/NativeCompositionTransaction.cs"/>
+    <Compile Include="../session-browser-protocol/CompositionEffectGate.cs" Link="Shared/CompositionEffectGate.cs"/>
+    <Compile Include="../session-browser-protocol/NativeEndTrustComparison.cs" Link="Shared/NativeEndTrustComparison.cs"/>
+    <Compile Include="../session-browser-protocol/NativeKeyDispatchGate.cs" Link="Shared/NativeKeyDispatchGate.cs"/>
+    <Compile Include="../session-browser-protocol/NativeKeyDispatchGateSelfTests.cs" Link="Shared/NativeKeyDispatchGateSelfTests.cs"/>
+    <Compile Include="NativeEndTrustControl.cs"/>
+    <Compile Include="../session-browser-prototype/ManifestInputs.cs" Link="Shared/ManifestInputs.cs"/>
+    <Compile Include="../appcontainer-browser-parent/Native.cs" Link="Shared/Native.cs"/>
+    <Compile Include="../appcontainer-browser-parent/OwnedFiles.cs" Link="Shared/OwnedFiles.cs"/>
+  </ItemGroup>
+  <Target Name="PublishGeneratedNativeWinUIResources" AfterTargets="ComputeFilesToPublish">
+    <Error Condition="!Exists('$(TargetDir)$(AssemblyName).pri') Or !Exists('$(TargetDir)App.xbf')" Text="Generated native WinUI application resources are required before publishing." />
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(TargetDir)$(AssemblyName).pri" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>$(AssemblyName).pri</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="$(TargetDir)App.xbf" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>App.xbf</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "status": "passed_compile_only",
+  "module_source_snapshot_id": "sha256:34306c4d89c56f4e40a1d5635deeab0d7903f781f861f9dceff26df119f8950b",
+  "module_source_files": [
+    {
+      "path": "ClipboardStationLease.csproj",
+      "bytes": 893,
+      "sha256": "8c6ed9a5a6b11ed71fac11790d5f009d678775a93864948d8949df23ccf70cf2"
+    },
+    {
+      "path": "Native.cs",
+      "bytes": 14222,
+      "sha256": "b3bb02b352427a8f3c8cb70da46b54e0d1a0cdee6c35988b33ca26075a9c12ac"
+    },
+    {
+      "path": "packages.lock.json",
+      "bytes": 116,
+      "sha256": "a88a601f99e73076c5567445f00aa228aac9781079b03c99f4688732b7a8876f"
+    },
+    {
+      "path": "PinnedInputs.cs",
+      "bytes": 7488,
+      "sha256": "88c2f569534a3ffe0b84f13c38839ba8fb92443ec088596697bb2dcdb7bb23c1"
+    },
+    {
+      "path": "Program.cs",
+      "bytes": 14968,
+      "sha256": "073cea33fb2d0433bb60cbc1abbd01fd4e28a903bc443c4e1ed5b762f9fd4d83"
+    },
+    {
+      "path": "Protocol.cs",
+      "bytes": 5120,
+      "sha256": "05e2d29ad72898635497844589460658c88ecceebbfa028edff65dffaf4cca52"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 8341,
+      "sha256": "caf7d09435ccf5194a0835fedae017ffac717c9443e5236e2da2469328a7b8c0"
+    }
+  ],
+  "source_snapshot_scope": "This module source/lock/review. Root integration build binds shared props, SDK and final publish bytes separately.",
+  "sdk": "10.0.401",
+  "runtime": "10.0.12",
+  "configuration": "Release",
+  "warnings": 0,
+  "errors": 0,
+  "uac": "not_run",
+  "broker_execution": "not_run",
+  "holder_execution": "not_run",
+  "profile_creation": "not_run",
+  "station_creation": "not_run",
+  "clipboard_calls": "none_in_lease_source",
+  "network_calls": "none_in_lease_source",
+  "existing_acl_changes": "none_in_lease_source",
+  "production_integration": "not_run",
+  "origin_source": {
+    "path": "artifacts/isolation-20261018/drafts/ClipboardStationLease/Program.cs",
+    "sha256": "dfaf4c6009753e31ac091cc4ba4458c2fe8b930f32cbf888a4eedcc8dd02834f",
+    "unchanged_by_this_task": true
+  }
+}

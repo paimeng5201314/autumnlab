@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework><OutputType>WinExe</OutputType>
+    <AssemblyName>AutumnOS.OwnedDesktopNativeController</AssemblyName><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion><RuntimeIdentifier>win-x64</RuntimeIdentifier><SelfContained>true</SelfContained>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs"/><Compile Include="OwnedCase.cs"/><Compile Include="NativeChild.cs"/><Compile Include="DesktopSecurity.cs"/><Compile Include="ManifestInputs.cs"/>
+    <Compile Include="NativeProtocolSelfTests.cs"/>
+    <Compile Include="../appcontainer-browser-parent/Native.cs" Link="Shared/Native.cs"/>
+    <Compile Include="../appcontainer-browser-parent/OwnedFiles.cs" Link="Shared/OwnedFiles.cs"/>
+    <Compile Include="../appcontainer-browser-parent/ProcessAudit.cs" Link="Shared/ProcessAudit.cs"/>
+    <Compile Include="../clipboard-appcontainer-controller/JobEvidence.cs" Link="Shared/JobEvidence.cs"/>
+    <Compile Include="../clipboard-appcontainer-controller/DesktopFreshness.cs" Link="Shared/DesktopFreshness.cs"/>
+    <Compile Include="../clipboard-appcontainer-controller/CleanupJournal.cs" Link="Shared/CleanupJournal.cs"/>
+  </ItemGroup>
+</Project>

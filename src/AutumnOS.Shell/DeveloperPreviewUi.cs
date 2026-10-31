@@ -19,6 +19,7 @@ public sealed partial class MainWindow
 
     private async Task PreviewDeveloperPackageAsync(string packagePath, CancellationToken cancellationToken, string? expectedSha256 = null)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) throw new OperationCanceledException(lifetime.Token);
         if (!DeveloperModeEnabled || accountOperation || permissionService is null || aboutOpen || CurrentIdentity.State == IdentitySessionState.SigningIn)
             throw new InvalidOperationException("DEVELOPER_MODE_REQUIRED");
         DeveloperBuild prepared;
@@ -27,6 +28,7 @@ public sealed partial class MainWindow
                 Path.Combine(installationRoot.Directories["Packages"], "DeveloperPreviews"), expectedSha256, cancellationToken), cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         // The copy stays read-leased through confirmation, installation and resource loading. The executed hash is checked again.
+        if (shutdownRequested || lifetime.IsCancellationRequested) throw new OperationCanceledException(lifetime.Token);
         using FileStream payload = new(prepared.PackagePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         PackageInspection inspection = developerTools!.InspectPackage(prepared.PackagePath, cancellationToken);
         if (inspection.Sha256 != prepared.Inspection.Sha256) throw new PackageException("DEVELOPER_PREVIEW_HASH_CHANGED");
@@ -34,8 +36,8 @@ public sealed partial class MainWindow
             Content = $"应用：{inspection.Manifest.Name}\nID：{inspection.Manifest.AppId}\n版本：{inspection.Manifest.Version}\n权限：{string.Join("、", inspection.Manifest.Permissions)}\nSHA-256：{inspection.Sha256}\n\n这是独立开发预览；仅此预览可被本机 CLI 调试。已有预览将结束，请先保存。",
             PrimaryButtonText = "确认此包并预览", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         aboutOpen = true;
-        try { if (await dialog.ShowAsync().AsTask(cancellationToken) != ContentDialogResult.Primary) throw new PackageException("USER_CANCELLED"); }
-        finally { if (cancellationToken.IsCancellationRequested) dialog.Hide(); aboutOpen = false; }
+        try { if (await ShowOwnedDialogAsync(dialog, cancellationToken) != ContentDialogResult.Primary) throw new PackageException("USER_CANCELLED"); }
+        finally { aboutOpen = false; }
         cancellationToken.ThrowIfCancellationRequested();
         if (!DeveloperModeEnabled) throw new PackageException("DEVELOPER_MODE_DISABLED");
         CloseDeveloperPreview(); developerTools.ClearTrace(); developerPreviewTrace.SetEnabled(true);
@@ -54,6 +56,8 @@ public sealed partial class MainWindow
     }
     private async Task StartDeveloperPreviewHostAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (shutdownRequested || lifetime.IsCancellationRequested) throw new OperationCanceledException(lifetime.Token);
         var preview = new WebAppHost(installationRoot, DeveloperPreviewContent, RequestSavePermissionAsync,
             _ => { }, CreateDeveloperPreviewServices, CloseFileCapabilities, developerPreviewPackagePath, RecordDeveloperPreviewCall, maintenance: criticalOperations,
             retainForCleanup: RetainUnreleasedHost, expectedPreviewSha256: developerPreviewSha256);
@@ -92,6 +96,7 @@ public sealed partial class MainWindow
     private void ResumeDeveloperPreview() => developerPreviewHost?.Foreground();
     private async Task<DeveloperPreviewResponse> ApplyDeveloperDebugAsync(string command, string? sessionId, CancellationToken cancellationToken)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return new(false, "SESSION_EXPIRED");
         if (!DeveloperModeEnabled) return new(false, "DEVELOPER_MODE_DISABLED");
         WebAppHost? preview = developerPreviewHost;
         if (preview is null || sessionId is null || sessionId != developerPreviewSessionId || !preview.IsDeveloperPreview ||
@@ -140,8 +145,8 @@ public sealed partial class MainWindow
             Content = "仅此独立预览会结束并重新启动，未保存输入会丢弃，请先保存。原用户账号和正式存档不改变；测试账号 A/B 的存档分别隔离。重启后旧调试会话 ID 失效。",
             PrimaryButtonText = "已保存，确认切换", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         aboutOpen = true;
-        try { if (await dialog.ShowAsync().AsTask(cancellationToken) != ContentDialogResult.Primary) throw new PackageException("USER_CANCELLED"); }
-        finally { if (cancellationToken.IsCancellationRequested) dialog.Hide(); aboutOpen = false; }
+        try { if (await ShowOwnedDialogAsync(dialog, cancellationToken) != ContentDialogResult.Primary) throw new PackageException("USER_CANCELLED"); }
+        finally { aboutOpen = false; }
         cancellationToken.ThrowIfCancellationRequested();
         if (!DeveloperModeEnabled || sessionId != developerPreviewSessionId) throw new PackageException("DEVELOPER_PREVIEW_SESSION_EXPIRED");
         WebAppHost previous = developerPreviewHost!;

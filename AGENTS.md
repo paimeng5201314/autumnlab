@@ -1,3 +1,7 @@
+# 本次云端接续授权（2026-10-31）
+
+用户明确选择公开 paimeng5201314/autumnlab 的新分支，用云端 Codex 更新代码和 Actions 生成 EXE；本节覆盖下方旧的禁止 Git/云端开发方式限制。先读 CLOUD_HANDOFF.md。保留全部产品、安全和真实验收要求。仅源码分支及构建 artifacts 获授权；不发布 Release、不移动历史 tag、不导出私钥或用户数据。
+
 # Lab Chronicles AutumnOS · 本地项目规则
 
 **制作人：派蒙。用户入口：AutumnOS.exe。**

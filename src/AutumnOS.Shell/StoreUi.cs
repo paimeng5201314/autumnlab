@@ -139,6 +139,7 @@ public sealed partial class MainWindow
     }
     private async Task SearchStoreAsync(bool nextPage)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (storeCatalog is null || (nextPage && (storeBusy || !storeHasMore))) return;
         if (IsStoreRepositoryInput(storeSearch.Text))
         {
@@ -152,7 +153,7 @@ public sealed partial class MainWindow
         if (!nextPage) { storeRepositories.Clear(); storePage = 0; RenderStoreDiscovery(); }
         try
         {
-            var page = await storeCatalog.SearchAsync(storeSearch.Text, nextPage ? storePage + 1 : 1, token);
+            var page = await TrackOwnedNetworkAsync(storeCatalog.SearchAsync(storeSearch.Text, nextPage ? storePage + 1 : 1, token));
             if (token.IsCancellationRequested || revision != storeRevision || storeSection != "discover") return;
             foreach (var item in page.Repositories) if (storeRepositories.All(x => x.RepositoryId != item.RepositoryId)) storeRepositories.Add(item);
             storePage = page.Page; storeHasMore = page.HasMore;
@@ -230,7 +231,7 @@ public sealed partial class MainWindow
         content.Children.Add(Paragraph("粘贴公开仓库链接，查看应用信息与可安装版本。")); content.Children.Add(input);
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "打开 GitHub 仓库", Content = content,
             PrimaryButtonText = "查看应用", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Primary };
-        try { if (await dialog.ShowAsync() == ContentDialogResult.Primary) reference = input.Text; }
+        try { if (await ShowOwnedDialogAsync(dialog) == ContentDialogResult.Primary) reference = input.Text; }
         catch (Exception error) when (error is not OutOfMemoryException) { storeStatus.Text = StoreError(SafeStoreCode(error)); }
         finally { aboutOpen = false; }
         if (reference is not null && !lifetime.IsCancellationRequested) await OpenStoreDetailsAsync(null, reference);
@@ -238,6 +239,7 @@ public sealed partial class MainWindow
 
     private async Task OpenStoreDetailsAsync(CatalogRepository? repository, string? reference = null)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (storeCatalog is null) return;
         storeDebounce.Stop(); storeQuery?.Cancel(); storeQuery?.Dispose(); storeQuery = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
         var token = storeQuery.Token; long revision = ++storeRevision; storeSection = "detail";
@@ -248,8 +250,9 @@ public sealed partial class MainWindow
         storeStatus.Text = "正在读取应用清单与版本…";
         try
         {
-            repository ??= await storeCatalog.ResolveRepositoryAsync(reference ?? "", token);
-            var details = await storeCatalog.GetDetailsAsync(repository, token);
+            repository ??= await TrackOwnedNetworkAsync(storeCatalog.ResolveRepositoryAsync(reference ?? "", token));
+            token.ThrowIfCancellationRequested();
+            var details = await TrackOwnedNetworkAsync(storeCatalog.GetDetailsAsync(repository, token));
             if (token.IsCancellationRequested || revision != storeRevision) return;
             storeVersionPages[repository.RepositoryId] = 1;
             storeDetails[repository.RepositoryId] = details; RenderStoreDetails(details);

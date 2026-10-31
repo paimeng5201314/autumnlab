@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "build_id": "desktop-loader-d8127f87aaba3db4",
+  "compile_status": "passed",
+  "source_snapshot_id": "sha256:d8127f87aaba3db4bdecf59b54e092e59b65c1c1d2e12f69e92643f814e1577f",
+  "source_files": [
+    {
+      "path": "NativeDesktopLoader.c",
+      "bytes": 8947,
+      "sha256": "c5c242c4b3528c2951b41ba8f28e5b63fd5ba771a1e82c20a18097f97dc0cece"
+    },
+    {
+      "path": "DESKTOP-ONLY-REVIEW.md",
+      "bytes": 2762,
+      "sha256": "a44892277189af78c6bdf51e3639792072f97a7a0eba7f19582a8be2e1f16f9a"
+    }
+  ],
+  "output_files": [
+    {
+      "path": "native/AutumnOS.NativeDesktopLoader.exe",
+      "sha256": "ec36948034a6cb27b263660e808369d4e4e616bea6f34f4f4beaba6a8b92f9e4",
+      "bytes": 12800
+    }
+  ],
+  "compiler": "existing Zig 0.15.2 x86_64-windows-gnu",
+  "flags": [
+    "-O1",
+    "-ffreestanding",
+    "-fno-builtin",
+    "-fno-stack-protector",
+    "-nostdlib",
+    "--entry=probe_entry",
+    "--subsystem=windows",
+    "--dynamicbase",
+    "--nxcompat",
+    "-lkernel32",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "pe_static_imports": "only_KERNEL32.dll_11_functions",
+  "original_native_source_sha256": "14fc6fb0560786f515cdd09a1a6e8df10d0521d751bef956576a8e284c8cd67c",
+  "original_native_exe_sha256": "559ed509f9f73aefae8f96824009c24d357112b10cd5927d9ab0e1670530609f",
+  "child_execution": "not_run",
+  "profile_operations": "not_run",
+  "desktop_operations": "not_run",
+  "clipboard_operations": "none_in_source",
+  "browser_operations": "none_in_source",
+  "uac": "not_run",
+  "existing_ACL_changes": "none_in_source",
+  "complete_isolation": "not_claimed",
+  "documentation_update": "Review corrected to three fresh desktops A87/B87/B200C7; compiled C and EXE bytes unchanged."
+}

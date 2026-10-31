@@ -1,7 +1,7 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$BuildId)
+param([Parameter(Mandatory)][string]$BuildId,[string]$NativeSmokeReportPath)
 # This creates a local code-verification handoff, never a release acceptance result.
-# Native/UI acceptance stays not_run and is deliberately not bypassed in Package-T05.
+# An optional matching bundled-app smoke report cannot certify external-app isolation.
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path $PSScriptRoot -Parent
 if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$'){throw 'Tracked T06 build required.'}
@@ -43,14 +43,28 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'docs/production-update-signing.m
 foreach($name in (@('build-result','package-single-file','source-check')+$reportNames)){
     Copy-Item -LiteralPath (Join-Path $evidence "$name.json") -Destination $reports
 }
+$nativeStatus='not_run'
+$nativeChecks=0
+if($NativeSmokeReportPath){
+    $NativeSmokeReportPath=[IO.Path]::GetFullPath($NativeSmokeReportPath)
+    Assert-CodeHandoffPlainPath $NativeSmokeReportPath
+    $native=Get-Content -LiteralPath $NativeSmokeReportPath -Raw|ConvertFrom-Json
+    $requiredChecks=@('client_is_actual_current_build_and_source','guest_save_commits_to_the_only_data_folder','continue_keeps_exact_instance','true_end_releases_maintenance_blocker','new_game_instance_reads_saved_progress','reopened_game_ends_cleanly')
+    if($native.build_id -cne $BuildId -or $native.source_snapshot_id -cne $current -or $native.status -ne 'passed' -or $native.cleanup -ne 'passed' -or @($native.remaining_processes).Count -ne 0 -or $native.check_count -ne $native.passed_checks -or $native.check_count -ne @($native.checks).Count -or @($native.checks|Where-Object status -ne 'passed').Count -ne 0){throw 'Matching completed native smoke evidence required.'}
+    foreach($name in $requiredChecks){if(@($native.checks|Where-Object {$_.name -ceq $name -and $_.status -eq 'passed'}).Count -ne 1){throw "Required native check missing: $name"}}
+    Assert-CodeHandoffPlainPath $native.tested_executable
+    if((Get-FileHash -LiteralPath $native.tested_executable).Hash.ToLowerInvariant() -cne $single.executable_sha256){throw 'Native tested executable differs from handoff.'}
+    Copy-Item -LiteralPath $NativeSmokeReportPath -Destination (Join-Path $reports 'bundled-native-smoke.json')
+    $nativeStatus='passed_bundled_app_only';$nativeChecks=$native.check_count
+}
 $acceptance=[ordered]@{
     schema_version=1;build_id=$BuildId;source_snapshot_id=$current;producer='派蒙'
     kind='local_code_verification_handoff';release_ready=$false
-    automatic_checks='passed';native_product_tests='not_run';extracted_copy_product_tests='not_run'
-    authenticode='not_signed';smart_app_control_acceptance='not_run_requires_trusted_signing'
+    automatic_checks='passed';native_product_tests=$nativeStatus;native_smoke_checks=$nativeChecks;extracted_copy_product_tests='not_run'
+    authenticode='not_signed';smart_app_control_acceptance=$(if($nativeStatus -eq 'not_run'){'not_run_requires_trusted_signing'}else{'local_entry_started_not_publisher_signing_acceptance'})
     clipboard_boundary='unimplemented_required_boundary';third_party_launch='denied_before_WebView'
     ChemLeap_normal_mode='not_run_blocked_by_missing_boundary';authorized_network_sdk='unsupported_not_run'
-    permission_close_native_regression='not_run';two_document_RTC_native_regression='not_run'
+    permission_close_native_regression='not_run';two_document_RTC_native_regression='not_run';loading_strategy='autumn-parser-gate-v1'
     real_Logto_two_accounts='not_run';historical_failed_evidence='preserved_in_artifacts/isolation-20261018'
     executable_sha256=$single.executable_sha256;fixed_webview2='154.0.4258.53';webview2_sdk='1.0.4258.31'
     isolation_policy='autumn-local-web-v2';user_data_included=$false;global_policy_changes=$false
@@ -90,8 +104,8 @@ $result=[ordered]@{
     executable=(Join-Path $candidate 'AutumnOS.exe');executable_sha256=$single.executable_sha256
     zip=$archivePath;zip_sha256=(Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
     extracted_executable=(Join-Path $extracted 'AutumnOS.exe');verified_file_count=$inventory.Count
-    archive_roundtrip='passed';native_product_tests='not_run';extracted_copy_product_tests='not_run'
-    authenticode='not_signed';smart_app_control_acceptance='not_run_requires_trusted_signing'
+    archive_roundtrip='passed';native_product_tests=$nativeStatus;native_smoke_checks=$nativeChecks;extracted_copy_product_tests='not_run'
+    authenticode='not_signed';smart_app_control_acceptance=$acceptance.smart_app_control_acceptance
     release_ready=$false;uploaded=$false;root_entry_replaced=$false;existing_user_data_touched=$false
 }
 $result|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $output 'handoff-result.json') -Encoding utf8NoBOM

@@ -12,12 +12,14 @@ if(Test-Path -LiteralPath $reportPath){throw 'Existing evidence is preserved; ch
 New-Item -ItemType Directory -Path $ReportDirectory -Force|Out-Null
 $checks=[Collections.Generic.List[object]]::new();$screenshots=[Collections.Generic.List[object]]::new()
 $inputActions=[Collections.Generic.List[object]]::new();$ownedProcesses=[Collections.Generic.List[Diagnostics.Process]]::new()
+$ownedEntryProcesses=[Collections.Generic.List[Diagnostics.Process]]::new()
 $script:initialPointerPosition=$null;$product=$null
 $report=[ordered]@{
  schema_version=1;task_id='T03';checkpoint='controlled_sample_permissions_desktop_extensions_developer_ui'
+ driver_sha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()
  status='failed';smoke_id=$smokeId;started_utc=[DateTimeOffset]::UtcNow.ToString('o');environment=[Environment]::OSVersion.VersionString
  source_snapshot_id='not_recorded';build_id='local-untracked';source_executable=$null;tested_executable=$null;source_executable_sha256=$null
- process_ids=@();checks=$checks;screenshots=$screenshots;input_actions=$inputActions;game_instance_id=$null
+ process_ids=@();checks=$checks;screenshots=$screenshots;input_actions=$inputActions;game_instance_id=$null;return_game_phase=$null
  account_mode='guest';real_logto_login='not_run';second_account='not_run';external_picker_manual_matrix='not_run'
  complete_t03='not_run';arbitrary_third_party_isolation='not_run';physical_input='not_run'
  developer_checks_kind='explicit_isolated_synthetic_runtime_checks_no_real_identity';helper_hashes=@();cleanup='not_run'
@@ -31,7 +33,7 @@ if($helperErrors.Count){throw 'Existing desktop helper source did not parse.'}
 $names=@('Add-SmokeCheck','Wait-SmokeCondition','Find-SmokeElement','Find-VisibleSmokeElement','Invoke-SmokeButton',
  'Find-SmokeMenuItem','Invoke-SmokeOwnedButton','Find-SmokeNamedElement','Invoke-SmokeNamedButton','Test-SmokeForeground',
  'Focus-SmokeProduct','Assert-SmokeCaptureUnoccluded','Start-SmokeProduct','Close-SmokeProduct','Save-SmokeScreenshot',
- 'Invoke-SmokePointer','Wait-SmokeRunningPanel','Read-SmokeEvents')
+ 'Invoke-SmokePointer','Wait-SmokeRunningPanel','Wait-SmokeNewForeground','Read-SmokeEvents')
 foreach($name in $names){
  $definition=@($helperAst.FindAll({param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst]},$true)|Where-Object Name -EQ $name)
  if($definition.Count -ne 1){throw "Missing unique local helper: $name"}
@@ -87,12 +89,31 @@ function Click-FeatureWeb([string]$Id,[string]$Name){
  $inputActions.Add($evidence)
 }
 function Wait-FeatureText([string]$Id,[string]$Text){$null=Wait-SmokeCondition {Feature-TextContains $Id $Text} "safe sample result $Text"}
-function Return-FeatureGame {
+function Return-FeatureGame([string]$Context) {
+ $report.return_game_phase=$Context+':return_to_desktop'
  Invoke-SmokeButton $product.Element 'SettingsHomeButton'
- Invoke-SmokePointer $product 'SampleButton' 'double_click'
+ $null=Wait-SmokeCondition {Find-VisibleSmokeElement $product.Element 'SampleButton'} 'desktop after leaving settings'
+ $null=Wait-SmokeCondition {Find-VisibleSmokeElement $product.Element 'DesktopGestureHint'} 'blank desktop switcher target'
+ $beforeSwitcher=@(Read-SmokeEvents $runtimeLog)
+ $latest=$beforeSwitcher|Select-Object -Last 1
+ Add-SmokeCheck ($Context+'_original_game_is_background_before_switcher') ($latest -and $latest.instanceId -eq $report.game_instance_id -and $latest.state -eq 'Background' -and $latest.blocksMaintenance)
+ # A single icon click now resumes the game, so an icon double-click loses its
+ # target before the second down. The actual switcher gesture is on blank desktop.
+ # Inject it once; do not retry a click after it might have changed application state.
+ $report.return_game_phase=$Context+':open_blank_desktop_switcher'
+ Invoke-SmokePointer $product 'DesktopGestureHint' 'double_click'
  Wait-SmokeRunningPanel $product
+ $afterSwitcher=@(Read-SmokeEvents $runtimeLog)
+ $latest=$afterSwitcher|Select-Object -Last 1
+ $unexpectedActivation=@($afterSwitcher|Select-Object -Skip $beforeSwitcher.Count|Where-Object state -EQ 'Foreground')
+ Add-SmokeCheck ($Context+'_switcher_preserves_background_instance') ($latest -and $latest.instanceId -eq $report.game_instance_id -and $latest.state -eq 'Background' -and $latest.blocksMaintenance -and $unexpectedActivation.Count -eq 0)
+ $continueBaseline=$afterSwitcher.Count
+ $report.return_game_phase=$Context+':continue_original_game'
  Invoke-SmokeOwnedButton $product 'RunningContinueButton'
+ $foreground=Wait-SmokeNewForeground $runtimeLog $continueBaseline $report.game_instance_id
  $null=Wait-SmokeCondition {Find-FeatureWebDocument} 'original game returns'
+ Add-SmokeCheck ($Context+'_continue_restores_original_instance') ($foreground.instanceId -eq $report.game_instance_id -and $foreground.blocksMaintenance)
+ $report.return_game_phase=$Context+':completed'
 }
 function Permission-Record([string]$Name,[string]$Decision){
  $path=Join-Path $stageDirectory 'AutumnOS_Data/Config/application-permissions.v1.json'
@@ -103,7 +124,7 @@ function Permission-Record([string]$Name,[string]$Decision){
 
 try{
  if(-not $IsWindows){throw 'An interactive Windows desktop is required.'}
- if(@(Get-Process -Name AutumnOS -ErrorAction SilentlyContinue).Count){throw 'An existing user launcher is open; ask for normal closure. No process is stopped.'}
+ if(@(Get-Process -Name AutumnOS,AutumnOS.Client -ErrorAction SilentlyContinue|Where-Object SessionId -eq ([Diagnostics.Process]::GetCurrentProcess().SessionId)).Count){throw 'An existing user launcher or client is open; normal closure is required. No process is stopped.'}
  Add-SmokeCheck 'no_existing_user_launcher' $true
  $principal=[Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
  Add-SmokeCheck 'standard_user' (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
@@ -189,7 +210,7 @@ try{
  Add-SmokeCheck 'settings_profile_denial_persisted' (Permission-Record 'identity.profile' 'Denied')
  Add-SmokeCheck 'settings_storage_allow_persisted' (Permission-Record 'storage' 'Granted')
  $null=Save-SmokeScreenshot $product '05-permissions-real-decisions'
- Return-FeatureGame
+ Return-FeatureGame 'after_permission_changes'
  Click-FeatureWeb 't03-notify' '发送配对进度';Wait-FeatureText 't03-notifications-result' 'PERMISSION_REVOKED'
  Add-SmokeCheck 'revoked_notification_request_rejected' (Feature-TextContains 't03-notifications-result' 'PERMISSION_REVOKED')
  $note=Wait-SmokeCondition {Find-FeatureWebElement 't03-note' '笔记内容（最多 240 字符）'} 'private note input'
@@ -217,7 +238,7 @@ try{
  catch [Windows.Automation.ElementNotAvailableException] {
   $checks.Add([ordered]@{name='developer_capability_button_disabled_when_hidden';status='not_run';detail='The collapsed UI provider retired its element; service revocation is covered by separate runtime tests, not inferred here.'})
  }
- Return-FeatureGame
+ Return-FeatureGame 'after_developer_disable'
  Add-SmokeCheck 'developer_mode_off_does_not_end_normal_game' ((Read-SmokeEvents $runtimeLog|Where-Object state -EQ 'Foreground'|Select-Object -Last 1).instanceId -eq $report.game_instance_id)
  Click-FeatureWeb 't03-preference-read' '读取笔记设置';Wait-FeatureText 't03-storage-result' '已读取本账号笔记设置'
  $note=Find-FeatureWebElement 't03-note' '笔记内容（最多 240 字符）'
@@ -229,13 +250,17 @@ try{
  Close-SmokeProduct $product
  $report.status='passed'
 }catch{
- $report.error_type=$_.Exception.GetType().Name;$report.error=$_.Exception.Message;$report.failure_script_line=$_.InvocationInfo.ScriptLineNumber
+ $report.error_type=$_.Exception.GetType().Name;$report.error=$_.Exception.Message;$report.failure_script_line=$_.InvocationInfo.ScriptLineNumber;$report.failure_script_stack=$_.ScriptStackTrace
  Write-Warning "T03 features smoke failed: $($_.Exception.Message)"
 }finally{
  $left=@()
  foreach($process in $ownedProcesses){
   if(-not $process.HasExited){try{if(-not $process.CloseMainWindow() -or -not $process.WaitForExit(10000)){$left+=$process.Id}}catch{$left+=$process.Id}}
  }
+ foreach($entry in $ownedEntryProcesses){
+  try{if(-not $entry.HasExited -and -not $entry.WaitForExit(10000)){$left+=$entry.Id}}catch{$left+=$entry.Id}
+ }
+ $left=@($left|Sort-Object -Unique)
  if(Get-Command Restore-AutumnNativePointer -ErrorAction SilentlyContinue){Restore-AutumnNativePointer}
  if($script:initialPointerPosition -and ('AutumnDesktopInteractionSmoke.NativeWindows' -as [type])){$null=[AutumnDesktopInteractionSmoke.NativeWindows]::SetCursorPos($script:initialPointerPosition.X,$script:initialPointerPosition.Y)}
  $report.cleanup=if($left.Count){'failed_owned_window_left_no_kill'}else{'passed'};$report.remaining_owned_process_ids=$left

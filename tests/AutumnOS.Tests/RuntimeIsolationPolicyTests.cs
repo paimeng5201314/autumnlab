@@ -9,6 +9,7 @@ internal static class RuntimeIsolationPolicyTests
 {
     internal static IEnumerable<(string Name, Action Run)> Cases()
     {
+        foreach (var test in RuntimeParserGateTests.Cases()) yield return test;
         yield return ("runtime.isolation_accepts_only_the_validated_engine_version", ValidatedEngineVersion);
         yield return ("runtime.isolation_headers_deny_both_async_clipboard_directions", ClipboardPolicyHeaders);
         yield return ("runtime.isolation_challenges_bind_unique_nonce_instance_and_origin", ChallengeBinding);

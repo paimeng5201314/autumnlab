@@ -23,7 +23,7 @@ public sealed partial class MainWindow
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "开启本地商店集成测试？",
                 Content = "仅本次开发模式有效。展示随本包校验的独立样例，通过 127.0.0.1 测试服务器验证真实下载与安装。样例有单独的应用 ID 和存档，不会冒充 GitHub 商品。关闭开发模式会停止测试源。",
                 PrimaryButtonText = "开启测试源", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary) return;
             storeTestSource ??= new StoreTestSource(Path.Combine(AppContext.BaseDirectory, "Samples", "StoreFixture"));
             StartStoreInfrastructure(Path.Combine(installationRoot.Directories["Runtime"], "StoreIntegration"), storeTestSource, true);
             developerResult.Text = StoreTestSource.Label + "。测试源不会在重启后自动开启。";
@@ -49,7 +49,7 @@ public sealed partial class MainWindow
         {
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "关闭测试源与测试应用？",
                 Content = "请先在测试应用内保存进度。关闭开发能力会结束测试实例，已保存数据保留。", PrimaryButtonText = "已保存，关闭", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
-            return await dialog.ShowAsync() == ContentDialogResult.Primary;
+            return await ShowOwnedDialogAsync(dialog) == ContentDialogResult.Primary;
         }
         finally { aboutOpen = false; }
     }

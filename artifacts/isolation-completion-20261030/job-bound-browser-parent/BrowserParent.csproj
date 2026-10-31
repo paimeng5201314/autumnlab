@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>AutumnOS.OwnedAppContainerBrowserParent</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Native.cs" />
+    <Compile Include="OwnedFiles.cs" />
+    <Compile Include="ProcessAudit.cs" />
+    <Compile Include="ChildRun.cs" />
+    <Compile Include="../clipboard-appcontainer-controller/JobEvidence.cs" Link="Shared/JobEvidence.cs" />
+  </ItemGroup>
+</Project>

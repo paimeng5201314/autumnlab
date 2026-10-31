@@ -2,9 +2,6 @@
 
 **制作人：派蒙**
 
-2026-10-24：派蒙已授权将本地工程与预览交付上传到本仓库。当前预览为 `meta-v0.5.2-local.9`（显示版本 `0.0.5-20261024-update`），详情见[本次交付说明](release/meta-v0.5.2-local.9/RELEASE_NOTES.md)与[下载页](https://github.com/paimeng5201314/autumnlab/releases/tag/meta-v0.5.2-local.9)。本版仍未获Windows发布者签名，真实GUI升级与第三方完整隔离尚未验收，ChemLeap普通模式仍受限制。
-
-
 2026-10-24 工作方式更新：先交付代码修复、自动核验和独立测试包，真实窗口/新进程隔离检测由派蒙执行。入口、范围和步骤见[实测说明](docs/isolation-manual-verification.md)。代码核验包由 `Package-CodeHandoff.ps1` 独立生成，原生验收保持 `not_run`，不绕过正式打包门禁或覆盖根入口。
 
 2026-10-18 隔离修复进行中：根入口和真实数据仍保留原样。当前源码已补网络策略、文档失效及SDK响应检查，但真实剪贴板copy/cut隔离失败；所有外部安装包及开发预览在创建浏览器前拒绝，提示 `RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE`。开启开发模式、修改包声明或报告不能解除。安装和存档保留，ChemLeap普通模式运行尚未达标。`artifacts/isolation-20261018/`中的中间EXE用于自有探针诊断，不能当作第三方放行版本；实际结果见[隔离模型](docs/runtime-isolation.md)和[进度](AUTUMNOS_PROGRESS.md)。
@@ -20,7 +17,7 @@
 ./scripts/Restore.ps1 -Locked
 ./scripts/Test-Source.ps1
 $buildId = 'T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
-./scripts/Build.ps1 -BuildId $buildId -BuildVersion 0.5.2-local.9 -ReleaseLabel 0.0.5-20261024-update
+./scripts/Build.ps1 -BuildId $buildId -BuildVersion 0.5.1 -ReleaseLabel plus0.0.4-20261017
 ./scripts/Test.ps1 -ProbeLogto
 ./scripts/Package-T05.ps1 -Stage Prepare
 ./scripts/Package-SingleFile.ps1 -BuildId $buildId

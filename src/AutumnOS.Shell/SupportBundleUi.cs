@@ -21,11 +21,11 @@ public sealed partial class MainWindow
             };
             aboutOpen = true;
             ContentDialogResult accepted;
-            try { accepted = await consent.ShowAsync(); }
+            try { accepted = await ShowOwnedDialogAsync(consent); }
             finally { aboutOpen = false; }
             if (accepted != ContentDialogResult.Primary) { SupportExportStatus.Text = "已取消，没有生成诊断包。"; return; }
             var picker = new Microsoft.Windows.Storage.Pickers.FolderPicker(AppWindow.Id);
-            var folder = await picker.PickSingleFolderAsync().AsTask(lifetime.Token);
+            var folder = await RunOwnedPickerAsync(() => picker.PickSingleFolderAsync(), lifetime.Token);
             if (folder is null) { SupportExportStatus.Text = "已取消，没有生成诊断包。"; return; }
             string path = Path.Combine(folder.Path, $"AutumnOS-support-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.zip");
             SupportBundleResult result = await Task.Run(() => new SupportBundleService(installationRoot, criticalOperations).Export(path, lifetime.Token), lifetime.Token);

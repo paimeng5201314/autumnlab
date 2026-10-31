@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "source_snapshot_id": "sha256:db0efd7c65fb882496f441c169d285114738a957f7ae7cdba98d7e736aa196a5",
+  "canonical_format": "sorted path; sha256 two spaces byte_count two spaces path; UTF-8 LF, no final LF",
+  "files": [
+    {
+      "path": "NativeUser32Loader.c",
+      "bytes": 8727,
+      "sha256": "14fc6fb0560786f515cdd09a1a6e8df10d0521d751bef956576a8e284c8cd67c"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2843,
+      "sha256": "120718030b1a674db4faa9a4c8cf6c597d6fe0fa65b9d1154edaf996e99c67e2"
+    }
+  ]
+}

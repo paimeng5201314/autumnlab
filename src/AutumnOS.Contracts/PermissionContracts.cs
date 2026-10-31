@@ -28,6 +28,8 @@ public interface IPermissionService
     void Demand(RuntimeAccountContext account, RuntimeApplication app, string permission);
     /// <summary>Monotonic in-process binding revision, published atomically with decisions, independent of event dispatch.</summary>
     long GetRevision(RuntimeAccountContext account, RuntimeApplication app);
+    /// <summary>Monotonic revision of one permission; retained across revoke/regrant to invalidate issued file capabilities.</summary>
+    long GetRevision(RuntimeAccountContext account, RuntimeApplication app, string permission);
     IDisposable EnterUsageLease(RuntimeAccountContext account, RuntimeApplication app, string permission);
     IDisposable EnterDecisionLease(RuntimeAccountContext account, RuntimeApplication app, string permission);
     Task<PermissionDecision> RequestAsync(RuntimeAccountContext account, RuntimeApplication app, string permission,

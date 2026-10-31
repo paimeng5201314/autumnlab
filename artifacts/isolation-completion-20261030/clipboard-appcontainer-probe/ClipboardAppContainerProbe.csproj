@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>
+  <OutputType>WinExe</OutputType><UseWindowsForms>true</UseWindowsForms><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  <AssemblyName>AutumnOS.ClipboardAppContainerProbe</AssemblyName><RootNamespace>AutumnOS.ClipboardAppContainerProbe</RootNamespace>
+  <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion><SelfContained>true</SelfContained><PublishSingleFile>false</PublishSingleFile><PublishTrimmed>false</PublishTrimmed>
+</PropertyGroup><ItemGroup>
+  <Compile Include="Program.cs" /><Compile Include="ProbeNative.cs" /><Compile Include="BrowserChild.cs" /><Compile Include="ClipboardCollector.cs" /><Compile Include="FrozenPolicy.cs" />
+  <EmbeddedResource Include="OwnedPage.js" /><PackageReference Include="Microsoft.Web.WebView2" />
+</ItemGroup><Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences"><ItemGroup>
+  <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+</ItemGroup></Target></Project>

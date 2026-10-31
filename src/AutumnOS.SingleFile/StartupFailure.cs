@@ -33,6 +33,7 @@ namespace AutumnOS.Startup
                 ExceptionType = error.GetType().FullName ?? "Exception", HResult = error.HResult,
                 NativeErrorCode = native == null ? (int?)null : native.NativeErrorCode
             };
+            if (error is PathTooLongException) failure.Code = "STARTUP_PATH_TOO_LONG";
             switch (failure.NativeErrorCode)
             {
                 // ERROR_INVALID_IMAGE_HASH / ACCESS_DISABLED_BY_POLICY /
@@ -42,6 +43,7 @@ namespace AutumnOS.Startup
                 case 2: case 3: failure.Code = "STARTUP_FILE_MISSING"; break;
                 case 126: failure.Code = "STARTUP_DEPENDENCY_MISSING"; break;
                 case 193: failure.Code = "STARTUP_BAD_IMAGE"; break;
+                case 206: failure.Code = "STARTUP_PATH_TOO_LONG"; break;
             }
             // Only fixed product codes may be copied. Never log arbitrary exception
             // messages, arguments, environment variables, stack traces or account data.
@@ -98,6 +100,8 @@ namespace AutumnOS.Startup
         {
             string detail = Code == "STARTUP_WINDOWS_POLICY_BLOCKED"
                 ? "Windows 安全策略阻止了程序启动。需要符合本机策略、具有可信发布者签名的构建。"
+                : Code == "STARTUP_PATH_TOO_LONG"
+                ? "程序所在目录过深。请正常退出后，将 AutumnOS.exe 与同级 AutumnOS_Data 一起移到更短的目录，再重试；不要删除 AutumnOS_Data。"
                 : "AutumnOS 启动失败。";
             return Code + "\n" + detail + "\n阶段：" + Stage + "；目标：" + Target +
                 (NativeErrorCode.HasValue ? "；Windows 错误码：" + NativeErrorCode.Value : "") +

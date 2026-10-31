@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "status": "passed_static_pe_only",
+  "image": "native/AutumnOS.NativeDesktopLoader.exe",
+  "sha256": "ec36948034a6cb27b263660e808369d4e4e616bea6f34f4f4beaba6a8b92f9e4",
+  "bytes": 12800,
+  "machine": "AMD64",
+  "optional_header": "PE32+",
+  "subsystem": 2,
+  "entry_point_rva": 4096,
+  "dll_characteristics": 33120,
+  "imports": [
+    {
+      "dll": "KERNEL32.dll",
+      "functions": [
+        "ExitProcess",
+        "GetCurrentProcessId",
+        "GetCurrentThreadId",
+        "GetEnvironmentVariableW",
+        "GetLastError",
+        "GetModuleHandleW",
+        "GetProcAddress",
+        "GetStdHandle",
+        "LoadLibraryExW",
+        "SetLastError",
+        "WriteFile"
+      ]
+    }
+  ],
+  "delay_import_rva": 0,
+  "exact_import_functions_verified": true,
+  "child_execution": "not_run"
+}

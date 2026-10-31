@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "source_snapshot_id": "sha256:d8127f87aaba3db4bdecf59b54e092e59b65c1c1d2e12f69e92643f814e1577f",
+  "files": [
+    {
+      "path": "NativeDesktopLoader.c",
+      "bytes": 8947,
+      "sha256": "c5c242c4b3528c2951b41ba8f28e5b63fd5ba771a1e82c20a18097f97dc0cece"
+    },
+    {
+      "path": "DESKTOP-ONLY-REVIEW.md",
+      "bytes": 2762,
+      "sha256": "a44892277189af78c6bdf51e3639792072f97a7a0eba7f19582a8be2e1f16f9a"
+    }
+  ],
+  "canonical_format": "sorted path; sha256 two spaces byte_count two spaces path; UTF-8 LF, no final LF"
+}

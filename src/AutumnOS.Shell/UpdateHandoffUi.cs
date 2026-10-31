@@ -8,7 +8,7 @@ namespace AutumnOS.Shell;
 public sealed partial class MainWindow
 {
     private IDisposable? committedMaintenanceLease;
-    private bool SystemUpdateUiIsIdle => !aboutOpen && !preparing && !launching && !accountOperation && !firstRunLoginPending && !firstRunSkipPending && !developerBusy &&
+    private bool SystemUpdateUiIsIdle => !shutdownRequested && !aboutOpen && !preparing && !launching && !accountOperation && !firstRunLoginPending && !firstRunSkipPending && !developerBusy &&
         !supportExportBusy && !localInstallBusy && !installingStoreTask &&
         (DesktopPanel.Visibility == Visibility.Visible || SettingsPanel.Visibility == Visibility.Visible && selectedSettingsCategory == "updates");
 
@@ -51,7 +51,7 @@ public sealed partial class MainWindow
         {
             updateWait.Text = "正在重新核对目标是否仍可用，以及当前安装策略…";
             updates.SetPreviewEnabled(previewUpdates.IsOn);
-            await updates.ValidateStagedForCommitAsync(lifetime.Token);
+            await TrackOwnedNetworkAsync(updates.ValidateStagedForCommitAsync(lifetime.Token));
             updateWait.Text = "正在取得维护资格，等待已开始的关键操作结束…";
             lease = await criticalOperations.PrepareMaintenanceAsync(TimeSpan.FromSeconds(30), lifetime.Token);
             var staged = updates.ValidateStagedForCommit();

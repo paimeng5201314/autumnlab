@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "build_id": "native-loader-db0efd7c65fb8824",
+  "compile_status": "passed",
+  "source_snapshot_id": "sha256:db0efd7c65fb882496f441c169d285114738a957f7ae7cdba98d7e736aa196a5",
+  "source_files": [
+    {
+      "path": "NativeUser32Loader.c",
+      "bytes": 8727,
+      "sha256": "14fc6fb0560786f515cdd09a1a6e8df10d0521d751bef956576a8e284c8cd67c"
+    },
+    {
+      "path": "REVIEW.md",
+      "bytes": 2843,
+      "sha256": "120718030b1a674db4faa9a4c8cf6c597d6fe0fa65b9d1154edaf996e99c67e2"
+    }
+  ],
+  "output_files": [
+    {
+      "path": "native/AutumnOS.NativeUser32Loader.exe",
+      "sha256": "559ed509f9f73aefae8f96824009c24d357112b10cd5927d9ab0e1670530609f",
+      "bytes": 12800
+    }
+  ],
+  "compiler": "existing Zig 0.15.2 x86_64-windows-gnu",
+  "compile_flags": [
+    "-O1",
+    "-ffreestanding",
+    "-fno-builtin",
+    "-fno-stack-protector",
+    "-nostdlib",
+    "--entry=probe_entry",
+    "--subsystem=windows",
+    "--dynamicbase",
+    "--nxcompat",
+    "-lkernel32",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "pe_imports_status": "passed_static_only_KERNEL32.dll",
+  "child_execution": "not_run",
+  "profile_operations": "not_run",
+  "station_operations": "not_run",
+  "clipboard_operations": "none_in_source",
+  "browser_operations": "none_in_source",
+  "uac": "not_run",
+  "existing_ACL_changes": "none_in_source",
+  "complete_isolation": "not_claimed",
+  "static_PE_inspection_attempts": [
+    {
+      "attempt": 1,
+      "status": "incomplete",
+      "reason": "PowerShell unsigned literal conversion",
+      "execution": "not_run"
+    },
+    {
+      "attempt": 2,
+      "status": "passed",
+      "exact_import_functions": [
+        "ExitProcess",
+        "GetCurrentProcessId",
+        "GetCurrentThreadId",
+        "GetEnvironmentVariableW",
+        "GetLastError",
+        "GetModuleHandleW",
+        "GetProcAddress",
+        "GetStdHandle",
+        "LoadLibraryExW",
+        "SetLastError",
+        "WriteFile"
+      ],
+      "execution": "not_run"
+    }
+  ]
+}

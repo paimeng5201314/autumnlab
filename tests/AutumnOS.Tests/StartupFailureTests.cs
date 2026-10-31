@@ -19,7 +19,8 @@ internal static class StartupFailureTests
             (2, "STARTUP_FILE_MISSING"),
             (3, "STARTUP_FILE_MISSING"),
             (126, "STARTUP_DEPENDENCY_MISSING"),
-            (193, "STARTUP_BAD_IMAGE")
+            (193, "STARTUP_BAD_IMAGE"),
+            (206, "STARTUP_PATH_TOO_LONG")
         })
             yield return ($"startup.native_error_{native}_has_distinct_classification", () =>
             {
@@ -29,6 +30,7 @@ internal static class StartupFailureTests
                     "Native error identity must survive classification without being guessed from message text.");
             });
         yield return ("startup.policy_not_inferred_from_exception_text_or_hresult", DoesNotGuessPolicy);
+        yield return ("startup.typed_long_path_error_is_distinct_and_preserves_data_guidance", LongPathClassification);
         yield return ("startup.only_exact_product_error_codes_are_retained", ExactProductCodes);
         yield return ("startup.report_contains_numeric_and_build_evidence_without_exception_secrets", ReportEvidence);
         yield return ("startup.arbitrary_outer_and_inner_exception_text_is_not_written", ExceptionPrivacy);
@@ -66,6 +68,22 @@ internal static class StartupFailureTests
         }
         Check(Create(new IOException("UPDATE_BEARER_SYNTHETIC_SECRET")).Code == "STARTUP_FAILED", "An arbitrary UPDATE_ prefix is not a safe product code.");
         Check(Create(new InvalidOperationException("UPDATE_CLIENT_START_FAILED")).Code == "STARTUP_FAILED", "Only the intended exception category may supply product codes.");
+    }
+
+    private static void LongPathClassification()
+    {
+        const string secret = "owned-private-path-must-not-appear";
+        var error = new PathTooLongException(secret);
+        var failure = Create(error);
+        Check(failure.Code == "STARTUP_PATH_TOO_LONG" && failure.NativeErrorCode is null && failure.HResult == error.HResult,
+            "A typed managed path-length failure must retain its category without inventing a Win32 error.");
+        string message = failure.Message("");
+        Check(message.Contains("目录过深", StringComparison.Ordinal) && message.Contains("一起移到更短的目录", StringComparison.Ordinal) &&
+              message.Contains("不要删除 AutumnOS_Data", StringComparison.Ordinal) && !message.Contains(secret, StringComparison.Ordinal),
+            "Recovery guidance must keep the entry and user data together without disclosing exception paths.");
+        Check(Create(new IOException("PathTooLongException " + secret)).Code == "STARTUP_FAILED" &&
+              Create(new IOException("synthetic", error.HResult)).Code == "STARTUP_FAILED",
+            "A message or HRESULT alone must not be relabeled as a typed path-length failure.");
     }
 
     private static void ReportEvidence() => InScope(root =>
@@ -108,7 +126,8 @@ internal static class StartupFailureTests
         {
             new IOException("UPDATE_" + secret),
             new Exception(secret, new Exception("inner-" + secret)),
-            new Win32Exception(5, secret)
+            new Win32Exception(5, secret),
+            new PathTooLongException(secret)
         })
         {
             var failure = Create(error);

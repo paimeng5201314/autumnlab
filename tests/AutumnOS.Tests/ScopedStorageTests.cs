@@ -40,6 +40,19 @@ public static class ScopedStorageTests
         yield return ("storage.preferences.unsafe_paths_are_rejected", PreferenceUnsafePaths);
         yield return ("storage.t03.capability_owner_account_epoch_instance_bound", HandleOwnership);
         yield return ("storage.t03.capability_expiry_and_revocation", HandleExpiry);
+        yield return ("storage.t03.capability_read_and_close_do_not_revive_after_regrant", HandleRegrant);
+        yield return ("storage.t03.export_does_not_revive_after_regrant", ExportRegrant);
+        yield return ("storage.t03.capability_regrant_during_read_rejects_completed_bytes", HandleReadRegrantBeforeDelivery);
+        yield return ("storage.t03.export_regrant_at_final_lease_preserves_target", ExportRegrantAtCommit);
+        yield return ("storage.t03.picker_registration_binds_decision_and_revision_under_lease", HandleRegistrationRevision);
+        yield return ("storage.t03.open_picker_completion_cannot_cross_regrant", OpenPickerRegrant);
+        yield return ("storage.t03.save_picker_completion_cannot_cross_regrant", SavePickerRegrant);
+        yield return ("storage.t03.capability_cancellation_and_wrong_owner_preserve_grant", HandleCancellationAndOwner);
+        yield return ("storage.t03.permission_lease_failure_invalidates_capability", HandleLeaseFailure);
+        yield return ("storage.t03.revocation_prune_releases_idle_file_locks", PruneRevokedReleasesPins);
+        yield return ("storage.t03.delayed_revocation_prune_preserves_fresh_grant", PruneDelayedRegrant);
+        yield return ("storage.t03.revocation_prune_preserves_other_owners", PruneOtherOwners);
+        yield return ("storage.t03.revocation_prune_distinguishes_session_and_provider_failure", PruneLeaseFailures);
         yield return ("storage.t03.capability_capacity_and_cleanup", HandleCapacity);
         yield return ("storage.t03.capability_size_and_readonly_pinning", HandleBounds);
         yield return ("storage.t03.export_is_one_shot_atomic_and_keeps_backup", ExportBackup);
@@ -416,6 +429,297 @@ public static class ScopedStorageTests
         Assert(broker.Close(cap.Handle, scope).ErrorCode == "FILE_HANDLE_EXPIRED", "Close accepted expired capability.");
         cap = broker.RegisterPickedFile(file, scope).Value!; allowed = false;
         Assert(broker.Close(cap.Handle, scope).ErrorCode == "PERMISSION_REVOKED", "Close ignored permission revocation.");
+    });
+    // Explicit permission-gate fixture: changes are host mutations, not file/SDK input. The
+    // callbacks place changes at lease/decision boundaries without sleeps or timing assumptions.
+    private sealed class FilePermissionFixture
+    {
+        private readonly object gate = new();
+        private bool allowed = true;
+        private long revision = 1;
+        internal string DeniedCode = "PERMISSION_REVOKED";
+        internal int LeaseAttempts, ActiveLeases, DecisionChecks;
+        internal Action<int>? BeforeLease, AfterDecision;
+        internal bool Permitted(StorageScope scope)
+        {
+            Assert(Monitor.IsEntered(gate), "File decision was checked without its permission lease.");
+            bool answer = allowed;
+            AfterDecision?.Invoke(++DecisionChecks);
+            return answer;
+        }
+        internal long Revision(StorageScope scope)
+        {
+            Assert(Monitor.IsEntered(gate), "File revision was captured without its permission lease.");
+            return revision;
+        }
+        internal IDisposable Enter(StorageScope scope)
+        {
+            BeforeLease?.Invoke(++LeaseAttempts);
+            Monitor.Enter(gate);
+            if (!allowed) { Monitor.Exit(gate); throw new RuntimeCapabilityException(DeniedCode); }
+            ActiveLeases++;
+            return new TestLease(() => { ActiveLeases--; Monitor.Exit(gate); });
+        }
+        internal void Set(bool value) { lock (gate) { allowed = value; revision++; } }
+        internal void RevokeAndRegrant() { lock (gate) { allowed = false; revision++; allowed = true; revision++; } }
+        internal void AssertReleased() => Assert(ActiveLeases == 0 && !Monitor.IsEntered(gate), "File permission lease leaked.");
+    }
+    private static FileCapabilityBroker PermissionBoundBroker(FilePermissionFixture permission) =>
+        new(permission.Permitted, commitLease: permission.Enter, permissionRevision: permission.Revision);
+
+    private static void HandleRegrant() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "picked.txt"); File.WriteAllText(file, "picked");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        var read = broker.RegisterPickedFile(file, scope).Value!;
+        var close = broker.RegisterPickedFile(file, scope).Value!;
+        permission.RevokeAndRegrant(); // No broker operation occurred while the decision was revoked.
+        Assert(broker.Read(read.Handle, scope with { AccountKey = "other" }).ErrorCode == "FILE_HANDLE_WRONG_OWNER", "Wrong owner could consume a stale read handle.");
+        Assert(broker.Close(close.Handle, scope with { InstanceId = new(Guid.NewGuid()) }).ErrorCode == "FILE_HANDLE_WRONG_OWNER", "Wrong instance could consume a stale close handle.");
+        Assert(broker.Read(read.Handle, scope).ErrorCode == "PERMISSION_REVOKED", "Regrant revived an old picker read handle.");
+        Assert(broker.Close(close.Handle, scope).ErrorCode == "PERMISSION_REVOKED", "Regrant revived an old picker close handle.");
+        Assert(broker.Read(read.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID" && broker.Close(close.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID", "Revoked generation remained registered.");
+        var fresh = broker.RegisterPickedFile(file, scope).Value!;
+        Assert(System.Text.Encoding.UTF8.GetString(broker.Read(fresh.Handle, scope).Value!) == "picked", "A fresh picker grant after reauthorization could not read.");
+        permission.AssertReleased();
+    });
+    private static void ExportRegrant() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "export.txt"); File.WriteAllText(file, "original");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        var old = broker.RegisterPickedSaveFile(file, scope).Value!;
+        permission.RevokeAndRegrant();
+        Assert(broker.Write(old.Handle, scope, "forbidden"u8.ToArray()).ErrorCode == "PERMISSION_REVOKED", "Regrant revived an old picker write handle.");
+        Assert(File.ReadAllText(file) == "original" && !Directory.EnumerateFiles(root.InstallationDirectory, "*.AutumnOS-backup-*").Any(), "Revoked export changed the selected original or created a backup.");
+        Assert(broker.Write(old.Handle, scope, [0]).ErrorCode == "FILE_HANDLE_INVALID", "Revoked export handle remained registered.");
+        var fresh = broker.RegisterPickedSaveFile(file, scope).Value!;
+        Assert(broker.Write(fresh.Handle, scope, "authorized"u8.ToArray()).Success && File.ReadAllText(file) == "authorized", "Fresh save picker after reauthorization failed.");
+        permission.AssertReleased();
+    });
+    private static void HandleReadRegrantBeforeDelivery() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "picked.bin"); File.WriteAllBytes(file, new byte[1024 * 1024]);
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        var capability = broker.RegisterPickedFile(file, scope).Value!;
+        permission.LeaseAttempts = 0; bool changed = false;
+        permission.BeforeLease = attempt => { if (attempt == 2) { permission.RevokeAndRegrant(); changed = true; } };
+        var result = broker.Read(capability.Handle, scope);
+        Assert(changed && !result.Success && result.Value is null && result.ErrorCode == "PERMISSION_REVOKED", "Completed file bytes crossed the permission generation change.");
+        Assert(broker.Read(capability.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID", "Read race retained the revoked handle.");
+        permission.AssertReleased();
+    });
+    private static void ExportRegrantAtCommit() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "export.txt"); File.WriteAllText(file, "original");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        var capability = broker.RegisterPickedSaveFile(file, scope).Value!;
+        permission.LeaseAttempts = 0; bool staged = false;
+        permission.BeforeLease = attempt =>
+        {
+            if (attempt != 2) return;
+            staged = Directory.EnumerateFiles(root.InstallationDirectory, ".AutumnOS-export-*.tmp").Any();
+            Assert(staged && File.ReadAllText(file) == "original", "Export race did not reach staging before its final commit lease.");
+            permission.RevokeAndRegrant();
+        };
+        var result = broker.Write(capability.Handle, scope, "forbidden"u8.ToArray());
+        Assert(staged && result.ErrorCode == "PERMISSION_REVOKED" && File.ReadAllText(file) == "original", "Final commit accepted a regranted old capability.");
+        Assert(!Directory.EnumerateFiles(root.InstallationDirectory, ".AutumnOS-export-*.tmp").Any() && !Directory.EnumerateFiles(root.InstallationDirectory, "*.AutumnOS-backup-*").Any(), "Rejected export left staging or a replacement backup.");
+        Assert(broker.Write(capability.Handle, scope, [0]).ErrorCode == "FILE_HANDLE_INVALID", "Commit race retained the revoked handle.");
+        permission.AssertReleased();
+    });
+    private static void HandleRegistrationRevision() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "picked.txt"); File.WriteAllText(file, "original");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        foreach (bool save in new[] { false, true })
+        {
+            permission.DecisionChecks = 0; bool changed = false;
+            permission.AfterDecision = check => { if (check == 2) { permission.RevokeAndRegrant(); changed = true; } };
+            var result = save ? broker.RegisterPickedSaveFile(file, scope) : broker.RegisterPickedFile(file, scope);
+            Assert(changed && result.ErrorCode == "PERMISSION_REVOKED" && result.Value is null, "Picker registered a capability across a permission generation change.");
+            using (var exclusive = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                Assert(exclusive.Length == "original".Length, "Failed registration changed or retained the selected file.");
+            permission.AssertReleased();
+        }
+        permission.AfterDecision = null;
+        var fresh = broker.RegisterPickedFile(file, scope).Value!;
+        Assert(broker.Read(fresh.Handle, scope).Success, "Stable decision/revision failed to register after a rejected picker.");
+        permission.AssertReleased();
+    });
+    private static void OpenPickerRegrant() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "picked.txt"); File.WriteAllText(file, "picked");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        long pickerRevision;
+        using (permission.Enter(scope)) pickerRevision = permission.Revision(scope);
+        permission.RevokeAndRegrant();
+        // The old picker must be rejected before attempting to pin even this exclusively held file.
+        using (var exclusive = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            for (int i = 0; i <= FileCapabilityBroker.MaximumHandles; i++)
+            {
+                var old = broker.RegisterPickedFile(file, scope, expectedPermissionRevision: pickerRevision);
+                Assert(old.ErrorCode == "PERMISSION_REVOKED" && old.Value is null, "An old open picker reached file access or registered a capability after regrant.");
+            }
+        using (permission.Enter(scope)) pickerRevision = permission.Revision(scope);
+        FileCapability? first = null;
+        for (int i = 0; i < FileCapabilityBroker.MaximumHandles; i++)
+        {
+            var fresh = broker.RegisterPickedFile(file, scope, expectedPermissionRevision: pickerRevision);
+            Assert(fresh.Success, "Rejected open pickers consumed handle capacity or blocked a fresh picker.");
+            first ??= fresh.Value;
+        }
+        Assert(System.Text.Encoding.UTF8.GetString(broker.Read(first!.Handle, scope).Value!) == "picked", "Fresh open picker did not read the selected bytes.");
+        Assert(broker.RegisterPickedFile(file, scope, expectedPermissionRevision: pickerRevision).ErrorCode == "FILE_HANDLE_LIMIT", "Fresh open picker capacity control did not execute.");
+        permission.AssertReleased();
+    });
+    private static void SavePickerRegrant() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "existing.txt"), destination = Path.Combine(root.InstallationDirectory, "new-export.txt");
+        File.WriteAllText(file, "original");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        long pickerRevision;
+        using (permission.Enter(scope)) pickerRevision = permission.Revision(scope);
+        permission.RevokeAndRegrant();
+        using (var exclusive = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            for (int i = 0; i <= FileCapabilityBroker.MaximumHandles; i++)
+            {
+                var old = broker.RegisterPickedSaveFile(file, scope, expectedPermissionRevision: pickerRevision);
+                Assert(old.ErrorCode == "PERMISSION_REVOKED" && old.Value is null, "An old save picker reached file access or registered a capability after regrant.");
+            }
+        Assert(broker.RegisterPickedSaveFile(destination, scope, expectedPermissionRevision: pickerRevision).ErrorCode == "PERMISSION_REVOKED" && !File.Exists(destination), "Old save picker created or registered a new target.");
+        using (permission.Enter(scope)) pickerRevision = permission.Revision(scope);
+        FileCapability? first = null;
+        for (int i = 0; i < FileCapabilityBroker.MaximumHandles; i++)
+        {
+            var fresh = broker.RegisterPickedSaveFile(destination, scope, expectedPermissionRevision: pickerRevision);
+            Assert(fresh.Success, "Rejected save pickers consumed handle capacity or blocked a fresh picker.");
+            first ??= fresh.Value;
+        }
+        Assert(!File.Exists(destination) && File.ReadAllText(file) == "original", "Picker registration changed a target before export.");
+        Assert(broker.RegisterPickedSaveFile(destination, scope, expectedPermissionRevision: pickerRevision).ErrorCode == "FILE_HANDLE_LIMIT", "Fresh save picker capacity control did not execute.");
+        Assert(broker.Write(first!.Handle, scope, "authorized"u8.ToArray()).Success && File.ReadAllText(destination) == "authorized", "Fresh save picker did not export authorized bytes.");
+        permission.AssertReleased();
+    });
+    private static void HandleCancellationAndOwner() => InTemp(root =>
+    {
+        string readFile = Path.Combine(root.InstallationDirectory, "read.txt"), saveFile = Path.Combine(root.InstallationDirectory, "save.txt");
+        File.WriteAllText(readFile, "read"); File.WriteAllText(saveFile, "original");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        var read = broker.RegisterPickedFile(readFile, scope).Value!; var save = broker.RegisterPickedSaveFile(saveFile, scope).Value!;
+        var other = scope with { AccountKey = "other" };
+        Assert(broker.Read(read.Handle, other).ErrorCode == "FILE_HANDLE_WRONG_OWNER" && broker.Write(save.Handle, other, [0]).ErrorCode == "FILE_HANDLE_WRONG_OWNER" && broker.Close(read.Handle, other).ErrorCode == "FILE_HANDLE_WRONG_OWNER", "Another owner consumed a valid permission-bound capability.");
+        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
+        Assert(broker.Read(read.Handle, scope, cancellation.Token).ErrorCode == "USER_CANCELLED" && broker.Write(save.Handle, scope, [0], cancellation.Token).ErrorCode == "USER_CANCELLED", "Cancellation was ignored.");
+        Assert(File.ReadAllText(saveFile) == "original" && !Directory.EnumerateFiles(root.InstallationDirectory, ".AutumnOS-export-*.tmp").Any(), "Cancellation changed the original or left staging.");
+        Assert(broker.Read(read.Handle, scope).Success && broker.Write(save.Handle, scope, "authorized"u8.ToArray()).Success && broker.Close(read.Handle, scope).Success, "Cancellation or wrong owner consumed the rightful owner's still-current grant.");
+        permission.AssertReleased();
+    });
+    private static void HandleLeaseFailure() => InTemp(root =>
+    {
+        string readFile = Path.Combine(root.InstallationDirectory, "read.txt"), saveFile = Path.Combine(root.InstallationDirectory, "save.txt");
+        File.WriteAllText(readFile, "read"); File.WriteAllText(saveFile, "original");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        var read = broker.RegisterPickedFile(readFile, scope).Value!; var close = broker.RegisterPickedFile(readFile, scope).Value!;
+        var save = broker.RegisterPickedSaveFile(saveFile, scope).Value!;
+        permission.Set(false);
+        Assert(broker.Read(read.Handle, scope).ErrorCode == "PERMISSION_REVOKED" && broker.Write(save.Handle, scope, [0]).ErrorCode == "PERMISSION_REVOKED" && broker.Close(close.Handle, scope).ErrorCode == "PERMISSION_REVOKED", "Permission lease failure escaped or authorized a file operation.");
+        Assert(broker.RegisterPickedFile(readFile, scope).ErrorCode == "PERMISSION_REVOKED" && broker.RegisterPickedSaveFile(saveFile, scope).ErrorCode == "PERMISSION_REVOKED", "A rejected permission lease still registered a picker result.");
+        permission.Set(true);
+        Assert(broker.Read(read.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID" && broker.Write(save.Handle, scope, [0]).ErrorCode == "FILE_HANDLE_INVALID" && broker.Close(close.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID", "Lease failure left reusable capabilities.");
+        Assert(File.ReadAllText(saveFile) == "original", "Revoked export touched the selected file.");
+        permission.AssertReleased();
+    });
+    private static void AssertFilePinned(string file)
+    {
+        bool blocked = false;
+        try { using var exclusive = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None); }
+        catch (IOException) { blocked = true; }
+        Assert(blocked, "The registered capability did not hold the expected real file sharing lock.");
+    }
+    private static void AssertFileReleased(string file, string expected)
+    {
+        using var exclusive = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        using var reader = new StreamReader(exclusive);
+        Assert(reader.ReadToEnd() == expected, "Releasing an idle capability changed selected file contents.");
+    }
+    private static void PruneRevokedReleasesPins() => InTemp(root =>
+    {
+        foreach (string denial in new[] { "PERMISSION_REVOKED", "PERMISSION_DENIED" })
+        {
+            string readFile = Path.Combine(root.InstallationDirectory, denial + "-read.txt"), saveFile = Path.Combine(root.InstallationDirectory, denial + "-save.txt");
+            File.WriteAllText(readFile, "read"); File.WriteAllText(saveFile, "original");
+            StorageScope scope = Scope(); var permission = new FilePermissionFixture { DeniedCode = denial };
+            using var broker = PermissionBoundBroker(permission);
+            var read = broker.RegisterPickedFile(readFile, scope).Value!; var save = broker.RegisterPickedSaveFile(saveFile, scope).Value!;
+            AssertFilePinned(readFile); AssertFilePinned(saveFile);
+            permission.Set(false);
+            // No file read, write or close call consumes the revoked capability before pruning.
+            AssertFilePinned(readFile); AssertFilePinned(saveFile);
+            Assert(broker.PruneRevoked() == 2, "Idle revoked/denied capabilities were not pruned after their usage leases rejected them.");
+            AssertFileReleased(readFile, "read"); AssertFileReleased(saveFile, "original");
+            Assert(broker.Read(read.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID" && broker.Write(save.Handle, scope, [0]).ErrorCode == "FILE_HANDLE_INVALID", "Pruning left a revoked token registered.");
+            Assert(broker.PruneRevoked() == 0, "Repeated notification pruned an already removed capability.");
+            broker.Dispose(); Assert(broker.PruneRevoked() == 0, "Queued pruning was not safe after broker disposal.");
+            permission.AssertReleased();
+        }
+    });
+    private static void PruneDelayedRegrant() => InTemp(root =>
+    {
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        string oldRead = Path.Combine(root.InstallationDirectory, "old-read.txt"), oldSave = Path.Combine(root.InstallationDirectory, "old-save.txt");
+        string freshRead = Path.Combine(root.InstallationDirectory, "fresh-read.txt"), freshSave = Path.Combine(root.InstallationDirectory, "fresh-save.txt");
+        foreach (string file in new[] { oldRead, oldSave, freshRead, freshSave }) File.WriteAllText(file, "original");
+        var staleRead = broker.RegisterPickedFile(oldRead, scope).Value!; var staleSave = broker.RegisterPickedSaveFile(oldSave, scope).Value!;
+        permission.RevokeAndRegrant();
+        var currentRead = broker.RegisterPickedFile(freshRead, scope).Value!; var currentSave = broker.RegisterPickedSaveFile(freshSave, scope).Value!;
+        foreach (string file in new[] { oldRead, oldSave, freshRead, freshSave }) AssertFilePinned(file);
+        // This represents a queued old revocation notification arriving after both new pickers.
+        Assert(broker.PruneRevoked() == 2, "Delayed pruning did not distinguish the old and fresh permission generations.");
+        AssertFileReleased(oldRead, "original"); AssertFileReleased(oldSave, "original");
+        AssertFilePinned(freshRead); AssertFilePinned(freshSave);
+        Assert(broker.PruneRevoked() == 0, "A second delayed notification removed fresh capabilities.");
+        Assert(broker.Read(staleRead.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID" && broker.Write(staleSave.Handle, scope, [0]).ErrorCode == "FILE_HANDLE_INVALID", "An obsolete generation survived pruning.");
+        Assert(System.Text.Encoding.UTF8.GetString(broker.Read(currentRead.Handle, scope).Value!) == "original", "Fresh read was lost to an old revocation notification.");
+        Assert(broker.Write(currentSave.Handle, scope, "authorized"u8.ToArray()).Success, "Fresh export was lost to an old revocation notification.");
+        Assert(broker.Close(currentRead.Handle, scope).Success, "Fresh read could not be closed normally.");
+        AssertFileReleased(freshRead, "original"); AssertFileReleased(freshSave, "authorized");
+        permission.AssertReleased();
+    });
+    private static void PruneOtherOwners() => InTemp(root =>
+    {
+        string staleFile = Path.Combine(root.InstallationDirectory, "stale-owner.txt"), currentFile = Path.Combine(root.InstallationDirectory, "current-owner.txt");
+        File.WriteAllText(staleFile, "stale"); File.WriteAllText(currentFile, "current");
+        StorageScope stale = Scope("account-A"), current = Scope("account-B", app: "other.app", source: 999);
+        var permission = new FilePermissionFixture(); var currentScopes = new HashSet<StorageScope> { stale, current };
+        using var broker = new FileCapabilityBroker(scope => permission.Permitted(scope) && currentScopes.Contains(scope),
+            commitLease: permission.Enter, permissionRevision: permission.Revision);
+        var old = broker.RegisterPickedFile(staleFile, stale).Value!; var live = broker.RegisterPickedFile(currentFile, current).Value!;
+        AssertFilePinned(staleFile); AssertFilePinned(currentFile);
+        currentScopes.Remove(stale);
+        Assert(broker.PruneRevoked() == 1, "Pruning did not isolate the stale session/owner.");
+        AssertFileReleased(staleFile, "stale"); AssertFilePinned(currentFile);
+        Assert(broker.Read(old.Handle, stale).ErrorCode == "FILE_HANDLE_INVALID" && broker.Read(live.Handle, current).Success, "Pruning affected the wrong application/account/instance.");
+        Assert(broker.PruneRevoked() == 0 && broker.Close(live.Handle, current).Success, "Current owner's handle did not survive repeated pruning.");
+        AssertFileReleased(currentFile, "current"); permission.AssertReleased();
+    });
+    private static void PruneLeaseFailures() => InTemp(root =>
+    {
+        string file = Path.Combine(root.InstallationDirectory, "picked.txt"); File.WriteAllText(file, "original");
+        StorageScope scope = Scope(); var permission = new FilePermissionFixture(); using var broker = PermissionBoundBroker(permission);
+        var capability = broker.RegisterPickedFile(file, scope).Value!; AssertFilePinned(file);
+        permission.BeforeLease = _ => throw new RuntimeCapabilityException("CAPABILITY_UNAVAILABLE");
+        bool reported = false;
+        try { broker.PruneRevoked(); }
+        catch (RuntimeCapabilityException error) when (error.Code == "CAPABILITY_UNAVAILABLE") { reported = true; }
+        Assert(reported, "An unrelated provider failure was silently interpreted as revocation.");
+        AssertFilePinned(file);
+        permission.BeforeLease = null;
+        Assert(broker.PruneRevoked() == 0 && broker.Read(capability.Handle, scope).Success, "A transient provider failure removed a still-current capability.");
+        permission.BeforeLease = _ => throw new RuntimeCapabilityException("SESSION_EXPIRED");
+        Assert(broker.PruneRevoked() == 1, "Expired session lease left an idle file pinned.");
+        AssertFileReleased(file, "original");
+        Assert(broker.Read(capability.Handle, scope).ErrorCode == "FILE_HANDLE_INVALID", "Expired session token remained registered.");
+        permission.AssertReleased();
     });
     private static void HandleCapacity() => InTemp(root =>
     {

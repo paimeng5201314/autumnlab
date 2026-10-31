@@ -337,6 +337,7 @@ function Invoke-SmokePointer($Product, [string]$AutomationId, [ValidateSet('sing
     $downFlag = if ($Kind -eq 'right_click') { 0x0008 } else { 0x0002 }
     $upFlag = if ($Kind -eq 'right_click') { 0x0010 } else { 0x0004 }
     $pressed = $false
+    $pointerActionRecorded = $false
     try {
         if (-not (Test-SmokeForeground $Product)) { throw 'Product lost foreground before pointer input.' }
         if (-not [AutumnDesktopInteractionSmoke.NativeWindows]::SetCursorPos($x, $y)) { throw 'Cannot position pointer inside the owned window.' }
@@ -364,11 +365,13 @@ function Invoke-SmokePointer($Product, [string]$AutomationId, [ValidateSet('sing
             $null=[AutumnDesktopInteractionSmoke.NativeWindows]::GetWindowThreadProcessId($observedForeground,[ref]$observedForegroundOwner)
             return [ordered]@{phase=$Phase;elapsed_ms=$Timer.Elapsed.TotalMilliseconds;position_valid=$positionValid;x=$observed.X;y=$observed.Y;
                 hit_hwnd=$observedHit.ToInt64();hit_pid=$observedOwner;foreground_hwnd=$observedForeground.ToInt64();foreground_pid=$observedForegroundOwner;
-                hit_owned=($observedOwner -eq $Product.Process.Id);foreground_owned=($observedForegroundOwner -eq $Product.Process.Id)}
+                hit_owned=($observedOwner -eq $Product.Process.Id);foreground_owned=($observedForegroundOwner -eq $Product.Process.Id);
+                requested_position_stable=($positionValid -and [Math]::Abs($observed.X-$x) -le 2 -and [Math]::Abs($observed.Y-$y) -le 2)}
         }
         for ($click = 0; $click -lt $clickCount; $click++) {
             $actualPoint = [AutumnDesktopInteractionSmoke.NativeWindows+POINT]::new()
             if (-not [AutumnDesktopInteractionSmoke.NativeWindows]::GetCursorPos([ref]$actualPoint)) { throw 'Cannot verify the actual cursor before button down.' }
+            if ([Math]::Abs($actualPoint.X-$x) -gt 2 -or [Math]::Abs($actualPoint.Y-$y) -gt 2) { throw 'External pointer movement interrupted the gesture before button down.' }
             $liveTarget = Find-VisibleSmokeElement $Product.Element $AutomationId
             if (-not $liveTarget) { throw 'Pointer target disappeared before button down.' }
             $liveBounds = $liveTarget.Current.BoundingRectangle
@@ -394,11 +397,15 @@ function Invoke-SmokePointer($Product, [string]$AutomationId, [ValidateSet('sing
             # These are sampled OS coordinates around injected input, not a claim of delivered WM events.
             $holdTimer=[Diagnostics.Stopwatch]::StartNew()
             while($holdTimer.Elapsed.TotalMilliseconds -lt $heldMs){
-                $heldObservations.Add((& $observeHeldPointer 'held' $holdTimer))
+                $observation = & $observeHeldPointer 'held' $holdTimer
+                $heldObservations.Add($observation)
+                if (-not $observation.requested_position_stable) { throw 'External pointer movement interrupted the held gesture; no application assertion is valid.' }
                 $remainingHold=$heldMs-$holdTimer.Elapsed.TotalMilliseconds
                 if($remainingHold -gt 0){Start-Sleep -Milliseconds ([Math]::Min(10,[Math]::Max(1,[int][Math]::Ceiling($remainingHold))))}
             }
-            $heldObservations.Add((& $observeHeldPointer 'before_injected_up' $holdTimer))
+            $observation = & $observeHeldPointer 'before_injected_up' $holdTimer
+            $heldObservations.Add($observation)
+            if (-not $observation.requested_position_stable) { throw 'External pointer movement interrupted the gesture before button up.' }
             [AutumnDesktopInteractionSmoke.NativeWindows]::mouse_event($upFlag, 0, 0, 0, [UIntPtr]::Zero)
             $pressed = $false
             $clickEvidence.observed_held_ms=$holdTimer.Elapsed.TotalMilliseconds
@@ -411,8 +418,14 @@ function Invoke-SmokePointer($Product, [string]$AutomationId, [ValidateSet('sing
             system_double_click_ms=$doubleClickMs; observed_down_interval_ms=$secondDownMs; x=$x; y=$y;
             process_id=$Product.Process.Id; target_window=$targetWindow.ToInt64(); actual_clicks=$actualClicks;
             gap_after_icon=[bool]$GapAfterIcon; gap_hit_tests=$gapHitEvidence })
+        $pointerActionRecorded = $true
     } finally {
         if ($pressed) { [AutumnDesktopInteractionSmoke.NativeWindows]::mouse_event($upFlag, 0, 0, 0, [UIntPtr]::Zero) }
+        if (-not $pointerActionRecorded -and $actualClicks -and $actualClicks.Count) {
+            $inputActions.Add([ordered]@{ kind=$Kind; automation_id=$AutomationId; status='interrupted';
+                x=$x; y=$y; process_id=$Product.Process.Id; actual_clicks=$actualClicks;
+                application_result='not_verified'; gap_after_icon=[bool]$GapAfterIcon })
+        }
     }
 }
 

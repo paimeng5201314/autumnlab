@@ -3,7 +3,7 @@
   const C = window.ChemLeapChemistry, M = window.ChemLeapModel, R = window.ChemLeapRenderer;
   const $ = id => document.getElementById(id), host = !!window.chrome?.webview?.postMessage;
   const storageKey = "cn.labchronicles.chemleap.save.v1", abort = new AbortController();
-  let state = M.create(0x4348454d), started = false, manualPaused = false, hostPaused = false, graphicsPaused = false, closed = false;
+  let state = M.create(0x4348454d), started = false, manualPaused = false, hostPaused = host, graphicsPaused = false, closed = false;
   let charging = false, chargeStarted = 0, charge = 0, jump = null, jumpElapsed = 0, raf = 0, lastFrame = 0;
   let saveBusy = false, boardKey = "", labelKey = "", result = null, toastUntil = 0;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -41,6 +41,7 @@
       button.disabled = !canPlay(); button.classList.toggle("selected", index === state.selected); button.setAttribute("aria-pressed", String(index === state.selected));
     }
     $("intro").hidden = started; $("game-over").hidden = state.phase !== "over"; $("pause-overlay").hidden = !paused() || !started || state.phase === "over";
+    for (const id of ["start-button", "restart-button", "again-button"]) $(id).disabled = closed || hostPaused || saveBusy;
     $("jump-button").disabled = !canPlay(); $("hint-button").disabled = !canPlay();
     $("pause-button").textContent = manualPaused ? "继续" : "暂停";
     $("pause-button").disabled = !started || state.phase === "over" || closed;
@@ -105,12 +106,12 @@
   function beginCharge() { if (!canPlay() || charging) return; charging = true; chargeStarted = performance.now(); message("松开后跳往高亮的平台。蓄力条会来回移动。"); ensureFrame(); }
   function releaseCharge() { if (!charging) return; const power = charge, index = state.selected; cancelCharge(); leap(index, power); }
   function freshGame() {
-    if (saveBusy || closed) return;
+    if (saveBusy || closed || hostPaused) return;
     const seed = crypto.getRandomValues(new Uint32Array(1))[0]; state = M.restart ? M.restart(state, seed) : M.create(seed);
     jump = null; jumpElapsed = 0; result = null; started = true; manualPaused = false; cancelCharge();
     message("新的旅程从 H₂ 开始。选择一种可以反应的物质。"); $("last-reaction").textContent = "新的旅程，新的发现。"; updateJournal(); updateControls(); ensureFrame(); drawOnce();
   }
-  $("start-button").addEventListener("click", () => { started = true; message("你现在是 H₂。点击一种能与氢气反应的物质，或按住空格蓄力。"); updateControls(); ensureFrame(); });
+  $("start-button").addEventListener("click", () => { if (closed || hostPaused) return; started = true; message("你现在是 H₂。点击一种能与氢气反应的物质，或按住空格蓄力。"); updateControls(); ensureFrame(); });
   $("again-button").addEventListener("click", freshGame); $("restart-button").addEventListener("click", freshGame);
   $("jump-button").addEventListener("pointerdown", event => { if (event.button !== 0 || !canPlay()) return; event.preventDefault(); $("jump-button").setPointerCapture(event.pointerId); beginCharge(); });
   $("jump-button").addEventListener("pointerup", releaseCharge); $("jump-button").addEventListener("pointercancel", cancelCharge);
@@ -153,6 +154,7 @@
     try {
       if (host) await permission();
       if (closed) return;
+      if (hostPaused) { $("save-status").textContent = "应用已进入后台；返回后请重新操作存档。"; return; }
       if (load) {
         const record = host ? await request("saves.read", { slot: "game" }) : { exists: localStorage.getItem(storageKey) !== null, value: localStorage.getItem(storageKey) };
         if (!record.exists) { $("save-status").textContent = "还没有保存过进度。"; return; }
@@ -170,17 +172,24 @@
   }
   $("save-button").addEventListener("click", () => saveOrLoad(false)); $("load-button").addEventListener("click", () => saveOrLoad(true));
   $("host-status").textContent = host ? "AutumnOS 内部运行 · 离线" : "浏览器试玩 · 本地存档";
+  function finish() {
+    if (closed) return;
+    closed = true; hostPaused = true; cancelCharge(); abort.abort();
+    if (raf) cancelAnimationFrame(raf); raf = 0; updateControls(); renderer.dispose();
+  }
   if (host && window.autumn) {
     let epoch = 0;
     function lifecycle(value) {
+      if (closed || !["starting", "foreground", "background", "suspended", "closing", "closed", "crashed"].includes(value)) return;
       epoch++; hostPaused = value !== "foreground";
-      if (["closed", "crashed", "closing"].includes(value)) { closed = true; abort.abort(); if (raf) cancelAnimationFrame(raf); renderer.dispose(); return; }
+      if (["closed", "crashed", "closing"].includes(value)) { finish(); return; }
       syncPause();
     }
     window.autumn.onLifecycle(lifecycle);
+    window.autumn.onEvent("lifecycle.changed", value => lifecycle(value.state));
     const before = epoch; request("lifecycle.getState", {}).then(value => { if (before === epoch) lifecycle(value.state); }).catch(() => { $("host-status").textContent = "AutumnOS 生命周期连接暂不可用"; });
   }
   window.addEventListener("resize", () => { renderer.resize(); drawOnce(); });
-  window.addEventListener("pagehide", () => { closed = true; abort.abort(); if (raf) cancelAnimationFrame(raf); renderer.dispose(); });
+  window.addEventListener("pagehide", finish);
   updateControls(); updateJournal(); drawOnce(); ensureFrame();
 })();

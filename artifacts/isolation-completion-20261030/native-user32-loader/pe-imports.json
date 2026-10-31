@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "status": "passed_static_pe_only",
+  "inspection_attempt": 2,
+  "first_inspection": "incomplete_PowerShell_unsigned_literal_conversion_no_child_executed",
+  "image": "native/AutumnOS.NativeUser32Loader.exe",
+  "sha256": "559ed509f9f73aefae8f96824009c24d357112b10cd5927d9ab0e1670530609f",
+  "bytes": 12800,
+  "machine": "AMD64",
+  "optional_header": "PE32+",
+  "subsystem": 2,
+  "entry_point_rva": 4096,
+  "dll_characteristics": 33120,
+  "imports": [
+    {
+      "dll": "KERNEL32.dll",
+      "functions": [
+        "ExitProcess",
+        "GetCurrentProcessId",
+        "GetCurrentThreadId",
+        "GetEnvironmentVariableW",
+        "GetLastError",
+        "GetModuleHandleW",
+        "GetProcAddress",
+        "GetStdHandle",
+        "LoadLibraryExW",
+        "SetLastError",
+        "WriteFile"
+      ]
+    }
+  ],
+  "delay_import_rva": 0,
+  "exact_import_functions_verified": true,
+  "child_execution": "not_run"
+}

@@ -296,6 +296,6 @@ public sealed partial class MainWindow
         aboutOpen = true;
         var app = installedSample;
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = app.Manifest.Name, Content = $"版本 {app.Manifest.Version}\n{app.Manifest.AppId}\n\n已安装 · 内部应用\n权限：自己的游客存档\n状态：{(appHost?.Session.Instance.BlocksMaintenance == true ? "运行中" : "未运行")}", CloseButtonText = "关闭" };
-        try { await dialog.ShowAsync(); } finally { aboutOpen = false; }
+        try { await ShowOwnedDialogAsync(dialog); } finally { aboutOpen = false; }
     }
 }

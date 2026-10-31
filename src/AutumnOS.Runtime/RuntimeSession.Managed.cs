@@ -13,7 +13,11 @@ public sealed partial class RuntimeSession
     private bool servicesDetached;
     private readonly AsyncLocal<string?> activeDataPermission = new();
     private long eventRevision;
+    private readonly Dictionary<string, long> permissionEventRevisions = new(StringComparer.Ordinal);
+    /// <summary>Compatibility notification only. Native delivery uses SdkEventReady and its frozen revision.</summary>
     public event Action<string, object>? SdkEvent;
+    /// <summary>Queue this exact envelope, then call DeliverEvent with its captured revision before native delivery.</summary>
+    public event Action<RuntimeSdkEvent>? SdkEventReady;
     public long EventRevision => Interlocked.Read(ref eventRevision)
         + (services is null ? 0 : services.Permissions.GetRevision(services.Account, services.Application));
 
@@ -33,13 +37,15 @@ public sealed partial class RuntimeSession
         {
             string? required = name switch { "identity.changed" => "identity.profile", "links.opened" => "links", "shortcuts.invoked" => "shortcuts", _ => null };
             if (required is not null) permission = runtime.Permissions.EnterUsageLease(runtime.Account, runtime.Application, required);
-            // Permission-change events contain a decision, not private data. Still serialize that decision
-            // with grant mutations, using one declared permission to enter this service's decision gate.
-            else if (name == "permissions.changed")
+            // Non-private events still recheck the binding revision under stateGate. Enter the
+            // decision gate first: preview services may lock when reading that revision, and a
+            // concurrent permission notification takes permission -> state in the same order.
+            else
             {
                 string? declaredPermission = runtime.Application.DeclaredPermissions.FirstOrDefault();
-                if (declaredPermission is null) return false;
-                permission = runtime.Permissions.EnterDecisionLease(runtime.Account, runtime.Application, declaredPermission);
+                if (declaredPermission is not null)
+                    permission = runtime.Permissions.EnterDecisionLease(runtime.Account, runtime.Application, declaredPermission);
+                else if (name == "permissions.changed") return false;
             }
             lock (stateGate)
             {
@@ -184,10 +190,13 @@ public sealed partial class RuntimeSession
     }
 
     /// <summary>Storage uses this synchronous lease around its final epoch check and atomic replace.</summary>
-    public IDisposable EnterCommitLease()
+    public IDisposable EnterCommitLease() => EnterCommitLease(null);
+
+    /// <summary>Background capability cleanup must name its permission explicitly; no request AsyncLocal is assumed.</summary>
+    public IDisposable EnterCommitLease(string? requiredPermission)
     {
         IDisposable? permissionLease = null;
-        if (services is not null && activeDataPermission.Value is { } permission)
+        if (services is not null && (requiredPermission ?? activeDataPermission.Value) is { } permission)
             permissionLease = services.Permissions.EnterUsageLease(services.Account, services.Application, permission);
         Monitor.Enter(stateGate);
         try
@@ -364,8 +373,34 @@ public sealed partial class RuntimeSession
     {
         var runtime = services;
         if (runtime is null || runtime.Account.AccountKey != change.AccountKey || runtime.Application.BindingKey != change.BindingKey) return;
+        long revision;
+        try
+        {
+            // Changed callbacks run after the decision lock is released and may arrive out of order.
+            // Bind the notification to a current decision snapshot, never an obsolete callback value.
+            using (runtime.Permissions.EnterDecisionLease(runtime.Account, runtime.Application, change.Permission))
+            {
+                if (runtime.Permissions.Query(runtime.Account, runtime.Application, change.Permission) != change.Decision) return;
+                revision = EventRevision;
+            }
+            // The event remains bound to that frozen snapshot. No permission lease is held
+            // while entering the Runtime gate; later changes are rejected by Emit/DeliverEvent.
+            lock (stateGate)
+            {
+                if (!IsActive || servicesDetached) return;
+                runtime.Account.EnsureCurrent();
+                // PermissionChange has no commit revision. Coalesce callbacks describing the same
+                // current snapshot, including a delayed Grant after a completed revoke/regrant.
+                if (permissionEventRevisions.TryGetValue(change.Permission, out long previous) && previous >= revision) return;
+                permissionEventRevisions[change.Permission] = revision;
+            }
+        }
+        catch (RuntimeCapabilityException) { return; }
+        catch (ObjectDisposedException) { return; }
+        // Desktop operations acquire their own lock and may inspect permissions. Do not invoke
+        // them, or arbitrary subscribers, while holding the decision lease.
         runtime.Desktop?.PermissionChanged(Instance.Id.Value, change);
-        EmitSdkEvent("permissions.changed", new { name = change.Permission, state = change.Decision.ToString().ToLowerInvariant() });
+        EmitSdkEvent("permissions.changed", new { name = change.Permission, state = change.Decision.ToString().ToLowerInvariant() }, revision);
     }
     private void DesktopEvent(Guid instanceId, string name, object value)
     { if (Instance.Id.Value == instanceId) EmitSdkEvent(name, value); }
@@ -385,13 +420,27 @@ public sealed partial class RuntimeSession
             catch (RuntimeCapabilityException) { }
         }
     }
-    private void EmitSdkEvent(string name, object value)
+    private void EmitSdkEvent(string name, object value, long? capturedRevision = null)
     {
+        RuntimeSdkEvent notification;
+        Action<string, object>? compatibility;
+        Action<RuntimeSdkEvent>? ready;
+        // Preview permission services may lock while reading their revision. Read it before
+        // stateGate; a concurrent later mutation only makes this captured event undeliverable.
+        long revision = EventRevision;
         lock (stateGate)
         {
             if (!IsActive || servicesDetached || services is null || services.Account.Invalidated.IsCancellationRequested || !services.Account.IsCurrent()) return;
-            SdkEvent?.Invoke(name, value);
+            if (capturedRevision is { } captured && captured != revision) return;
+            notification = new(name, value, capturedRevision ?? revision);
+            compatibility = SdkEvent;
+            ready = SdkEventReady;
         }
+        // Subscribers can reenter, revoke or close. Never refresh the envelope's revision after
+        // callbacks, and never hold the Runtime lock while a subscriber takes a permission lease.
+        // Closing can race with this notification; DeliverEvent remains the final native gate.
+        compatibility?.Invoke(name, value);
+        ready?.Invoke(notification);
     }
     private void DetachServices()
     {
@@ -409,6 +458,7 @@ public sealed partial class RuntimeSession
         {
             accountRegistration.Unregister();
             SdkEvent = null;
+            SdkEventReady = null;
         }
     }
     private static string PermissionParameter(JsonElement parameters)

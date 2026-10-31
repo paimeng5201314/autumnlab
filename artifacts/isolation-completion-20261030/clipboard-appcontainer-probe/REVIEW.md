@@ -1,0 +1,15 @@
+# 新剪贴板试验的待审影响
+
+制作人：派蒙。这里只准备代码和编译，未启动EXE、GUI、UAC、profile、ACL或剪贴板操作。本说明不构成执行授权。
+
+一次未来试验将由经过单独审阅、固定摘要的broker/holder，只创建 `AutumnOS_ClipboardProbe_<runNonce>` 新非交互窗口站。新profile名固定 `AutumnOS.Paimon.ClipboardProbe.<runNonce>`，由普通控制器按显式许可创建/精确删除；本子程序不注册profile、不更改既有对象/目录ACL、不放宽全局策略。窗口站向精确package SID只给0x23，desktop只给0x87，不给剪贴板、hook/journal/switch或修改ACL权。helper实现及OS回读由其独立代码和父审计器证明。
+
+browser/collector的 `lpDesktop` 在CreateProcess前固定。任何进程仍在WinSta0、名字不符或站可见都会在GUI/clipboard前拒绝。完整station/desktop句柄不得通过继承或管道交给AppContainer；显式继承列表只包含所需管道及只授予 `SYNCHRONIZE` 的原holder进程句柄。子程序立即清除该句柄继承标记，并在每次动作前对同一原内核对象检查仍活；不能重按PID打开，也没有查询helper进程/token的权限。精确PID/creation/peer身份由父程序原始句柄核对，子程序输出明确不提供独立身份查询证明，不能只信可编辑lease报告。
+
+只在自有非交互窗口站写一次随机合成baseline，之后全部观测均只读，直到本case真实浏览器退出后final。不会访问、清空、备份、恢复WinSta0用户clipboard。没有真实账号/存档/用户文件；不会发送native baseline原值给浏览器，不联网、不执行第三方代码、不注册协议或改浏览器安全设置。显示和激活仅在该private desktop，不触碰实际桌面输入，不调用SwitchDesktop/SendInput。
+
+实时paste监听持续到控制器释放，10次DOM采样只是附加观测。每个事件的真实text/trusted/顺序立即转成限长hash事实并累计，不能因页面后来清空而丢弃泄漏。关闭前再显式读取同一可信文档中的全部历史快照，补齐native队列中的真实事实并核对终态摘要；读取失败/超时/冲突不能把未观察的末尾当作空。父程序按B任意非空或不可信事件永久失败，并重新计算全部事实摘要；这不增加clipboard API或新输入动作，只加强既有实际事件的完整留证。
+
+先A/B兼容gate，无collector/clipboard；只在两项精确生命周期与身份通过后做六项。失败立即停止后续case，正常关闭自有浏览器及collector，保留报告和所有未退出原始句柄。超时不强杀、不提前删除profile/desktop，不复用已经消耗的一次性UAC授权。清理不足时父端必须明确pending并保留新对象，而不是把退出/删除预填通过。
+
+这轮即便六case全过，也只证明固定引擎与明确新station/AppContainer组合的真实clipboard机制，不是生产内部呈现、完整输入/中文IME、跨进程SDK、账号隔离或所有未来浏览器API通过。产品门禁只有生产实现及最终字节矩阵通过后才能按真实边界结果替换。

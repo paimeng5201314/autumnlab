@@ -109,6 +109,148 @@ internal static class DeveloperSimulationTests
             using JsonDocument discarded = JsonDocument.Parse(session.RevalidateResponse("saves.read", revision, response));
             Assert(discarded.RootElement.GetProperty("error").GetProperty("code").GetString() == "PERMISSION_REVOKED", "Real revoke/regrant revived old preview data response."); session.Close();
         }));
+        yield return ("T06 developer simulation: permission revisions include local inherited and forced denial changes independently", () => Fixture((_, original, app) =>
+        {
+            RuntimeAccountContext live = new("guest", 1, true, () => true, CancellationToken.None);
+            using DeveloperPreviewPermissions permissions = new(original);
+            long previous = permissions.GetRevision(live, app, "saves");
+            foreach (PermissionDecision decision in new[] { PermissionDecision.Granted, PermissionDecision.Revoked, PermissionDecision.Granted })
+            {
+                permissions.SetDecision(live, app, "saves", decision);
+                long current = permissions.GetRevision(live, app, "saves");
+                Assert(current > previous && permissions.Query(live, app, "saves") == decision, "Local preview revoke/regrant did not advance the matching revision.");
+                if (decision == PermissionDecision.Granted)
+                {
+                    using var lease = permissions.EnterUsageLease(live, app, "saves");
+                    Assert(original.Query(live, app, "saves") == PermissionDecision.Prompt, "Local usage lease required or persisted an original grant.");
+                }
+                previous = current;
+            }
+            long binding = permissions.GetRevision(live, app);
+            permissions.SetDecision(live, app, "identity.profile", PermissionDecision.Granted);
+            original.SetDecision(live, app, "identity.profile", PermissionDecision.Granted);
+            Assert(permissions.GetRevision(live, app, "saves") == previous && permissions.GetRevision(live, app) > binding,
+                "Unrelated local/original permission changed saves revision or stopped binding revision.");
+            foreach (PermissionDecision decision in new[] { PermissionDecision.Granted, PermissionDecision.Revoked, PermissionDecision.Granted })
+            {
+                original.SetDecision(live, app, "saves", decision);
+                long current = permissions.GetRevision(live, app, "saves");
+                Assert(current > previous && permissions.Query(live, app, "saves") == decision, "Inherited revoke/regrant did not advance the matching revision.");
+                previous = current;
+            }
+            long profile = permissions.GetRevision(live, app, "identity.profile");
+            permissions.SetDenied(true, live, app);
+            Assert(permissions.GetRevision(live, app, "saves") > previous && permissions.GetRevision(live, app, "identity.profile") > profile,
+                "Forced denial failed to invalidate each permission.");
+            previous = permissions.GetRevision(live, app, "saves");
+            permissions.SetDenied(false, live, app);
+            Assert(permissions.GetRevision(live, app, "saves") > previous && permissions.Query(live, app, "saves") == PermissionDecision.Granted,
+                "Restore revived a pre-denial revision.");
+        }));
+        yield return ("T06 developer simulation: unrelated local and original grants preserve pending approval", () => Fixture((_, original, app) =>
+        {
+            RuntimeAccountContext live = new("guest", 1, true, () => true, CancellationToken.None);
+            using DeveloperPreviewPermissions permissions = new(original);
+            TaskCompletionSource<bool> answer = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<PermissionDecision> pending = permissions.RequestAsync(live, app, "saves", true, (_, _) => answer.Task, CancellationToken.None);
+            permissions.SetDecision(live, app, "identity.profile", PermissionDecision.Granted);
+            original.SetDecision(live, app, "identity.profile", PermissionDecision.Revoked);
+            answer.SetResult(true);
+            Assert(pending.GetAwaiter().GetResult() == PermissionDecision.Granted && permissions.Query(live, app, "saves") == PermissionDecision.Granted,
+                "Unrelated permission cancelled a preview approval.");
+        }));
+        yield return ("T06 developer simulation: original revoke regrant rejects pending preview approval", () => Fixture((_, original, app) =>
+        {
+            RuntimeAccountContext live = new("guest", 1, true, () => true, CancellationToken.None);
+            using DeveloperPreviewPermissions permissions = new(original);
+            TaskCompletionSource<bool> answer = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<PermissionDecision> pending = permissions.RequestAsync(live, app, "saves", true, (_, _) => answer.Task, CancellationToken.None);
+            original.SetDecision(live, app, "saves", PermissionDecision.Revoked);
+            original.SetDecision(live, app, "saves", PermissionDecision.Granted);
+            answer.SetResult(true);
+            Reject(() => pending.GetAwaiter().GetResult(), "PERMISSION_REVOKED");
+            Assert(permissions.List(live).Count == 0, "Stale preview approval persisted a local decision.");
+        }));
+        foreach (bool usage in new[] { true, false })
+        {
+            bool useUsageLease = usage;
+            yield return ($"T06 developer simulation: {(usage ? "usage" : "decision")} lease holds original revocation through final commit", () => Fixture((root, original, app) =>
+                VerifyOriginalRevocationLease(root, original, app, useUsageLease)));
+        }
+        yield return ("T06 developer simulation: synthetic identity revisions and leases never access original grants", () => Fixture((_, _, app) =>
+        {
+            using DeveloperPreviewSimulation simulation = new(); simulation.SwitchAccount("account-a");
+            RuntimeAccountContext account = simulation.BindAccount(CancellationToken.None);
+            using DeveloperPreviewPermissions permissions = new(new ForbiddenOriginalPermissions());
+            Assert(permissions.Query(account, app, "saves") == PermissionDecision.Prompt && permissions.GetRevision(account, app, "saves") == 0,
+                "Synthetic identity inherited a decision.");
+            Assert(permissions.RequestAsync(account, app, "saves", true, (_, _) => Task.FromResult(true), CancellationToken.None).GetAwaiter().GetResult() == PermissionDecision.Granted,
+                "Synthetic preview could not grant locally.");
+            long before = permissions.GetRevision(account, app, "saves");
+            permissions.SetDecision(account, app, "saves", PermissionDecision.Revoked);
+            Assert(permissions.GetRevision(account, app, "saves") > before, "Synthetic revoke did not advance revision.");
+            before = permissions.GetRevision(account, app, "saves");
+            permissions.SetDecision(account, app, "saves", PermissionDecision.Granted);
+            Assert(permissions.GetRevision(account, app, "saves") > before && permissions.GetRevision(account, app) >= permissions.GetRevision(account, app, "saves"),
+                "Synthetic regrant or binding revision failed.");
+            using (permissions.EnterUsageLease(account, app, "saves")) permissions.Demand(account, app, "saves");
+            using (permissions.EnterDecisionLease(account, app, "saves")) Assert(permissions.GetRevision(account, app, "saves") > before, "Synthetic decision lease failed.");
+        }));
+    }
+    private static void VerifyOriginalRevocationLease(InstallationRoot root, PermissionService original, RuntimeApplication app, bool usage)
+    {
+        RuntimeAccountContext live = new("guest", 1, true, () => true, CancellationToken.None);
+        original.SetDecision(live, app, "saves", PermissionDecision.Granted);
+        string path = Path.Combine(root.Directories["Config"], "application-permissions.v1.json");
+        byte[] before = File.ReadAllBytes(path);
+        long revision = original.GetRevision(live, app, "saves");
+        using ManualResetEventSlim started = new(), committed = new();
+        // Observe commit before the preview event callback can block on its own gate.
+        original.Changed += change => { if (change.Permission == "saves" && change.Decision == PermissionDecision.Revoked) committed.Set(); };
+        using DeveloperPreviewPermissions permissions = new(original);
+        Exception? workerFailure = null;
+        Thread revoke = new(() =>
+        {
+            started.Set();
+            try { original.SetDecision(live, app, "saves", PermissionDecision.Revoked); }
+            catch (Exception error) { workerFailure = error; }
+        }) { IsBackground = true };
+        IDisposable lease = usage ? permissions.EnterUsageLease(live, app, "saves") : permissions.EnterDecisionLease(live, app, "saves");
+        try
+        {
+            revoke.Start();
+            Assert(started.Wait(TimeSpan.FromSeconds(5)), "Revocation worker did not execute.");
+            Assert(SpinWait.SpinUntil(() => (revoke.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0 || !revoke.IsAlive,
+                TimeSpan.FromSeconds(5)), "Revocation worker did not reach the contended lease.");
+            Assert(revoke.IsAlive && !committed.IsSet, "Original revocation committed while the preview lease was held.");
+            Assert(original.Query(live, app, "saves") == PermissionDecision.Granted && original.GetRevision(live, app, "saves") == revision
+                && File.ReadAllBytes(path).SequenceEqual(before), "Original decision changed on disk or in memory before final commit released its lease.");
+        }
+        finally
+        {
+            lease.Dispose();
+            Assert(revoke.Join(TimeSpan.FromSeconds(5)), "Original revocation did not finish after releasing the lease.");
+        }
+        if (workerFailure is not null) throw new InvalidOperationException("Revocation worker failed.", workerFailure);
+        Assert(committed.IsSet && original.Query(live, app, "saves") == PermissionDecision.Revoked && original.GetRevision(live, app, "saves") > revision,
+            "Positive control failed: original revocation was not committed after lease release.");
+        Reject(() => { using var rejected = permissions.EnterUsageLease(live, app, "saves"); }, "PERMISSION_REVOKED");
+        using (permissions.EnterDecisionLease(live, app, "saves")) Assert(permissions.Query(live, app, "saves") == PermissionDecision.Revoked, "Decision lease rejected or revived revoked state.");
+    }
+    private sealed class ForbiddenOriginalPermissions : IPermissionService
+    {
+        public event Action<PermissionChange>? Changed { add { } remove { } }
+        private static Exception Unexpected() => new InvalidOperationException("Synthetic identity accessed original permissions.");
+        public PermissionDecision Query(RuntimeAccountContext account, RuntimeApplication app, string permission) => throw Unexpected();
+        public IReadOnlyList<PermissionRecord> List(RuntimeAccountContext account) => throw Unexpected();
+        public void Demand(RuntimeAccountContext account, RuntimeApplication app, string permission) => throw Unexpected();
+        public long GetRevision(RuntimeAccountContext account, RuntimeApplication app) => throw Unexpected();
+        public long GetRevision(RuntimeAccountContext account, RuntimeApplication app, string permission) => throw Unexpected();
+        public IDisposable EnterUsageLease(RuntimeAccountContext account, RuntimeApplication app, string permission) => throw Unexpected();
+        public IDisposable EnterDecisionLease(RuntimeAccountContext account, RuntimeApplication app, string permission) => throw Unexpected();
+        public Task<PermissionDecision> RequestAsync(RuntimeAccountContext account, RuntimeApplication app, string permission, bool userGesture,
+            Func<RuntimePermissionPrompt, CancellationToken, Task<bool>> prompt, CancellationToken cancellationToken) => throw Unexpected();
+        public void SetDecision(RuntimeAccountContext account, RuntimeApplication app, string permission, PermissionDecision decision) => throw Unexpected();
     }
     private static RuntimeSession Session(InstallationRoot root, RuntimeApplication app, DeveloperPreviewSimulation simulation,
         DeveloperPreviewPermissions permissions, RuntimeAccountContext account) => new(app.Identity.AppId, app.DeclaredPermissions, root.Directories["Saves"],

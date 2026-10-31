@@ -64,6 +64,7 @@ public sealed partial class MainWindow
 
     private async Task InitializeIdentityAsync()
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (identityInitialized) return;
         identityInitialized = true;
         if (configuration?.Options is not { } options) { accountResult.Text = "AUTH_NOT_CONFIGURED · 公开配置不可用，仍可使用游客功能。"; RefreshAccountUi(); return; }
@@ -160,7 +161,7 @@ public sealed partial class MainWindow
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = operationTitle ?? "保存并关闭游戏后更改账号", Content = operationDescription ?? "账号变化需要关闭当前游戏和它的浏览器数据空间。请先在游戏内保存。选择取消可返回原实例继续游戏；已提交的存档不会删除。", PrimaryButtonText = "我已保存，关闭游戏", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         try
         {
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary || appHost != running || running?.Session.Instance.Id != captured ||
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary || appHost != running || running?.Session.Instance.Id != captured ||
                 developerPreviewHost != preview || preview?.Session.Instance.Id != capturedPreview ||
                 managed.Length != managedApplications.Count || managed.Any(pair => !managedApplications.TryGetValue(pair.Key, out var current) || !ReferenceEquals(pair.Value, current))) return false;
             running?.Dispose(); appHost = null; CloseDeveloperPreview(); CloseManagedApplications(); UpdateRuntimeStatus("无游戏会话");

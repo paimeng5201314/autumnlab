@@ -25,7 +25,7 @@ public sealed partial class MainWindow
             dialog.PrimaryButtonText = mode == UpdateSelectionMode.Rollback ? "确认回滚" : "确认更新";
             dialog.CloseButtonText = mode == UpdateSelectionMode.Rollback ? "暂不回滚" : "暂不更新";
             activeUpdateDialog = dialog;
-            confirmed = await dialog.ShowAsync() == ContentDialogResult.Primary && !lifetime.IsCancellationRequested;
+            confirmed = await ShowOwnedDialogAsync(dialog) == ContentDialogResult.Primary && !lifetime.IsCancellationRequested;
             if (!confirmed) updates.DismissCandidate(candidate);
         }
         catch (Exception error) when (error is not OutOfMemoryException)
@@ -109,7 +109,7 @@ public sealed partial class MainWindow
             long? selectedId = selected?.ReleaseId;
             try
             {
-                var page = await updates.LoadHistoryAsync(mode, reset, historyCancellation.Token);
+                var page = await TrackOwnedNetworkAsync(updates.LoadHistoryAsync(mode, reset, historyCancellation.Token));
                 if (closed || historyCancellation.IsCancellationRequested) return;
                 choices.Items.Clear();
                 foreach (bool preview in new[] { false, true })
@@ -160,7 +160,7 @@ public sealed partial class MainWindow
         Task initialLoad = LoadChoicesAsync(true);
         try
         {
-            var result = await dialog.ShowAsync();
+            var result = await ShowOwnedDialogAsync(dialog);
             if (result == ContentDialogResult.Primary && !lifetime.IsCancellationRequested && selected?.CanInstall == true)
             {
                 accepted = selected.Candidate;
@@ -195,7 +195,7 @@ public sealed partial class MainWindow
             dialog.PrimaryButtonText = "重启并安装";
             dialog.CloseButtonText = "稍后重启";
             activeUpdateDialog = dialog;
-            restart = await dialog.ShowAsync() == ContentDialogResult.Primary && !lifetime.IsCancellationRequested;
+            restart = await ShowOwnedDialogAsync(dialog) == ContentDialogResult.Primary && !lifetime.IsCancellationRequested;
         }
         catch (Exception error) when (error is not OutOfMemoryException) { updateWait.Text = SafeUpdateError(error); }
         finally { activeUpdateDialog = null; updateDialogOpen = false; RenderUpdateState(); }

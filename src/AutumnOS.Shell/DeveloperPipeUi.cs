@@ -67,6 +67,7 @@ public sealed partial class MainWindow
     private async Task<DeveloperPreviewResponse> HandleDeveloperRequestAsync(DeveloperPreviewRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (shutdownRequested || lifetime.IsCancellationRequested) return new(false, "SESSION_EXPIRED");
         if (!DeveloperModeEnabled) return new(false, "DEVELOPER_MODE_DISABLED");
         if (aboutOpen && !developerBusy && !accountOperation && (request.Command is "status" or "close") &&
             activePreviewPermissionInstance is { } pendingInstance &&

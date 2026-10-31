@@ -279,7 +279,7 @@ public sealed partial class MainWindow
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = title, Content = explanation,
             PrimaryButtonText = action, CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         using var registration = lifetime.Token.Register(() => DispatcherQueue.TryEnqueue(() => dialog.Hide()));
-        try { return await dialog.ShowAsync() == ContentDialogResult.Primary && !lifetime.IsCancellationRequested; }
+        try { return await ShowOwnedDialogAsync(dialog) == ContentDialogResult.Primary && !lifetime.IsCancellationRequested; }
         finally { aboutOpen = false; }
     }
 

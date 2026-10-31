@@ -116,7 +116,7 @@ namespace AutumnOS.SingleFile
 
         private static void Extract(string executable, string system, string product, List<Item> inventory, PreparationWindow progress)
         {
-            string stage = Path.Combine(system, ".prepare-" + Guid.NewGuid().ToString("N"));
+            string stage = Path.Combine(system, PreparationDirectoryName());
             EnsureDirectory(stage);
             // Failed/cancelled staging is retained under Data; never delete unknown files or saves.
             using (var input = new FileStream(executable, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -169,6 +169,15 @@ namespace AutumnOS.SingleFile
                 Plain(stage); Plain(product);
                 Directory.Move(stage, product);
             }
+        }
+
+        private static string PreparationDirectoryName()
+        {
+            // The temporary leaf must not be longer than Product-<20 hex>.
+            // Keep all 128 random bits while avoiding the 13-character staging
+            // expansion that made an otherwise supported portable path fail.
+            return ".p-" + Convert.ToBase64String(Guid.NewGuid().ToByteArray())
+                .TrimEnd('=').Replace('+', '-').Replace('/', '_');
         }
 
         private static void CopyResource(Stream source, Stream destination, PreparationWindow progress)

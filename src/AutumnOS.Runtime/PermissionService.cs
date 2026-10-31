@@ -76,6 +76,15 @@ public sealed class PermissionService : IPermissionService
     public long GetRevision(RuntimeAccountContext account, RuntimeApplication app) =>
         bindingRevisions.GetValueOrDefault(Key(account.AccountKey, app.BindingKey, ""));
 
+    public long GetRevision(RuntimeAccountContext account, RuntimeApplication app, string permission)
+    {
+        lock (gate)
+        {
+            ValidateRequest(account, app, permission);
+            return revisions.GetValueOrDefault(Key(account.AccountKey, app.BindingKey, permission));
+        }
+    }
+
     /// <summary>Serializes the final write commit with host revocation; never hold this across an await.</summary>
     public IDisposable EnterUsageLease(RuntimeAccountContext account, RuntimeApplication app, string permission)
     {

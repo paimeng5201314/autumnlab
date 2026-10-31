@@ -6,7 +6,8 @@ namespace AutumnOS.Storage;
 public sealed record MaintenanceSnapshot(bool IsPreparing, bool IsMaintenance, int ActiveWrites, int ActiveGames,
     IReadOnlyList<string> WaitingReasons)
 {
-    public bool IsIdle => !IsPreparing && !IsMaintenance && ActiveWrites == 0 && ActiveGames == 0;
+    public bool IsShuttingDown { get; init; }
+    public bool IsIdle => !IsShuttingDown && !IsPreparing && !IsMaintenance && ActiveWrites == 0 && ActiveGames == 0;
 }
 
 /// <summary>
@@ -21,10 +22,27 @@ public sealed class CriticalOperationCoordinator
     private TaskCompletionSource changed = NewSignal();
     private bool preparing;
     private bool maintenance;
+    private bool shuttingDown;
     public int ActiveWrites { get { lock (sync) return writes.Count; } }
     public int ActiveGames { get { lock (sync) return games.Count; } }
     public bool IsMaintenance { get { lock (sync) return maintenance; } }
     public bool IsPreparing { get { lock (sync) return preparing; } }
+    public bool IsShuttingDown { get { lock (sync) return shuttingDown; } }
+
+    /// <summary>
+    /// Permanently stop new work for this client instance. Already admitted work keeps
+    /// its leases and must finish normally before the window and process may exit.
+    /// Wakes a pending maintenance preparation without granting it exclusive access.
+    /// </summary>
+    public void BeginShutdownAdmission()
+    {
+        lock (sync)
+        {
+            if (shuttingDown) return;
+            shuttingDown = true;
+            Signal();
+        }
+    }
 
     public IDisposable EnterWrite(string reason = "数据写入")
     {
@@ -61,11 +79,12 @@ public sealed class CriticalOperationCoordinator
     {
         string[] operations;
         GameOperation[] running;
-        bool isPreparing, isMaintenance;
+        bool isPreparing, isMaintenance, isShuttingDown;
         lock (sync)
         {
             operations = writes.Values.ToArray(); running = games.Values.ToArray();
             isPreparing = preparing; isMaintenance = maintenance;
+            isShuttingDown = shuttingDown;
         }
         var reasons = operations.Select(reason => "正在完成：" + reason).ToList();
         foreach (GameOperation game in running)
@@ -89,7 +108,8 @@ public sealed class CriticalOperationCoordinator
         }
         if (isMaintenance) reasons.Add("系统维护已取得排他资格");
         else if (isPreparing) reasons.Add("正在准备维护，暂不接受新的游戏或关键操作");
-        return new(isPreparing, isMaintenance, operations.Length, running.Length, reasons.AsReadOnly());
+        if (isShuttingDown) reasons.Add("正在退出，等待已开始的操作和游戏资源释放");
+        return new(isPreparing, isMaintenance, operations.Length, running.Length, reasons.AsReadOnly()) { IsShuttingDown = isShuttingDown };
     }
 
     /// <summary>Immediate atomic attempt; games still releasing resources also prevent entry.</summary>
@@ -97,7 +117,7 @@ public sealed class CriticalOperationCoordinator
     {
         lock (sync)
         {
-            if (writes.Count != 0 || games.Count != 0 || preparing || maintenance) return null;
+            if (shuttingDown || writes.Count != 0 || games.Count != 0 || preparing || maintenance) return null;
             return AcquireMaintenance();
         }
     }
@@ -114,6 +134,7 @@ public sealed class CriticalOperationCoordinator
         lock (sync)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (shuttingDown) throw new DataStoreException("CLIENT_SHUTTING_DOWN");
             if (maintenance || preparing) throw new DataStoreException("MAINTENANCE_IN_PROGRESS");
             if (games.Count != 0) throw new DataStoreException("MAINTENANCE_GAME_ACTIVE");
             preparing = true;
@@ -128,6 +149,7 @@ public sealed class CriticalOperationCoordinator
                 lock (sync)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+                    if (shuttingDown) throw new DataStoreException("CLIENT_SHUTTING_DOWN");
                     if (writes.Count == 0 && games.Count == 0)
                     {
                         IDisposable lease = AcquireMaintenance();
@@ -156,6 +178,7 @@ public sealed class CriticalOperationCoordinator
     }
     private void RequireAdmission()
     {
+        if (shuttingDown) throw new DataStoreException("CLIENT_SHUTTING_DOWN");
         if (preparing || maintenance) throw new DataStoreException("MAINTENANCE_IN_PROGRESS");
     }
     private static void ValidateLabel(string label)

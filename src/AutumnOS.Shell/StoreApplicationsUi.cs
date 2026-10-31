@@ -80,7 +80,7 @@ public sealed partial class MainWindow
         try
         {
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "卸载 " + app.Package.Manifest.Name + "？", Content = "移除应用的安装注册和桌面入口，保留所有账号与游客的存档。旧安装资源作为恢复缓存保留，不会立即释放全部磁盘空间。运行中的应用须先保存并结束。", PrimaryButtonText = "卸载并保留数据", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary) return;
             await Task.Run(() => applicationInstaller.Uninstall(app.AppId), lifetime.Token);
             storeStatus.Text = "已卸载，存档保留。";
         }
@@ -139,7 +139,7 @@ public sealed partial class MainWindow
             bool downgrade = old is not null && ApplicationInstallService.CompareVersions(package.Manifest.Version, old.Package.Manifest.Version) < 0;
             aboutOpen = true;
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "安装本地应用？", Content = $"{package.Manifest.Name} · {package.Manifest.Version}\n来源：用户选择的本地 .autumn\n权限：{string.Join("、", package.Manifest.Permissions.Select(PermissionTitle))}\n\n安装不等于授权；已存在的不同来源不能被接管。" + (downgrade ? "\n降级前将检查真实存档并备份，不兼容时阻止。" : ""), PrimaryButtonText = downgrade ? "确认检查并降级" : "确认安装", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary) return;
             var m = package.Manifest;
             var expected = new ExpectedPackageIdentity(new("local"), m.AppId, m.Version, m.Runtime, m.Entry, m.Permissions, package.Sha256, new FileInfo(path).Length, m.SaveFormatVersion);
             await Task.Run(() => applicationInstaller.Install(path, expected, downgrade ? InstallIntent.Downgrade : InstallIntent.InstallOrUpdate, true, downgrade, lifetime.Token), lifetime.Token);
@@ -162,12 +162,13 @@ public sealed partial class MainWindow
     }
     private async Task OpenInstalledApplicationAsync(string appId)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (appId == "cn.labchronicles.elementpairs") { OnSample(StorePanel, new RoutedEventArgs()); return; }
         if (launching || accountOperation || aboutOpen || permissionService is null || CurrentIdentity.State == IdentitySessionState.SigningIn || applicationInstaller?.Find(appId) is not { } installed) return;
         if (!HasSupportedApplicationSource(installed))
         {
             aboutOpen = true;
-            try { await new ContentDialog { XamlRoot = Root.XamlRoot, Title = "此应用暂时不能运行", Content = "此来源当前不可运行。本地集成测试应用需要开启对应测试源；商店分类不授予额外权限。", CloseButtonText = "知道了" }.ShowAsync(); }
+            try { await ShowOwnedDialogAsync(new ContentDialog { XamlRoot = Root.XamlRoot, Title = "此应用暂时不能运行", Content = "此来源当前不可运行。本地集成测试应用需要开启对应测试源；商店分类不授予额外权限。", CloseButtonText = "知道了" }); }
             finally { aboutOpen = false; }
             return;
         }
@@ -209,7 +210,7 @@ public sealed partial class MainWindow
         try
         {
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "结束 " + captured.Name + "？", Content = "请先在游戏中保存进度。未保存的输入会丢失，已保存的内容保留。", PrimaryButtonText = "确认结束", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary || !managedApplications.TryGetValue(id, out var current) || !ReferenceEquals(current, captured)) return;
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary || !managedApplications.TryGetValue(id, out var current) || !ReferenceEquals(current, captured)) return;
             captured.Host.Dispose(); managedApplications.TryRemove(id, out _); managedContent.Children.Remove(captured.Content); ShowPage(DesktopPanel); UpdateManagedBadges();
         }
         finally { aboutOpen = false; }

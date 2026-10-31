@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework><OutputType>WinExe</OutputType><UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>AutumnOS.SessionBrowserPrototype</AssemblyName><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion><RuntimeIdentifier>win-x64</RuntimeIdentifier><SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile><PublishTrimmed>false</PublishTrimmed><TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs"/><Compile Include="SessionParent.cs"/><Compile Include="StationHost.cs"/><Compile Include="NetOnlyLaunch.cs"/>
+    <Compile Include="SessionNative.cs"/><Compile Include="OwnedStation.cs"/><Compile Include="SessionJobWitness.cs"/><Compile Include="BrowserChildProcess.cs"/>
+    <Compile Include="ManifestInputs.cs"/><Compile Include="BrowserHost.cs"/><Compile Include="BrowserNativeScope.cs"/>
+    <Compile Include="NativeImeControl.cs"/>
+    <EmbeddedResource Include="OwnedPage.js"/>
+    <Compile Include="../session-browser-protocol/SessionProtocol.cs" Link="Shared/SessionProtocol.cs"/>
+    <Compile Include="../session-browser-protocol/NativeCompositionTransaction.cs" Link="Shared/NativeCompositionTransaction.cs"/>
+    <Compile Include="../session-browser-protocol/CompositionEffectGate.cs" Link="Shared/CompositionEffectGate.cs"/>
+    <Compile Include="../session-browser-protocol/NativeEndTrustComparison.cs" Link="Shared/NativeEndTrustComparison.cs"/>
+    <Compile Include="../session-browser-protocol/NativeKeyDispatchGate.cs" Link="Shared/NativeKeyDispatchGate.cs"/>
+    <Compile Include="../session-browser-protocol/NativeKeyDispatchGateSelfTests.cs" Link="Shared/NativeKeyDispatchGateSelfTests.cs"/>
+    <Compile Include="../session-browser-protocol/SessionProtocolSelfTests.cs" Link="Shared/SessionProtocolSelfTests.cs"/>
+    <Compile Include="../session-browser-protocol/OwnedReportFile.cs" Link="Shared/OwnedReportFile.cs"/>
+    <Compile Include="../session-browser-protocol/OwnedReportFileSelfTests.cs" Link="Shared/OwnedReportFileSelfTests.cs"/>
+    <Compile Include="../appcontainer-browser-parent/Native.cs" Link="Shared/Native.cs"/>
+    <Compile Include="../appcontainer-browser-parent/OwnedFiles.cs" Link="Shared/OwnedFiles.cs"/>
+    <Compile Include="../appcontainer-browser-parent/ProcessAudit.cs" Link="Shared/ProcessAudit.cs"/>
+    <Compile Include="../clipboard-appcontainer-controller/JobEvidence.cs" Link="Shared/JobEvidence.cs"/>
+    <Compile Include="../clipboard-appcontainer-controller/DesktopFreshness.cs" Link="Shared/DesktopFreshness.cs"/>
+    <Compile Include="../clipboard-appcontainer-controller/CleanupJournal.cs" Link="Shared/CleanupJournal.cs"/>
+    <Compile Include="../clipboard-appcontainer-probe/FrozenPolicy.cs" Link="Shared/FrozenPolicy.cs"/>
+    <PackageReference Include="Microsoft.Web.WebView2"/>
+  </ItemGroup>
+  <Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences"><ItemGroup>
+    <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'"/>
+  </ItemGroup></Target>
+</Project>

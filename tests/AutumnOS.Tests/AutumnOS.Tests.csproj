@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/AutumnOS.Shell/RuntimeViewBackendEvents.cs" Link="Runtime/RuntimeViewBackendEvents.cs" />
     <Compile Include="../../tools/AutumnOS.Update.Cli/ProductionUpdateSigner.cs" Link="Update/ProductionUpdateSigner.cs" />
     <Compile Include="../../src/AutumnOS.SingleFile/StartupFailure.cs" Link="Startup/StartupFailure.cs" />
     <Compile Include="../../src/AutumnOS.SingleFile/BundleFooter.cs" Link="Startup/BundleFooter.cs" />

@@ -1,0 +1,7 @@
+<Project><PropertyGroup>
+  <TargetFramework>net10.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+  <LangVersion>14.0</LangVersion><Deterministic>true</Deterministic><PlatformTarget>x64</PlatformTarget>
+  <RuntimeIdentifier>win-x64</RuntimeIdentifier><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  <TreatWarningsAsErrors>true</TreatWarningsAsErrors><Authors>派蒙</Authors><Version>0.1.0</Version>
+  <Product>AutumnOS synthetic private-station AppContainer clipboard probe</Product>
+</PropertyGroup><ItemGroup><AssemblyMetadata Include="AcceptanceStatus" Value="clipboard-mechanism-only-not-product-admission" /></ItemGroup></Project>

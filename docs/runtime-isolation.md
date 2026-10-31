@@ -2,7 +2,29 @@
 
 制作人：派蒙。适用源码：`0.5.2` 本地隔离开发候选；策略：`autumn-local-web-v2`；SDK：`0.3.0`；消息协议：`1`。本文描述实现；本轮真实逐项结果见 `artifacts/isolation-20261018/`，不以历史结果代替当前产物验收。剪贴板完整边界未通过，尚不能交付为第三方正式放行版本。
 
-2026-10-24 按派蒙最新要求先完成代码核验与测试包，后续原生实测交由派蒙。Build05的838项C#和其余七组自动检查已通过；其原生界面未运行。新的交接构建会重新关联源码与测试报告，步骤见[实测说明](isolation-manual-verification.md)。本次进一步将关闭操作调整为先撤销Session代次/证明，再取消宿主任务，并独立尝试每项资源释放；某项异常不跳过WebView关闭。失败时保留待清理状态与维护租约，重入不重复清理，审计异常不能中断撤销。此代码核验不替代真实挂起权限窗口关闭复验。
+2026-10-27验收后补记：Build11 Windows Release零警告/错误、C#982及其余8组检查通过，EXE和ZIP新解压副本各53项、前台/后台/原生选择器关窗31项通过，包含真实浏览器组清理和新游戏读档。独立真实WebView2 WebTransport32项A/B通过：相同InPrivate/参数/外链脚本，A完成临时证书SHA pin会话及两种回传，B实际执行且CSP拒绝、接收端0非健康UDP，两组前后健康和Normal原句柄退出均完成。具体范围、完整哈希和原始报告见 `artifacts/isolation-completion-20261027/REPORT.md`。这不是网络SDK broker、普通ChemLeap或完整隔离通过；AppContainer首轮203失败保留，另获授权的v3单LOCALAPPDATA对照证明零能力低完整性原生child可启动/创建自有命名对象并正常清理。没有浏览器或真实剪贴板操作，不能据此放行。
+
+2026-10-24 当前复验补充：Build07 的单文件和 ZIP 解压副本均实际53项通过，包含浏览器全组退出先于包/维护租约释放的原生记录以及重开游戏读取合成存档。独立当前策略网络诊断 `network-current-run-03`、受控身份浏览器存储/资源诊断 `resources-current-run-02` 34项、页面外链脚本执行的 document.open/write 诊断 `document-replacement-native-run-02` 已通过各自范围；它们不能替代产品 SDK、第三方剪贴板和 ChemLeap 运行。账号隔离使用明确测试身份，不是 Logto 双账号。document.open 复用同一Document/Global时，DOM变化不自动等于主体改变；本轮实际记录原生事件、策略保持和合成消息，不把合成消息当作真实SDK敏感响应。
+
+当前正在补正常退出的最后边界：主窗口收到正常关闭请求后先关闭新操作准入，撤销应用会话和任务，取消并等待本窗口拥有的原生选择器与确认窗口，等待浏览器、下载、更新和身份异步任务真实完成，最后才关闭窗口并释放单实例/更新协调。关闭准入不释放已有写入或游戏租约，不以超时、task canceled或隐藏窗口代替资源完成。相关实现和控制测试在新源码中；新构建/原生前台、后台和打开选择器时关闭的验收结果单列，不移用Build07“先结束游戏再关闭窗口”的成绩。
+
+每个新WebView2环境显式设置并读回 `IsCustomCrashReportingEnabled=true`，在创建环境前完成；不建立自定义上传器。这使当前实例保留本地崩溃资料，避免其是否发送给Microsoft取决于Windows崩溃报告同意设置；它不控制其它OS网络活动。旧未显式设置的实测，其OS是否上传保持unknown，不推测已上传或未上传。实现依据固定SDK的 [EnvironmentOptions3](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions3?view=webview2-1.0.4258.31)。这项隐私设置与网络/剪贴板边界分别验收。
+
+保存选择器自动化已发现并保留一个失败：现代FileNameControlHost的WM_SETTEXT回读与真实选择结果不一致，返回的是默认AutumnOS-export.json。本轮没有继续调用导出写入；该返回路径未证明处于测试目录，不能把这项记为受控文件访问通过，也不能把窗口文字回读当作完成文件选择。现代写入自动化已暂停，原生只打开/取消测试不选择文件。
+
+2026-10-27入口兼容性修复：单文件解包使用保留128bit随机度的25字符临时目录，避免最终Product目录路径可用、临时目录却因额外13字符超限而启动失败。原相对路径校验、逐级重解析点拒绝、内容hash及目录移动保持。真实Framework正反例验证旧stage的269字符路径失败、新stage253及最终256字符读回成功；不是无限长路径支持，也没有修改系统长路径设置。超出最终支持范围返回`STARTUP_PATH_TOO_LONG`，入口和AutumnOS_Data需一起移短目录，不能清除真实数据。原失败与实际修复证据在`artifacts/isolation-completion-20261027/long-path-review/`。
+
+2026-10-24 新一轮按 [隔离实施计划](isolation-completion-plan.md) 推进，实际新增结果见 `artifacts/isolation-completion-20261024/`。文件句柄现在绑定账号/来源/实例/epoch之外的单权限代次；撤销再授予不会恢复旧句柄，不相关权限变动不使句柄失效。原生选择器注册、读取返回与最终写入在权限和会话租约内校验；新选择器结果可以签发新代次句柄。权限通知只异步排队清理，真正执行时按当前代次检查并释放闲置失效句柄，迟到旧通知不会关闭重新选择的新句柄。后台清理显式获取对应files权限租约，不依赖SDK请求的AsyncLocal；关闭时解绑通知并释放全部句柄。清理检查异常会显示失败，逐次权限检查仍保留。权限事件在产生时冻结 revision，原生宿主排队后沿用这个值，并在真正 PostWebMessage 时复检；迟到的旧决定与当前状态不符时不发送。开发预览使用原授权时，最终租约也持有原权限服务锁，不只锁预览覆盖层。这些局部修复不代表浏览器剪贴板或完整隔离已经通过。
+
+先前代码交接阶段按派蒙要求先完成代码核验与测试包、原生实测交本人；随后派蒙要求继续完成隔离并审查游戏，本轮已继续运行普通权限、自有数据的独立机制诊断，不复用已消耗的一次性UAC授权。当前isolation-03构建的920项C#和其余8组自动检查通过；独立浏览器诊断不等于最终产品验收。关闭实现先撤销Session代次/证明，再取消宿主任务，并独立尝试每项资源释放；某项异常不跳过WebView关闭。失败时保留待清理状态与维护租约，重入不重复清理，审计异常不能中断撤销。此代码核验不替代真实挂起权限窗口关闭复验。
+
+## 浏览器退出与更新互斥
+
+2026-10-24 实测表明，关闭控件后浏览器仍可能运行约六秒。当前源码先撤销 Session、拒绝待完成的 bootstrap、取消任务及文件能力，再关闭本实例的控件；保持原浏览器进程句柄、环境退出订阅、包运行租约和维护租约。取得匹配的 `BrowserProcessExited`、原持有进程对象退出和环境进程集合为空的证据后，才记录资源 `closed` 并解除租约。`Session.State=Closed` 或会话的 `BlocksMaintenance=false` 本身不是资源释放证据。
+
+清理重试仅移除本实例的控件，并保留尚未移除的引用，不清空共用容器。控制器初始化失败而未取得 PID 时，也要求环境退出事件；无法确认的创建失败保持维护阻塞，不能超时后自动放行更新。产品不会强杀进程，也没有“等十秒就视为退出”的路径。诊断草案的十秒上限仅用于报告该次合作退出是否通过。
+
+最终单文件驱动要求同实例原生退出事件在资源释放日志之前，PID 与持有对象一致，两类租约已解除。此处是当前源码和验收规则；通过与否以匹配构建的真实报告为准。客户端进程退出后的浏览器全组清理另行验收，不能由运行中维护互斥替代。
 
 ## 原生策略与启动证明
 
@@ -21,9 +43,11 @@ Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval
 
 固定154引擎另使用辅助参数 `--disable-features=WebRtcHideLocalIpsWithMdns`，避免RTC初始化仍建立mDNS监听而请求Windows防火墙入站许可。它不构成网络边界，不单凭参数存在或没有弹窗形成启动证明，也不关闭Chromium沙箱。新路径真实A/B已证明：同样辅助参数下，无Connection-Allowlist的A不能形成证明，生产头B才能形成证明；该次无安全提示且未新增防火墙规则。正式宿主及全部接收端探针使用同一 `RuntimeIsolationPolicy.BrowserArguments`，仍需按最终字节复测。上游相关修复CL8485457于157源码树合入，尚无证据证明当前可下载的154/155固定包已回补，不能仅升级版本号冒充修复。
 
-每个实例先加载仅包含宿主生成 HTML 和外置脚本的挑战页，此时不提供应用资源，也不接受 SDK 消息。挑战使用新随机 nonce，绑定当前实例 ID 和精确 origin。脚本创建两个真实原生 `RTCPeerConnection`，只配置字面 loopback STUN 地址和 relay 策略，不提供 TURN，进行双 peer 协商。因此无策略的引擎在自检时也没有可用 relay 服务器。成功条件包括原生 ICE server 列表被过滤为空、ICE 状态 `failed`、零候选及 `restartIce` 后仍失败。实测 154 的聚合 `connectionState` 可保留 `new`，仅接受 `new` 或 `failed`，其他状态拒绝。
+当前源码采用加载策略 `autumn-parser-gate-v1`：每个实例只向真实应用入口导航一次，初始响应仅有宿主HTML、完整挑战脚本和暂停响应的同步gate脚本；此时不提供应用资源，原生WebMessage也关闭。ContentLoading与gate请求到达后读取完整挑战结果，不等待仍被gate阻塞的NavigationCompleted。挑战使用新随机nonce，绑定当前实例ID和精确origin；两个真实原生RTCPeerConnection、ICE协商与restartIce算法完全保留。仅使用字面loopback STUN和relay策略，不提供TURN，不向外部地址发起宿主自检。成功条件仍包括原生ICE服务器列表过滤为空、ICE failed、零候选、restart后仍failed；154聚合connectionState只接受new或failed。
 
-Shell 在调用 `ExecuteScriptAsync` 前后核对真实 `Core.Source`，直接读取自己的挑战结果。Runtime 严验原生返回的 JSON 包裹、8 KiB UTF-8 上限、协议、nonce、实例、origin、全部状态与精确字段集合；缺失、重复、未知字段、异常或超时都不形成证明。应用 `WebMessageReceived`、SDK 参数或自报身份不能提供证明。只有仍处于 Starting 的匹配实例接受验证器生成的证明，随后才提供包资源并导航到应用页面。
+Shell在ExecuteScriptAsync前后核对Core.Source，Runtime保留8KiB严格包裹/字段/nonce/实例/origin/状态校验。另检查仍在loading的可信文档/root闭包，并由原生导航ID、SourceChanged和ContentLoading负责文档失效；闭包不能单独证明document.open没有重置文档。只有仍处于Starting的匹配实例确认原完整proof后才提交gate、开放包资源和SDK。同一HTML parser以JSON编码的原HTML继续解析，不做第二次导航，不使用document.open、DOMParser或API重写。取消、崩溃与关闭必须先撤销会话，再拒绝并完成挂起gate，异常不跳过其余清理。
+
+该加载方式在独立固定154原型中7项真实比较通过；其完整HTML插入具有明确兼容限制：HTML5模式已固定，重复html/head/doctype服从浏览器合并/忽略规则，head属性实测不会保留。入口仅支持严格UTF-8、最大8MiB；依赖head属性、特殊文档模式或精确节点位置的应用需要另验，不能宣称任意HTML透明兼容。旧双文档及constructor-only失败报告保留，最终产品验收单独记账。
 
 `platform.getCapabilities().networkSandboxVerified` 是当前实例的动态布尔状态：新建或未验证时 `false`，完成本次原生自检后 `true`；关闭或崩溃立即撤销，即使后续原生资源关闭发生异常也不能保留证明。不能复用同 appId、其他实例或旧运行的证明。SDK 字段类型由旧 literal `false` 拓宽为 `boolean`；SDK 仍为 `0.3.0`、协议仍为 `1`。
 

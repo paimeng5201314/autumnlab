@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace AutumnOS.Runtime;
 
 /// <summary>Browser-enforced policy and host-only, instance-bound startup challenge.</summary>
-public static class RuntimeIsolationPolicy
+public static partial class RuntimeIsolationPolicy
 {
     public const string PolicyId = "autumn-local-web-v2";
     public const string RequiredBrowserVersion = "154.0.4258.53";

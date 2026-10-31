@@ -34,7 +34,7 @@ public sealed partial class MainWindow : Window
         InitializeFirstRunAccountUi();
         InitializeStoreUi();
         InitializeUpdateUi();
-        Closed += (_, _) => CloseUpdateServices();
+        InitializeGracefulShutdown();
         AboutProductName.Text = BrandInfo.ProductName;
         AboutProducer.Text = BrandInfo.ProducerCredit;
         AboutVersion.Text = BrandInfo.DisplayVersion;
@@ -59,12 +59,11 @@ public sealed partial class MainWindow : Window
         int height = Math.Min(880, Math.Max(320, work.Height - 48));
         AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(work.X + (work.Width - width) / 2,
             work.Y + (work.Height - height) / 2, width, height));
-        Closed += (_, _) => { HideRunningOperations(); clockTimer.Stop(); systemUiSettings.AnimationsEnabledChanged -= OnSystemAnimationsChanged; foreach (var timer in pressTimers) timer.Stop(); lifetime.Cancel(); firstRunAccount?.Dispose(); CloseStoreServices(); CloseDeveloperCapabilities(); appHost?.Dispose(); foreach (var broker in fileBrokers.Values) broker.Dispose(); fileBrokers.Clear(); identityService?.Dispose(); };
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (loaded) return;
+        if (loaded || shutdownRequested) return;
         loaded = true;
         Root.XamlRoot.Changed += (_, _) => SynchronizeAppearance();
         await LoadDesktopAsync();
@@ -72,6 +71,7 @@ public sealed partial class MainWindow : Window
 
     private async Task LoadDesktopAsync()
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         configuration = LogtoConfigurationLoader.Load(Path.Combine(AppContext.BaseDirectory, "config", "logto.public.json"));
         ConfigurationText.Text = configuration.SafeSummary;
         var registration = RegistrationStatusLoader.Load(Path.Combine(AppContext.BaseDirectory, "config", "registration.json"), configuration.Options?.ClientId);
@@ -309,7 +309,7 @@ public sealed partial class MainWindow : Window
         if (configuration?.Options is not { } options || !configuration.IsValid) return;
         DiscoveryButton.IsEnabled = false;
         DiscoveryText.Text = "正在通过 HTTPS 检测公开发现文档…";
-        try { var result = await LogtoDiscoveryProbe.ProbeAsync(options, lifetime.Token); DiscoveryText.Text = result.SafeSummary + "（此检测不证明登录或回调登记成功。）"; }
+        try { var result = await TrackOwnedNetworkAsync(LogtoDiscoveryProbe.ProbeAsync(options, lifetime.Token)); DiscoveryText.Text = result.SafeSummary + "（此检测不证明登录或回调登记成功。）"; }
         catch (OperationCanceledException) { DiscoveryText.Text = "检测已取消。"; }
         finally { if (!lifetime.IsCancellationRequested) DiscoveryButton.IsEnabled = true; }
     }
@@ -320,11 +320,12 @@ public sealed partial class MainWindow : Window
         aboutOpen = true;
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = BrandInfo.ProductName,
             Content = $"{BrandInfo.ProducerCredit}\n版本 {BrandInfo.DisplayVersion}\n构建 {BrandInfo.BuildId}\n\nC# / .NET 10 · WinUI 3\n本地开发版：桌面、个性化与元素配对。账户、商店、下载和更新仍在开发中。", CloseButtonText = "关闭" };
-        try { await dialog.ShowAsync(); } finally { aboutOpen = false; }
+        try { await ShowOwnedDialogAsync(dialog); } finally { aboutOpen = false; }
     }
 
     private async void OnSample(object sender, RoutedEventArgs e)
     {
+        if (shutdownRequested || lifetime.IsCancellationRequested) return;
         if (ConsumeHeldClick(sender) || launching || accountOperation || permissionService is null || identityService?.Snapshot.State == IdentitySessionState.SigningIn || installedSample is null) return;
         if (appHost is not null && appHost.Session.Instance.State is not (AppLifecycleState.Crashed or AppLifecycleState.Closed))
         { BackgroundManagedApps(); appHost.Foreground(); ShowPage(AppPanel); return; }
@@ -377,7 +378,7 @@ public sealed partial class MainWindow : Window
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "结束元素配对？", Content = "请先在游戏中保存进度。结束后，尚未保存的更改会丢失；已保存的进度会保留。", PrimaryButtonText = "确认结束", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
         try
         {
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary || !IsCurrentLiveHost(closingHost) || closingHost.Session.Instance.Id != closingInstance) return;
+            if (await ShowOwnedDialogAsync(dialog) != ContentDialogResult.Primary || !IsCurrentLiveHost(closingHost) || closingHost.Session.Instance.Id != closingInstance) return;
             closingHost.Dispose(); appHost = null; UpdateRuntimeStatus("无游戏会话"); ShowPage(DesktopPanel);
         }
         finally { aboutOpen = false; }
@@ -391,8 +392,7 @@ public sealed partial class MainWindow : Window
             if (token.IsCancellationRequested || aboutOpen || appHost?.Session.Instance.State != AppLifecycleState.Foreground) { completion.TrySetResult(false); return; }
             aboutOpen = true;
             var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "允许元素配对读写自己的存档？", Content = "本次游戏会话可以在游客空间保存和恢复进度，不会获得其他应用的文件或账户资料。结束游戏后需要重新授权。", PrimaryButtonText = "允许", CloseButtonText = "拒绝", DefaultButton = ContentDialogButton.Close };
-            using var registration = token.Register(() => DispatcherQueue.TryEnqueue(() => dialog.Hide()));
-            try { completion.TrySetResult(await dialog.ShowAsync() == ContentDialogResult.Primary && !token.IsCancellationRequested); }
+            try { completion.TrySetResult(await ShowOwnedDialogAsync(dialog, token) == ContentDialogResult.Primary && !token.IsCancellationRequested); }
             catch (Exception) { completion.TrySetResult(false); }
             finally { aboutOpen = false; }
         })) completion.TrySetResult(false);

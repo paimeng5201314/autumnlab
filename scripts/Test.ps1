@@ -52,10 +52,10 @@ try {
     [ordered]@{build_id=$buildId;source_snapshot_id=$snapshot;status=$(if($sampleExit -eq 0){'passed'}else{'failed'});exit_code=$sampleExit;kind='explicit_mock_dom_and_sdk_not_Windows_UI'} |
         ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'sample-tests.json') -Encoding utf8
     if ($sampleExit -ne 0) { throw 'T03 sample contract tests failed; see sample-tests.json.' }
-    & $node.Source --test (Join-Path $ProjectRoot 'tests/chemleap-model-tests.cjs') 2>&1 | Tee-Object -FilePath (Join-Path $attemptDirectory 'chemleap-model-tests.log') | Out-Host
+    & $node.Source --test (Join-Path $ProjectRoot 'tests/chemleap-model-tests.cjs') (Join-Path $ProjectRoot 'tests/chemleap-lifecycle-tests.cjs') 2>&1 | Tee-Object -FilePath (Join-Path $attemptDirectory 'chemleap-model-tests.log') | Out-Host
     $chemleapExit = $LASTEXITCODE
     [ordered]@{build_id=$buildId;source_snapshot_id=$snapshot;status=$(if($chemleapExit -eq 0){'passed'}else{'failed'});exit_code=$chemleapExit;
-        kind='real_game_model_reaction_balance_platform_generation_and_save_tests';report=(Join-Path $attemptDirectory 'chemleap-model-tests.log')} |
+        kind='real_game_model_and_controller_lifecycle_with_memory_DOM_renderer_SDK_fixtures_not_native_UI';report=(Join-Path $attemptDirectory 'chemleap-model-tests.log')} |
         ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'chemleap-model-tests.json') -Encoding utf8
     if ($chemleapExit -ne 0) { throw 'ChemLeap model tests failed; see chemleap-model-tests.json.' }
     $nativeSample = Join-Path $ProjectRoot 'samples/native-identity-client/bin/x64/Release/net10.0/win-x64/AutumnOS.NativeIdentity.Sample.dll'

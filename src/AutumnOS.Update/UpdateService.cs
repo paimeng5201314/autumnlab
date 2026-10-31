@@ -5,7 +5,7 @@ using AutumnOS.Store;
 namespace AutumnOS.Update;
 
 /// <summary>Public main-program updates. Discovery never grants download or restart consent.</summary>
-public sealed class UpdateService : IDisposable
+public sealed class UpdateService : IDisposable, IAsyncDisposable
 {
     public const string Repository = "paimeng5201314/autumnlab";
     public const string UpdaterVersion = "1.1.0";
@@ -23,6 +23,9 @@ public sealed class UpdateService : IDisposable
     private UpdateSnapshot snapshot;
     private IDisposable? ownedTransport, ownedDownloads;
     private Task? checkTask, startupTask;
+    private readonly HashSet<Task> activeOperations = [];
+    private Task? shutdownTask;
+    private bool closing;
     private UpdateConsent? consent;
     private UpdateCandidate? consentCandidate;
     private UpdateRollbackAuthorization? rollbackAuthorization;
@@ -57,11 +60,12 @@ public sealed class UpdateService : IDisposable
         RestoreStaged(); ReconcileCommittedPolicy();
     }
     public void ImportLegacyPreviewPreference(bool enabled)
-    { lock (gate) { if (policyExists) return; } SetPreviewEnabled(enabled); }
+    { lock (gate) { ThrowIfClosing(); if (policyExists) return; } SetPreviewEnabled(enabled); }
     public void SetPreviewEnabled(bool enabled)
     {
         lock (gate)
         {
+            ThrowIfClosing();
             if (policyExists && persistent.Preview == enabled) return;
             bool blockPending = !enabled && (consentCandidate?.Manifest.Channel == "meta" || snapshot.Staged?.Candidate.Manifest.Channel == "meta" ||
                 persistent.PendingManifestSha256 is not null && snapshot.Candidate?.Manifest.Channel == "meta");
@@ -77,13 +81,14 @@ public sealed class UpdateService : IDisposable
         Notify();
     }
     public void RestoreFollowingChannel()
-    { lock (gate) { SaveState(persistent with { PinnedVersion = null }); snapshot = snapshot with { PinnedVersion = null, ShouldPrompt = ShouldPrompt(snapshot.Candidate) }; } Notify(); }
+    { lock (gate) { ThrowIfClosing(); SaveState(persistent with { PinnedVersion = null }); snapshot = snapshot with { PinnedVersion = null, ShouldPrompt = ShouldPrompt(snapshot.Candidate) }; } Notify(); }
     public void DismissCandidate(UpdateCandidate candidate)
-    { lock (gate) { dismissed.Add(Identity(candidate).ManifestSha256); snapshot = snapshot with { ShouldPrompt = ShouldPrompt(snapshot.Candidate) }; } Notify(); }
+    { lock (gate) { ThrowIfClosing(); dismissed.Add(Identity(candidate).ManifestSha256); snapshot = snapshot with { ShouldPrompt = ShouldPrompt(snapshot.Candidate) }; } Notify(); }
     public void CancelConsent()
     {
         lock (gate)
         {
+            ThrowIfClosing();
             SaveState(persistent with { PendingManifestSha256 = null }); consent = null; consentCandidate = null; rollbackAuthorization = null; generation++;
             snapshot = snapshot with { Staged = null, State = snapshot.Candidate is null ? UpdateState.Idle : UpdateState.Available, ErrorCode = null };
             try { DeletePending(); } catch (Exception ex) when (Handled(ex)) { snapshot = snapshot with { ErrorCode = "UPDATE_CANCELLED_PENDING_CLEANUP" }; }
@@ -91,14 +96,16 @@ public sealed class UpdateService : IDisposable
         Notify();
     }
     public Task CheckOnStartupAsync(CancellationToken cancellationToken = default)
-    { lock (gate) return (startupTask ??= CheckAsync(persistent.Preview)).WaitAsync(cancellationToken); }
+    { lock (gate) { ThrowIfClosing(); return (startupTask ??= CheckAsync(persistent.Preview)).WaitAsync(cancellationToken); } }
     public Task CheckAsync(bool previewEnabled, CancellationToken cancellationToken = default)
     {
         SetPreviewEnabled(previewEnabled);
         lock (gate)
         {
+            ThrowIfClosing();
             // Each caller can abandon waiting without cancelling another caller's shared network operation.
-            if (checkTask is null || checkTask.IsCompleted) { var token = lifetime.Token; checkTask = Task.Run(() => CheckLoopAsync(token)); }
+            if (checkTask is null || checkTask.IsCompleted)
+                checkTask = RunOperation(token => Task.Run(() => CheckLoopAsync(token)), CancellationToken.None);
             return checkTask.WaitAsync(cancellationToken);
         }
     }
@@ -174,7 +181,9 @@ public sealed class UpdateService : IDisposable
         catch (Exception ex) when (Handled(ex)) { Publish(staged is null ? UpdateState.Error : UpdateState.Staged, Error(ex)); }
         finally { operation.Release(); }
     }
-    public async Task<UpdateHistoryPage> LoadHistoryAsync(UpdateSelectionMode mode, bool reset = false, CancellationToken cancellationToken = default)
+    public Task<UpdateHistoryPage> LoadHistoryAsync(UpdateSelectionMode mode, bool reset = false, CancellationToken cancellationToken = default)
+        => RunOperation(token => LoadHistoryCoreAsync(mode, reset, token), cancellationToken);
+    private async Task<UpdateHistoryPage> LoadHistoryCoreAsync(UpdateSelectionMode mode, bool reset, CancellationToken cancellationToken)
     {
         await operation.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -242,6 +251,7 @@ public sealed class UpdateService : IDisposable
     {
         lock (gate)
         {
+            ThrowIfClosing();
             if (snapshot.State is UpdateState.Downloading or UpdateState.Verifying || consent is not null) throw new UpdateException("UPDATE_OPERATION_IN_PROGRESS");
             CheckCandidate(candidate, mode, discovery: true);
             rollbackAuthorization = mode == UpdateSelectionMode.Rollback ? UpdateRollbackAuthorization.Create(candidate, currentBuildId, snapshot.CurrentVersion, clock()) : null;
@@ -250,7 +260,9 @@ public sealed class UpdateService : IDisposable
         }
         Notify();
     }
-    public async Task DownloadAndStageAsync(CancellationToken cancellationToken = default)
+    public Task DownloadAndStageAsync(CancellationToken cancellationToken = default)
+        => RunOperation(DownloadAndStageCoreAsync, cancellationToken);
+    private async Task DownloadAndStageCoreAsync(CancellationToken cancellationToken)
     {
         // Acquire and mark in one critical section so a duplicate cannot revoke an active download.
         lock (gate)
@@ -317,14 +329,17 @@ public sealed class UpdateService : IDisposable
         catch (Exception ex) when (Handled(ex)) { if (downloadId is not null) downloads.Pause(downloadId); ClearFailedConsent(); Publish(UpdateState.Error, Error(ex)); }
         finally { lock (gate) { downloadActive = false; operation.Release(); } }
     }
-    public async Task<StagedUpdate> ValidateStagedForCommitAsync(CancellationToken cancellationToken = default)
+    public Task<StagedUpdate> ValidateStagedForCommitAsync(CancellationToken cancellationToken = default)
+        => RunOperation(ValidateStagedForCommitCoreAsync, cancellationToken);
+    private async Task<StagedUpdate> ValidateStagedForCommitCoreAsync(CancellationToken cancellationToken)
     {
         await operation.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var staged = ValidateStagedForCommit();
+            var staged = ValidateStagedForCommitCore();
             await RevalidateAsync(staged.Candidate, staged.Consent ?? throw new UpdateException("UPDATE_CONSENT_REQUIRED"), cancellationToken).ConfigureAwait(false);
             await UpdatePayload.VerifyAsync(staged.PayloadPath, staged.Candidate.Manifest, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
             lock (gate)
             {
                 if (staged.Consent!.Mode == UpdateSelectionMode.Rollback)
@@ -335,12 +350,14 @@ public sealed class UpdateService : IDisposable
                     snapshot = snapshot with { Staged = staged };
                 }
             }
-            return ValidateStagedForCommit();
+            return ValidateStagedForCommitCore();
         }
         finally { operation.Release(); }
     }
     // Local recovery validation only. Actual handoff must call the async fresh-validation method after explicit restart consent.
     public StagedUpdate ValidateStagedForCommit()
+    { lock (gate) { ThrowIfClosing(); return ValidateStagedForCommitCore(); } }
+    private StagedUpdate ValidateStagedForCommitCore()
     {
         lock (gate)
         {
@@ -366,6 +383,7 @@ public sealed class UpdateService : IDisposable
     {
         lock (gate)
         {
+            ThrowIfClosing();
             string journalPath = Path.Combine(programDirectory, ".autumnos-update", "journal.json");
             string receiptPath = Path.Combine(programDirectory, "autumn.install.json");
             UpdatePaths.EnsureNoReparsePoints(journalPath); UpdatePaths.EnsureNoReparsePoints(receiptPath);
@@ -388,7 +406,7 @@ public sealed class UpdateService : IDisposable
     public void RecordFailedCandidate(string buildId)
     {
         if (!UpdateManifestCodec.Identifier(buildId)) throw new UpdateException("UPDATE_BUILD_ID_INVALID");
-        lock (gate) SaveState(persistent with { FailedBuildIds = persistent.FailedBuildIds.Append(buildId).Distinct().TakeLast(128).ToArray() });
+        lock (gate) { ThrowIfClosing(); SaveState(persistent with { FailedBuildIds = persistent.FailedBuildIds.Append(buildId).Distinct().TakeLast(128).ToArray() }); }
     }
     private void CheckApprovedTarget(UpdateCandidate candidate, UpdateConsent approved)
     {
@@ -512,7 +530,86 @@ public sealed class UpdateService : IDisposable
     private static bool Handled(Exception ex) => ex is UpdateException or CatalogException or IOException or UnauthorizedAccessException or JsonException or ArgumentException or InvalidOperationException or KeyNotFoundException or FormatException;
     private static string Error(Exception ex) => ex switch { UpdateException u => u.Code, CatalogException c => c.Code, UnauthorizedAccessException => "UPDATE_ACCESS_DENIED", IOException => "UPDATE_IO_ERROR", JsonException or KeyNotFoundException or FormatException => "UPDATE_RELEASE_INVALID", _ => "UPDATE_OPERATION_FAILED" };
     private void Notify() { if (Changed is not null) foreach (EventHandler handler in Changed.GetInvocationList()) try { handler(this, EventArgs.Empty); } catch (Exception) { } }
-    public void Dispose() { lifetime.Cancel(); ownedDownloads?.Dispose(); ownedTransport?.Dispose(); if (checkTask is { IsCompleted: false } running) _ = running.ContinueWith(_ => lifetime.Dispose(), TaskScheduler.Default); else lifetime.Dispose(); }
+    private void ThrowIfClosing() => ObjectDisposedException.ThrowIf(closing, this);
+
+    private Task RunOperation(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+        => RunOperation<object?>(async token => { await action(token).ConfigureAwait(false); return null; }, cancellationToken);
+
+    private Task<T> RunOperation<T>(Func<CancellationToken, Task<T>> action, CancellationToken cancellationToken)
+    {
+        TaskCompletionSource<T> completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationTokenSource linked;
+        lock (gate)
+        {
+            ThrowIfClosing();
+            linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime.Token);
+            // Register before invoking any user/transport code or waiting for the semaphore.
+            // Shutdown therefore also owns calls which have been admitted but have not started I/O.
+            activeOperations.Add(completion.Task);
+        }
+        _ = CompleteOperationAsync();
+        return completion.Task;
+
+        async Task CompleteOperationAsync()
+        {
+            try
+            {
+                T result;
+                using (linked) result = await action(linked.Token).ConfigureAwait(false);
+                completion.TrySetResult(result);
+            }
+            catch (OperationCanceledException ex) { completion.TrySetCanceled(ex.CancellationToken); }
+            catch (Exception ex) { completion.TrySetException(ex); }
+            finally { lock (gate) activeOperations.Remove(completion.Task); }
+        }
+    }
+
+    /// <summary>Starts shutdown without blocking the UI. Await DisposeAsync before releasing host maintenance locks.</summary>
+    public void Dispose() => _ = BeginShutdown();
+    public ValueTask DisposeAsync() => new(BeginShutdown());
+
+    private Task BeginShutdown()
+    {
+        lock (gate)
+        {
+            if (shutdownTask is not null) return shutdownTask;
+            closing = true;
+            Task[] pending = activeOperations.Concat(checkTask is null ? [] : new[] { checkTask }).Distinct().ToArray();
+            // Cancellation callbacks and owned disposal may be synchronous. Neither runs on the UI caller.
+            return shutdownTask = Task.Run(() => DrainAsync(pending));
+        }
+    }
+
+    private async Task DrainAsync(Task[] pending)
+    {
+        List<Exception> failures = [];
+        try { await lifetime.CancelAsync().ConfigureAwait(false); }
+        catch (Exception ex) { failures.Add(ex); }
+        foreach (var task in pending)
+        {
+            try { await task.ConfigureAwait(false); }
+            catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
+            catch (Exception ex) { failures.Add(ex); }
+        }
+
+        // Pausing a download does not prove its worker has exited. Keep the transport and
+        // lifetime alive until the owned download service proves that its workers have drained.
+        try
+        {
+            if (ownedDownloads is IAsyncDisposable asynchronous) await asynchronous.DisposeAsync().ConfigureAwait(false);
+            else ownedDownloads?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+            throw new AggregateException("Update downloads did not complete shutdown.", failures);
+        }
+        try { ownedTransport?.Dispose(); }
+        catch (Exception ex) { failures.Add(ex); }
+        operation.Dispose();
+        lifetime.Dispose();
+        if (failures.Count != 0) throw new AggregateException("Update shutdown failed.", failures);
+    }
     private sealed record PersistentState(int SchemaVersion, bool Preview, long HighestSequence, string? HighestDigest, DateTimeOffset LastTrustedUtc, IReadOnlyList<string> FailedBuildIds,
         string? PinnedVersion = null, DateTimeOffset? LastSuccessfulCheckUtc = null, DateTimeOffset? RetryAfterUtc = null, string? ReconciledTransactionId = null, string? PendingManifestSha256 = null);
     private sealed record SecurityLedger(long HighestSequence, IReadOnlyList<string> FailedBuilds, string ManifestSha256 = "", string? MinimumVersion = null);
