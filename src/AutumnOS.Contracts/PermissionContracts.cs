@@ -35,6 +35,13 @@ public interface IPermissionService
     Task<PermissionDecision> RequestAsync(RuntimeAccountContext account, RuntimeApplication app, string permission,
         bool userGesture, Func<RuntimePermissionPrompt, CancellationToken, Task<bool>> prompt, CancellationToken cancellationToken);
     void SetDecision(RuntimeAccountContext account, RuntimeApplication app, string permission, PermissionDecision decision);
+    Task SetDecisionAsync(RuntimeAccountContext account, RuntimeApplication app, string permission, PermissionDecision decision,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        SetDecision(account, app, permission, decision);
+        return Task.CompletedTask;
+    }
 }
 
 public sealed record RuntimeApplication(AppIdentity Identity, string Source, string DisplayName,

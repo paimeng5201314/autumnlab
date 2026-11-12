@@ -19,6 +19,8 @@ internal sealed class WebAppHost : IDisposable
     private readonly CancellationTokenSource stopped = new();
     private readonly Dictionary<string, byte[]> resources = new(StringComparer.Ordinal);
     private IRuntimeViewBackend? backend;
+    private RemoteApplicationView? remote;
+    private readonly string? registeredArchive;
     private bool browserCleanupWaitingReported;
     private bool disposed;
     private bool cleanupInProgress;
@@ -26,6 +28,10 @@ internal sealed class WebAppHost : IDisposable
     private bool startInProgress;
     private bool navigated;
     private bool desiredForeground = true;
+    private Task<RuntimeSession.RuntimeCloseOperation>? closePreparation;
+    private Task? closeCompletion, authorityDrain;
+    private readonly HashSet<Task> viewMutations = [];
+    private readonly TaskCompletionSource resourcesReleased = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Action? rejectBootstrap;
     private string startupStage = "package";
     private int? profilePathLength;
@@ -43,20 +49,22 @@ internal sealed class WebAppHost : IDisposable
     private IDisposable? maintenanceGameLease;
     private readonly Action<WebAppHost>? retainForCleanup;
     public bool ResourcesReleased => disposed && !cleanupInProgress && !cleanupPending && !startInProgress &&
-        (backend is null || backend.ResourcesReleased) && resources.Count == 0 && rejectBootstrap is null && runtimeLease is null && maintenanceGameLease is null;
+        (backend is null || backend.ResourcesReleased) && (remote is null || remote.ResourcesReleased) && resources.Count == 0 && rejectBootstrap is null && runtimeLease is null && maintenanceGameLease is null &&
+        closeCompletion is { IsCompletedSuccessfully: true } && authorityDrain is { IsCompletedSuccessfully: true } && viewMutations.Count == 0;
+    public Task WhenResourcesReleased => resourcesReleased.Task;
     public bool IsDeveloperPreview => previewPackage is not null;
 
     // Capture the actual controller's browser process, with an open handle to prevent
     // PID reuse from admitting an unrelated browser into the native shortcut scope.
     internal bool OwnsKeyboardProcess(uint processId) => !disposed && navigated && desiredForeground &&
-        backend?.OwnsKeyboardProcess(processId) == true;
+        (remote?.OwnsKeyboardProcess(processId) == true || backend?.OwnsKeyboardProcess(processId) == true);
 
     public WebAppHost(InstallationRoot root, Grid container,
         Func<string, CancellationToken, Task<bool>> requestPermission, Action<string> status,
         Func<InstalledPackage, Func<RuntimeSession>, CancellationToken, RuntimeSessionServices>? serviceFactory = null,
         Action<Guid>? closeCapabilities = null, string? previewPackage = null, Action<string, string>? sdkTrace = null,
         InstalledPackage? registeredPackage = null, IDisposable? runtimeLease = null, CriticalOperationCoordinator? maintenance = null,
-        Action<WebAppHost>? retainForCleanup = null, string? expectedPreviewSha256 = null)
+        Action<WebAppHost>? retainForCleanup = null, string? expectedPreviewSha256 = null, string? registeredArchive = null)
     {
         this.root = root;
         this.container = container;
@@ -71,6 +79,7 @@ internal sealed class WebAppHost : IDisposable
             throw new PackageException("DEVELOPER_PREVIEW_BINDING_REQUIRED");
         this.sdkTrace = sdkTrace;
         this.registeredPackage = registeredPackage;
+        this.registeredArchive = registeredArchive;
         this.runtimeLease = runtimeLease;
         this.retainForCleanup = retainForCleanup;
         Session = new RuntimeSession(SampleId, ["saves"], root.Directories["Saves"]);
@@ -89,10 +98,11 @@ internal sealed class WebAppHost : IDisposable
         {
             // Deferral completion can reenter native handlers. Revoke the session's epoch
             // and pending data commits before any failed bootstrap is completed.
-            try { Session.Close(); }
+            bool intentInstalled = false;
+            try { intentInstalled = BeginHostClose(); }
             catch (Exception revocationError) when (revocationError is not OutOfMemoryException)
             { Audit("startup_revocation_failed", revocationError, "session_end"); }
-            try { RejectBootstrap(); }
+            try { if (intentInstalled) RejectBootstrap(); else retainForCleanup?.Invoke(this); }
             catch (Exception rejectionError) when (rejectionError is not OutOfMemoryException)
             { Audit("bootstrap_rejection_failed", rejectionError, "bootstrap_gate"); }
             // The UI may dispose this host immediately after a failed start. Retain the failing native
@@ -130,8 +140,7 @@ internal sealed class WebAppHost : IDisposable
         if (registeredPackage is null) installed = installed with { HostSource = previewPackage is null ? "bundled:" + SampleId : "local-preview:" + installed.PackageSha256 };
         Installed = installed;
         startupStage = "required_boundaries";
-        // The current native Job restriction still lets legacy browser copy/cut clear
-        // the clipboard. No clipboard-confined external-package host is implemented.
+        // Only the byte-bound bundled sample uses the in-process WebView.
         // This program's own installed content must match its fixed distribution asset
         // as well as its host-created source binding. An app ID, bundled-looking manifest,
         // report, developer mode, or GitHub/local package with the same bytes is no grant.
@@ -148,23 +157,49 @@ internal sealed class WebAppHost : IDisposable
                     installed.Manifest.Entry == distribution.Manifest.Entry;
             }, linked.Token);
         linked.Token.ThrowIfCancellationRequested();
-        if (!programContent)
-            throw new PackageException("RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE");
-        Session.Close();
+        NativePayloadCatalog? catalog = programContent ? null : NativePayloadCatalog.ForLaunch(root);
+        await Session.CloseAsync();
         startupStage = "session";
         var services = serviceFactory?.Invoke(installed, () => Session, stopped.Token);
         if (previewPackage is not null && services is null) throw new PackageException("DEVELOPER_PREVIEW_BINDING_REQUIRED");
         Session = new RuntimeSession(installed.Manifest.AppId, installed.Manifest.Permissions,
             root.Directories["Saves"], installed.Manifest.Entry, services: services);
         var sourceSession = Session;
+        sourceSession.NativeCloseRequired += () => container.DispatcherQueue.TryEnqueue(() =>
+        {
+            if (ReferenceEquals(sourceSession, Session)) Dispose();
+        });
         sourceSession.SdkEventReady += message =>
         {
             container.DispatcherQueue.TryEnqueue(() =>
             {
+                if (!disposed && navigated && sourceSession == Session && remote is not null && message.Stamp is { } frozen)
+                    remote.SendEvent(message.Name, frozen, JsonSerializer.Serialize(new { @event = message.Name, data = message.Data },
+                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
                 if (!disposed && !stopped.IsCancellationRequested && sourceSession == Session && navigated && backend is { } core && core.Source == sourceSession.PageUri)
-                    sourceSession.DeliverEvent(message.Name, message.Revision, () => core.PostWebMessageAsJson(JsonSerializer.Serialize(new { @event = message.Name, data = message.Data }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })));
+                {
+                    if (message.Stamp is { } stamp)
+                        sourceSession.DeliverEvent(message.Name, stamp, () => core.PostWebMessageAsJson(JsonSerializer.Serialize(new { @event = message.Name, data = message.Data }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })));
+                }
             });
         };
+        if (catalog is not null)
+        {
+            if (services is null) throw new PackageException("RUNTIME_AUTHORITY_UNAVAILABLE");
+            string archive = previewPackage ?? registeredArchive ?? throw new PackageException("PACKAGE_ORIGINAL_ARCHIVE_REQUIRED");
+            startupStage = "native_host";
+            RejectBrowserPolicyOverrides();
+            remote = new RemoteApplicationView(container, Session, services, requestPermission,
+                () => !disposed && desiredForeground, Crash, name => Audit(name), sdkTrace,
+                services.Account.IsGuest && catalog.AcceptanceRoot is { Length: > 0 }
+                    ? sha => Audit("guest_test_save_read_value_receipt", testSaveValueSha256: sha) : null);
+            Audit("installed");
+            await remote.StartAsync(root, installed, archive, catalog, linked.Token);
+            linked.Token.ThrowIfCancellationRequested();
+            navigated = true; browserVersion = RuntimeIsolationPolicy.RequiredBrowserVersion;
+            if (desiredForeground) await ForegroundAsync(linked.Token); else await BackgroundAsync(linked.Token);
+            Audit("navigation_completed"); return;
+        }
         startupStage = "resources";
         foreach (var file in Directory.EnumerateFiles(installed.DirectoryPath, "*", SearchOption.AllDirectories))
         {
@@ -255,6 +290,7 @@ internal sealed class WebAppHost : IDisposable
                 return;
             }
             List<Exception> failures = [];
+            bool allowCompletion = true;
             try
             {
                 if (authorize)
@@ -275,18 +311,28 @@ internal sealed class WebAppHost : IDisposable
             catch (Exception error) when (error is not OutOfMemoryException)
             {
                 bootstrapRevoked = true; packageReleased = false; failures.Add(error);
-                try { Session.Close(); }
-                catch (Exception revocationError) when (revocationError is not OutOfMemoryException) { failures.Add(revocationError); }
-                try { Respond(request, null, "text/javascript; charset=utf-8"); }
-                catch (Exception denialError) when (denialError is not OutOfMemoryException) { failures.Add(denialError); }
+                try { allowCompletion = BeginHostClose(); }
+                catch (Exception revocationError) when (revocationError is not OutOfMemoryException) { allowCompletion = false; failures.Add(revocationError); }
+                if (allowCompletion)
+                {
+                    try { Respond(request, null, "text/javascript; charset=utf-8"); }
+                    catch (Exception denialError) when (denialError is not OutOfMemoryException) { failures.Add(denialError); }
+                }
+                else
+                {
+                    // Preserve the one held native deferral for cleanup after
+                    // intent is actually installed. Never complete it on a timer.
+                    heldGateRequest = request; heldGateDeferral = deferral;
+                    retainForCleanup?.Invoke(this);
+                }
             }
             finally
             {
-                try { deferral.Complete(); }
+                try { if (allowCompletion) deferral.Complete(); }
                 catch (Exception completionError) when (completionError is not OutOfMemoryException)
                 {
                     bootstrapRevoked = true; packageReleased = false; failures.Add(completionError);
-                    try { Session.Close(); }
+                    try { BeginHostClose(); }
                     catch (Exception revocationError) when (revocationError is not OutOfMemoryException) { failures.Add(revocationError); }
                 }
             }
@@ -401,11 +447,11 @@ internal sealed class WebAppHost : IDisposable
                         methodName = requestedMethod.GetString() ?? "";
                 }
                 catch (JsonException) { /* The gateway returns the finite invalid-request envelope. */ }
-                long revision = session.EventRevision;
-                string result = await session.HandleMessageAsync(source, request, requestPermission, stopped.Token);
+                RuntimePreparedResponse prepared = await session.HandleMessageForDeliveryAsync(source, request, requestPermission, stopped.Token);
+                string result = prepared.Response;
                 if (disposed || stopped.IsCancellationRequested || bootstrapRevoked || !packageReleased || !documentCommitted || session != Session || core.Source != session.PageUri)
                 { Audit("response_invalidated"); return; }
-                result = session.DeliverResponse(methodName, revision, result, core.PostWebMessageAsJson);
+                result = session.DeliverResponse(methodName, prepared.Stamp, result, core.PostWebMessageAsJson);
                 using var response = JsonDocument.Parse(result);
                 if (methodName.Length > 0)
                 {
@@ -477,32 +523,66 @@ internal sealed class WebAppHost : IDisposable
         }
     }
 
-    public void Foreground()
+    private Task OwnViewMutation(Task task)
     {
-        if (disposed) return;
-        desiredForeground = true;
-        if (!navigated) return;
-        Session.Foreground();
-        PublishState("前台运行 · 隔离存档 · 游戏会话阻止更新");
+        ReapViewMutations(); viewMutations.Add(task); ReapViewMutations(); return task;
+    }
+    private void ReapViewMutations()
+    {
+        foreach (Task task in viewMutations.Where(task => task.IsCompleted).ToArray())
+        {
+            if (task.IsFaulted) Audit("authority_view_mutation_failed", task.Exception, "authority_mutation");
+            viewMutations.Remove(task);
+        }
     }
 
-    public void Background()
+    public void Foreground() => _ = ForegroundAsync();
+    public void Background() => _ = BackgroundAsync();
+    public Task ForegroundAsync(CancellationToken beforeIntentCancellation = default)
+        => OwnViewMutation(ChangeVisibilityAsync(true, beforeIntentCancellation));
+    public Task BackgroundAsync(CancellationToken beforeIntentCancellation = default)
+        => OwnViewMutation(ChangeVisibilityAsync(false, beforeIntentCancellation));
+    private async Task ChangeVisibilityAsync(bool foreground, CancellationToken beforeIntentCancellation)
     {
         if (disposed || !Session.Instance.BlocksMaintenance) return;
-        desiredForeground = false;
+        desiredForeground = foreground;
         if (!navigated) return;
-        Session.Background();
-        PublishState("后台运行 · 游戏会话仍阻止更新");
+        RuntimeSession current = Session;
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(beforeIntentCancellation, stopped.Token);
+        Task reset = !foreground && remote is not null ? remote.LoseForegroundAsync() : Task.CompletedTask;
+        if (foreground) await current.ForegroundAsync(cancellation.Token);
+        else await current.BackgroundAsync(cancellation.Token);
+        await reset;
+        if (!disposed && ReferenceEquals(current, Session))
+            PublishState(foreground ? "前台运行 · 隔离存档 · 游戏会话阻止更新" : "后台运行 · 游戏会话仍阻止更新");
+    }
+
+    private bool BeginHostClose(bool crashed = false)
+    {
+        closePreparation ??= Session.BeginCloseAsync(crashed);
+        if (!closePreparation.IsCompletedSuccessfully)
+        {
+            if (closePreparation.IsFaulted) Audit("authority_close_begin_failed", closePreparation.Exception, "authority_close");
+            return false;
+        }
+        // This access cannot block: the completed Task means writer intent is
+        // installed, not that the native fence or process retirement completed.
+        closeCompletion ??= closePreparation.Result.CompleteAsync();
+        return true;
     }
 
     private void PublishState(string text)
     {
         status(text);
-        string state = Session.Instance.State.ToString().ToLowerInvariant();
+        var captured = Session.CaptureInstanceDelivery();
+        string state = captured.Instance.State.ToString().ToLowerInvariant();
         try
         {
+            if (navigated && remote is not null)
+                remote.SendEvent("lifecycle.changed", captured.Stamp, JsonSerializer.Serialize(new { @event = "lifecycle.stateChanged", state }));
             if (navigated && backend is { } core && core.Source == Session.PageUri)
-                core.PostWebMessageAsJson(JsonSerializer.Serialize(new { @event = "lifecycle.stateChanged", state }));
+                Session.DeliverEvent("lifecycle.changed", captured.Stamp,
+                    () => core.PostWebMessageAsJson(JsonSerializer.Serialize(new { @event = "lifecycle.stateChanged", state })));
         }
         catch (System.Runtime.InteropServices.COMException) { Audit("lifecycle_not_delivered"); }
         Audit(state);
@@ -511,16 +591,20 @@ internal sealed class WebAppHost : IDisposable
     private void Crash(string reason)
     {
         if (disposed) return;
-        try { Session.MarkCrashed(); }
+        bool intentInstalled = false;
+        try { intentInstalled = BeginHostClose(crashed: true); }
         catch (Exception revocationError) when (revocationError is not OutOfMemoryException)
         { Audit(reason, revocationError, "session_crash"); }
-        try { RejectBootstrap(); }
+        try { if (intentInstalled) RejectBootstrap(); }
         catch (Exception rejectionError) when (rejectionError is not OutOfMemoryException)
         { Audit("bootstrap_rejection_failed", rejectionError, "bootstrap_gate"); }
         try
         {
-            stopped.Cancel();
-            closeCapabilities?.Invoke(Session.Instance.Id.Value);
+            if (intentInstalled)
+            {
+                stopped.Cancel();
+                closeCapabilities?.Invoke(Session.Instance.Id.Value);
+            }
             status("应用运行中断 · 返回主界面后可重新打开；已提交存档保留");
             Audit(reason);
         }
@@ -537,7 +621,7 @@ internal sealed class WebAppHost : IDisposable
         reject?.Invoke();
     }
 
-    private void Audit(string eventName, Exception? startupError = null, string? cleanupStage = null)
+    private void Audit(string eventName, Exception? startupError = null, string? cleanupStage = null, string? testSaveValueSha256 = null)
     {
         // Called only with fixed host events; no SDK payload, user content, URLs, or exception text.
         try
@@ -553,10 +637,12 @@ internal sealed class WebAppHost : IDisposable
                 state = Session.Instance.State.ToString(), blocksMaintenance = Session.Instance.BlocksMaintenance,
                 appId = Installed?.Manifest.AppId, packageSha256 = Installed?.PackageSha256,
                 networkSandboxVerified = Session.NetworkSandboxVerified,
+                testSaveValueSha256,
                 isolationPolicy = RuntimeIsolationPolicy.PolicyId,
                 isolationLoadingStrategy = RuntimeParserGateChallenge.LoadingStrategyId,
                 browserVersion,
                 browserProcessFailure,
+                nativeHost = remote?.Snapshot,
                 browserProcessId = nativeCleanup is { EnvironmentReleased: false } ? nativeCleanup.HeldBrowserProcessId : null,
                 browserCleanup = new { environmentCreationAttempted = nativeCleanup?.EnvironmentCreationAttempted ?? false,
                     controllerCreationAttempted = nativeCleanup?.ControllerCreationAttempted ?? false,
@@ -579,6 +665,10 @@ internal sealed class WebAppHost : IDisposable
                 startupFailure = startupError is null || cleanupStage is not null ? null : new
                 {
                     stage = startupStage,
+                    code = startupError is PackageException { Code: "RUNTIME_NATIVE_DESKTOP_REQUIRED" or "RUNTIME_STANDARD_USER_REQUIRED" or
+                        "RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE" or "RUNTIME_ISOLATION_UNAVAILABLE" or "RUNTIME_NATIVE_DOCUMENT_INVALID" or
+                        "RUNTIME_NATIVE_PREPARE_FAILED" or "RUNTIME_NATIVE_PROOF_INVALID" or "RUNTIME_NATIVE_SESSION_REJECTED" or
+                        "RUNTIME_AUTHORITY_UNAVAILABLE" or "PACKAGE_ORIGINAL_ARCHIVE_REQUIRED" } denied ? denied.Code : null,
                     missingBoundary = startupError is PackageException { Code: "RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE" } ? "clipboard" : null,
                     errorType = startupError switch
                     {
@@ -661,12 +751,19 @@ internal sealed class WebAppHost : IDisposable
         {
             // End revokes the epoch/proof before invoking cancellation callbacks.
             // Do this explicitly even when no account service is bound to stopped.
-            Release("session_end", Session.Close);
+            bool intentInstalled = false;
+            Release("authority_close_begin", () => intentInstalled = BeginHostClose());
+            if (!intentInstalled)
+            {
+                retainForCleanup?.Invoke(this);
+                return;
+            }
             Release("bootstrap_gate", RejectBootstrap);
             Release("stopped_cancel", () => stopped.Cancel());
             Release("capabilities", () => closeCapabilities?.Invoke(Session.Instance.Id.Value));
             // A failed cancellation must not prevent trying to close the actual browser.
             Release("webview_close", () => backend?.CloseView());
+            Release("native_host_close", () => remote?.Close());
             // A new instance may already occupy this shared UI container while the old
             // browser group is shutting down. Retry must only remove our own control.
             Release("container", () => backend?.Detach());
@@ -675,8 +772,14 @@ internal sealed class WebAppHost : IDisposable
                 backend?.ReleaseResponseStreams(); resources.Clear();
             });
             bool browserReleased = false;
-            Release("browser_exit_check", () => browserReleased = backend?.TryRetire(startInProgress) ?? !startInProgress);
-            if (!failed && !startInProgress && browserReleased)
+            Release("browser_exit_check", () => browserReleased = (remote?.ResourcesReleased ?? true) && (backend?.TryRetire(startInProgress) ?? !startInProgress));
+            ReapViewMutations();
+            if (closeCompletion is { IsCompletedSuccessfully: true }) authorityDrain ??= Session.DrainAuthorityOperationsAsync();
+            bool authorityReleased = closeCompletion is { IsCompletedSuccessfully: true } &&
+                authorityDrain is { IsCompletedSuccessfully: true } && viewMutations.Count == 0;
+            if (closeCompletion is { IsFaulted: true }) Audit("authority_close_failed", closeCompletion.Exception, "authority_close");
+            if (authorityDrain is { IsFaulted: true }) Audit("authority_drain_failed", authorityDrain.Exception, "authority_drain");
+            if (!failed && !startInProgress && browserReleased && authorityReleased)
             {
                 Release("runtime_lease", () =>
                 {
@@ -693,7 +796,7 @@ internal sealed class WebAppHost : IDisposable
                 cleanupPending = failed;
                 if (!failed) Audit("closed");
             }
-            if (failed || !browserReleased || startInProgress)
+            if (failed || !browserReleased || startInProgress || !authorityReleased)
             {
                 // Retain before reporting UI status so a UI error cannot lose the retry.
                 retainForCleanup?.Invoke(this);
@@ -705,6 +808,6 @@ internal sealed class WebAppHost : IDisposable
                 }
             }
         }
-        finally { cleanupInProgress = false; }
+        finally { cleanupInProgress = false; if (ResourcesReleased) resourcesReleased.TrySetResult(); }
     }
 }

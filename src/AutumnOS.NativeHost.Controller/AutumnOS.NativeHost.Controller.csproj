@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../AutumnOS.NativeHost.Windows/NativeViewport.cs" Link="Owner/NativeViewport.cs" />
+    <Compile Include="../AutumnOS.NativeHost.Windows/NativePlatformPolicy.cs" Link="Owner/NativePlatformPolicy.cs" />
+    <Compile Include="../AutumnOS.NativeHost.Windows/NativeBrowserFailure.cs" Link="Owner/NativeBrowserFailure.cs" />
+    <Compile Include="../AutumnOS.NativeHost.Windows/NativePointerInput.cs;../AutumnOS.NativeHost.Windows/NativeKeyboardInput.cs" Link="Owner/%(Filename)%(Extension)" />
+    <Compile Include="../AutumnOS.NativeHost.Windows/NativeInputQueue.cs" Link="Owner/NativeInputQueue.cs" />
+    <Compile Include="../AutumnOS.NativeHost.Windows/Native/*.cs" Link="Native/%(Filename)%(Extension)" />
+    <Compile Include="../AutumnOS.NativeHost.Windows/NativeHostBinding.cs;../AutumnOS.NativeHost.Windows/NativeHostLaunchManifest.cs;../AutumnOS.NativeHost.Windows/NativeProcessOwner.cs;../AutumnOS.NativeHost.Windows/NativeFailure.cs;../AutumnOS.NativeHost.Windows/NativeHostBootstrapProtocol.cs;../AutumnOS.NativeHost.Windows/NativeHostContextFacts*.cs;../AutumnOS.NativeHost.Windows/NativeViewProtocol.cs;../AutumnOS.NativeHost.Windows/RuntimeHostStaging*.cs" Link="Owner/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

@@ -1,3 +1,5 @@
+> 当前为 2026-11-12 发布准备源码。正式 v1.0.0 尚未发行；当前客户端仍为本机验收候选。请先阅读 [发布状态与阻塞](PUBLICATION_STATUS.md)。
+
 # Lab Chronicles AutumnOS
 
 **制作人：派蒙**

@@ -19,6 +19,7 @@ public sealed class PermissionService : IPermissionService
     private readonly object gate = new();
     private readonly string path;
     private readonly Func<IDisposable>? enterCritical;
+    private readonly IRuntimeAuthorityMutations? authorityMutations;
     private readonly Dictionary<string, PermissionRecord> records = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> revisions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, long> bindingRevisions = new(StringComparer.Ordinal);
@@ -27,9 +28,11 @@ public sealed class PermissionService : IPermissionService
     private const int MaximumBytes = 2 * 1024 * 1024;
     public event Action<PermissionChange>? Changed;
 
-    public PermissionService(string configurationDirectory, Func<IDisposable>? enterCritical = null)
+    public PermissionService(string configurationDirectory, Func<IDisposable>? enterCritical = null,
+        IRuntimeAuthorityMutations? authorityMutations = null)
     {
         this.enterCritical = enterCritical;
+        this.authorityMutations = authorityMutations;
         if (!Path.IsPathFullyQualified(configurationDirectory)) throw new ArgumentException("An absolute configuration directory is required.", nameof(configurationDirectory));
         path = Path.Combine(Path.GetFullPath(configurationDirectory), "application-permissions.v1.json");
         SafePath(path, false);
@@ -125,16 +128,19 @@ public sealed class PermissionService : IPermissionService
                 ? $"应用声明用途：{declaredPurpose}\n平台边界：{Purpose(permission)}" : Purpose(permission);
             var request = new RuntimePermissionPrompt(app.Identity.AppId, app.DisplayName, app.Source, permission, purpose, fields);
             bool accepted = await prompt(request, linked.Token).WaitAsync(linked.Token).ConfigureAwait(false);
-            PermissionChange change;
-            lock (gate)
+            PermissionChange? change = null;
+            await CommitMutationAsync(account, app, () =>
             {
-                linked.Token.ThrowIfCancellationRequested();
-                account.EnsureCurrent();
-                if (revisions.GetValueOrDefault(key) != revision) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
-                change = SaveDecision(account, app, permission, accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
-            }
-            Changed?.Invoke(change);
-            return change.Decision;
+                lock (gate)
+                {
+                    linked.Token.ThrowIfCancellationRequested();
+                    account.EnsureCurrent();
+                    if (revisions.GetValueOrDefault(key) != revision) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
+                    change = SaveDecision(account, app, permission, accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
+                }
+            }, linked.Token).ConfigureAwait(false);
+            Changed?.Invoke(change!);
+            return change!.Decision;
         }
         finally { lock (gate) pending.Remove(key); }
     }
@@ -144,13 +150,53 @@ public sealed class PermissionService : IPermissionService
     {
         ValidateRequest(account, app, permission);
         if (!Enum.IsDefined(decision)) throw new ArgumentOutOfRangeException(nameof(decision));
-        PermissionChange change;
-        lock (gate)
+        PermissionChange? change = null;
+        CommitMutation(account, app, () =>
         {
-            account.EnsureCurrent();
-            change = SaveDecision(account, app, permission, decision);
-        }
-        Changed?.Invoke(change);
+            lock (gate)
+            {
+                ValidateRequest(account, app, permission);
+                change = SaveDecision(account, app, permission, decision);
+            }
+        });
+        Changed?.Invoke(change!);
+    }
+
+    public async Task SetDecisionAsync(RuntimeAccountContext account, RuntimeApplication app, string permission,
+        PermissionDecision decision, CancellationToken cancellationToken = default)
+    {
+        ValidateRequest(account, app, permission);
+        if (!Enum.IsDefined(decision)) throw new ArgumentOutOfRangeException(nameof(decision));
+        PermissionChange? change = null;
+        await CommitMutationAsync(account, app, () =>
+        {
+            lock (gate)
+            {
+                // Settings writes are new authoritative decisions, in writer order.
+                // A preceding valid write does not invalidate the next settings action.
+                cancellationToken.ThrowIfCancellationRequested();
+                ValidateRequest(account, app, permission);
+                change = SaveDecision(account, app, permission, decision);
+            }
+        }, cancellationToken).ConfigureAwait(false);
+        Changed?.Invoke(change!);
+    }
+
+    private void CommitMutation(RuntimeAccountContext account, RuntimeApplication app, Action commit)
+    {
+        if (authorityMutations is null) { commit(); return; }
+        if (!authorityMutations.TryCommitSynchronously(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey), commit))
+            throw new RuntimeCapabilityException("RUNTIME_ASYNC_AUTHORITY_REQUIRED");
+    }
+
+    private async Task CommitMutationAsync(RuntimeAccountContext account, RuntimeApplication app, Action commit,
+        CancellationToken beforeIntentCancellation)
+    {
+        if (authorityMutations is null) { beforeIntentCancellation.ThrowIfCancellationRequested(); commit(); return; }
+        var mutation = await authorityMutations.BeginAsync(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey),
+            beforeIntentCancellation).ConfigureAwait(false);
+        // Once intent exists, cancellation must not abandon its one-shot permit.
+        await mutation.CommitAsync(commit).ConfigureAwait(false);
     }
 
     private PermissionChange SaveDecision(RuntimeAccountContext account, RuntimeApplication app, string permission, PermissionDecision decision)
@@ -159,6 +205,10 @@ public sealed class PermissionService : IPermissionService
         using var lease = account.EnterCommitLease?.Invoke();
         account.EnsureCurrent();
         string key = Key(account.AccountKey, app.BindingKey, permission);
+        string bindingKey = Key(account.AccountKey, app.BindingKey, "");
+        // Check every next stamp before staging bytes or changing any decision.
+        long nextPermissionRevision = checked(revisions.GetValueOrDefault(key) + 1);
+        long nextBindingRevision = checked(bindingRevisions.GetValueOrDefault(bindingKey) + 1);
         if (!records.ContainsKey(key) && records.Count >= MaximumRecords) throw new RuntimeCapabilityException("QUOTA_EXCEEDED");
         var item = new PermissionRecord(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName, app.Source, permission, decision);
         Validate(item);
@@ -181,8 +231,8 @@ public sealed class PermissionService : IPermissionService
             }
             else File.Move(temp, path, false);
             records[key] = item;
-            revisions[key] = revisions.GetValueOrDefault(key) + 1;
-            bindingRevisions.AddOrUpdate(Key(account.AccountKey, app.BindingKey, ""), 1, (_, previous) => previous + 1);
+            revisions[key] = nextPermissionRevision;
+            bindingRevisions[bindingKey] = nextBindingRevision;
         }
         finally { if (File.Exists(temp)) File.Delete(temp); }
         return new(account.AccountKey, app.BindingKey, permission, decision);

@@ -1,5 +1,7 @@
 # 生产运行视图后端 · G2-A
 
+2026-11-05 接续：下文保留 G2-A 的历史设计。第三方的生产调用路径现已单独接至 `RemoteApplicationView`，不再尝试用进程内 WinUI WebView 创建第三方页面。工作流程、验收版本和当前限制见 [独立宿主接线](native-store-host.md)。
+
 制作人：派蒙。当前为内部接口提取，源码已接入，Windows构建/原生运行成绩以实际报告为准；本页不代表第三方已获得运行资格。
 
 `src/AutumnOS.Shell/RuntimeViewBackend.cs`定义内部`IRuntimeViewBackend`和现有进程内`WinUiWebViewBackend`。本增量只将原WebView机械操作从`WebAppHost`移出，不新增进程后端，不解除`required_boundaries`，不改变公开SDK、包格式、权限、账号或存档路径。后续独立进程须使用单独的实际投递/撤权协议，不能把此接口的同步Post实现为入队成功。
@@ -16,15 +18,15 @@ backend对外提供原生事实快照和受限的导航、source/content事件�
 
 ## SDK与权限
 
-父端保持原`SdkEventReady`冻结revision、Dispatcher后的同Session/Source检查及`DeliverEvent`；响应继续在HandleMessage await后重新核同Session/Source，再通过`DeliverResponse`完成。backend的`PostWebMessageAsJson`在当前调用栈内直接调用真实原生Post，整个调用仍在现有权限→state→账号租约内；没有async void、队列或远端ACK的语义替换。
+2026-11-04接续：父端保持`SdkEventReady`产生时冻结的`RuntimeResponseStamp`，Dispatcher后检查同Session/Source再调用stamp版`DeliverEvent`。响应使用`HandleMessageForDeliveryAsync`返回的原始Response/Stamp，重新核同Session/Source后再通过stamp版`DeliverResponse`完成；不在投递时给旧payload取新stamp。独立的`lifecycle.stateChanged`也已放入最终租约gate，状态和stamp通过`CaptureInstanceDelivery`一并冻结。backend的`PostWebMessageAsJson`仍在当前调用栈内直接调用真实原生Post；整个调用继续处于权限→state→账号租约内，不把远端入队当原生成功。
 
-后续远端投递需要异步reservation、原始实例/文档/账号/权限代次、实际子端STA Post receipt及权威变更前的fence。ACK未知时既不能把取消当未投递，也不能释放旧ticket后允许迟到投递；这些尚未在本增量实现。资料、文件能力、存档和用户提示保留在父端，不传宿主凭据或裸文件系统能力到应用进程。
+远端投递排序内核与权威变更前fence已另行接入，见`runtime-delivery-coordinator.md`，实际构建结果只认对应新build。生产远端registration、文档/原生peer绑定、限长IPC及真实子端STA Post receipt仍待实现。ACK未知时既不能把取消当未投递，也不能释放旧ticket后允许迟到投递。资料、文件能力、存档和用户提示保留在父端，不传宿主凭据或裸文件系统能力到应用进程。
 
 ## 退休与更新锁
 
-父端先结束Session、拒绝parser gate、取消及关闭文件能力，再分别尝试CloseView、只移除本实例的旧控件、释放全部response streams。backend的`TryRetire(startInProgress)`只在控件/流已退且原生创建已真实返回后，检查原PID退出事件、原持Process对象HasExited和SDK进程集0；成功才释放原进程/环境并置显式retired状态。
+父端先通过`BeginCloseAsync`登记writer intent并quarantine，保留幂等close owner/task；意图尚未安装时保留原deferral及资源，不用清理请求冒充完成。之后拒绝parser gate、取消及关闭文件能力，再分别尝试CloseView、只移除本实例的旧控件、释放全部response streams。原生清理不等待一个已失联peer的ACK才能启动，正式Session终态则等待屏障或原组真实退休。backend的`TryRetire(startInProgress)`只在控件/流已退且原生创建已真实返回后，检查原PID退出事件、原持Process对象HasExited和SDK进程集0；成功才释放原进程/环境并置显式retired状态。
 
-退出类型Normal用于成功验收，资源清理本身允许异常退出但已证明组空，防止故障后永久假pending。旧控件关闭/移除或stream Dispose失败可重试，不能清空共享容器；任何失败都阻止提前释放运行租约和维护租约。`ResourcesReleased`仍须启动/清理都不忙、backend原资源退休、包资源与bootstrap清空、两种租约释放。更新、关机、预览替换和原实例召回继续依赖这一事实。
+退出类型Normal用于成功验收，资源清理本身允许异常退出但已证明组空，防止故障后永久假pending。旧控件关闭/移除或stream Dispose失败可重试，不能清空共享容器；任何失败都阻止提前释放运行租约和维护租约。`ResourcesReleased`还要求正式close task成功、Session回调drain成功、已拥有的可见性操作结束，原有启动/清理不忙、backend原资源退休、包资源与bootstrap清空、两种租约释放全部保留。`WhenResourcesReleased`只在此真实谓词成立后完成；更新、关机、预览替换及预览权限/模拟对象的处置继续依赖该原对象事实。
 
 键盘归属仍限定当前可见宿主、未销毁/已导航/期望前台和启动时持有的原browser对象，不以重新查询PID代替原句柄。独立进程后端以后必须将WinSta0的原生画面代理纳入同样的实例判据，不能简单允许任意Shell PID。
 

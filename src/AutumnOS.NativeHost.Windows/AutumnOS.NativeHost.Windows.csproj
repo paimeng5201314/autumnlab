@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>AutumnOS.NativeHost.Windows</AssemblyName>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <ProjectReference Include="../AutumnOS.Contracts/AutumnOS.Contracts.csproj" />
+    <Compile Include="../AutumnOS.Runtime/RuntimeIsolationPolicy.cs" Link="Policy/RuntimeIsolationPolicy.cs" />
+    <Compile Include="../AutumnOS.Runtime/RuntimeParserGateChallenge.cs" Link="Policy/RuntimeParserGateChallenge.cs" />
+    <Compile Include="../AutumnOS.Runtime/RuntimeDeliveryCoordinator.cs" Link="Delivery/RuntimeDeliveryCoordinator.cs" />
+    <Compile Include="../AutumnOS.Runtime/RuntimeDeliveryWireProtocol.cs" Link="Delivery/RuntimeDeliveryWireProtocol.cs" />
+    <Compile Include="../AutumnOS.Runtime/RuntimeNativeDeliveryActor.cs" Link="Delivery/RuntimeNativeDeliveryActor.cs" />
+  </ItemGroup>
+  <Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
+</Project>

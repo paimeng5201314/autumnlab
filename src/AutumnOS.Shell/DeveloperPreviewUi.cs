@@ -9,11 +9,13 @@ namespace AutumnOS.Shell;
 public sealed partial class MainWindow
 {
     private WebAppHost? developerPreviewHost;
+    private WebAppHost? developerPreviewRetiringHost;
     private string? developerPreviewSessionId;
     private string? developerPreviewPackagePath, developerPreviewSha256;
     private DeveloperPreviewSimulation? developerPreviewSimulation;
     private DeveloperPreviewPermissions? developerPreviewPermissions;
     private RuntimeSessionServices? developerPreviewServices;
+    private IRuntimeAuthorityMutations? developerPreviewAuthority;
     private readonly TextBlock developerSimulationStatus = Paragraph("开发预览模拟：未开启。仅作用于明确选择的独立预览。 ");
     private readonly DeveloperToolsService developerPreviewTrace = new();
 
@@ -41,7 +43,9 @@ public sealed partial class MainWindow
         cancellationToken.ThrowIfCancellationRequested();
         if (!DeveloperModeEnabled) throw new PackageException("DEVELOPER_MODE_DISABLED");
         CloseDeveloperPreview(); developerTools.ClearTrace(); developerPreviewTrace.SetEnabled(true);
-        developerPreviewSimulation = new(); developerPreviewPermissions = new(permissionService);
+        developerPreviewAuthority = new PreviewAuthorityRouter(authorityMutations, new RuntimeAuthorityMutationCoordinator());
+        developerPreviewSimulation = new(authorityMutations: developerPreviewAuthority);
+        developerPreviewPermissions = new(permissionService, authorityMutations: developerPreviewAuthority);
         developerPreviewPackagePath = prepared.PackagePath; developerPreviewSha256 = inspection.Sha256;
         await StartDeveloperPreviewHostAsync(cancellationToken);
     }
@@ -51,7 +55,8 @@ public sealed partial class MainWindow
         bool testAccount = simulation.UsesTestAccount;
         developerPreviewServices = CreateRuntimeServicesCore(installed, session, token,
             testAccount ? simulation.BindAccount(token) : null, developerPreviewPermissions,
-            testAccount ? simulation.GetProfileAsync : null, suppressIdentity: testAccount, identityOverride: testAccount ? simulation : null);
+            testAccount ? simulation.GetProfileAsync : null, suppressIdentity: testAccount, identityOverride: testAccount ? simulation : null,
+            authorityOverride: developerPreviewAuthority);
         return developerPreviewServices;
     }
     private async Task StartDeveloperPreviewHostAsync(CancellationToken cancellationToken)
@@ -82,15 +87,38 @@ public sealed partial class MainWindow
         catch { if (developerPreviewHost == preview) CloseDeveloperPreview(); else preview.Dispose(); throw; }
     }
     private void CloseDeveloperPreview()
+        => CloseDeveloperPreviewCore(null);
+    private void CloseDeveloperPreviewCore(WebAppHost? retiringHost)
     {
+        WebAppHost? previous = developerPreviewHost ?? retiringHost ?? developerPreviewRetiringHost;
+        DeveloperPreviewSimulation? simulation = developerPreviewSimulation;
+        DeveloperPreviewPermissions? permissions = developerPreviewPermissions;
         developerPreviewTrace.SetEnabled(false); ReleaseDeveloperPreviewHost();
-        developerPreviewSimulation?.Dispose(); developerPreviewSimulation = null;
-        developerPreviewPermissions?.Dispose(); developerPreviewPermissions = null;
+        developerPreviewSimulation = null; developerPreviewPermissions = null; developerPreviewAuthority = null;
+        retiredAuthorityDrains.RemoveAll(task => task.IsCompletedSuccessfully);
+        retiredAuthorityDrains.Add(RetirePreviewAuthorityAsync(previous, simulation, permissions));
+        developerPreviewRetiringHost = null; // The drain above now owns the original object.
         developerPreviewPackagePath = developerPreviewSha256 = null;
         RefreshDeveloperSimulationStatus();
     }
+    private static async Task RetirePreviewAuthorityAsync(WebAppHost? previous, DeveloperPreviewSimulation? simulation,
+        DeveloperPreviewPermissions? permissions)
+    {
+        // Do not clear a live preview's inherited records while its original
+        // endpoint can still deliver. A timer or a requested Close is not exit.
+        if (previous is not null) await previous.WhenResourcesReleased;
+        if (permissions is not null) await permissions.DisposeAsync();
+        if (simulation is not null) await simulation.DisposeAsync();
+    }
     private void ReleaseDeveloperPreviewHost()
-    { developerPreviewHost?.Dispose(); developerPreviewHost = null; developerPreviewSessionId = null; developerPreviewServices = null; }
+    {
+        if (developerPreviewHost is { } current)
+        {
+            developerPreviewRetiringHost = current;
+            current.Dispose();
+        }
+        developerPreviewHost = null; developerPreviewSessionId = null; developerPreviewServices = null;
+    }
     private void RecordDeveloperPreviewCall(string method, string code)
     { developerPreviewTrace.Record(method, code); RecordDeveloperSdkCall(method, code); }
     private void ResumeDeveloperPreview() => developerPreviewHost?.Foreground();
@@ -108,11 +136,11 @@ public sealed partial class MainWindow
             case "status": break;
             case "trace": break;
             case "clear-trace": developerPreviewTrace.ClearTrace(); developerTools!.ClearTrace(); RefreshDeveloperTrace(); break;
-            case "foreground": appHost?.Background(); BackgroundManagedApps(); ShowPage(DeveloperPanel); preview.Foreground(); break;
-            case "background": preview.Background(); break;
+            case "foreground": appHost?.Background(); BackgroundManagedApps(); ShowPage(DeveloperPanel); await TrackOwnedAuthorityAsync(preview.ForegroundAsync(cancellationToken)); break;
+            case "background": await TrackOwnedAuthorityAsync(preview.BackgroundAsync(cancellationToken)); break;
             case "deny-permissions": case "restore-permissions":
-                developerPreviewPermissions!.SetDenied(command == "deny-permissions", developerPreviewServices!.Account, developerPreviewServices.Application); break;
-            case "offline": case "online": developerPreviewSimulation!.SetOffline(command == "offline"); break;
+                await TrackOwnedAuthorityAsync(developerPreviewPermissions!.SetDeniedAsync(command == "deny-permissions", developerPreviewServices!.Account, developerPreviewServices.Application, cancellationToken)); break;
+            case "offline": case "online": await TrackOwnedAuthorityAsync(developerPreviewSimulation!.SetOfflineAsync(command == "offline", cancellationToken)); break;
             case "account-a": case "account-b": case "account-guest": case "reset-simulation":
                 await SwitchDeveloperSimulationAccountAsync(command, sessionId, cancellationToken);
                 preview = developerPreviewHost ?? throw new PackageException("DEVELOPER_PREVIEW_SESSION_EXPIRED");
@@ -160,15 +188,16 @@ public sealed partial class MainWindow
             }
             cancellationToken.ThrowIfCancellationRequested();
             if (!DeveloperModeEnabled || developerPreviewSimulation is null) throw new PackageException("DEVELOPER_MODE_DISABLED");
-            developerPreviewSimulation.SwitchAccount(command == "account-guest" ? "guest" : command == "reset-simulation" ? "live" : command);
+            await TrackOwnedAuthorityAsync(developerPreviewSimulation.SwitchAccountAsync(command == "account-guest" ? "guest" : command == "reset-simulation" ? "live" : command, cancellationToken));
             if (command == "reset-simulation")
             {
-                developerPreviewSimulation.SetOffline(false);
-                developerPreviewPermissions?.Dispose(); developerPreviewPermissions = new(permissionService!);
+                await TrackOwnedAuthorityAsync(developerPreviewSimulation.SetOfflineAsync(false, cancellationToken));
+                if (developerPreviewPermissions is { } oldPermissions) await TrackOwnedAuthorityAsync(oldPermissions.DisposeAsync().AsTask());
+                developerPreviewPermissions = new(permissionService!, authorityMutations: developerPreviewAuthority);
             }
             await StartDeveloperPreviewHostAsync(cancellationToken);
         }
-        catch { CloseDeveloperPreview(); throw; }
+        catch { CloseDeveloperPreviewCore(previous); throw; }
     }
     private async void ShowDeveloperDebug(string command) => await DeveloperOperationAsync(async token =>
     {

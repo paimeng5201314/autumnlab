@@ -35,14 +35,18 @@ public static partial class RuntimeIsolationPolicy
     public static bool IsSupportedBrowserVersion(string? browserVersion) =>
         string.Equals(browserVersion, RequiredBrowserVersion, StringComparison.Ordinal);
 
-    public static RuntimeIsolationChallenge CreateChallenge(Guid instanceId, string origin)
+    public static RuntimeIsolationChallenge CreateChallenge(Guid instanceId, string origin) =>
+        CreateChallenge(instanceId, origin, Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32)));
+
+    private static RuntimeIsolationChallenge CreateChallenge(Guid instanceId, string origin, string nonce)
     {
         if (instanceId == Guid.Empty) throw new ArgumentException("An active runtime instance is required.", nameof(instanceId));
         if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps
             || uri.AbsolutePath != "/" || uri.Query.Length != 0 || uri.Fragment.Length != 0 || uri.UserInfo.Length != 0
             || !string.Equals(uri.AbsoluteUri, origin, StringComparison.Ordinal))
             throw new ArgumentException("A canonical trusted HTTPS origin with a trailing slash is required.", nameof(origin));
-        string nonce = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
+        if (nonce is not { Length: 64 } || nonce.Any(c => c is not (>= 'a' and <= 'f' or >= '0' and <= '9')))
+            throw new ArgumentException("Invalid host challenge nonce.", nameof(nonce));
         string prefix = "__autumn_isolation_" + nonce;
         string scriptPath = prefix + ".js";
         string binding = JsonSerializer.Serialize(new { protocolVersion = 1, nonce, instanceId = instanceId.ToString("D"), origin });

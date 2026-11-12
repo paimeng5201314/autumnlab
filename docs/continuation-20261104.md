@@ -1,0 +1,17 @@
+# 2026-11-04 接续工作记录
+
+制作人：派蒙。本目录是独立本地接续工作副本，原工作区位于父目录并予以保留。
+
+来源为用户交接指定提交6f634fa7c3f7457b32de6a5aec061cfddbc5a969的完整工作树归档，SHA256为94a311d95c489c4105104636b5752e56bf0b1dbcc8dd30a43f53881ef2a0f669；原归档及合并记录在父目录artifacts/continuation-import-20261104。它比本机最初导入的22937b3多一个提交。保留本机上轮新增32个源文件，并把Test.ps1的只读上下文检查与新ChemLeap生命周期检查合并。当前本地AGENTS授权规则优先；历史CLOUD_HANDOFF不扩大本次上传、云端或发布授权。
+
+根AUTUMNOS_PROGRESS保留本机进度，原工作电脑进度归档在docs/migration-20261031-progress.md。这次归档没有原机完整原生报告、历史EXE或私钥；历史通过分数不能算成本机成绩。生产更新公钥与父目录原件SHA256相同，保持原身份。
+
+新工作副本使用项目内.tools目录链接复用父目录已校验的固定SDK10.0.401、锁定NuGet包、固定WebView154与合同工具缓存，不修改系统PATH。当前主机是Windows Server10.0.20348 x64，High默认token没有现有linked Medium。普通用户和Windows10/11目标系统原生矩阵仍须实际环境验收。
+
+G2-B1审查发现：指定ZIP已经包含ChannelGeneration==Max时的0 sentinel候选，不再直接checked加一，退休也不增加generation；但24项原有纯测试没有覆盖交接所述Max-1重叠writer交错。本轮补确定性测试核验首个ACK推进Max、第二writer不得发送零代次、取消等待保留writer意图、原lifetime退休及持有driver buffer的容量规则。测试中的driver/lifetime均明确为synthetic，不产生OS退休或原生Post证据。实际构建和测试只认新build报告。
+
+G2-B2已完成本轮源码接线：真实权限prompt/settings、账号刷新与同epoch SessionExpired、guest/preview、实例生命周期及shutdown都在提交前取得异步屏障；通知/取消在permit外，Monitor不跨await。WebAppHost.PublishState、SDK事件与响应使用原始冻结stamp进入最终同步原生投递gate。预览退休对象、关闭/可见性任务由host持有并drain。实际运行结果只认新的构建报告，不能沿用B1成绩；真正独立宿主、STA receipt及IPC仍未接入。
+
+2026-11-05：B2首轮 `T06-20261105-g2b2-01` 已完成1052项C#及全部9组自动检查，Release只有一项Windows测试注册的CA1416警告。按实际平台保护注册、修正旧安装器延期标签后，使用全新 `T06-20261105-g2b2-02` 验证最终字节，不把01分数转记02。新增确定性回归涵盖提交前等待、intent后的业务取消、同epoch旧profile/event、轮换凭据、初始登录取消、权限与生命周期代次耗尽、分阶段关闭及live/test预览路由。所有原生路径仍需对应实际测试，纯driver/lifetime替身不作OS证明。B1已验证源码和原编译字节在artifacts/continuation-20261104/b1-frozen/逐项归档回读，原失败记录继续保留。
+
+required_boundaries保持统一拒绝；原型、纯测试、编译与IPC写入都不产生第三方启动资格。独立宿主、实际STA Post receipt、有界IPC、浏览器隔离G3、通用启动G4和最终交付G5继续按实际证据逐项验收。

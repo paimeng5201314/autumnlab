@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Buffers;
 using System.Text;
 using System.Threading.Channels;
+using System.Runtime.CompilerServices;
 using AutumnOS.Runtime;
 using Coordinator = AutumnOS.Runtime.RuntimeDeliveryCoordinator;
 
@@ -37,6 +38,8 @@ internal static class RuntimeDeliveryCoordinatorTests
         yield return Case("posted_ack_before_driver_return_does_not_release_buffer_slot", EarlyReceiptSlot);
         yield return Case("native_rejection_is_terminal_without_posted_success", NativeRejection);
         yield return Case("pre_cancelled_fence_registers_no_writer_intent", PreCancelledFence);
+        yield return Case("overlapping_fences_at_channel_limit_wait_for_original_retirement", ChannelExhaustionOverlappingFences);
+        yield return Case("retired_max_channel_keeps_held_writer_bounded_until_idle", ChannelExhaustionHeldFenceRetirement);
     }
 
     private static (string, Action) Case(string name, Func<Task> run) =>
@@ -94,14 +97,21 @@ internal static class RuntimeDeliveryCoordinatorTests
         var c = new Coordinator(); var e = new Endpoint(c); var hold = Signal(); e.Driver.DeliveryGate = hold.Task;
         Coordinator.DeliveryTicket first = Queue(c, e, "first"); RuntimeDeliveryWrite write = await e.Driver.Delivery();
         Coordinator.DeliveryTicket unsent = Queue(c, e, "unsent");
+        // This fresh coordinator has issued exactly these two reservations.
+        // Cancelling the second ticket does not rewind its correlation ID;
+        // the fence cutoff must still cover that allocated, unsent ticket.
+        long expectedCutoff = checked(write.DeliveryId + 1);
         Coordinator.FenceOperation fence = await c.BeginFenceAsync(Instance(e.Binding));
         Check(await c.WaitOutcomeAsync(unsent) == RuntimeDeliveryState.NotSent && e.Driver.FenceCalls == 0);
         Check(c.TryReserve(e.Registration.Endpoint, Descriptor("new")).Rejection == RuntimeDeliveryRejection.Fenced);
-        Check(!e.Registration.Evidence.AcceptNativeFence(new(1, e.Binding, write.DeliveryId, 2)));
+        Check(!e.Registration.Evidence.AcceptNativeFence(new(1, e.Binding, expectedCutoff, 2)));
         Check(e.Registration.Evidence.MarkReceiptUnknown(write.DeliveryId));
         Check(!fence.WaitCommitPermitAsync().IsCompleted);
         hold.SetResult(true); RuntimeFenceWrite barrier = await e.Driver.Fence();
-        Check(e.Driver.DeliveryCalls == 1 && barrier.CutoffDeliveryId == write.DeliveryId);
+        Check(e.Driver.DeliveryCalls == 1);
+        Check(barrier.CutoffDeliveryId == expectedCutoff);
+        Check(c.StateOf(first) == RuntimeDeliveryState.Unknown && !c.WaitOutcomeAsync(first).IsCompleted);
+        Check(!fence.WaitCommitPermitAsync().IsCompleted);
         Check(e.Fence(barrier)); Check(await c.WaitOutcomeAsync(first) == RuntimeDeliveryState.FencedUnknown);
         Coordinator.MutationPermit permit = await fence.WaitCommitPermitAsync(); permit.Commit(() => { });
         Check(c.StateOf(first) != RuntimeDeliveryState.Posted); await e.Retire();
@@ -398,6 +408,85 @@ internal static class RuntimeDeliveryCoordinatorTests
         Check(c.SnapshotCounts().Fences == 0); Coordinator.DeliveryTicket ticket = Reserve(c, e, "new"); Check(c.CancelBeforeSend(ticket)); await e.Retire();
     }
 
+    private static async Task ChannelExhaustionOverlappingFences()
+    {
+        var c = new Coordinator(new(1, 2, 128, 2));
+        var e = new Endpoint(c, LastChannelBinding());
+        Coordinator.DeliveryTicket old = Queue(c, e, "unknown-before-limit");
+        RuntimeDeliveryWrite oldWrite = await e.Driver.Delivery();
+        Check(e.Registration.Evidence.MarkReceiptUnknown(oldWrite.DeliveryId));
+        Coordinator.FenceOperation first = await c.BeginFenceAsync(Instance(e.Binding));
+        RuntimeFenceWrite barrier = await e.Driver.Fence();
+        Check(barrier.Binding.ChannelGeneration == long.MaxValue - 1 && barrier.NextChannelGeneration == long.MaxValue);
+        Coordinator.FenceOperation second = await c.BeginFenceAsync(Application(e.Binding));
+        Check(e.Driver.FenceCalls == 1 && c.SnapshotCounts().Fences == 2);
+        Throws<InvalidOperationException>(() => c.BeginFenceAsync(Instance(e.Binding)).GetAwaiter().GetResult());
+        Check(!e.Registration.Evidence.AcceptNativeFence(Receipt(barrier) with { NextChannelGeneration = 0 }));
+        Check(!first.WaitCommitPermitAsync().IsCompleted && !second.WaitCommitPermitAsync().IsCompleted);
+        Check(e.Fence(barrier));
+        Check(await c.WaitOutcomeAsync(old) == RuntimeDeliveryState.FencedUnknown && !e.Post(oldWrite));
+        Coordinator.MutationPermit firstPermit = await first.WaitCommitPermitAsync();
+        int commits = 0;
+        firstPermit.Commit(() => commits++); // Activating the queued second fence must not increment MaxValue.
+        Check(commits == 1 && e.Driver.FenceCalls == 1 && c.SnapshotCounts().Fences == 1);
+        Check(c.TryReserve(e.Registration.Endpoint, Descriptor("exhausted")).Rejection == RuntimeDeliveryRejection.EndpointUnavailable);
+        using var cancel = new CancellationTokenSource();
+        Task<Coordinator.MutationPermit> cancelledWait = second.WaitCommitPermitAsync(cancel.Token);
+        cancel.Cancel(); await Cancelled(cancelledWait);
+        Task<Coordinator.MutationPermit> waitingForRetirement = second.WaitCommitPermitAsync();
+        Check(!waitingForRetirement.IsCompleted && c.SnapshotCounts().Fences == 1);
+        var zeroGenerationAck = new RuntimeNativeFenceReceipt(barrier.FenceId + 1,
+            barrier.Binding with { ChannelGeneration = long.MaxValue }, barrier.CutoffDeliveryId, 0);
+        Check(!e.Registration.Evidence.AcceptNativeFence(zeroGenerationAck) && !waitingForRetirement.IsCompleted);
+        Check(!e.Fence(barrier)); // A duplicate prior ACK cannot complete the exhausted leg.
+        await e.Retire();
+        Coordinator.MutationPermit secondPermit = await waitingForRetirement;
+        secondPermit.Commit(() => commits++);
+        Throws<InvalidOperationException>(() => firstPermit.Commit(() => commits++));
+        Throws<InvalidOperationException>(() => secondPermit.Commit(() => commits++));
+        Check(commits == 2 && c.StateOf(old) == RuntimeDeliveryState.FencedUnknown && e.Driver.FenceCalls == 1);
+        Check(c.SnapshotCounts() == (0, 0, 0, 0, 0));
+    }
+
+    private static async Task ChannelExhaustionHeldFenceRetirement()
+    {
+        var c = new Coordinator(new(1, 1, 128, 2));
+        RuntimeDeliveryBinding binding = LastChannelBinding();
+        Throws<ArgumentException>(() => _ = new Endpoint(c, binding with { ChannelGeneration = long.MaxValue }));
+        var e = new Endpoint(c, binding);
+        var release = Signal(); e.Driver.FenceGate = release.Task;
+        try
+        {
+            Coordinator.FenceOperation first = await c.BeginFenceAsync(Instance(e.Binding));
+            RuntimeFenceWrite barrier = await e.Driver.Fence();
+            Check(barrier.NextChannelGeneration == long.MaxValue && e.Fence(barrier));
+            Coordinator.MutationPermit firstPermit = await first.WaitCommitPermitAsync();
+            Coordinator.FenceOperation second = await c.BeginFenceAsync(Application(e.Binding));
+            Check(!second.WaitCommitPermitAsync().IsCompleted && !e.Registration.Evidence.WhenIdle.IsCompleted);
+            // The original group can retire while the parent writer still owns its async operation.
+            await e.Retire();
+            Check(c.SnapshotCounts().Endpoints == 1 && !e.Registration.Evidence.WhenIdle.IsCompleted);
+            Throws<InvalidOperationException>(() => _ = new Endpoint(c));
+            int commits = 0;
+            firstPermit.Commit(() => commits++); // Builds a leg for a retained, retired endpoint at MaxValue.
+            Coordinator.MutationPermit secondPermit = await second.WaitCommitPermitAsync();
+            secondPermit.Commit(() => commits++);
+            Throws<InvalidOperationException>(() => secondPermit.Commit(() => commits++));
+            Check(commits == 2 && !e.Fence(barrier) && e.Driver.FenceCalls == 1);
+            Check(c.SnapshotCounts() == (1, 0, 0, 0, 0));
+        }
+        finally
+        {
+            release.TrySetResult(true);
+            await e.Registration.Evidence.WhenIdle.WaitAsync(TimeSpan.FromSeconds(3));
+        }
+        Check(c.SnapshotCounts() == (0, 0, 0, 0, 0));
+        var next = new Endpoint(c); await next.Retire();
+    }
+
+    private static RuntimeDeliveryBinding LastChannelBinding() => new(Guid.NewGuid(), "controlled-account", 1,
+        new string('a', 64), Guid.NewGuid(), 1, Guid.NewGuid(), 1, long.MaxValue - 1);
+
     private sealed class FakeLifetime : IOriginalRuntimeEndpointLifetime
     {
         private readonly RuntimeEndpointLifetimeRegistration registration;
@@ -412,6 +501,7 @@ internal static class RuntimeDeliveryCoordinatorTests
         private readonly Channel<RuntimeDeliveryWrite> deliveries = Channel.CreateUnbounded<RuntimeDeliveryWrite>();
         private readonly Channel<RuntimeFenceWrite> barriers = Channel.CreateUnbounded<RuntimeFenceWrite>();
         internal Task DeliveryGate = Task.CompletedTask;
+        internal Task FenceGate = Task.CompletedTask;
         internal Exception? DeliveryFailure;
         internal Action<RuntimeDeliveryWrite>? OnDelivery;
         internal TaskCompletionSource<bool> DeliveryReturned { get; } = Signal();
@@ -422,8 +512,8 @@ internal static class RuntimeDeliveryCoordinatorTests
             try { await DeliveryGate; if (DeliveryFailure is Exception error) throw error; }
             finally { DeliveryReturned.TrySetResult(true); }
         }
-        public ValueTask WriteFenceAsync(RuntimeFenceWrite fence)
-        { Interlocked.Increment(ref FenceCalls); Check(barriers.Writer.TryWrite(fence)); return ValueTask.CompletedTask; }
+        public async ValueTask WriteFenceAsync(RuntimeFenceWrite fence)
+        { Interlocked.Increment(ref FenceCalls); Check(barriers.Writer.TryWrite(fence)); await FenceGate; }
         internal Task<RuntimeDeliveryWrite> Delivery() => deliveries.Reader.ReadAsync().AsTask();
         internal Task<RuntimeFenceWrite> Fence() => barriers.Reader.ReadAsync().AsTask();
     }
@@ -472,5 +562,6 @@ internal static class RuntimeDeliveryCoordinatorTests
     private static TaskCompletionSource<bool> Signal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
     private static async Task Cancelled(Task task) { try { await task; } catch (OperationCanceledException) { return; } throw new InvalidOperationException("EXPECTED_CANCELLED_WAITER"); }
     private static void Throws<T>(Action action) where T : Exception { try { action(); } catch (T) { return; } throw new InvalidOperationException("EXPECTED_" + typeof(T).Name); }
-    private static void Check(bool value) { if (!value) throw new InvalidOperationException("DELIVERY_COORDINATOR_FAKE_ASSERTION"); }
+    private static void Check(bool value, [CallerArgumentExpression(nameof(value))] string? expression = null)
+    { if (!value) throw new InvalidOperationException("DELIVERY_COORDINATOR_FAKE_ASSERTION: " + expression); }
 }

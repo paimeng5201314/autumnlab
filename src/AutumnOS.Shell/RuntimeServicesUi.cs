@@ -12,6 +12,7 @@ namespace AutumnOS.Shell;
 public sealed partial class MainWindow
 {
     private PermissionService? permissionService;
+    private readonly RuntimeAuthorityMutationCoordinator authorityMutations = new();
     private DesktopExtensionService? desktopExtensions;
     private readonly CriticalOperationCoordinator criticalOperations = new();
     private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Instance, bool Write), FileCapabilityBroker> fileBrokers = [];
@@ -37,7 +38,7 @@ public sealed partial class MainWindow
         if (permissionService is not null) return;
         try
         {
-            permissionService = new PermissionService(installationRoot.Directories["Config"], () => criticalOperations.EnterWrite("应用权限写入"));
+            permissionService = new PermissionService(installationRoot.Directories["Config"], () => criticalOperations.EnterWrite("应用权限写入"), authorityMutations: authorityMutations);
             desktopExtensions = new DesktopExtensionService(installationRoot.Directories["Config"], enterCritical: () => criticalOperations.EnterWrite("通知设置写入"));
             permissionService.Changed += _ => DispatcherQueue.TryEnqueue(RefreshPermissionsUi);
             desktopExtensions.Changed += () => DispatcherQueue.TryEnqueue(RefreshDesktopExtensions);
@@ -63,7 +64,7 @@ public sealed partial class MainWindow
     private RuntimeSessionServices CreateRuntimeServicesCore(InstalledPackage installed, Func<RuntimeSession> session, CancellationToken token,
         RuntimeAccountContext? accountOverride = null, IPermissionService? permissionsOverride = null,
         Func<RuntimeAccountContext, CancellationToken, Task<RuntimeProfile>>? profileOverride = null, bool suppressIdentity = false,
-        IIdentityService? identityOverride = null)
+        IIdentityService? identityOverride = null, IRuntimeAuthorityMutations? authorityOverride = null)
     {
         if (permissionService is null) throw new RuntimeCapabilityException("PERMISSION_STORE_UNAVAILABLE");
         var app = BindApplication(installed);
@@ -111,6 +112,7 @@ public sealed partial class MainWindow
         }
         return new RuntimeSessionServices
         {
+            AuthorityMutations = authorityOverride ?? authorityMutations,
             Account = account, Application = app, Permissions = permissions, Identity = identityOverride ?? (suppressIdentity ? null : identityService),
             GetProfile = profileOverride,
             RequestPermission = (prompt, ct) => RequestApplicationPermissionAsync(session().Instance.Id.Value, prompt, ct), Desktop = desktopExtensions,
@@ -271,10 +273,12 @@ public sealed partial class MainWindow
             foreach (var action in new[] { ("允许", PermissionDecision.Granted), ("拒绝", PermissionDecision.Denied), ("撤销", PermissionDecision.Revoked) })
             {
                 if (!current && action.Item2 == PermissionDecision.Granted) continue;
-                actions.Children.Add(ActionButton(action.Item1, "Permission-" + permission + "-" + action.Item2, (_, _) =>
+                actions.Children.Add(ActionButton(action.Item1, "Permission-" + permission + "-" + action.Item2, async (_, _) =>
                 {
-                    try { permissionService.SetDecision(account, app, permission, action.Item2); permissionResult.Text = "已保存权限决定。"; }
+                    try { await TrackOwnedAuthorityAsync(permissionService.SetDecisionAsync(account, app, permission, action.Item2, lifetime.Token)); permissionResult.Text = "已保存权限决定。"; }
                     catch (RuntimeCapabilityException error) { permissionResult.Text = error.Code + " · 权限未改变。"; }
+                    catch (OperationCanceledException) { permissionResult.Text = "权限操作已取消。"; }
+                    catch (Exception error) when (error is not OutOfMemoryException) { permissionResult.Text = "AUTHORITY_COMMIT_FAILED · 权限操作未完成。"; }
                     RefreshPermissionsUi();
                 }));
             }

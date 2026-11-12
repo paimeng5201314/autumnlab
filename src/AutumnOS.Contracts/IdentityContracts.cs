@@ -4,7 +4,8 @@ namespace AutumnOS.Contracts;
 public enum IdentitySessionState { SignedOut, SigningIn, SignedIn, SessionExpired, OfflineCached }
 
 public sealed record IdentitySnapshot(IdentitySessionState State, string AccountNamespace, long SessionEpoch,
-    string? DisplayName, string? AvatarUrl, bool RememberSignIn, bool CanRefresh, string? ErrorCode);
+    string? DisplayName, string? AvatarUrl, bool RememberSignIn, bool CanRefresh, string? ErrorCode,
+    long AuthorityRevision = 0);
 
 /// <summary>Trusted host contract. Application SDK receives only separately authorized, app-scoped profile fields.</summary>
 public interface IIdentityService

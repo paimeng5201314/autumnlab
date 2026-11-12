@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <AssemblyName>AutumnOS.LoaderDebugProbe</AssemblyName>
+    <StartupObject>AutumnOS.LoaderDebugProbe.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../LuaTokenProbe/Program.cs" Link="LuaTokenReadAndMediumHelpers.cs" />
+    <Compile Include="../LuaTokenProbe/LaunchAccessCheck.cs" Link="LuaProbeCompileDependency.cs" />
+    <Compile Include="../LuaTokenProbe/DefaultDacl.cs" Link="LuaCopyDefaultDaclHelpers.cs" />
+    <Compile Include="../SyntheticLuaLauncher/PrivateDesktopNative.cs" Link="VerifiedPrivateDesktopNative.cs" />
+  </ItemGroup>
+</Project>

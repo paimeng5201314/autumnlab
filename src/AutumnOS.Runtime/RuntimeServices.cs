@@ -15,6 +15,7 @@ public sealed class RuntimeSessionServices
     public required Func<RuntimePermissionPrompt, CancellationToken, Task<bool>> RequestPermission { get; init; }
     public Func<RuntimeAccountContext, CancellationToken, Task<RuntimeProfile>>? GetProfile { get; init; }
     public IIdentityService? Identity { get; init; }
+    public IRuntimeAuthorityMutations? AuthorityMutations { get; init; }
     public Func<string, JsonElement, CancellationToken, Task<object>>? DataRequest { get; init; }
     public IReadOnlyList<string> DataCapabilities { get; init; } = ["saves", "storage", "preferences"];
     public DesktopExtensionService? Desktop { get; init; }

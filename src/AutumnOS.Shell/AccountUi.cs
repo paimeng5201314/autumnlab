@@ -70,7 +70,7 @@ public sealed partial class MainWindow
         if (configuration?.Options is not { } options) { accountResult.Text = "AUTH_NOT_CONFIGURED · 公开配置不可用，仍可使用游客功能。"; RefreshAccountUi(); return; }
         try
         {
-            identityService = new LogtoIdentityService(options, installationRoot.DataDirectory, enterCriticalOperation: reason => criticalOperations.EnterWrite(reason));
+            identityService = new LogtoIdentityService(options, installationRoot.DataDirectory, enterCriticalOperation: reason => criticalOperations.EnterWrite(reason), authorityMutations: authorityMutations);
             identityService.Changed += OnIdentityChanged;
             Task<IdentitySnapshot> restoration = identityService.InitializeAsync(lifetime.Token);
             _ = ObserveIdentityRestorationAsync(restoration);

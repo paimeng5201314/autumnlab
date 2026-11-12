@@ -19,6 +19,15 @@ public static partial class RuntimeIsolationPolicy
     }
 
     /// <summary>
+    /// Recreate the parent's bootstrap on its authenticated native channel. The nonce alone is never proof.
+    /// </summary>
+    public static RuntimeParserGateChallenge CreateParserGateChallenge(Guid instanceId, string origin, string entryPath, string nonce)
+    {
+        if (!IsParserGateEntry(entryPath)) throw new ArgumentException("Invalid package entry.", nameof(entryPath));
+        return new(CreateChallenge(instanceId, origin, nonce), entryPath);
+    }
+
+    /// <summary>
     /// Validates only an ExecuteScriptAsync envelope from the still-loading trusted bootstrap.
     /// This is an auxiliary binding check, not a native-document attestation or an isolation proof.
     /// document.open can retain a Document object: the host must invalidate on native document/

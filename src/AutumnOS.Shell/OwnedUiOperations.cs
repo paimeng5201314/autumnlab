@@ -10,7 +10,16 @@ public sealed partial class MainWindow
     private readonly HashSet<ContentDialog> ownedDialogs = [];
     private readonly Dictionary<Guid, IAsyncInfo> ownedPickers = [];
     private readonly HashSet<Task> ownedNetworkTasks = [];
+    private readonly HashSet<Task> ownedAuthorityTasks = [];
+    private readonly List<Task> retiredAuthorityDrains = [];
     private readonly List<Task> retiredDownloadDrains = [];
+
+    private async Task TrackOwnedAuthorityAsync(Task task)
+    {
+        ownedAuthorityTasks.Add(task);
+        try { await task; }
+        finally { ownedAuthorityTasks.Remove(task); }
+    }
 
     private async Task<T> TrackOwnedNetworkAsync<T>(Task<T> task)
     {

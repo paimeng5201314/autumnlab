@@ -1,6 +1,7 @@
 <Solution>
   <Configurations><Platform Name="x64" /></Configurations>
   <Folder Name="/src/">
+    <Project Path="src/AutumnOS.NativeHost.Controller/AutumnOS.NativeHost.Controller.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.Update/AutumnOS.Update.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.UpdateProtocol/AutumnOS.UpdateProtocol.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.Updater/AutumnOS.Updater.csproj"><Platform Project="x64" /></Project>
@@ -10,6 +11,7 @@
     <Project Path="src/AutumnOS.Launcher/AutumnOS.Launcher.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.Packages/AutumnOS.Packages.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.Runtime/AutumnOS.Runtime.csproj"><Platform Project="x64" /></Project>
+    <Project Path="src/AutumnOS.NativeHost.Windows/AutumnOS.NativeHost.Windows.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.Contracts/AutumnOS.Contracts.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.Storage/AutumnOS.Storage.csproj"><Platform Project="x64" /></Project>
     <Project Path="src/AutumnOS.Identity/AutumnOS.Identity.csproj"><Platform Project="x64" /></Project>

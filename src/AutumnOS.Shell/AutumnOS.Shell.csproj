@@ -15,6 +15,8 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../AutumnOS.NativeHost.Controller/AutumnOS.NativeHost.Controller.csproj" />
+    <EmbeddedResource Condition="'$(NativePayloadTable)' != ''" Include="$(NativePayloadTable)" LogicalName="AutumnOS.NativePayloadTable" />
     <ProjectReference Include="../AutumnOS.Update/AutumnOS.Update.csproj" />
     <ProjectReference Include="../AutumnOS.UpdateProtocol/AutumnOS.UpdateProtocol.csproj" />
     <ProjectReference Include="../AutumnOS.Store/AutumnOS.Store.csproj" />

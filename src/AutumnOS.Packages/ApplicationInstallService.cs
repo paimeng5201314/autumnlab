@@ -103,7 +103,7 @@ public sealed class ApplicationInstallService
                 bool downgrade = old is not null && CompareVersions(inspection.Manifest.Version, old.Package.Manifest.Version) < 0;
                 if (downgrade && (intent != InstallIntent.Downgrade || !downgradeConfirmed)) throw new PackageException("PACKAGE_DOWNGRADE_CONFIRMATION_REQUIRED");
                 if (old is { IsInstalled: true } && sameVersion && intent != InstallIntent.Repair)
-                { VerifyInstalled(old.Package); return old; }
+                { VerifyInstalled(old.Package); RetainArchive(inputLease, inspection.Sha256); return old; }
                 if (old is not null && !sameVersion)
                 {
                     if (prepareSaveChange is null && old.Package.Manifest.Permissions.Contains("saves")) throw new PackageException("SAVE_COMPATIBILITY_UNAVAILABLE");
@@ -116,6 +116,7 @@ public sealed class ApplicationInstallService
                 string contentRoot = Path.Combine(appsDirectory, ".content", transaction);
                 InstalledPackage package = PackageInstaller.Install(packagePath, contentRoot, cancellationToken) with { HostSource = source.Binding(appId) };
                 if (package.PackageSha256 != inspection.Sha256) throw new PackageException("PACKAGE_HASH_MISMATCH");
+                RetainArchive(inputLease, inspection.Sha256);
                 var next = new InstalledApplication(appId, package, source, DateTimeOffset.UtcNow, old?.PinnedVersion,
                     old?.AllowPreview ?? inspection.Manifest.Version.Contains('-'), Provenance: expected?.Provenance);
                 string journal = Path.Combine(appsDirectory, ".transactions", transaction + ".json");
@@ -136,6 +137,38 @@ public sealed class ApplicationInstallService
         catch (OperationCanceledException) { throw new PackageException("PACKAGE_CANCELLED"); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         { throw new PackageException(e is IOException io && (io.HResult & 0xffff) is 112 or 39 ? "PACKAGE_DISK_FULL" : "PACKAGE_IO_ERROR"); }
+    }
+
+    // The untrusted runtime never sees this directory. Later launches reconstruct the payload
+    // table from the original verified archive, even after the download cache has been evicted.
+    public string RetainedArchivePath(string sha)
+    {
+        if (sha.Length != 64 || sha.Any(c => c is not (>= '0' and <= '9' or >= 'a' and <= 'f')))
+            throw new PackageException("PACKAGE_HASH_MISMATCH");
+        string path = Path.Combine(appsDirectory, ".archives", sha + ".autumn");
+        SafePath(path); return path;
+    }
+
+    private void RetainArchive(FileStream pinned, string sha)
+    {
+        string path = RetainedArchivePath(sha);
+        if (File.Exists(path))
+        {
+            using FileStream previous = new(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            if (previous.Length != pinned.Length || Convert.ToHexStringLower(SHA256.HashData(previous)) != sha)
+                throw new PackageException("PACKAGE_ARCHIVE_CORRUPT");
+            return;
+        }
+        string temp = path + "." + Guid.NewGuid().ToString("N");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!); SafePath(temp);
+        bool created = false;
+        try
+        {
+            using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            { created = true; pinned.Position = 0; pinned.CopyTo(output); output.Flush(true); }
+            File.Move(temp, path); created = false;
+        }
+        finally { if (created) File.Delete(temp); }
     }
 
     public void Uninstall(string appId)

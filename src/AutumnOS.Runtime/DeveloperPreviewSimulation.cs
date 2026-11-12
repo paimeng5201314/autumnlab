@@ -3,15 +3,19 @@ using AutumnOS.Contracts;
 namespace AutumnOS.Runtime;
 
 /// <summary>Explicit host-only test state. It cannot issue credentials or mutate the real identity service.</summary>
-public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable
+public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable, IAsyncDisposable
 {
     private readonly object gate = new();
+    private readonly IRuntimeAuthorityMutations? authorityMutations;
     private readonly string scope = Guid.NewGuid().ToString("N");
     private CancellationTokenSource epochLifetime = new();
     private long epoch;
+    private long authorityRevision;
     private bool disposed;
     private string account = "live";
     private bool offline;
+    public DeveloperPreviewSimulation(IRuntimeAuthorityMutations? authorityMutations = null)
+    { this.authorityMutations = authorityMutations; }
     public string Account { get { lock (gate) return account; } }
     public bool Offline { get { lock (gate) return offline; } }
     public bool UsesTestAccount => Account != "live";
@@ -26,22 +30,72 @@ public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable
                 bool guest = account is "guest" or "live";
                 return new(guest ? IdentitySessionState.SignedOut : offline ? IdentitySessionState.OfflineCached : IdentitySessionState.SignedIn,
                     $"developer-preview:{scope}:{account}", epoch, guest ? null : account == "account-a" ? "开发测试账号 A" : "开发测试账号 B",
-                    null, false, false, null);
+                    null, false, false, null, authorityRevision);
             }
         }
     }
     public void SetOffline(bool value)
     {
-        IdentitySnapshot snapshot;
-        lock (gate) { EnsureActive(); if (offline == value) return; offline = value; snapshot = Snapshot; }
-        Changed?.Invoke(this, snapshot);
+        IdentitySnapshot? snapshot = null;
+        CommitIdentity(() => snapshot = SetOfflineCore(value));
+        if (snapshot is not null) Changed?.Invoke(this, snapshot);
+    }
+    public async Task SetOfflineAsync(bool value, CancellationToken cancellationToken = default)
+    {
+        lock (gate) EnsureActive();
+        IdentitySnapshot? snapshot = null;
+        await CommitIdentityAsync(() => snapshot = SetOfflineCore(value, cancellationToken), cancellationToken).ConfigureAwait(false);
+        if (snapshot is not null) Changed?.Invoke(this, snapshot);
+    }
+    private IdentitySnapshot? SetOfflineCore(bool value, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            EnsureActive();
+            cancellationToken.ThrowIfCancellationRequested();
+            if (offline == value) return null;
+            long nextRevision = checked(authorityRevision + 1);
+            offline = value; authorityRevision = nextRevision;
+            return Snapshot;
+        }
     }
     public void SwitchAccount(string value)
     {
-        if (value is not ("live" or "guest" or "account-a" or "account-b")) throw new RuntimeCapabilityException("DEVELOPER_SIMULATION_INVALID");
-        CancellationTokenSource previous;
-        lock (gate) { EnsureActive(); account = value; epoch++; previous = epochLifetime; epochLifetime = new(); }
-        previous.Cancel(); previous.Dispose();
+        ValidateAccount(value);
+        CancellationTokenSource? previous = null; IdentitySnapshot? snapshot = null;
+        CommitIdentity(() => (previous, snapshot) = SwitchAccountCore(value));
+        PublishSwitch(previous, snapshot);
+    }
+    public async Task SwitchAccountAsync(string value, CancellationToken cancellationToken = default)
+    {
+        ValidateAccount(value); lock (gate) EnsureActive();
+        CancellationTokenSource? previous = null; IdentitySnapshot? snapshot = null;
+        await CommitIdentityAsync(() => (previous, snapshot) = SwitchAccountCore(value, cancellationToken), cancellationToken).ConfigureAwait(false);
+        PublishSwitch(previous, snapshot);
+    }
+    private static void ValidateAccount(string value)
+    { if (value is not ("live" or "guest" or "account-a" or "account-b")) throw new RuntimeCapabilityException("DEVELOPER_SIMULATION_INVALID"); }
+    private (CancellationTokenSource, IdentitySnapshot) SwitchAccountCore(string value, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            EnsureActive();
+            cancellationToken.ThrowIfCancellationRequested();
+            long nextEpoch = checked(epoch + 1), nextRevision = checked(authorityRevision + 1);
+            var nextLifetime = new CancellationTokenSource();
+            var previous = epochLifetime;
+            account = value; epoch = nextEpoch; authorityRevision = nextRevision; epochLifetime = nextLifetime;
+            return (previous, Snapshot);
+        }
+    }
+    private void PublishSwitch(CancellationTokenSource? previous, IdentitySnapshot? snapshot)
+    {
+        try { previous?.Cancel(); }
+        finally
+        {
+            previous?.Dispose();
+            if (snapshot is not null) Changed?.Invoke(this, snapshot);
+        }
     }
     public RuntimeAccountContext BindAccount(CancellationToken hostLifetime)
     {
@@ -99,9 +153,44 @@ public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable
     public void CancelSignIn() { }
     public void Dispose()
     {
-        CancellationTokenSource previous;
-        lock (gate) { if (disposed) return; disposed = true; previous = epochLifetime; }
-        previous.Cancel(); previous.Dispose(); Changed = null;
+        lock (gate) if (disposed) return;
+        CancellationTokenSource? previous = null;
+        CommitIdentity(() => previous = DisposeCore());
+        CompleteDisposal(previous);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        lock (gate) if (disposed) return;
+        CancellationTokenSource? previous = null;
+        await CommitIdentityAsync(() => previous = DisposeCore(), CancellationToken.None).ConfigureAwait(false);
+        CompleteDisposal(previous);
+    }
+    private CancellationTokenSource? DisposeCore()
+    {
+        lock (gate)
+        {
+            if (disposed) return null;
+            long nextRevision = checked(authorityRevision + 1);
+            disposed = true; authorityRevision = nextRevision;
+            return epochLifetime;
+        }
+    }
+    private void CompleteDisposal(CancellationTokenSource? previous)
+    {
+        try { previous?.Cancel(); }
+        finally { previous?.Dispose(); Changed = null; }
+    }
+    private void CommitIdentity(Action commit)
+    {
+        if (authorityMutations is null) { commit(); return; }
+        if (!authorityMutations.TryCommitSynchronously(RuntimeMutationScope.ForIdentity(), commit))
+            throw new RuntimeCapabilityException("RUNTIME_ASYNC_AUTHORITY_REQUIRED");
+    }
+    private async Task CommitIdentityAsync(Action commit, CancellationToken beforeIntentCancellation)
+    {
+        if (authorityMutations is null) { beforeIntentCancellation.ThrowIfCancellationRequested(); commit(); return; }
+        var mutation = await authorityMutations.BeginAsync(RuntimeMutationScope.ForIdentity(), beforeIntentCancellation).ConfigureAwait(false);
+        await mutation.CommitAsync(commit).ConfigureAwait(false);
     }
     private sealed class GateLease(object gate) : IDisposable
     {
@@ -111,21 +200,25 @@ public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable
 }
 
 /// <summary>Preview decisions and forced denial exist only in memory. No writes reach the persistent grant store.</summary>
-public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposable
+public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposable, IAsyncDisposable
 {
     private readonly object gate = new();
     private readonly IPermissionService original;
+    private readonly IRuntimeAuthorityMutations? authorityMutations;
     private readonly Dictionary<(string Account, string Binding, string Permission), PermissionRecord> decisions = [];
     private readonly Dictionary<(string Account, string Binding), long> revisions = [];
     private readonly Dictionary<(string Account, string Binding, string Permission), long> permissionRevisions = [];
     private readonly HashSet<(string Account, string Binding, string Permission)> pending = [];
     private bool denied;
     private long denialRevision;
-    public DeveloperPreviewPermissions(IPermissionService original) { this.original = original; original.Changed += OriginalChanged; }
+    private bool disposed;
+    public DeveloperPreviewPermissions(IPermissionService original, IRuntimeAuthorityMutations? authorityMutations = null)
+    { this.original = original; this.authorityMutations = authorityMutations; original.Changed += OriginalChanged; }
     private void OriginalChanged(PermissionChange change)
     {
         lock (gate)
         {
+            if (disposed) return;
             if (denied) change = change with { Decision = PermissionDecision.Denied };
             else if (change.Decision is not (PermissionDecision.Denied or PermissionDecision.Revoked)
                 && decisions.TryGetValue((change.AccountKey, change.BindingKey, change.Permission), out var local))
@@ -146,6 +239,7 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         Validate(account, app, permission);
         lock (gate)
         {
+            EnsureActive();
             if (denied) return PermissionDecision.Denied;
             bool testAccount = account.AccountKey.StartsWith("developer-preview:", StringComparison.Ordinal);
             PermissionDecision inherited = testAccount ? PermissionDecision.Prompt : original.Query(account, app, permission);
@@ -155,22 +249,23 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         }
     }
     public IReadOnlyList<PermissionRecord> List(RuntimeAccountContext account)
-    { account.EnsureCurrent(); lock (gate) return decisions.Values.Where(r => r.AccountKey == account.AccountKey).ToArray(); }
+    { account.EnsureCurrent(); lock (gate) { EnsureActive(); return decisions.Values.Where(r => r.AccountKey == account.AccountKey).ToArray(); } }
     public void Demand(RuntimeAccountContext account, RuntimeApplication app, string permission)
     {
         PermissionDecision decision = Query(account, app, permission);
         if (decision != PermissionDecision.Granted) throw new RuntimeCapabilityException(decision == PermissionDecision.Revoked ? "PERMISSION_REVOKED" : "PERMISSION_DENIED");
     }
     public long GetRevision(RuntimeAccountContext account, RuntimeApplication app)
-    { lock (gate) return denialRevision + revisions.GetValueOrDefault((account.AccountKey, app.BindingKey))
-        + (account.AccountKey.StartsWith("developer-preview:", StringComparison.Ordinal) ? 0 : original.GetRevision(account, app)); }
+    { lock (gate) { EnsureActive(); return checked(denialRevision + revisions.GetValueOrDefault((account.AccountKey, app.BindingKey))
+        + (account.AccountKey.StartsWith("developer-preview:", StringComparison.Ordinal) ? 0 : original.GetRevision(account, app))); } }
     public long GetRevision(RuntimeAccountContext account, RuntimeApplication app, string permission)
     {
         lock (gate)
         {
+            EnsureActive();
             Validate(account, app, permission);
-            return denialRevision + permissionRevisions.GetValueOrDefault((account.AccountKey, app.BindingKey, permission))
-                + (IsTestAccount(account) ? 0 : original.GetRevision(account, app, permission));
+            return checked(denialRevision + permissionRevisions.GetValueOrDefault((account.AccountKey, app.BindingKey, permission))
+                + (IsTestAccount(account) ? 0 : original.GetRevision(account, app, permission)));
         }
     }
     public IDisposable EnterUsageLease(RuntimeAccountContext account, RuntimeApplication app, string permission)
@@ -183,6 +278,7 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         IDisposable? inherited = null;
         try
         {
+            EnsureActive();
             Validate(account, app, permission);
             // A local preview grant may override Prompt, so retain the original decision lease,
             // not its usage lease. Both locks remain held through the caller's final commit.
@@ -204,9 +300,44 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
     public void SetDenied(bool value, RuntimeAccountContext account, RuntimeApplication app)
     {
         account.EnsureCurrent();
-        lock (gate) { if (denied == value) return; denied = value; denialRevision++; }
-        foreach (string permission in app.DeclaredPermissions)
-            Changed?.Invoke(new(account.AccountKey, app.BindingKey, permission, Query(account, app, permission)));
+        PermissionChange[] changes = [];
+        CommitMutation(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey),
+            () => changes = SetDeniedCore(value, account, app));
+        foreach (var change in changes) Changed?.Invoke(change);
+    }
+    public async Task SetDeniedAsync(bool value, RuntimeAccountContext account, RuntimeApplication app,
+        CancellationToken cancellationToken = default)
+    {
+        account.EnsureCurrent(); lock (gate) EnsureActive();
+        PermissionChange[] changes = [];
+        await CommitMutationAsync(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey),
+            () => changes = SetDeniedCore(value, account, app, cancellationToken), cancellationToken).ConfigureAwait(false);
+        foreach (var change in changes) Changed?.Invoke(change);
+    }
+    private PermissionChange[] SetDeniedCore(bool value, RuntimeAccountContext account, RuntimeApplication app, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            EnsureActive(); cancellationToken.ThrowIfCancellationRequested();
+            foreach (string permission in app.DeclaredPermissions) Validate(account, app, permission);
+            using var inherited = app.DeclaredPermissions.FirstOrDefault() is { } firstPermission
+                ? EnterOriginalDecisionLease(account, app, firstPermission) : null;
+            using var lease = account.EnterCommitLease?.Invoke(); account.EnsureCurrent();
+            if (denied == value) return [];
+            long nextRevision = checked(denialRevision + 1);
+            // Forced denial affects all local counters. Existing/current inherited
+            // stamps must also fit before publishing the new denial generation.
+            foreach (long local in revisions.Values) _ = checked(nextRevision + local);
+            foreach (long local in permissionRevisions.Values) _ = checked(nextRevision + local);
+            _ = checked(nextRevision + revisions.GetValueOrDefault((account.AccountKey, app.BindingKey))
+                + (IsTestAccount(account) ? 0 : original.GetRevision(account, app)));
+            foreach (string permission in app.DeclaredPermissions)
+                _ = checked(nextRevision + permissionRevisions.GetValueOrDefault((account.AccountKey, app.BindingKey, permission))
+                    + (IsTestAccount(account) ? 0 : original.GetRevision(account, app, permission)));
+            denied = value; denialRevision = nextRevision;
+            return app.DeclaredPermissions.Select(permission => new PermissionChange(account.AccountKey, app.BindingKey,
+                permission, Query(account, app, permission))).ToArray();
+        }
     }
     public async Task<PermissionDecision> RequestAsync(RuntimeAccountContext account, RuntimeApplication app, string permission,
         bool userGesture, Func<RuntimePermissionPrompt, CancellationToken, Task<bool>> prompt, CancellationToken cancellationToken)
@@ -216,6 +347,7 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         long revision;
         lock (gate)
         {
+            EnsureActive();
             using var inherited = EnterOriginalDecisionLease(account, app, permission);
             PermissionDecision existing = Query(account, app, permission);
             if (existing != PermissionDecision.Prompt) return existing;
@@ -230,16 +362,18 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
             var request = new RuntimePermissionPrompt(app.Identity.AppId, app.DisplayName, app.Source, permission,
                 "独立开发预览：决定仅保留在本次预览内存中，不修改正式用户授权。", fields);
             bool accepted = await prompt(request, linked.Token).WaitAsync(linked.Token).ConfigureAwait(false);
-            PermissionChange change;
-            lock (gate)
+            PermissionChange? change = null;
+            await CommitMutationAsync(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey), () =>
             {
-                using var inherited = EnterOriginalDecisionLease(account, app, permission);
-                using var lease = account.EnterCommitLease?.Invoke();
-                linked.Token.ThrowIfCancellationRequested(); account.EnsureCurrent();
-                if (revision != GetRevision(account, app, permission)) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
-                change = Save(account, app, permission, accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
-            }
-            Changed?.Invoke(change); return change.Decision;
+                lock (gate)
+                {
+                    EnsureActive(); using var inherited = EnterOriginalDecisionLease(account, app, permission);
+                    using var lease = account.EnterCommitLease?.Invoke(); linked.Token.ThrowIfCancellationRequested(); account.EnsureCurrent();
+                    if (revision != GetRevision(account, app, permission)) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
+                    change = Save(account, app, permission, accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
+                }
+            }, linked.Token).ConfigureAwait(false);
+            Changed?.Invoke(change!); return change!.Decision;
         }
         finally { lock (gate) pending.Remove(key); }
     }
@@ -247,21 +381,72 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
     {
         Validate(account, app, permission);
         if (!Enum.IsDefined(decision)) throw new ArgumentOutOfRangeException(nameof(decision));
-        PermissionChange change;
-        lock (gate) { using var lease = account.EnterCommitLease?.Invoke(); account.EnsureCurrent(); change = Save(account, app, permission, decision); }
-        Changed?.Invoke(change);
+        PermissionChange? change = null;
+        CommitMutation(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey), () =>
+        {
+            lock (gate)
+            { EnsureActive(); using var inherited = EnterOriginalDecisionLease(account, app, permission);
+                using var lease = account.EnterCommitLease?.Invoke(); Validate(account, app, permission); change = Save(account, app, permission, decision); }
+        });
+        Changed?.Invoke(change!);
+    }
+    public async Task SetDecisionAsync(RuntimeAccountContext account, RuntimeApplication app, string permission,
+        PermissionDecision decision, CancellationToken cancellationToken = default)
+    {
+        Validate(account, app, permission);
+        if (!Enum.IsDefined(decision)) throw new ArgumentOutOfRangeException(nameof(decision));
+        lock (gate) EnsureActive();
+        PermissionChange? change = null;
+        await CommitMutationAsync(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey), () =>
+        {
+            lock (gate)
+            { EnsureActive(); using var inherited = EnterOriginalDecisionLease(account, app, permission);
+                using var lease = account.EnterCommitLease?.Invoke(); cancellationToken.ThrowIfCancellationRequested(); Validate(account, app, permission); change = Save(account, app, permission, decision); }
+        }, cancellationToken).ConfigureAwait(false);
+        Changed?.Invoke(change!);
     }
     private PermissionChange Save(RuntimeAccountContext account, RuntimeApplication app, string permission, PermissionDecision decision)
     {
         if (decisions.Count >= 4096 && !decisions.ContainsKey((account.AccountKey, app.BindingKey, permission)))
             throw new RuntimeCapabilityException("QUOTA_EXCEEDED");
         var key = (account.AccountKey, app.BindingKey, permission);
+        var binding = (account.AccountKey, app.BindingKey);
+        // Callers retain the original decision lease before the account lease;
+        // preserve that lock order while checking the combined inherited stamp.
+        long nextPermissionRevision = checked(permissionRevisions.GetValueOrDefault(key) + 1);
+        long nextBindingRevision = checked(revisions.GetValueOrDefault(binding) + 1);
+        _ = checked(denialRevision + nextPermissionRevision + (IsTestAccount(account) ? 0 : original.GetRevision(account, app, permission)));
+        _ = checked(denialRevision + nextBindingRevision + (IsTestAccount(account) ? 0 : original.GetRevision(account, app)));
         decisions[key] = new(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName, app.Source, permission, decision);
-        permissionRevisions[key] = permissionRevisions.GetValueOrDefault(key) + 1;
-        var binding = (account.AccountKey, app.BindingKey); revisions[binding] = revisions.GetValueOrDefault(binding) + 1;
+        permissionRevisions[key] = nextPermissionRevision;
+        revisions[binding] = nextBindingRevision;
         return new(account.AccountKey, app.BindingKey, permission, decision);
     }
-    public void Dispose() { original.Changed -= OriginalChanged; Changed = null; }
+    private void EnsureActive() { if (disposed) throw new RuntimeCapabilityException("SESSION_EXPIRED"); }
+    public void Dispose()
+    {
+        lock (gate) if (disposed) return;
+        CommitMutation(RuntimeMutationScope.ForIdentity(), () => { lock (gate) disposed = true; });
+        original.Changed -= OriginalChanged; Changed = null;
+    }
+    public async ValueTask DisposeAsync()
+    {
+        lock (gate) if (disposed) return;
+        await CommitMutationAsync(RuntimeMutationScope.ForIdentity(), () => { lock (gate) disposed = true; }, CancellationToken.None).ConfigureAwait(false);
+        original.Changed -= OriginalChanged; Changed = null;
+    }
+    private void CommitMutation(RuntimeMutationScope scope, Action commit)
+    {
+        if (authorityMutations is null) { commit(); return; }
+        if (!authorityMutations.TryCommitSynchronously(scope, commit))
+            throw new RuntimeCapabilityException("RUNTIME_ASYNC_AUTHORITY_REQUIRED");
+    }
+    private async Task CommitMutationAsync(RuntimeMutationScope scope, Action commit, CancellationToken beforeIntentCancellation)
+    {
+        if (authorityMutations is null) { beforeIntentCancellation.ThrowIfCancellationRequested(); commit(); return; }
+        var mutation = await authorityMutations.BeginAsync(scope, beforeIntentCancellation).ConfigureAwait(false);
+        await mutation.CommitAsync(commit).ConfigureAwait(false);
+    }
     private sealed class GateLease(object gate, IDisposable? inherited = null) : IDisposable
     {
         private bool disposed;

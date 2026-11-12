@@ -13,6 +13,7 @@ public sealed partial class RuntimeSession
     private bool servicesDetached;
     private readonly AsyncLocal<string?> activeDataPermission = new();
     private long eventRevision;
+    private IdentitySnapshot? observedIdentity;
     private readonly Dictionary<string, long> permissionEventRevisions = new(StringComparer.Ordinal);
     /// <summary>Compatibility notification only. Native delivery uses SdkEventReady and its frozen revision.</summary>
     public event Action<string, object>? SdkEvent;
@@ -66,6 +67,7 @@ public sealed partial class RuntimeSession
     /// <summary>Revalidate a completed response after an awaited UI dispatch, before exposing private data.</summary>
     public string RevalidateResponse(string method, long requestRevision, string response)
     {
+        if (FindPreparedResponse(response, out RuntimeResponseStamp prepared)) return RevalidateResponse(method, prepared, response);
         string? requestId = null;
         try
         {
@@ -124,6 +126,15 @@ public sealed partial class RuntimeSession
     public string DeliverResponse(string method, long requestRevision, string response, Action<string> post)
     {
         ArgumentNullException.ThrowIfNull(post);
+        if (FindPreparedResponse(response, out RuntimeResponseStamp prepared))
+        {
+            // Compatibility callers receive a sanitized error on rejected delivery.
+            // New native hosts use the stamp overload, which never posts stale work.
+            bool posted = false;
+            string delivered = DeliverResponse(method, prepared, response, value => { posted = true; post(value); });
+            if (!posted) post(delivered);
+            return delivered;
+        }
         IDisposable? permissionLease = null;
         IDisposable? identityLease = null;
         string? requestId = null;
@@ -169,12 +180,17 @@ public sealed partial class RuntimeSession
         if (value.Application.Identity.AppId != instance.Identity.AppId
             || !declared.SetEquals(value.Application.DeclaredPermissions)) throw new ArgumentException("Runtime services must bind the installed application.", nameof(value));
         services = value;
+        observedIdentity = value.Identity?.Snapshot;
         instance = instance with { Identity = value.Application.Identity, Epoch = new(value.Account.Epoch) };
         value.Desktop?.Register(instance.Id.Value, value.Account, value.Application, value.Permissions, value.Declarations);
         value.Permissions.Changed += PermissionChanged;
         if (value.Desktop is not null) value.Desktop.Event += DesktopEvent;
         if (value.Identity is not null) value.Identity.Changed += IdentityChanged;
-        accountRegistration = value.Account.Invalidated.Register(() => End(AppLifecycleState.Closed));
+        accountRegistration = value.Account.Invalidated.Register(() =>
+        {
+            if (authorityMutations is null) End(AppLifecycleState.Closed);
+            else QuarantineAndCloseOwned();
+        });
     }
 
     /// <summary>Host-only receipt of a native pointer/key interaction; an SDK flag never counts as evidence.</summary>
@@ -291,6 +307,7 @@ public sealed partial class RuntimeSession
                 runtime.Permissions.Demand(runtime.Account, runtime.Application, permission);
                 if (runtime.DataRequest is null) throw new RuntimeCapabilityException("CAPABILITY_UNAVAILABLE");
                 if ((method is "files.pickOpen" or "files.pickSave") && !ConsumeGesture()) throw new RuntimeCapabilityException("USER_GESTURE_REQUIRED");
+                FreezePrivateResponseAuthority();
                 object result;
                 string? previousPermission = activeDataPermission.Value;
                 activeDataPermission.Value = permission;
@@ -345,17 +362,21 @@ public sealed partial class RuntimeSession
         }
     }
 
-    private static async Task<object> GetProfileAsync(RuntimeSessionServices runtime, CancellationToken cancellationToken)
+    private async Task<object> GetProfileAsync(RuntimeSessionServices runtime, CancellationToken cancellationToken)
     {
         runtime.Permissions.Demand(runtime.Account, runtime.Application, "identity.profile");
+        // Freeze after this request's own permission grant, before reading private data.
+        // Identity and permission revisions are separate; a legitimate refresh during
+        // the preceding permission prompt does not consume a fictitious +1 budget.
+        FreezePrivateResponseAuthority();
         RuntimeProfile profile;
-        if (runtime.Identity is not null)
+        if (runtime.GetProfile is not null)
+            profile = await runtime.GetProfile(runtime.Account, cancellationToken).WaitAsync(cancellationToken).ConfigureAwait(false);
+        else if (runtime.Identity is not null)
         {
-            var snapshot = runtime.Identity.Snapshot;
+            var snapshot = requestAuthority.Value?.Frozen?.Identity ?? runtime.Identity.Snapshot;
             profile = new(snapshot.DisplayName ?? "用户", snapshot.AvatarUrl, snapshot.State == IdentitySessionState.OfflineCached);
         }
-        else if (runtime.GetProfile is not null)
-            profile = await runtime.GetProfile(runtime.Account, cancellationToken).WaitAsync(cancellationToken).ConfigureAwait(false);
         else throw new RuntimeCapabilityException("CAPABILITY_UNAVAILABLE");
         cancellationToken.ThrowIfCancellationRequested();
         runtime.Account.EnsureCurrent();
@@ -408,19 +429,34 @@ public sealed partial class RuntimeSession
     {
         var runtime = services;
         if (runtime is null) return;
+        IdentitySnapshot current = runtime.Identity?.Snapshot ?? snapshot;
+        if (snapshot != current) return; // A delayed callback is not the current authority.
+        lock (stateGate)
+        {
+            if (observedIdentity != current)
+            { long nextEvent = checked(eventRevision + 1); observedIdentity = current; eventRevision = nextEvent; }
+        }
         if (snapshot.AccountNamespace != runtime.Account.AccountKey || snapshot.SessionEpoch != runtime.Account.Epoch
-            || !runtime.Account.IsCurrent()) { End(AppLifecycleState.Closed); return; }
+            || !runtime.Account.IsCurrent())
+        {
+            if (authorityMutations is null) End(AppLifecycleState.Closed);
+            else QuarantineAndCloseOwned();
+            return;
+        }
         if (snapshot.State is IdentitySessionState.SignedIn or IdentitySessionState.OfflineCached)
         {
             try
             {
                 runtime.Permissions.Demand(runtime.Account, runtime.Application, "identity.profile");
-                EmitSdkEvent("identity.changed", new { state = snapshot.State == IdentitySessionState.OfflineCached ? "offline_cached" : "signed_in" });
+                long permission = ReadPermissionRevision();
+                RuntimeResponseStamp stamp;
+                lock (stateGate) stamp = StampLocked(permission, snapshot);
+                EmitSdkEvent("identity.changed", new { state = snapshot.State == IdentitySessionState.OfflineCached ? "offline_cached" : "signed_in" }, capturedStamp: stamp);
             }
             catch (RuntimeCapabilityException) { }
         }
     }
-    private void EmitSdkEvent(string name, object value, long? capturedRevision = null)
+    private void EmitSdkEvent(string name, object value, long? capturedRevision = null, RuntimeResponseStamp? capturedStamp = null)
     {
         RuntimeSdkEvent notification;
         Action<string, object>? compatibility;
@@ -428,11 +464,13 @@ public sealed partial class RuntimeSession
         // Preview permission services may lock while reading their revision. Read it before
         // stateGate; a concurrent later mutation only makes this captured event undeliverable.
         long revision = EventRevision;
+        RuntimeResponseStamp stamp = capturedStamp ?? CaptureDeliveryStamp();
         lock (stateGate)
         {
             if (!IsActive || servicesDetached || services is null || services.Account.Invalidated.IsCancellationRequested || !services.Account.IsCurrent()) return;
             if (capturedRevision is { } captured && captured != revision) return;
-            notification = new(name, value, capturedRevision ?? revision);
+            if (stamp.EventRevision != revision) return;
+            notification = new(name, value, capturedRevision ?? revision, stamp);
             compatibility = SdkEvent;
             ready = SdkEventReady;
         }
@@ -447,7 +485,7 @@ public sealed partial class RuntimeSession
         var runtime = services;
         if (runtime is null) return;
         lock (stateGate) { if (servicesDetached) return; servicesDetached = true; gestureAvailable = false; }
-        Interlocked.Increment(ref eventRevision);
+        // End's committed lifecycle revision already invalidates every old envelope.
         try
         {
             runtime.Permissions.Changed -= PermissionChanged;

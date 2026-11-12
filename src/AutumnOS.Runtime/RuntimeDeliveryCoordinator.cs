@@ -86,6 +86,15 @@ internal sealed class RuntimeDeliveryCoordinator
 
     internal ReservationResult TryReserve(EndpointKey endpoint, RuntimeDeliveryDescriptor descriptor)
         => ReserveCore(endpoint, descriptor);
+    internal bool MatchesInstance(EndpointKey key, string account, long accountEpoch, string app, Guid id, long epoch)
+    {
+        lock (sync)
+        {
+            var endpoint = EndpointFor(key); var b = endpoint.Binding;
+            return !endpoint.Retired && !endpoint.Unavailable && b.AccountKey == account && b.AccountEpoch == accountEpoch &&
+                b.ApplicationBinding == app && b.InstanceId == id && b.InstanceEpoch == epoch;
+        }
+    }
     // Validated here means length/hash only, never application permission.
     internal bool QueueValidated(DeliveryTicket ticket, ReadOnlyMemory<byte> payload) => QueueCore(ticket, payload);
     internal bool CancelBeforeSend(DeliveryTicket ticket) => CancelCore(ticket);
@@ -97,6 +106,24 @@ internal sealed class RuntimeDeliveryCoordinator
     { lock (sync) return (endpoints.Count, endpoints.Sum(e => e.Tickets.Count), endpoints.Sum(e => e.OwnedSlots.Count), fences.Count, endpoints.Sum(e => e.Outbound.Count)); }
     internal ValueTask<FenceOperation> BeginFenceAsync(RuntimeAuthorityScope scope, CancellationToken beforeIntentCancellation = default)
         => BeginFenceCore(scope, beforeIntentCancellation);
+
+    // Compatibility for existing synchronous, in-process hosts only. The
+    // empty check and intent installation are atomic with endpoint admission.
+    // A remote endpoint or another writer always requires the async path.
+    internal bool TryCommitSynchronously(RuntimeAuthorityScope scope, Action action)
+    {
+        ArgumentNullException.ThrowIfNull(scope); ArgumentNullException.ThrowIfNull(action); ValidateScope(scope);
+        MutationPermit permit;
+        lock (sync)
+        {
+            if (endpoints.Count != 0 || fences.Count != 0) return false;
+            var fence = new FenceState(checked(++nextFence), scope) { Active = true, PermitIssued = true };
+            fences.Add(fence);
+            permit = MutationPermit.Mint(issuer, fence, this);
+        }
+        CommitCore(permit, action);
+        return true;
+    }
 
     internal sealed record ReservationResult(DeliveryTicket? Ticket, RuntimeDeliveryRejection Rejection);
 

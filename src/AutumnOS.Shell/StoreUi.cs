@@ -324,9 +324,15 @@ public sealed partial class MainWindow
         "RELEASE_INCOMPATIBLE" => "此版本与当前运行环境不兼容。",
         "PACKAGE_APP_RUNNING" => "应用仍在运行，请先保存并结束，再继续安装。",
         "RUNTIME_ISOLATION_UNAVAILABLE" => "应用的安全运行检查未通过，尚未执行游戏。请重新打开；若仍失败，请检查客户端运行文件。",
+        "RUNTIME_NATIVE_PREPARE_FAILED" => "独立浏览器准备应用页面时失败，游戏尚未执行。启动诊断已记录具体阶段，已安装内容和存档保留。",
+        "RUNTIME_NATIVE_PROOF_INVALID" => "独立浏览器返回的隔离验证结果无效，游戏尚未执行。启动诊断已记录，已安装内容和存档保留。",
+        "RUNTIME_NATIVE_SESSION_REJECTED" => "应用会话未能接纳隔离验证结果，游戏尚未执行。启动诊断已记录，已安装内容和存档保留。",
         "RUNTIME_ISOLATION_ENGINE_MISSING" => "客户端运行文件不完整，无法启动应用。请使用完整的 AutumnOS 发行包。",
         "RUNTIME_ISOLATION_ENGINE_UNSUPPORTED" => "浏览器运行时版本不在此客户端已验证的隔离范围内，应用尚未加载。请使用完整的 AutumnOS 发行包。",
-        "RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE" => "此客户端尚不能阻止第三方页面清空系统剪贴板，因此未加载应用。安装包和存档保留；开启开发模式也不能解除此限制。错误码：RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE。",
+        "RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE" => "此版本的第三方应用隔离尚未完成验收，不能打开这个应用。已安装的内容和存档仍在。",
+        "RUNTIME_NATIVE_DESKTOP_REQUIRED" => "此隔离宿主需要 Windows 10 22H2 或 Windows 11 的本地用户桌面。当前系统不满足要求，应用尚未执行。",
+        "RUNTIME_STANDARD_USER_REQUIRED" => "请用普通用户身份运行 AutumnOS。此隔离宿主不能在管理员进程中启动。",
+        "PACKAGE_ORIGINAL_ARCHIVE_REQUIRED" or "PACKAGE_ARCHIVE_CORRUPT" => "缺少可校验的原始安装包。请在商店修复当前版本，已有存档会保留。",
         "RUNTIME_ENVIRONMENT_OVERRIDE_BLOCKED" => "外部 WebView2 配置覆盖了应用运行环境，请恢复客户端默认环境后重试。",
         _ => code + " · 此项尚不可用，原有应用和数据保留。"
     };

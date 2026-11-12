@@ -23,6 +23,8 @@
 
 G0 与 G1 的代码准备可以并行；G2–G5 不越过前置证据。任何关口失败保留最小反例、实际错误和未执行项；不把整个 T00–T06 标成完成。
 
+2026-11-05本机接续：已按6f634fa7指定分支在独立continuation工作副本修正/验证B1边界回归，并接入B2权威提交屏障及响应/事件冻结stamp。B2实际构建与自动回归以新ID报告为准；当前生产仍只有进程内backend，尚无原生远端endpoint注册、独立宿主、实际STA回执或有界IPC。原机G1报告未随分支提供，本机Server20348和synthetic Medium代码基线不替代Win10/11普通用户/硬件输入/剪贴板与网络矩阵；G1完整验收、G2生产隔离及G3–G5不提升。
+
 2026-10-31限定前置证据：a634私有站六项剪贴板A/B、普通NETONLY元数据与f670三步链共同支持带门禁G2源码接入。f670原WinUI/A/UI/Core/Host均退出0，358实际帧、key27/up5/ACK32/DOM27、真实IME事务与你好/data/ACK/hash/同引擎A原始end模式一致；用户确认上方显示两字后关闭，独立审计SHAc0d26aca38687e7a45efd87631ae3eb65ab4c923c95a206925619c57a4ecc973。7个B进程样本均零能力AppContainer并按原句柄退出，同原Job三观察归零关闭、Normal/SDK0/EOF及profile/desktop/station清理闭合。只认各报告实际范围，不把旧UAC剪贴板六项转记当前普通NETONLY包；本次取消计数0、provider/UIA/全局热键/原生代理剪贴板旁路及故障/完整TSF矩阵仍待验，G1_full_acceptance与产品完整隔离不声明通过。G2首先提取backend并保留required_boundaries，随后处理实际native Post ACK与撤权排序；G3–G5和普通第三方资格仍not_run。
 
 ## 本轮运行配置

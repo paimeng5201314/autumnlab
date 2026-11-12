@@ -1,5 +1,6 @@
 [CmdletBinding()]
-param([ValidateSet('Prepare','Finalize','Full')][string]$Stage='Full', [switch]$SkipNativeRegression, [switch]$IncludeSetup)
+param([ValidateSet('Prepare','Finalize','Full')][string]$Stage='Full', [switch]$SkipNativeRegression, [switch]$IncludeSetup,
+    [switch]$PrepareInUserAcceptanceDirectory)
 . "$PSScriptRoot/Common.ps1"
 Push-Location $ProjectRoot
 try {
@@ -13,6 +14,15 @@ try {
     if($snapshot -ne $build.source_snapshot_id){throw 'Sources changed since build.'}
     $variant=if($build.test_build){'local-update-drill'}else{'development'}
     $destination=Join-Path $ProjectRoot "artifacts/packages/$buildId/AutumnOS-$($build.version)-win-x64-$variant"
+    if($PrepareInUserAcceptanceDirectory){
+        # The compiled private catalog already admits this exact per-user build
+        # directory. Prepare there directly when the workspace drive is full.
+        if($Stage -ne 'Prepare' -or !$build.isolation_acceptance_root -or $build.test_build){throw 'Direct user installation requires a private acceptance Prepare build.'}
+        $destination=Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) "AutumnOS-Acceptance/$buildId"
+        for($cursor=$destination;$cursor;$cursor=[IO.Path]::GetDirectoryName($cursor)){
+            if((Test-Path -LiteralPath $cursor) -and ((Get-Item -LiteralPath $cursor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Redirected private installation path forbidden.'}
+        }
+    }
     $exe=Join-Path $destination 'AutumnOS.exe'
     $properties=@($build.build_properties)+@("-p:BuildId=$buildId","-p:SourceSnapshotId=$snapshot")
     if($Stage -ne 'Finalize'){
@@ -41,6 +51,16 @@ try {
         if(-not (Test-Path -LiteralPath (Join-Path $runtime 'msedgewebview2.exe'))){throw 'Fixed WebView2 runtime missing: run Cache-WebViewRuntime.ps1 (local extraction only).'}
         if((Get-AuthenticodeSignature -LiteralPath (Join-Path $runtime 'msedgewebview2.exe')).Status -ne 'Valid'){throw 'Fixed WebView2 signature invalid.'}
         Copy-Item -LiteralPath $runtime -Destination (Join-Path $destination 'WebView2Runtime') -Recurse
+        $nativeTable=Join-Path $evidence 'native-payload-table.json'
+        if((Get-FileHash -LiteralPath $nativeTable).Hash.ToLowerInvariant() -ne $build.native_payload_table_sha256){throw 'Native catalog differs from compiled build.'}
+        Copy-Item -LiteralPath (Join-Path $evidence 'native-payload') -Destination (Join-Path $destination 'NativeHost') -Recurse
+        $catalog=Get-Content -LiteralPath $nativeTable -Raw | ConvertFrom-Json
+        foreach($group in @('NativeHost','WebView2Runtime')){
+            $items=if($group -eq 'NativeHost'){$catalog.host}else{$catalog.runtime}
+            $dir=Join-Path $destination $group
+            if(@(Get-ChildItem -LiteralPath $dir -Recurse -File).Count -ne @($items).Count){throw 'Native catalog count changed.'}
+            foreach($item in $items){if((Get-FileHash -LiteralPath (Join-Path $dir $item.path)).Hash.ToLowerInvariant() -ne $item.sha256){throw 'Native delivery bytes changed.'}}
+        }
         $licenses=Join-Path $destination 'ThirdPartyLicenses';New-Item -ItemType Directory -Path $licenses|Out-Null
         foreach($package in Get-ChildItem -LiteralPath $env:NUGET_PACKAGES -Directory){foreach($version in Get-ChildItem -LiteralPath $package.FullName -Directory){foreach($license in Get-ChildItem -LiteralPath $version.FullName -File|Where-Object Name -Match '^(license|third.?party|notice)'){
             Copy-Item -LiteralPath $license.FullName -Destination (Join-Path $licenses ($package.Name+'-'+$version.Name+'-'+$license.Name))
@@ -62,6 +82,9 @@ Source $snapshot
 本地更新演练仅在明确标识的独立构建启用；生产来源固定 paimeng5201314/autumnlab。
 完整 T03 收尾、安装版及系统兼容矩阵尚未验收，实际验证结果见对应构建与发行说明。
 "@ | Set-Content -LiteralPath (Join-Path $destination 'READ-ME.txt') -Encoding utf8
+        if($build.temporary_platform_acceptance){
+            '临时平台验收：仅取消 Windows 客户端类型和版本号限制。普通用户权限与全部隔离检查保留，不代表当前系统已受支持或游戏已通过验收。' | Add-Content -LiteralPath (Join-Path $destination 'READ-ME.txt') -Encoding utf8
+        }
         # This allowlist comes from the exact delivery bytes, excluding stable and private paths.
         $inventory=Join-Path $run 'managed-files.json'
         Invoke-Dotnet -Arguments @('tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.Cli.dll','inventory','--source',$destination,'--output',$inventory) -LogPath (Join-Path $run 'inventory.log')
@@ -76,6 +99,7 @@ Source $snapshot
     $delivery=Get-Content (Join-Path $evidence 'delivery-hashes.json') -Raw|ConvertFrom-Json
     foreach($file in $delivery){if((Get-FileHash -LiteralPath (Join-Path $destination $file.path)).Hash.ToLowerInvariant() -ne $file.sha256){throw 'Frozen delivery bytes changed.'}}
     $report=[ordered]@{status='prepared';build_id=$buildId;source_snapshot_id=$snapshot;executable=$exe;executable_sha256=(Get-FileHash -LiteralPath $exe).Hash.ToLowerInvariant();test_build=$build.test_build;native_tests='not_run';zip='not_created';setup='not_created';public_release=$false;authenticode='not_signed';fixed_webview2='154.0.4258.53'}
+    $report.temporary_platform_acceptance=[bool]$build.temporary_platform_acceptance
     $report|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'package-prepared.json') -Encoding utf8
     if($Stage -eq 'Prepare'){$report|ConvertTo-Json;return}
     foreach($name in @('tests','sdk-tests','sample-tests','native-client-tests','server-http-tests','t04-tools-tests')){

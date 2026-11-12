@@ -173,7 +173,7 @@
       "autumnos.identity": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.0-t05-development, )",
+          "AutumnOS.Contracts": "[0.5.1, )",
           "Duende.IdentityModel.OidcClient": "[7.1.0, )",
           "Microsoft.IdentityModel.JsonWebTokens": "[8.23.0, )",
           "System.Security.Cryptography.ProtectedData": "[10.0.0, )"
@@ -182,41 +182,44 @@
       "autumnos.launcher": {
         "type": "Project"
       },
+      "autumnos.nativehost.controller": {
+        "type": "Project"
+      },
       "autumnos.packages": {
         "type": "Project"
       },
       "autumnos.runtime": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.0-t05-development, )",
-          "AutumnOS.Storage": "[0.5.0-t05-development, )"
+          "AutumnOS.Contracts": "[0.5.1, )",
+          "AutumnOS.Storage": "[0.5.1, )"
         }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.0-t05-development, )"
+          "AutumnOS.Contracts": "[0.5.1, )"
         }
       },
       "autumnos.store": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.0-t05-development, )",
-          "AutumnOS.Packages": "[0.5.0-t05-development, )",
-          "AutumnOS.Storage": "[0.5.0-t05-development, )"
+          "AutumnOS.Contracts": "[0.5.1, )",
+          "AutumnOS.Packages": "[0.5.1, )",
+          "AutumnOS.Storage": "[0.5.1, )"
         }
       },
       "autumnos.update": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Store": "[0.5.0-t05-development, )"
+          "AutumnOS.Store": "[0.5.1, )"
         }
       },
       "autumnos.updateprotocol": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Launcher": "[0.5.0-t05-development, )",
-          "AutumnOS.Update": "[0.5.0-t05-development, )"
+          "AutumnOS.Launcher": "[0.5.1, )",
+          "AutumnOS.Update": "[0.5.1, )"
         }
       },
       "Duende.IdentityModel.OidcClient": {

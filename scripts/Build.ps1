@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param([string]$BuildId = ('T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,6)),
-    [string]$BuildVersion, [string]$ReleaseLabel, [string]$ProductionUpdateTrustFile, [string]$TestUpdateTrustFile, [string]$TestUpdateFeedFile, [switch]$UpdateHealthFault)
+    [string]$BuildVersion, [string]$ReleaseLabel, [string]$ProductionUpdateTrustFile, [string]$TestUpdateTrustFile, [string]$TestUpdateFeedFile, [switch]$UpdateHealthFault, [switch]$LocalIsolationAcceptance, [switch]$TemporaryPlatformAcceptance)
 . "$PSScriptRoot/Common.ps1"
 if(-not $ProductionUpdateTrustFile -and -not $TestUpdateTrustFile){
     $defaultUpdateTrust=Join-Path $ProjectRoot 'build/update-trust.production.json'
@@ -21,6 +21,11 @@ try {
     if($ProductionUpdateTrustFile -and $TestUpdateTrustFile){throw 'Production and test trust roots cannot coexist.'}
     $extraInputs=@($ProductionUpdateTrustFile,$TestUpdateTrustFile,$TestUpdateFeedFile|Where-Object {$_})
     $properties=@()
+    if($TemporaryPlatformAcceptance -and (!$LocalIsolationAcceptance -or !$BuildVersion -or $TestUpdateTrustFile -or $ReleaseLabel -notmatch 'platform-test')){
+        throw 'Temporary platform acceptance requires a private isolation acceptance build, explicit version, normal trust and platform-test release label.'
+    }
+    $properties+="-p:AutumnPlatformAcceptance=$(([bool]$TemporaryPlatformAcceptance).ToString().ToLowerInvariant())"
+    $report.temporary_platform_acceptance=[bool]$TemporaryPlatformAcceptance
     if($BuildVersion){$properties+="-p:AutumnVersion=$BuildVersion"}
     if($ReleaseLabel){
         if($ReleaseLabel -notmatch '^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$'){throw 'Invalid release label.'}
@@ -37,6 +42,19 @@ try {
     Invoke-Dotnet -Arguments @('restore','AutumnOS.slnx','--locked-mode','-p:Platform=x64','--configfile','NuGet.Config') -LogPath (Join-Path $reportDirectory 'restore.log')
     $snapshot = & "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory $reportDirectory -AdditionalInputs $extraInputs
     $report.source_snapshot_id = $snapshot
+    $hostOut = Join-Path $reportDirectory 'native-payload'
+    $runtime = Join-Path $ProjectRoot '.tools/webview2/154.0.4258.53/Microsoft.WebView2.FixedVersionRuntime.154.0.4258.53.x64'
+    Invoke-Dotnet -Arguments (@('publish','src/AutumnOS.NativeHost.Windows/AutumnOS.NativeHost.Windows.csproj','-c','Release','-p:Platform=x64','--no-restore','-o',$hostOut,"-p:BuildId=$BuildId","-p:SourceSnapshotId=$snapshot")+$properties) -LogPath (Join-Path $reportDirectory 'native-publish.log')
+    $table = Join-Path $reportDirectory 'native-payload-table.json'
+    $acceptanceRoot = if($LocalIsolationAcceptance){
+        if(!$BuildVersion -or $TestUpdateTrustFile){throw 'A private acceptance build needs an explicit version and normal trust.'}
+        Join-Path $ProjectRoot "artifacts/packages/$BuildId/AutumnOS-$BuildVersion-win-x64-development"
+    }
+    & "$PSScriptRoot/New-NativePayloadTable.ps1" -HostDirectory $hostOut -FixedRuntime $runtime -OutputFile $table -AcceptanceRoot $acceptanceRoot
+    $report.native_payload_table_sha256=(Get-FileHash -LiteralPath $table).Hash.ToLowerInvariant()
+    $report.isolation_acceptance_root=$acceptanceRoot
+    $properties+="-p:NativePayloadTable=$table"
+    $report.build_properties=$properties
     & "$PSScriptRoot/New-SamplePackage.ps1"
     & "$PSScriptRoot/New-StoreFixturePackages.ps1"
     # A protocol peer can change the compiled version in the same generated-output tree.

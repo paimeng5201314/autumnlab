@@ -96,6 +96,7 @@ public sealed partial class MainWindow
             foreach (Task retired in retiredDownloadDrains) downloadsStopped &= Drained(retired, "retired_downloads_drain");
             bool updatesStopped = Drained(shutdownUpdatesDrain, "updates_drain");
             bool identityStopped = Drained(shutdownIdentityDrain, "identity_drain");
+            foreach (Task retired in retiredAuthorityDrains) identityStopped &= Drained(retired, "preview_authority_drain");
             if (downloadsStopped && ownedNetworkTasks.Count == 0)
             {
                 Step("github_transport", () => githubTransport?.Dispose());
@@ -106,6 +107,7 @@ public sealed partial class MainWindow
             bool workStillUnwinding = aboutOpen || preparing || launching || accountOperation || firstRunLoginPending || firstRunSkipPending ||
                 developerBusy || supportExportBusy || localInstallBusy || installingStoreTask || updateBusy || updateCommitBusy;
             workStillUnwinding |= ownedNetworkTasks.Count != 0 || developerPipeTask is { IsCompleted: false };
+            workStillUnwinding |= ownedAuthorityTasks.Count != 0;
             if (developerPipeTask is { IsFaulted: true }) _ = developerPipeTask.Exception;
             int hostsPending = shutdownHosts.Count(host => !host.ResourcesReleased);
             var modal = OwnedModalWindows.Observe(WinRT.Interop.WindowNative.GetWindowHandle(this));

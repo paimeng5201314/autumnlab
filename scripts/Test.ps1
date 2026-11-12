@@ -7,6 +7,10 @@ try {
     $directory = Join-Path $ProjectRoot "artifacts/builds/$buildId"
     $build = Get-Content -LiteralPath (Join-Path $directory 'build-result.json') -Raw | ConvertFrom-Json
     if ($build.status -ne 'passed') { throw 'A successful tracked Release build is required.' }
+    # Pipe and private-ACL fixtures require a Medium, non-elevated caller.
+    # This records prerequisites only; a synthetic baseline is not real-user acceptance.
+    $contextReport = Join-Path $directory ('test-context-' + [Guid]::NewGuid().ToString('N') + '.json')
+    $null = & "$PSScriptRoot/Test-ExecutionContext.ps1" -ReportPath $contextReport -RequireStandardUser
     $snapshot = & "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory (Join-Path $directory 'before-test') -AdditionalInputs @($build.additional_inputs)
     if ($snapshot -ne $build.source_snapshot_id) { throw 'Sources changed since the build. Run Build.ps1 again.' }
     $runner = Join-Path $ProjectRoot 'tests/AutumnOS.Tests/bin/x64/Release/net10.0/win-x64/AutumnOS.Tests.dll'

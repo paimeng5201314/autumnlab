@@ -37,7 +37,7 @@ public sealed partial class RuntimeSession
 
     public RuntimeSession(string appId, IEnumerable<string> declaredPermissions, string savesRoot,
         string entry = "index.html", TimeSpan? requestTimeout = null, TimeProvider? timeProvider = null,
-        RuntimeSessionServices? services = null)
+        RuntimeSessionServices? services = null, IRuntimeAuthorityMutations? authorityMutations = null)
     {
         if (!IsValidAppId(appId)) throw new ArgumentException("Invalid application ID.", nameof(appId));
         if (!IsValidEntry(entry)) throw new ArgumentException("Invalid application entry.", nameof(entry));
@@ -51,6 +51,9 @@ public sealed partial class RuntimeSession
         Origin = $"https://{Guid.NewGuid():N}.autumn.invalid/";
         PageUri = Origin + entry;
         instance = new(new(Guid.NewGuid()), new(appId, null, null), true, AppLifecycleState.Starting, new(1));
+        this.authorityMutations = authorityMutations ?? services?.AuthorityMutations;
+        if (authorityMutations is not null && services?.AuthorityMutations is { } configured && !ReferenceEquals(authorityMutations, configured))
+            throw new ArgumentException("Runtime mutation authority must have one owner.", nameof(authorityMutations));
         InitializeServices(services);
     }
 
@@ -67,7 +70,7 @@ public sealed partial class RuntimeSession
         ArgumentNullException.ThrowIfNull(proof);
         lock (stateGate)
         {
-            if (instance.State != AppLifecycleState.Starting || networkIsolationVerified ||
+            if (!IsActive || instance.State != AppLifecycleState.Starting || networkIsolationVerified ||
                 proof.InstanceId != instance.Id.Value || !string.Equals(proof.Origin, Origin, StringComparison.Ordinal)) return false;
             networkIsolationVerified = true;
             return true;
@@ -98,12 +101,7 @@ public sealed partial class RuntimeSession
             services.Permissions.SetDecision(services.Account, services.Application, "saves", PermissionDecision.Revoked);
             return;
         }
-        lock (stateGate)
-        {
-            savesGranted = false;
-            savesRevoked = true;
-            permissionRevision++;
-        }
+        SetGuestSavePermission(PermissionDecision.Revoked);
     }
 
     private static bool IsValidEntry(string? entry)
@@ -117,32 +115,23 @@ public sealed partial class RuntimeSession
 
     private void SetActiveState(AppLifecycleState state)
     {
-        lock (stateGate)
-        {
-            if (!IsActive) throw new InvalidOperationException("An ended session cannot be resumed.");
-            if (state == AppLifecycleState.Suspended && instance.State != AppLifecycleState.Suspended) suspensionRevision++;
-            instance = instance with { State = state };
-        }
-        EmitSdkEvent("lifecycle.changed", new { state = state.ToString().ToLowerInvariant(), blocksMaintenance = Instance.BlocksMaintenance });
+        object? value = null; long revision = 0;
+        CommitAuthoritySynchronously(() => { (value, revision) = CommitActiveState(state); });
+        EmitSdkEvent("lifecycle.changed", value!, revision);
     }
 
     private void End(AppLifecycleState state)
     {
-        lock (stateGate)
-        {
-            if (!IsActive) return;
-            instance = instance with { State = state, Epoch = new(instance.Epoch.Value + 1) };
-            savesGranted = false;
-            networkIsolationVerified = false;
-        }
-        // Cancel outside stateGate: cancellation callbacks must not run under the lifecycle lock.
-        try { ended.Cancel(); }
-        finally { DetachServices(); }
+        bool changed = false;
+        lock (stateGate) { if (HasEnded) return; }
+        CommitAuthoritySynchronously(() => changed = CommitEndState(state));
+        if (changed) CancelAndDetachAfterEnd();
     }
 
-    private bool IsActive => instance.State is not (AppLifecycleState.Closed or AppLifecycleState.Crashed or AppLifecycleState.Closing);
+    private bool HasEnded => instance.State is AppLifecycleState.Closed or AppLifecycleState.Crashed or AppLifecycleState.Closing;
+    private bool IsActive => !quarantined && !HasEnded;
 
-    public async Task<string> HandleMessageAsync(string source, string json,
+    private async Task<string> HandleMessageCoreAsync(string source, string json,
         Func<string, CancellationToken, Task<bool>> requestPermission, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(requestPermission);
@@ -170,6 +159,7 @@ public sealed partial class RuntimeSession
             if (request.GetProperty("method").ValueKind != JsonValueKind.String
                 || request.GetProperty("params").ValueKind != JsonValueKind.Object) return Error(requestId, "INVALID_REQUEST");
             string method = request.GetProperty("method").GetString()!;
+            if (requestAuthority.Value is { } capture) capture.Method = method;
             JsonElement parameters = request.GetProperty("params");
 
             lock (stateGate)
@@ -203,6 +193,7 @@ public sealed partial class RuntimeSession
             if (services is not null)
             {
                 object managedResult = await HandleManagedAsync(method, parameters, linked.Token).ConfigureAwait(false);
+                if (requestAuthority.Value is { Frozen: null } currentCapture) currentCapture.Frozen = CaptureDeliveryStamp();
                 lock (stateGate)
                 {
                     services.Account.EnsureCurrent();
@@ -229,17 +220,21 @@ public sealed partial class RuntimeSession
                     suspendedAtRequest = suspensionRevision;
                 }
                 bool accepted = await requestPermission("saves", linked.Token).WaitAsync(linked.Token).ConfigureAwait(false);
-                lock (stateGate)
+                string? permissionResponse = null;
+                await CommitAuthorityAsync(() =>
                 {
-                    if (!IsActive) return Error(requestId, "SESSION_EXPIRED");
-                    linked.Token.ThrowIfCancellationRequested();
-                    if (instance.State == AppLifecycleState.Suspended || suspensionRevision != suspendedAtRequest)
-                        return Error(requestId, "SESSION_SUSPENDED");
-                    if (revision != permissionRevision || savesRevoked) return Error(requestId, "PERMISSION_REVOKED");
-                    savesGranted = accepted;
-                    savesDenied = !accepted;
-                    return SuccessIfActive(requestId, new { name = "saves", state = accepted ? "granted" : "denied" }, linked.Token);
-                }
+                    lock (stateGate)
+                    {
+                        if (!IsActive) { permissionResponse = Error(requestId, "SESSION_EXPIRED"); return; }
+                        linked.Token.ThrowIfCancellationRequested();
+                        if (instance.State == AppLifecycleState.Suspended || suspensionRevision != suspendedAtRequest)
+                        { permissionResponse = Error(requestId, "SESSION_SUSPENDED"); return; }
+                        if (revision != permissionRevision || savesRevoked) { permissionResponse = Error(requestId, "PERMISSION_REVOKED"); return; }
+                        CommitGuestDecision(accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
+                        permissionResponse = SuccessIfActive(requestId, new { name = "saves", state = accepted ? "granted" : "denied" }, linked.Token);
+                    }
+                }, linked.Token).ConfigureAwait(false);
+                return permissionResponse!;
             }
 
             lock (stateGate)
@@ -333,6 +328,7 @@ public sealed partial class RuntimeSession
         if (!IsActive) return Error(requestId, "SESSION_EXPIRED");
         services?.Account.EnsureCurrent();
         cancellationToken.ThrowIfCancellationRequested();
+        if (services is null && requestAuthority.Value is { Frozen: null } capture) capture.Frozen = StampLocked(0, null);
         string response = BridgeJson.Success(requestId, value);
         return Encoding.UTF8.GetByteCount(response) > MaximumMessageBytes
             ? Error(requestId, "RESPONSE_TOO_LARGE") : response;

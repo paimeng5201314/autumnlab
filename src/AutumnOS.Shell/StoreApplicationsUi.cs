@@ -184,8 +184,13 @@ public sealed partial class MainWindow
             {
                 installed = applicationInstaller.Find(appId) ?? throw new PackageException("APP_NOT_INSTALLED");
                 if (!HasSupportedApplicationSource(installed)) throw new PackageException("RUNTIME_SOURCE_UNAVAILABLE");
+                string archive = applicationInstaller.RetainedArchivePath(installed.Package.PackageSha256);
+                if (!File.Exists(archive))
+                    archive = storeDownloads?.Snapshot().FirstOrDefault(task => task.Request.AppId == appId &&
+                        task.Request.Version == installed.Package.Manifest.Version && task.Request.Sha256 == installed.Package.PackageSha256 &&
+                        task.LocalPath is not null)?.LocalPath ?? archive;
                 host = new WebAppHost(installationRoot, container, RequestSavePermissionAsync, _ => UpdateManagedBadges(), CreateRuntimeServices, CloseFileCapabilities,
-                    sdkTrace: RecordDeveloperSdkCall, registeredPackage: installed.Package, runtimeLease: lease, maintenance: criticalOperations, retainForCleanup: RetainUnreleasedHost);
+                    sdkTrace: RecordDeveloperSdkCall, registeredPackage: installed.Package, runtimeLease: lease, maintenance: criticalOperations, retainForCleanup: RetainUnreleasedHost, registeredArchive: archive);
             }
             catch { lease.Dispose(); throw; }
             var app = new ManagedApplication(host, container, installed.Package.Manifest.Name); managedApplications[appId] = app; managedContent.Children.Add(container);
