@@ -10,7 +10,7 @@ public sealed record NativeProcessOwnerSnapshot(NativeProcessOwnerState State, u
     ulong OriginalCreationFileTime, bool CreationAttempted, bool OriginalProcessExited,
     bool OriginalThreadExited, bool OriginalQueryJobBound, bool OriginalJobEmpty,
     bool AllObservedOriginalProcessHandlesSignaled, bool ResourcesRetired, string? FailureCode,
-    string BrowserRoleReadiness);
+    string BrowserRoleReadiness, bool OwnedJobRecoveryRequested = false, bool OriginalStationRecoveryRequested = false);
 
 /// <summary>
 /// Trusted host composition only. Publish this owner before StartAsync. Startup
@@ -39,6 +39,8 @@ public sealed class NativeProcessOwner
     private NativeHostContextFacts? ownedContext;
     private HeldProcess? restrictedRoot, boundBrowser;
     private bool transportPoisoned;
+    private readonly OwnedShutdownBudget shutdownBudget = new();
+    private readonly System.Diagnostics.Stopwatch lifetimeClock = System.Diagnostics.Stopwatch.StartNew();
     private const string RoleReadiness = "restricted_controller_requires_original_peer_and_document_admission";
 
     private NativeProcessOwner(NativeHostLaunchManifest manifest) => this.manifest = manifest;
@@ -65,7 +67,7 @@ public sealed class NativeProcessOwner
                 launch.create_process_with_logon_calls != 0, launch.original_process_signaled,
                 launch.original_thread_signaled, queryJobBound,
                 originalJobEmpty, allObservedSignaled, resourcesRetired,
-                failureCode, RoleReadiness);
+                failureCode, RoleReadiness, witness?.termination_requested == true, launch.termination_requested);
         }
     }
 
@@ -89,6 +91,7 @@ public sealed class NativeProcessOwner
         lock (sync)
         {
             closeRequested = true;
+            shutdownBudget.ObserveShutdown(lifetimeClock.Elapsed);
             creation.RequestClose();
             if (!resourcesRetired && state != NativeProcessOwnerState.Unsupported) state = NativeProcessOwnerState.Closing;
             transport = retainingBootstrapForFacts ? null : pipe;
@@ -314,7 +317,7 @@ public sealed class NativeProcessOwner
         {
             byte[] ownedPayload = payload.ToArray();
             await exchange.WaitAsync(beforeWriteCancellation).ConfigureAwait(false);
-            bool writeAttempted = false;
+            bool writeAttempted = false, closeAttempted = false;
             try
             {
                 beforeWriteCancellation.ThrowIfCancellationRequested();
@@ -326,9 +329,20 @@ public sealed class NativeProcessOwner
                 beforeWriteCancellation.ThrowIfCancellationRequested();
                 long sequence = checked(++nextSequence);
                 NamedPipeServerStream stream = pipe ?? throw new IOException("NATIVE_VIEW_PIPE_REQUIRED");
+                if (kind == NativeViewKind.Close)
+                    lock (sync)
+                    {
+                        shutdownBudget.BeginCloseExchange(lifetimeClock.Elapsed);
+                        closeAttempted = true;
+                        state = NativeProcessOwnerState.Closing;
+                    }
                 writeAttempted = true;
-                await NativeViewProtocol.WriteAsync(stream, new(sequence, kind, ownedPayload), CancellationToken.None).ConfigureAwait(false);
-                NativeViewPacket reply = await NativeViewProtocol.ReadAsync(stream, CancellationToken.None).ConfigureAwait(false);
+                // This owned deadline cancels the actual I/O, then poisons the
+                // direction and requests original-group close. It is never an
+                // ACK or evidence that a partially written delivery was absent.
+                using var deadline = new CancellationTokenSource(OwnedJobPolicy.ExchangeDeadline);
+                await NativeViewProtocol.WriteAsync(stream, new(sequence, kind, ownedPayload), deadline.Token).ConfigureAwait(false);
+                NativeViewPacket reply = await NativeViewProtocol.ReadAsync(stream, deadline.Token).ConfigureAwait(false);
                 NativeHostContextFacts.RequireReply(kind, reply, sequence);
                 if (reply.Kind == NativeViewKind.Failed)
                     lock (sync) failureCode ??= NativeBrowserFailure.Sanitize(reply.Payload);
@@ -346,7 +360,12 @@ public sealed class NativeProcessOwner
                 await RequestCloseAsync().ConfigureAwait(false);
                 throw;
             }
-            finally { exchange.Release(); }
+            finally
+            {
+                if (closeAttempted)
+                    lock (sync) shutdownBudget.CompleteCloseExchange(lifetimeClock.Elapsed);
+                exchange.Release();
+            }
         }
         finally { Interlocked.Decrement(ref queuedExchangeCount); }
     }
@@ -366,20 +385,46 @@ public sealed class NativeProcessOwner
     private async Task ObserveOriginalLifetimeAsync()
     {
         // The original handles stay owned even on a broken pipe, failed startup,
-        // rejected token, or suspended thread. No timeout closes or kills them.
+        // rejected token, or suspended thread. A recovery deadline may request
+        // termination of only the original Job; it never proves retirement.
         try
         {
-            await launch.ObserveNaturalExit(() => { }).ConfigureAwait(false);
             while (true)
             {
+                launch.ObserveExitState();
                 lock (peerSync) witness?.Tick();
                 lock (sync) { originalJobEmpty = witness?.empty == true; allObservedSignaled = witness?.audit.AllSignaled == true; }
                 bool originalExited = launch.original_process_signaled && launch.original_thread_signaled;
                 bool exactGroupEmpty = witness is { groups_retired: true };
                 bool noGroupLaunched = !ownedContextStartPermitIssued && witness is null;
-                bool contextRetired = !ownedContextStartPermitIssued || ownedContext?.VerifyAbsent() == true;
+                bool contextRetired = !ownedContextStartPermitIssued || originalExited && exactGroupEmpty && ownedContext?.VerifyAbsent() == true;
                 if (originalExited && (exactGroupEmpty || noGroupLaunched) && !creation.CreationOwned && contextRetired) break;
-                lock (sync) state = NativeProcessOwnerState.Unknown;
+                bool shutdownRequired;
+                TimeSpan recoveryElapsed;
+                bool unexpectedRestrictedExit;
+                lock (peerSync) unexpectedRestrictedExit = restrictedRoot?.original_handle_signaled == true || boundBrowser?.original_handle_signaled == true;
+                bool interruptTransport;
+                lock (sync)
+                {
+                    interruptTransport = unexpectedRestrictedExit && !shutdownBudget.CloseExchangeStarted && !closeRequested;
+                    if (interruptTransport) { state = NativeProcessOwnerState.Unknown; failureCode ??= "NATIVE_ORIGINAL_BROWSER_EXITED"; }
+                    if (closeRequested || state == NativeProcessOwnerState.Unknown || launch.original_process_signaled)
+                        shutdownBudget.ObserveShutdown(lifetimeClock.Elapsed);
+                    shutdownRequired = shutdownBudget.TryGetRecoveryElapsed(lifetimeClock.Elapsed, out recoveryElapsed);
+                }
+                if (interruptTransport) await RequestCloseAsync().ConfigureAwait(false);
+                if (shutdownRequired)
+                {
+                    lock (peerSync)
+                        if (witness?.RequestRecovery(recoveryElapsed, true) == true)
+                            lock (sync) failureCode ??= "NATIVE_OWNED_JOB_RECOVERY_REQUESTED";
+                    if (launch.RequestRecoveryBeforeContextGrant(recoveryElapsed, !ownedContextStartPermitIssued))
+                        lock (sync) failureCode ??= "NATIVE_ORIGINAL_STATION_RECOVERY_REQUESTED";
+                    // A dead broker may have left its captured profile behind.
+                    // Cleanup may run only after original process/thread + Job0.
+                    if (originalExited && exactGroupEmpty && ownedContext is not null)
+                        ownedContext.TryCleanupCapturedProfileAfterGroupExit("AutumnOS.Paimon.NativeHost." + manifest.Nonce[..32]);
+                }
                 await Task.Delay(100).ConfigureAwait(false);
             }
             lock (peerSync)

@@ -1,5 +1,7 @@
 # 本地主程序更新签名与发布衔接
 
+2026-11-12：派蒙明确授权在新电脑生成新的签名身份。当前 `build/update-trust.production.json` 使用 `autumnos-release-20261112-v1`；旧公开根归档于 `docs/update-trust.legacy-20261024.json`，不被默认信任。新RSA3072私钥位于工程外当前Windows用户的私有签名目录，已验证DPAPI CurrentUser恢复及公开根一致性；未上传私钥。下文2026-10-24目录和上传限制是历史记录，当前迁移见 [v1.0.0完整入口迁移](release-v1-migration.md)。更换公钥不使旧客户端自动信任新根，也不证明生产隔离或完整发布验收已通过。
+
 制作人：派蒙。2026-10-24。此协议的RSA-PSS更新签名与Windows Authenticode发布者证书独立；不需要购买CA证书来建立AutumnOS自己的更新验证根，也不会因此解除Windows SAC拦截。
 
 ## 这次更新页故障

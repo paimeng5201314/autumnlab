@@ -7,6 +7,13 @@ try {
     $directory = Join-Path $ProjectRoot "artifacts/builds/$buildId"
     $build = Get-Content -LiteralPath (Join-Path $directory 'build-result.json') -Raw | ConvertFrom-Json
     if ($build.status -ne 'passed') { throw 'A successful tracked Release build is required.' }
+    # Recovery tests use the same per-user/session business mutex as the real
+    # launcher. A live client would turn intended recovery failures into unrelated
+    # UPDATE_COORDINATION_BUSY exceptions. Do not terminate it or run this suite.
+    $testSession = [Diagnostics.Process]::GetCurrentProcess().SessionId
+    $liveClient = @(Get-Process -Name AutumnOS.Client -ErrorAction SilentlyContinue |
+        Where-Object SessionId -EQ $testSession)
+    if ($liveClient.Count) { throw 'Close AutumnOS normally before Test.ps1. Full recovery tests require an idle launcher session; keep GUI tests serial.' }
     # Pipe and private-ACL fixtures require a Medium, non-elevated caller.
     # This records prerequisites only; a synthetic baseline is not real-user acceptance.
     $contextReport = Join-Path $directory ('test-context-' + [Guid]::NewGuid().ToString('N') + '.json')

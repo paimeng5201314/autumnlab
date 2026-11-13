@@ -1221,3 +1221,73 @@ maintenance/Complete-LocalWork.ps1为完成后自动收尾入口：校验CURRENT
 原来保留全部旧原始日志/旧包的要求已被用户本次指令替代。历史build状态（含failed/not_run）精简保留，缺失原始证据明确标记purged，不改写失败为通过，也不再声称其原始日志可以重放。详见active artifacts/cleanup/last-cleanup.json、retention.json、build-outcomes.json、safety-tests.json与post-cleanup-integrity.json。旧Finalize-NativeStore、published05绑定已清理旧候选，仅作历史参考；新工作走当前scripts。完整隔离、Win10/11等未完成事项不因清理升级为通过。
 
 清理最终复核补充：562份源码、1990项安装清单、EXE/源码ZIP与原哈希一致；31个关键helper及7个工具链接完整。发现共享npm-cache空目标目录曾被清除，已补回空目录（没有恢复缓存文件），维护规则修正为保留该链接目标。新增真实junction/空目录/重复执行测试后最终15/15通过；post-cleanup-integrity状态passed，首次缺项与修复保留在resolved_findings。规则验证全部在自建夹具，不把维护测试当产品验收。
+
+## 2026-11-12 · 获授权上传源码，v1.0.0正式Release检查未通过
+
+派蒙本轮明确授权以其身份上传autumnlab并替换旧预览Release，拟名autumn正式版v1.0.0。已通过GitHub连接确认paimeng5201314账号及仓库写权限；新增codex/release-v1.0.0-preparation-20261112分支，提交331a0ed35a1eb967d5c3f22121be0e7b3f117325，author/committer均paimeng5201314、名称派蒙。808项本地公开源码逐项与远端Git blob核对0差异；其中冻结构建562项源字节全部一致，未更改客户端源码。包含106项历史隔离探针源，未包含Data/凭据/私钥/日志/工具链/binobj。保持远端已有历史归档，不重写main、旧工作分支或tag。
+
+新PUBLICATION_STATUS.md与公开README明确发布准备状态，未把viewport02临时验收包当成正式v1.0.0。当前运行候选仍内部0.5.2-local.28、temporary/private acceptance、完整隔离未完成、正式普通第三方门禁denied；不以改名或签名绕过。发现目录版bootstrap不能单独上传，Package-SingleFile删除PDB与NativeHost可信文件表冲突；Prepare-ProductionUpdate仅检查test_build不足以拒绝临时验收。真实新构建、完整包、异机/Win10/11与真实升级回退仍not_run，本次未构建新EXE。
+
+旧Release422539615（meta-v0.5.2-local.9）标题及10附件ID/hash回读保持，未替换或删除。旧版本配套须真实新EXE、payload、绑定真实Release/Asset ID的autumn.update.json及原生产根autumn.update.sig；可见受限路径未找到旧signing-key.dpapi，不断言全盘不存在，未解密读取私钥。更早无生产根客户端需完整入口迁移，保留Data。GitHub连接无Release附件写工具，本机GCM非交互检查无可用凭据。公开附件下载遇EOF，未伪称下载验签成功；只从既有源码归档核得旧sequence1/最低Updater1.1.0/2026-10-31到期，正式发布前须重新核对在线附件。
+
+详情active artifacts/publication-20261112/publication-result.json和PUBLICATION_STATUS.md。源码ZIP AutumnOS-current-source-20261112.zip，2,879,676字节、SHA256 d078483bb38b65fc60f47944c01c37f1b53b2d0548736358187f4ed38bc8efda，808项ZIP逐项读回通过。源码筛选脚本首次汇总Measure-Object处理字典错误已修复，文件拷贝和私钥模式扫描已完成，最终清单/源字节/远端/ZIP均独立核对。正式发布仍阻塞，保留当前准备材料，不运行完成后删除以清掉未解决事项。
+
+## 2026-11-12 · v1.0.0本地实现继续（开发中，未冻结）
+
+派蒙明确要求继续第一项正式运行/打包/隔离/更新回退，并允许重新生成签名身份；旧根首次信任改为完整EXE手动迁移，不声称旧客户端自动认可新公钥。新生产keyId autumnos-release-20261112-v1 已用既有CLI生成RSA3072/DPAPI CurrentUser身份并重导出公钥一致验证，私钥在工程外当前用户受限目录；公开指纹4dd00cb2a0a9ca8bd1bde5d24ef2e1ac63b2a8df2fdb780ef1a18e9e56f34e36。旧公钥保存在docs/update-trust.legacy-20261024.json，新build/update-trust.production.json已替换。尚未给实际Release签名，原始私钥没有输出或上传。
+
+开发中修改：单文件保留可信native目录中的全部文件（含PDB），拒绝缺失/额外/hash/case变化；生产更新准备拒绝test/private/platform候选及不完整元数据；新根相互拒绝和sequence/expiry纯回归；原生目录资格改为编译catalog版本/build/source/runtimePolicy+当前运行目录/安装版本一致性，真实文件封存和进程/每实例parser挑战继续独立强制；鼠标捕获失败不发送down，捕获丢失按原通道重置，新增正常hover移动。默认品牌准备为1.0.0/plus-v1.0.0/FileVersion1.0.0.0，仅源码，尚无该版本EXE。
+
+原生Job额度/卡死回收和WebView响应流生命周期正在并行修复；必须等全部源稳定后新BuildId完整构建/测试和真实Windows验证，不复用旧viewport02分数。当前实际可运行入口仍旧viewport02，工作源码已经改变、CURRENT的latest_packaged_user_exe_is_current_source已置false。本轮未发布/替换旧Release，Windows10/11/完整隔离/最终迁移升级回退仍not_run。详见artifacts/release-v1-20261112，制作未完成，暂不自动清理未解决证据。
+
+## 2026-11-12 · v1候选 qa02 / prod01 新字节验证（发布尚未完成）
+
+当前冻结源 sha256:51f74ba89506bcef946eb9341d0f2c44a5c5bb0aa4ab3f1e21a412dd4ed7aa0b。qa01整合构建因PlainAbsolute可见性失败，已保留；修复并用新ID qa02构建Release零警告零错误，1189/1189及其余8组通过。完整单EXE已制作，504178534字节，SHA256 fb28ad14d795f1d0a0a915ba3c79d1fc033037eab9dd04574a1ba617275cfbbb；不是原37MB目录bootstrap。
+
+qa02目录包真实普通Medium/Server20348测试：通过正常商店本地安装resource-repeat包，无权限；同实例1024次脚本执行和onload逐次一致，正常原进程/线程/Job0退休与双租约释放，两个恢复标志false。日志没有直接Serve计数，不将页面计数冒充宿主调用次数。完整证据artifacts/release-v1-20261112/qa02-native-resource-report.json。
+
+qa02单EXE复制到仅含入口的新portable-qa02目录后真实展开1970文件，536项NativeHost/固定Runtime字节全部匹配。ChemLeap0.1.1正常本地安装、鼠标开始/数字1输入变HCl10分、最大化新帧自适应；首次存档授权因操作超时未成功，第二次主动授权后真实保存10分，正常结束，再由新实例读回HCl10分。两实例均正常强退休、租约释放且无强制恢复。测试使用独立新Data，没有迁移或覆盖用户旧Data。报告另记qa02单文件验收，不声称硬件键盘/IME/Win10/11通过。
+
+正式配置prod01（1.0.0 / plus-v1.0.0，无temporary/private root）相同源码Release零警告零错误。首次完整测试与qa02 UI同时运行，恢复用例被同用户Session全局启动器锁阻挡，1184/1189且5fail记录保留；正常退出全部UI后，使用同一prod01二进制完整重跑九组通过（1189/1189），111源码检查通过。不是删除失败或跨源码转记。正在制作正式单文件及未绑定未签名update草案；原生负面harness另用qa02冻结DLL，不能代替正式系统矩阵。
+
+新公钥已写build并重导出验证；物理build-inputs公开副本与当前新根同步，精确源码归档使用AdditionalInputs虚拟映射并逐项核对。私钥仍仅工程外DPAPI CurrentUser受限目录，没有上传。GitHub Release未替换，新Release签名未生成。完整隔离、真实Logto、Win10/11/硬件IME、正式安装与完整升级回退等仍not_run/未完成。制作未完成不运行清理。
+
+## 2026-11-13 · 重复原生关闭发现竞争，停止候选发布
+
+会话日期按客户端2026-11-13记录。qa02第二轮native normal-close对照在真实首帧、STA Posted、页面ACK和fence全部通过之后，Close发生EndOfStreamException；产品OwnedJobRecoveryRequested=true，最终原process/thread+Job0及资源退休均已确认，helper没有救援。失败报告artifacts/native-negative-20261112/runs/normal-close-39f64849d3a14e8faba88217fcc88df6/result.json保留，不能用前一轮正常通过覆盖。正在审查并修复正常关闭与原Job超时回收的12秒竞争；新源码须另用qa03/prod02构建，不发布qa02/prod01为正式成品。
+
+prod01完整单EXE和1987文件payload此前已制作、payload字节校验通过；更新仅ID0 unsigneddraft，未签名未上传。当前GitHub准备分支仍331a0ed...，旧Release422539615与10附件只读回确认未改变。PUBLICATION_STATUS及候选源码仅本地准备，尚未同步新源。新增Test.ps1全量测试前检查同Session存活客户端，明确要求正常关闭后串行测试，不自动杀进程或将BUSY冒充恢复断言通过。
+
+## 2026-11-13 · qa03 消除提前回收竞争，正常关闭仍未确认
+
+qa03（T06-20261113-release-v1-qa03）冻结源 sha256:24e6b53ef88b69930f8052b523b393dcb230175051a0ae3da2efed094df8ff65，加入真实wire15秒与后续恢复12秒的分阶段预算，删除Shell12秒并发断管回调。Release零警告零错误；1195/1195与其余8组自动测试、111源码检查通过，1987文件目录包及完整单EXE已准备。单EXE504179581字节，SHA256 49738b13126674005e40a6d4382d19988e8eadac0177db691eacd58fb399ca6d。
+
+该冻结构件的首轮原生normal-close实测仍失败：首帧、真实STA Post、页面ACK、fence均已确认，Close为EndOfStreamException且未收到Closed；两个产品强制恢复标志均false，最终产品原process/thread、原Job0与resources退休确认，harness无救援。但异常跳过独立duplicate handles复核，不把它写成已通过。报告artifacts/native-negative-20261113/runs/normal-close-9d730f88128b4cfebf2bdb421616186b/result.json。已停止后续case，全部owner已退出；qa03不得发布，旧通过不能覆盖失败。
+
+正在为浏览器finally增加限长固定字段诊断，区分原browser句柄、SDK进程计数、Normal事件、关闭步骤和HRESULT；Unknown仍不算退出，不增加超时、不降低关闭谓词。新源另用qa04构建。旧用户入口与存档未替换；GitHub Release未改；正式系统/完整隔离/更新迁移等未运行项仍未通过，暂不清理当前诊断证据。
+
+## 2026-11-13 · qa04 限定故障验证及跨种子安全账本修复
+
+qa04冻结源sha256:275de93a89c3fda35c779b05a80d071f2b1c6118f741c27e40e9a1c8d1fa2a8d，Release零警告零错误；1199/1199及其余8组通过，111源码检查通过。source ZIP SHA8e86c0fbf25e2edbc2d4b74a3ce49a56f005f0774e4a1b22ee3e7c00e7d33a31。诊断为NBC1固定字段、不输出异常文本；Closed条件与期限未放宽。4次事先限定正常关闭、browser-failure/root-stall/pipe-close各一次及CPU A/B各一次均通过，原复制句柄/Job0与产品资源退休确认，无harness救援。root-stall确实触发15s实际I/O取消及产品Job恢复，fence未确认；B计算覆盖Close且实测CPU增量0.703125秒。但没有复现NBC1，qa03失败根因仍未定位，不能用这些通过覆盖旧失败或声明完整隔离。详见artifacts/native-negative-20261113/QA04-RESULTS.md及逐次报告。
+
+发现并修复完整EXE换种子漏带旧运行目录最低安全版本/失败历史的问题：稳定Data/Updates/security-ledger.json合并当前、绑定旧seed、旧目录版入口及共享state，seq/对应digest/minVersion/失败并集/可信时间保持单调；冲突、损坏、未知旧事务和超限拒绝，旧信任根不导入。UI策略落盘前在同一Data锁下合并旧状态和本次意图，覆盖首次128→129及并发丢失风险。Bootstrap以实际安装回执而非稳定Bootstrap自身版本检查最低版本/失败build；离线启动不检查clock，验新更新仍检查可信时间。83/83独立纯回归（23新增+60既有）通过；早期独立runner缺测试EXE的76/77失败已保留。root另补固定安全诊断allowlist与1组测试，实际整合须新qa05构建。旧prebuild374c快照已被后续修复取代，不作最终来源。
+
+qa05正在完整Build/Test/Prepare，尚无产品UI迁移通过结论。拟只用artifacts/portable-qa02合成guest存档目录实测完整入口更换，不覆盖用户真实入口/存档。私钥及公钥身份未再改变，GitHub Release未改，全部未完成项继续保留。
+
+## 2026-11-13 qa05 完整 EXE 迁移实测与 prod02 正式配置构建
+
+- 冻结源码：`sha256:2ef7fc047da53d825194e7453a2bd3fa2291d5b6e42dff9687e01f4e4cddd300`。qa05 为 `1.0.0-rc.4 / 1.0.0-platform-test.5`，prod02 为 `1.0.0 / plus-v1.0.0`；两者各自 Release 0 警告/0 错误，1,223 项 C# 与其余八组自动检查通过，源码检查 111 项通过。目录包已准备；正式配置原生 GUI 不在 Server 上冒充验证。
+- 实现固定 `AutumnOS_Data/Updates/security-ledger.json`：严格合并旧入口及绑定 Product 的序号/摘要、最低版本、失败构建和可信时间；先合并再写入，原子落盘，拒绝损坏、歧义、未完成旧事务及回退。启动门禁使用实际安装收据，不使用稳定引导器编译版本，不用网络时间限制离线启动。23 项迁移回归已进入完整测试。
+- qa05 完整 EXE：`artifacts/single-file/T06-20261113-release-v1-qa05/AutumnOS.exe`，504213584 字节，SHA-256 `4ad2128a3a869d2129da77b7ff780d865a9057f8d40993ab052f17237f8e8540`。仅在专用 `artifacts/portable-qa02` 合成游客数据上替换旧 EXE；用户真实入口、存档及凭据未动。
+- 实际 GUI：已安装 ChemLeap/首启状态保留，旧 HCl/10 读出，新 H2O/20 保存，关闭启动器后冷启动并在新游戏实例读回 H2O/20。最大化后的实际新帧填充视口；Esc 桌面、F6 多任务、继续、Ctrl+Shift+Q 确认结束通过。两实例均收到正常关闭回复，原进程/线程句柄及 Job 退休，运行/维护双租约释放，无恢复路径；最终所有 AutumnOS 进程退出。截图仅当场观察，未声称有独立冻结截图。
+- 迁移证据：`artifacts/release-v1-20261112/migration-qa05-final-verification.json` 及冻结的四份测试日志。合成旧账本 seq100、最低版本0.9.0、失败记录承接；这不是线上旧根更新或真实用户存档迁移的通过证明。保存操作之外的五份旧配置文件字节一致，旧 Product 身份及账本保留。
+- qa05 原生组件四个预定用例各运行一次通过：正常关闭、浏览器失败、原根停滞、断管；独立原始句柄与 Job0 均核验，无 harness 救援。结果见 `artifacts/native-negative-20261113/QA05-RESULTS.md`。qa04 的四次正常、三次负向及有界 CPU A/B 结果仅属于 qa04；qa03 间歇关闭 EOF 失败仍保留且根因未定位，不以重跑通过覆盖。
+- 新签名身份 `autumnos-release-20261112-v1` 已生成；仅公钥进入源码，私钥留在本机受控 DPAPI CurrentUser 目录。旧客户端不会自动信任新根；未生成可供发布的已绑定签名清单，没有开启未签名更新。Authenticode 仍未签。
+- 当前阻塞：SDK network.getStatus/request 未实现；完整隔离/权限变更负向矩阵、Windows 10/11 干净普通用户、真实硬件与中文输入、真实 Logto 往返、安装器、当前正式候选签名升级及失败回退均未完成。旧 Release 未替换，完整隔离保持 not_completed；当前失败材料继续保留，不执行完成后清理、重置卡或休眠。
+
+### prod02 材料核对与公开源码准备
+
+- 正式配置完整 EXE 已生成，504213037 字节，SHA-256 `f9d5c1b585906507bc4e7a049626ce5ab3d2874654523b1925eb0319483334c7`；路径 `artifacts/single-file/T06-20261113-release-v1-prod02/AutumnOS.exe`。更新 payload SHA-256 `84f883f9fb28d9a8e39cc6683ef2f49a9b19e7ababcbc35da6c82bb36111a4a9`，清单仍为未绑定/未签名草稿；草稿临时tag v1.0.0，实际发布时必须按真实对象绑定 plus-v1.0.0，不能直接发布草稿。源字节归档 `artifacts/release-v1-20261112/AutumnOS-prod02-source.zip`，SHA-256 `cdcb24a72b08e93c216619d46b6fad2a60b93b75d90b552318d1c0ff0069982b`。
+- 当前源码及两个 EXE、payload、源码 ZIP 已再次按实际字节核对，详见 `artifacts/release-v1-20261112/LOCAL_DELIVERY.json` 和 `FINAL-SHA256SUMS.txt`。正式包不含临时平台放行，本机 Server 上未声称运行通过。
+- 从精确历史提交 `6f634fa7c3f7457b32de6a5aec061cfddbc5a969` 的公开归档 Reports/package-single-file.json 核对目标旧发布 meta-v0.5.2-local.9：实际目录为 Product-42d4cf9c5d351ad0ebe7，EXE SHA6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11。它不是早期固定 Product 布局，但尚未下载验证旧live二进制或实测该真实旧版迁移。早期固定 Product 是额外未验证边界，不以它推断本次目标旧发布普遍失败。
+- 公开源白名单v3为153项 artifacts 文本源码/脱敏摘要，正常 tests 根另覆盖10项；历史106项原生源码完整保留。维护工具只增加cjs文本扩展和PUBLICATION_STATUS.md入口；无路径改名副本，无二进制、数据、凭据或私钥上传。新发布状态入口为 PUBLICATION_STATUS.md。

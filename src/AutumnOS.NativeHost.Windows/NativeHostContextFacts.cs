@@ -63,6 +63,36 @@ internal sealed record NativeHostContextFacts(string StationName, string Package
         return result is unchecked((int)0x80070002) or unchecked((int)0x80070003);
     }
 
+    // Called only after the owner observed original station process/thread and
+    // Job empty. Never adopt a profile first discovered during failed cleanup:
+    // only the exact path captured after the trusted ProfileCreated handshake.
+    internal void TryCleanupCapturedProfileAfterGroupExit(string originalProfileName)
+    {
+        if (!ProfileCreationPermitted || profilePath is null || VerifyAbsent()) return;
+        IntPtr station = SessionNative.OpenWindowStationW(StationName, false, 2);
+        int stationError = Marshal.GetLastWin32Error();
+        if (station != IntPtr.Zero) { Native.Check(SessionNative.CloseWindowStation(station), "close_recovery_station_postcheck"); return; }
+        if (stationError is not (2 or 3)) return;
+        if (!originalProfileName.StartsWith("AutumnOS.Paimon.NativeHost.", StringComparison.Ordinal) ||
+            originalProfileName.Length != "AutumnOS.Paimon.NativeHost.".Length + 32 ||
+            originalProfileName["AutumnOS.Paimon.NativeHost.".Length..].Any(c => c is not (>= '0' and <= '9' or >= 'a' and <= 'f')))
+            throw new InvalidDataException("NATIVE_ORIGINAL_RECOVERY_PROFILE_NAME_REQUIRED");
+        int derived = DeriveAppContainerSidFromAppContainerName(originalProfileName, out IntPtr sid);
+        try { if (derived != 0 || sid == IntPtr.Zero || Native.SidString(sid) != PackageSid) throw new InvalidDataException("NATIVE_RECOVERY_PROFILE_SID_MISMATCH"); }
+        finally { if (sid != IntPtr.Zero) Native.FreeSid(sid); }
+        int result = Native.GetAppContainerFolderPath(PackageSid, out IntPtr path);
+        try
+        {
+            if (result != 0 || path == IntPtr.Zero || !Path.GetFullPath(Marshal.PtrToStringUni(path)!).Equals(profilePath, StringComparison.OrdinalIgnoreCase)) return;
+        }
+        finally { if (path != IntPtr.Zero) Marshal.FreeCoTaskMem(path); }
+        OwnedFiles.PlainAncestors(profilePath);
+        int deleted = Native.DeleteAppContainerProfile(originalProfileName);
+        if (deleted != 0) return; // The caller still requires VerifyAbsent, not this return value.
+    }
+
+    [DllImport("userenv.dll", CharSet = CharSet.Unicode)] private static extern int DeriveAppContainerSidFromAppContainerName(string name, out IntPtr sid);
+
     private static void ValidateName(string name)
     {
         if (name.Length is < 1 or > 255 || name.Equals("WinSta0", StringComparison.OrdinalIgnoreCase) ||

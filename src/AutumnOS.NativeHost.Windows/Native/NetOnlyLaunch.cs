@@ -32,6 +32,8 @@ internal sealed class NetOnlyLaunch
     public int synthetic_credentials_logged => 0;
     public uint logon_flags => 2;
     public string lsa_cleanup => "not_claimed";
+    private readonly OwnedJobRecovery recovery = new();
+    internal bool termination_requested => recovery.Requested;
     internal void Start(string executable, string arguments, string workingDirectory)
     {
         if (create_process_with_logon_calls != 0 || Process is not null) throw new InvalidOperationException("CPWL_EXACTLY_ONCE_NO_RETRY");
@@ -90,18 +92,44 @@ internal sealed class NetOnlyLaunch
     {
         // A rejected suspended original is still owned. Unlike the research
         // probe, production never resumes a token/image rejected at admission
-        // merely to make cleanup progress. No kill or fictitious retirement.
+        // merely to make cleanup progress. Observation cannot assert exit from
+        // a cancellation, a recovery request or a numeric PID lookup.
+        while (true)
+        {
+            ObserveExitState();
+            if (original_process_signaled && original_thread_signaled) return;
+            save(); await Task.Delay(100);
+        }
+    }
+    internal void ObserveExitState()
+    {
         if (Process is not null && !Process.IsInvalid)
         {
-            while (!original_process_signaled)
-            { try { original_process_signaled = SessionNative.Exited(Process); } catch (Exception error) { Add(error); } if (!original_process_signaled) { save(); await Task.Delay(100); } }
-            try { exit_code = SessionNative.ExitCode(Process); } catch (Exception error) { Add(error); }
+            try
+            {
+                original_process_signaled = SessionNative.Exited(Process);
+                if (original_process_signaled) exit_code = SessionNative.ExitCode(Process);
+            }
+            catch (Exception error) { Add(error); }
         }
-        if (thread is not null && !thread.IsInvalid) { original_thread_signaled = SessionNative.WaitOriginalThread(thread) == 0; if (original_thread_signaled) thread.Dispose(); }
+        if (thread is not null && !thread.IsInvalid)
+            try { original_thread_signaled = SessionNative.WaitOriginalThread(thread) == 0; }
+            catch (Exception error) { Add(error); }
+    }
+    internal bool RequestRecoveryBeforeContextGrant(TimeSpan elapsed, bool noContextGrantProven)
+    {
+        if (!noContextGrantProven || Process is null || Process.IsInvalid) return false;
+        return recovery.TryRequest(elapsed, true, original_process_signaled, () =>
+        {
+            // Only the original CPWL-returned object, never an opened numeric
+            // PID. This path is forbidden after a private-context grant.
+            Native.Check(TerminateProcess(Process, OwnedJobPolicy.RecoveryExitCode), "terminate_owned_pre_context_station");
+        });
     }
     internal bool Exited => Process is not null && SessionNative.Exited(Process);
     internal void CloseOriginalAfterExit()
-    { if (Process is not null) { if (!original_process_signaled || !original_thread_signaled) throw new InvalidDataException("ORIGINAL_NETONLY_PROCESS_THREAD_EXIT_REQUIRED"); Process.Dispose(); } }
+    { if (Process is not null) { if (!original_process_signaled || !original_thread_signaled) throw new InvalidDataException("ORIGINAL_NETONLY_PROCESS_THREAD_EXIT_REQUIRED"); thread?.Dispose(); Process.Dispose(); } }
     private void Add(Exception error) { if (failures.Count < 64) failures.Add(NativeFailure.Describe(error)); }
     internal static string Quote(string text) { if (text.Contains('"') || text.Contains('\0') || text.EndsWith('\\')) throw new InvalidDataException("PLAIN_FIXED_ARGUMENT"); return '"' + text + '"'; }
+    [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool TerminateProcess(SafeProcessHandle originalProcess, uint exitCode);
 }

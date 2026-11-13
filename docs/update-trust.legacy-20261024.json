@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "purpose": "production",
+  "keys": [
+    {
+      "keyId": "autumnos-release-20261024",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEArLrJ4\u002BPpMgYipoc5\u002Btk2\nLATdzhBqFGtJN1MqqrOxbKKhgT44GDW3m6WWSNkY0yLzdfb6K3TTdH3oDWmMVY\u002BS\n91oR1yx1TIWKkbwvKoumHuw6N4ta0nZG2iuem4XEf10hfsNfLaMHFJ468RWA1Brf\nL6IV7AoBAbdGSIf0eVmzkqatvW\u002BReKpkt6FtizmoRjF2tz0ZKcZ54zFzIsxc2RDe\nZjkkrXB9EyuMui9XNa76GbzJ7A5GmWYg2qg5A\u002BZPiXivfihss8ERcJIK2Zj3DlXA\nwQEnkyduCqRu3XB8G5BBmFktfDhTfvCRZ/m1o3Bb0/N0avV9ulej2uiD8NfJkviM\nNpOqrRzui8ip7umgzOm03xddRbKEEcIjNLWyLh9TIeormEzDNpdq9Hv\u002Bbg8DTL2K\nAKCZK5XgJBz\u002BNgolJmBh8tXoK1NEGiZiN\u002BxYuc2lyfbVmqxNSac5i8MGmzQvBNW9\nXEywEJi6d5vNOC\u002BoEPC3v9FlYmhIhwCf5\u002BYDiYiPb/9ZAgMBAAE=\n-----END PUBLIC KEY-----",
+      "revoked": false
+    }
+  ]
+}

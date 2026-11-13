@@ -15,13 +15,29 @@ public static class UpdateTransaction
     public static UpdateFailureDiagnostic? LastFailure { get; private set; }
     private sealed class ApplyContext { internal string Phase = "inventory"; internal string? File; internal bool Recorded; }
     private static string JournalPath(string root) => Path.Combine(UpdateFiles.Work(root), "journal.json");
-    private static UpdateSecurityState Security(string root)
-    {
-        string path = Path.Combine(UpdateFiles.Work(root), "security.json");
-        return File.Exists(path) ? UpdateFiles.Read<UpdateSecurityState>(path) : new(0, []);
-    }
+    private static UpdateSecurityLedgerState Security(string root) => UpdateSecurityLedgerStore.LoadAndMerge(root);
     public static bool IsFailedBuild(string root, string buildId) => Security(root).FailedBuilds.Contains(buildId, StringComparer.Ordinal);
     public static long HighestSequence(string root) => Security(root).HighestSequence;
+    /// <summary>The stable entry may predate the installed client. Its assembly
+    /// metadata is not the current installation's version or build identity.</summary>
+    public static InstalledBuild RequireCurrentInstallation(string path)
+    {
+        string root = UpdateFiles.Root(path), receiptPath = Path.Combine(root, UpdateFiles.ReceiptName);
+        UpdatePaths.EnsureNoReparsePoints(receiptPath);
+        // Published packages always carry this receipt. An unprepared development
+        // directory must be prepared first; never guess an installed version.
+        if (!File.Exists(receiptPath)) throw new IOException("UPDATE_INSTALL_RECEIPT_REQUIRED");
+        var installed = UpdateFiles.ReadInstalled(root);
+        if (!SemanticVersion.TryParse(installed.Version, out _) || installed.DataSchemaVersion != 1 || installed.BuildId.Length > 128 ||
+            installed.BuildId.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not ('-' or '_' or '.')))
+            throw new IOException("UPDATE_INSTALL_RECEIPT_INVALID");
+        var security = Security(root);
+        UpdateSecurityLedgerStore.RequireMinimumVersion(security, installed.Version);
+        if (security.FailedBuilds.Contains(installed.BuildId, StringComparer.Ordinal)) throw new IOException("UPDATE_FAILED_BUILD_BLOCKED");
+        // A clock correction cannot bypass new-metadata verification, but existing
+        // offline installations do not need to revalidate an expired update offer.
+        return installed;
+    }
     public static string? GetCompatibility(string root, UpdateManifest manifest, bool rollback)
     {
         try
@@ -111,10 +127,11 @@ public static class UpdateTransaction
         string metadata = Path.Combine(tx, "autumn.update.json"), signature = Path.Combine(tx, "autumn.update.sig");
         if (new FileInfo(metadata).Length > UpdateManifestCodec.MaximumManifestBytes || new FileInfo(signature).Length > 16384 || UpdateFiles.Hash(metadata) != offer.ManifestSha256) throw new IOException("UPDATE_HANDOFF_DIGEST_INVALID");
         var security = Security(root);
+        DateTimeOffset verificationTime = UpdateSecurityLedgerStore.VerificationTime(security, DateTimeOffset.UtcNow);
         byte[] bytes = File.ReadAllBytes(metadata), signed = File.ReadAllBytes(signature);
         var manifest = offer.RollbackAuthorization is { } authorization
-            ? UpdateSignature.VerifyForRollback(bytes, signed, UpdateTrustStore.FromEmbedded(), DateTimeOffset.UtcNow, security.HighestSequence, authorization, offer.CurrentBuildId, offer.CurrentVersion)
-            : UpdateSignature.Verify(bytes, signed, UpdateTrustStore.FromEmbedded(), DateTimeOffset.UtcNow, security.HighestSequence);
+            ? UpdateSignature.VerifyForRollback(bytes, signed, UpdateTrustStore.FromEmbedded(), verificationTime, security.HighestSequence, authorization, offer.CurrentBuildId, offer.CurrentVersion)
+            : UpdateSignature.Verify(bytes, signed, UpdateTrustStore.FromEmbedded(), verificationTime, security.HighestSequence);
         if (manifest.Sequence == security.HighestSequence && security.ManifestSha256.Length != 0 && security.ManifestSha256 != offer.ManifestSha256) throw new IOException("UPDATE_SEQUENCE_CONTENT_CONFLICT");
         if (security.FailedBuilds.Contains(manifest.BuildId, StringComparer.Ordinal)) throw new IOException("UPDATE_FAILED_BUILD_BLOCKED");
         var installed = UpdateFiles.ReadInstalled(root);
@@ -337,9 +354,7 @@ public static class UpdateTransaction
                 throw new IOException("UPDATE_HEALTH_BUILD_MISMATCH");
             foreach (var file in manifest.Files)
                 if (!UpdateFiles.Matches(UpdateFiles.Managed(root, file.Path), new(file.Path, file.Bytes, file.Sha256))) throw new IOException("UPDATE_HEALTH_FILES_CHANGED");
-            var state = Security(root);
-            UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), state with { HighestSequence = Math.Max(state.HighestSequence, manifest.Sequence),
-                ManifestSha256 = manifest.Sequence >= state.HighestSequence ? UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")) : state.ManifestSha256 });
+            _ = UpdateSecurityLedgerStore.Record(root, manifest.Sequence, UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")), DateTimeOffset.UtcNow);
             PortableEntryBinding.Commit(root, manifest.BuildId, manifest.Version);
             UpdateFiles.Write(JournalPath(root), journal with { Phase = "committed" });
             committed = true;
@@ -417,9 +432,6 @@ public static class UpdateTransaction
     }
     private static void RecordFailure(string root, string buildId, long sequence, string? manifestSha256 = null)
     {
-        var state = Security(root);
-        UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), state with { HighestSequence = Math.Max(state.HighestSequence, sequence),
-            FailedBuilds = state.FailedBuilds.Append(buildId).Distinct(StringComparer.Ordinal).ToArray(),
-            ManifestSha256 = sequence >= state.HighestSequence ? manifestSha256 ?? state.ManifestSha256 : state.ManifestSha256 });
+        _ = UpdateSecurityLedgerStore.Record(root, sequence, manifestSha256, DateTimeOffset.UtcNow, buildId);
     }
 }

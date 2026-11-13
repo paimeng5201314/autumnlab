@@ -65,13 +65,9 @@ internal sealed partial class BrowserWindow
 
     private void Respond(CoreWebView2WebResourceRequestedEventArgs request, byte[]? content, string mime)
     {
-        Stream stream = Stream.Null;
-        if (content is not null)
-        {
-            if (responseStreams.Count >= 512) throw new InvalidDataException("BROWSER_RESPONSE_STREAM_LIMIT");
-            stream = new MemoryStream(content, writable: false);
-            responseStreams.Add(stream);
-        }
+        // Bound outstanding reads, not the cumulative requests in this document.
+        // WebView2 owns asynchronous reads; do not dispose on returning this event.
+        Stream stream = content is null ? Stream.Null : BrowserResponseStream.Open(responseStreams, content);
         request.Response = environment!.CreateWebResourceResponse(stream, content is null ? 403 : 200,
             content is null ? "Forbidden" : "OK", "Content-Type: " + mime + "\r\n" + RuntimeIsolationPolicy.ResponseHeaders);
     }

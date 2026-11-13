@@ -2,8 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace AutumnOS.NativeHost.Windows;
 
-// One new unnamed accounting Job per owned child. No limit mutation, kill,
-// breakaway, named object adoption or post-start assignment is provided.
+// One new unnamed resource-limited Job per owned child. No breakaway, named
+// object adoption, arbitrary PID assignment or Shell/broker assignment exists.
 internal sealed class JobEvidence
 {
     internal const nuint JobListAttribute = 0x0002000D;
@@ -22,7 +22,9 @@ internal sealed class JobEvidence
     public List<object> membership_evidence { get; } = [];
     public List<string> failures { get; } = [];
     public DateTimeOffset? last_query_utc { get; private set; }
-    public string limits_policy => "new_unnamed_default_flags_zero_no_kill_on_close_no_breakaway_no_UI_limits";
+    public string limits_policy => "new_unnamed_2GiB_job_1GiB_process_32_processes_cpu25_kill_on_close_no_breakaway";
+    private readonly OwnedJobRecovery recovery = new();
+    public bool termination_requested => recovery.Requested;
     public bool Empty => created && last_query_succeeded && active_processes == 0 && last_process_ids.Length == 0;
 
     internal void Create()
@@ -30,11 +32,13 @@ internal sealed class JobEvidence
         if (handle != IntPtr.Zero || created) throw new InvalidOperationException("FRESH_UNNAMED_JOB_ONLY");
         handle = CreateJobObjectW(IntPtr.Zero, null);
         Native.Check(handle != IntPtr.Zero, "create_one_unnamed_accounting_job"); created = true;
+        OwnedJobPolicy.ApplyToFreshJob(handle);
         ReadLimits();
     }
     internal void MarkAtomicLaunchAttached() => atomic_launch_attribute_attached = true;
     private void ReadLimits()
     {
+        OwnedJobPolicy.RequireKernelPolicy(handle);
         // Public x64 JOBOBJECT_EXTENDED_LIMIT_INFORMATION: basic limits64,
         // IO_COUNTERS48 and four SIZE_T fields32 = 144; LimitFlags at16.
         IntPtr buffer = Marshal.AllocHGlobal(144);
@@ -42,10 +46,11 @@ internal sealed class JobEvidence
         {
             Native.Check(QueryInformationJobObject(handle, 9, buffer, 144, out _), "query_new_job_default_extended_limits");
             limit_flags = unchecked((uint)Marshal.ReadInt32(buffer, 16));
-            if (limit_flags != 0) throw new InvalidDataException("NEW_JOB_DEFAULT_FLAGS_MUST_BE_ZERO_NO_MUTATION");
+            if (limit_flags != OwnedJobPolicy.LimitFlags) throw new InvalidDataException("OWNED_JOB_RESOURCE_FLAGS_MISMATCH");
         }
         finally { Marshal.FreeHGlobal(buffer); }
     }
+    internal bool RequestRecovery(TimeSpan elapsed) => recovery.TryRequest(elapsed, true, Empty, () => OwnedJobPolicy.RequestTermination(handle));
     internal bool Contains(IntPtr originalProcess, uint pid, string stage)
     {
         try

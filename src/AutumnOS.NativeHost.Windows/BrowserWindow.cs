@@ -36,6 +36,7 @@ internal sealed partial class BrowserWindow : Form
     private SafeProcessHandle? browser;
     private uint browserPid;
     private CoreWebView2BrowserProcessExitKind? browserExitKind;
+    private readonly NativeBrowserCloseObservation closeObservation = new();
     private Dictionary<string, byte[]>? package;
     private RuntimeParserGateChallenge? challenge;
     private byte[]? gateScript;
@@ -76,6 +77,7 @@ internal sealed partial class BrowserWindow : Form
     {
         long outstandingRequest = 0;
         bool closeRequested = false;
+        bool closeReplyStarted = false;
         // Monitor the actual inherited parent pipe even while WebView is
         // creating the environment, navigating, executing the probe or posting.
         Task pipeReader = Task.Run(ReadCommandsAsync);
@@ -117,12 +119,30 @@ internal sealed partial class BrowserWindow : Form
                 bool clean = await CloseOriginalAsync();
                 if (closeRequested && clean)
                 {
+                    closeObservation.Step = NativeBrowserCloseStep.Reader;
                     await pipeReader;
+                    closeObservation.Step = NativeBrowserCloseStep.Reply;
+                    closeReplyStarted = true;
                     await SendAsync(new(outstandingRequest, NativeViewKind.Closed, []));
                     ExitCode = 0;
                 }
+                else if (closeRequested)
+                {
+                    closeReplyStarted = true;
+                    await SendAsync(new(outstandingRequest, NativeViewKind.Failed, closeObservation.Failure()));
+                }
             }
-            catch (Exception error) when (error is not OutOfMemoryException) { ExitCode = 1; }
+            catch (Exception error) when (error is not OutOfMemoryException)
+            {
+                ExitCode = 1;
+                // Never append a second reply after any possible partial write.
+                if (closeRequested && !closeReplyStarted)
+                {
+                    closeReplyStarted = true;
+                    try { await SendAsync(new(outstandingRequest, NativeViewKind.Failed, closeObservation.Failure(error))); }
+                    catch (Exception sendError) when (sendError is not OutOfMemoryException) { }
+                }
+            }
             finished = true; Close();
         }
     }
@@ -163,7 +183,17 @@ internal sealed partial class BrowserWindow : Form
         revoked.Token.ThrowIfCancellationRequested();
         environment.BrowserProcessExited += (_, e) =>
         {
-            if (e.BrowserProcessId == browserPid) { browserExitKind = e.BrowserProcessExitKind; if (!closing) Revoke(); }
+            if (e.BrowserProcessId == browserPid)
+            {
+                browserExitKind = e.BrowserProcessExitKind;
+                closeObservation.ExitKind = browserExitKind switch
+                {
+                    CoreWebView2BrowserProcessExitKind.Normal => NativeBrowserCloseExit.Normal,
+                    CoreWebView2BrowserProcessExitKind.Failed => NativeBrowserCloseExit.Failed,
+                    _ => NativeBrowserCloseExit.Other
+                };
+                if (!closing) Revoke();
+            }
         };
         var controllerOptions = environment.CreateCoreWebView2ControllerOptions();
         controllerOptions.IsInPrivateModeEnabled = true;
@@ -265,26 +295,50 @@ internal sealed partial class BrowserWindow : Form
 
     private async Task<bool> CloseOriginalAsync()
     {
+        closeObservation.Step = NativeBrowserCloseStep.Revoke;
         closing = true; Revoke(); CompleteGate(false);
+        closeObservation.Step = NativeBrowserCloseStep.DeliveryDrain;
         if (deliveryChannel is not null) await deliveryChannel.CloseAsync();
+        closeObservation.Step = NativeBrowserCloseStep.Controller;
         controller?.Close();
+        closeObservation.Step = NativeBrowserCloseStep.Streams;
         foreach (Stream stream in responseStreams) stream.Dispose();
         responseStreams.Clear();
         // Local close status requires the original native browser handle AND SDK
         // process-set/exit event. The station independently retains its Job, OS
         // child handles and context owner even after receiving a Closed response.
         bool clean = false;
+        closeObservation.Step = NativeBrowserCloseStep.Observe;
         if (environment is not null && browser is { IsInvalid: false })
         {
             var clock = Stopwatch.StartNew();
+            bool observedExitSet = false;
             while (clock.Elapsed < TimeSpan.FromSeconds(12))
             {
-                if (SessionNative.Exited(browser) && environment.GetProcessInfos().Count == 0 && browserExitKind.HasValue)
-                { clean = browserExitKind == CoreWebView2BrowserProcessExitKind.Normal; break; }
+                closeObservation.OriginalBrowserSignaled = SessionNative.Exited(browser);
+                // Preserve the original short-circuit: this diagnostic does not
+                // add SDK calls before the native browser has actually exited.
+                // An unqueried SDK set is encoded as unknown, never as zero.
+                if (closeObservation.OriginalBrowserSignaled == true)
+                {
+                    closeObservation.SdkProcessCount = null; closeObservation.SdkQueryHresult = null;
+                    try
+                    {
+                        closeObservation.SdkProcessCount = environment.GetProcessInfos().Count;
+                        closeObservation.SdkQueryHresult = 0;
+                    }
+                    catch (Exception queryError) when (queryError is not OutOfMemoryException)
+                    { closeObservation.SdkQueryHresult = queryError.HResult; throw; }
+                }
+                if (closeObservation.OriginalBrowserSignaled == true && closeObservation.SdkProcessCount == 0 && browserExitKind.HasValue)
+                { clean = closeObservation.Clean; observedExitSet = true; break; }
                 await Task.Delay(75);
             }
+            closeObservation.TimedOut = !observedExitSet;
         }
+        closeObservation.Step = NativeBrowserCloseStep.Release;
         browser?.Dispose(); core = null; controller = null; environment = null;
+        closeObservation.Step = NativeBrowserCloseStep.Observe;
         return clean;
     }
 

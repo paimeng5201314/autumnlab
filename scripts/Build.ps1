@@ -50,7 +50,7 @@ try {
         if(!$BuildVersion -or $TestUpdateTrustFile){throw 'A private acceptance build needs an explicit version and normal trust.'}
         Join-Path $ProjectRoot "artifacts/packages/$BuildId/AutumnOS-$BuildVersion-win-x64-development"
     }
-    & "$PSScriptRoot/New-NativePayloadTable.ps1" -HostDirectory $hostOut -FixedRuntime $runtime -OutputFile $table -AcceptanceRoot $acceptanceRoot
+    & "$PSScriptRoot/New-NativePayloadTable.ps1" -HostDirectory $hostOut -FixedRuntime $runtime -OutputFile $table -AcceptanceRoot $acceptanceRoot -BuildId $BuildId -SourceSnapshotId $snapshot
     $report.native_payload_table_sha256=(Get-FileHash -LiteralPath $table).Hash.ToLowerInvariant()
     $report.isolation_acceptance_root=$acceptanceRoot
     $properties+="-p:NativePayloadTable=$table"

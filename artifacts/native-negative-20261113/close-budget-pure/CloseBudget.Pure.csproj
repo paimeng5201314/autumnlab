@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../src/AutumnOS.NativeHost.Windows/Native/OwnedJobPolicy.cs" Link="OwnedJobPolicy.cs" />
+    <Compile Include="../../../tests/AutumnOS.Tests/NativeOwnedJobPolicyTests.cs" Link="NativeOwnedJobPolicyTests.cs" />
+  </ItemGroup>
+</Project>

@@ -233,7 +233,7 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
             byte[] signature = await metadata.GetAsync(signatureAsset.Url, GitHubRequestKind.Asset, 16 * 1024, token).ConfigureAwait(false);
             if (descriptor.Bytes != bytes.Length || signatureAsset.Bytes != signature.Length) throw new UpdateException("UPDATE_ASSET_SIZE_MISMATCH");
             // Historical discovery verifies identity but grants no replay exemption. Consent and install enforce the ledger.
-            var manifest = UpdateSignature.Verify(bytes, signature, trust, clock());
+            var manifest = UpdateSignature.Verify(bytes, signature, trust, SecurityTime());
             if (manifest.Payload.ReleaseId != id || (manifest.Channel == "meta") != preview || !TagMatches(manifest, tag)) throw new UpdateException("UPDATE_RELEASE_MANIFEST_MISMATCH");
             var payload = Asset(assets, manifest.Payload.Asset, tag, "UPDATE_PAYLOAD_MISSING");
             if (payload.Id != manifest.Payload.AssetId || payload.Bytes != manifest.Payload.Bytes) throw new UpdateException("UPDATE_ASSET_IDENTITY_MISMATCH");
@@ -417,11 +417,12 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
     }
     private void CheckCandidate(UpdateCandidate candidate, UpdateSelectionMode mode, bool discovery = false)
     {
-        CheckClock();
+        var security = UpdateSecurityLedgerStore.LoadAndMerge(programDirectory, dataRoot);
+        DateTimeOffset verificationTime = UpdateSecurityLedgerStore.VerificationTime(security, clock());
         var manifest = mode == UpdateSelectionMode.Rollback && !discovery
-            ? UpdateSignature.VerifyForRollback(candidate.ManifestBytes, candidate.SignatureBytes, trust, clock(), persistent.HighestSequence,
+            ? UpdateSignature.VerifyForRollback(candidate.ManifestBytes, candidate.SignatureBytes, trust, verificationTime, security.HighestSequence,
                 rollbackAuthorization ?? throw new UpdateException("UPDATE_ROLLBACK_CONSENT_REQUIRED"), currentBuildId, snapshot.CurrentVersion)
-            : UpdateSignature.Verify(candidate.ManifestBytes, candidate.SignatureBytes, trust, clock(), mode == UpdateSelectionMode.Rollback ? 0 : persistent.HighestSequence);
+            : UpdateSignature.Verify(candidate.ManifestBytes, candidate.SignatureBytes, trust, verificationTime, mode == UpdateSelectionMode.Rollback ? 0 : security.HighestSequence);
         if (!TagMatches(manifest, candidate.Tag) || !UpdateManifestCodec.Serialize(manifest).AsSpan().SequenceEqual(UpdateManifestCodec.Serialize(candidate.Manifest))) throw new UpdateException("UPDATE_RELEASE_MANIFEST_MISMATCH");
         if (candidate.ReleaseId != manifest.Payload.ReleaseId || candidate.AssetId != manifest.Payload.AssetId ||
             !IsOfficialAssetUrl(candidate.PayloadUrl.AbsoluteUri, candidate.Tag, manifest.Payload.Asset)) throw new UpdateException("UPDATE_ASSET_IDENTITY_MISMATCH");
@@ -436,16 +437,12 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
         CheckAccepted(manifest, candidate.ManifestBytes, mode == UpdateSelectionMode.Rollback);
         if (compatibilityCheck?.Invoke(manifest, mode == UpdateSelectionMode.Rollback) is { } compatibilityError) throw new UpdateException(compatibilityError);
     }
-    private void CheckClock() { if (persistent.LastTrustedUtc != DateTimeOffset.MinValue && clock() < persistent.LastTrustedUtc.AddMinutes(-5)) throw new UpdateException("UPDATE_CLOCK_ROLLBACK"); }
+    private DateTimeOffset SecurityTime() => UpdateSecurityLedgerStore.VerificationTime(UpdateSecurityLedgerStore.LoadAndMerge(programDirectory, dataRoot), clock());
+    private void CheckClock() => _ = SecurityTime();
     private void CheckAccepted(UpdateManifest manifest, byte[] bytes, bool rollback)
     {
         if (manifest.Sequence == persistent.HighestSequence && persistent.HighestDigest is not null && Digest(bytes) != persistent.HighestDigest) throw new UpdateException("UPDATE_SEQUENCE_REUSED");
-        string ledgerPath = Path.Combine(programDirectory, ".autumnos-update", "security.json"); UpdatePaths.EnsureNoReparsePoints(ledgerPath);
-        if (!File.Exists(ledgerPath)) return;
-        if (new FileInfo(ledgerPath).Length > 65536) throw new UpdateException("UPDATE_SECURITY_LEDGER_INVALID");
-        var ledger = UpdateManifestCodec.ParseStrict<SecurityLedger>(File.ReadAllBytes(ledgerPath), 65536);
-        if (ledger.HighestSequence < 0 || ledger.FailedBuilds is null || ledger.FailedBuilds.Count > 4096 || ledger.FailedBuilds.Any(b => !UpdateManifestCodec.Identifier(b)) ||
-            ledger.ManifestSha256.Length != 0 && !UpdateManifestCodec.Hash(ledger.ManifestSha256)) throw new UpdateException("UPDATE_SECURITY_LEDGER_INVALID");
+        var ledger = UpdateSecurityLedgerStore.LoadAndMerge(programDirectory, dataRoot);
         if (!rollback && manifest.Sequence < ledger.HighestSequence) throw new UpdateException("UPDATE_METADATA_REPLAY");
         if (manifest.Sequence == ledger.HighestSequence && ledger.ManifestSha256.Length != 0 && ledger.ManifestSha256 != Digest(bytes)) throw new UpdateException("UPDATE_SEQUENCE_REUSED");
         if (ledger.MinimumVersion is { } minimum && SemanticVersion.Parse(manifest.Version).CompareTo(SemanticVersion.Parse(minimum)) < 0) throw new UpdateException("UPDATE_MINIMUM_SECURITY_VERSION");
@@ -493,7 +490,13 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
         return saved;
     }
     private void SaveState(PersistentState value)
-    { WriteAtomic(statePath, value); persistent = value; policyExists = true; }
+    {
+        // Merge both the prior on-disk policy and this intent before its bounded UI
+        // history can overwrite either. The stable ledger serializes other services.
+        _ = UpdateSecurityLedgerStore.RecordPolicy(programDirectory, dataRoot, value.HighestSequence,
+            value.HighestDigest, value.LastTrustedUtc, value.FailedBuildIds);
+        WriteAtomic(statePath, value); persistent = value; policyExists = true;
+    }
     private void WriteAtomic<T>(string path, T value)
     {
         using var lease = enterCriticalOperation?.Invoke("update-state-write"); UpdatePaths.EnsureNoReparsePoints(path); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -612,6 +615,5 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
     }
     private sealed record PersistentState(int SchemaVersion, bool Preview, long HighestSequence, string? HighestDigest, DateTimeOffset LastTrustedUtc, IReadOnlyList<string> FailedBuildIds,
         string? PinnedVersion = null, DateTimeOffset? LastSuccessfulCheckUtc = null, DateTimeOffset? RetryAfterUtc = null, string? ReconciledTransactionId = null, string? PendingManifestSha256 = null);
-    private sealed record SecurityLedger(long HighestSequence, IReadOnlyList<string> FailedBuilds, string ManifestSha256 = "", string? MinimumVersion = null);
     private sealed record PendingState(string FromBuildId, string FromVersion, StagedUpdate Staged);
 }

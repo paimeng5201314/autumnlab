@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string]$BuildId)
 . "$PSScriptRoot/Common.ps1"
+. "$PSScriptRoot/SingleFilePayloadFiles.ps1"
 $ErrorActionPreference='Stop'
 $buildRoot=Join-Path $ProjectRoot "artifacts/builds/$BuildId"
 $build=Get-Content -LiteralPath (Join-Path $buildRoot 'build-result.json') -Raw|ConvertFrom-Json
@@ -14,6 +15,11 @@ $snapshot=& "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory $run -Additi
 if($snapshot -ne $build.source_snapshot_id){throw 'Source changed since build.'}
 $staging=Join-Path $run 'payload';New-Item -ItemType Directory -Path $staging|Out-Null
 $delivery=Get-Content -LiteralPath (Join-Path $buildRoot 'delivery-hashes.json') -Raw|ConvertFrom-Json
+$catalogPath=Join-Path $buildRoot 'native-payload-table.json'
+if((Get-FileHash -LiteralPath $catalogPath).Hash.ToLowerInvariant() -cne $build.native_payload_table_sha256){throw 'Native catalog differs from compiled build.'}
+$plan=Get-SingleFilePayloadPlan -DeliveryFiles @($delivery) -NativeCatalog (Get-Content -LiteralPath $catalogPath -Raw|ConvertFrom-Json)
+$discard=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+foreach($item in $plan.Removed){$null=$discard.Add($item.path)}
 $sourceDirectory=Split-Path $prepared.executable -Parent
 $removed=@();$copied=@()
 foreach($file in $delivery){
@@ -21,7 +27,7 @@ foreach($file in $delivery){
     $source=Join-Path $sourceDirectory $file.path
     for($cursor=[IO.Path]::GetFullPath($source);$cursor;$cursor=[IO.Path]::GetDirectoryName($cursor)){if((Get-Item -LiteralPath $cursor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Redirected packaging input.'}}
     if((Get-FileHash -LiteralPath $source).Hash.ToLowerInvariant() -ne $file.sha256){throw 'Prepared bytes changed.'}
-    if($file.path.EndsWith('.pdb',[StringComparison]::OrdinalIgnoreCase)){$removed+=,[ordered]@{path=$file.path;bytes=$file.bytes;sha256=$file.sha256;reason='debug_symbols_not_required_by_runtime'};continue}
+    if($discard.Contains($file.path)){$removed+=,[ordered]@{path=$file.path;bytes=$file.bytes;sha256=$file.sha256;reason='debug_symbols_not_in_native_trust_catalog'};continue}
     $target=Join-Path $staging $file.path;New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent)|Out-Null
     Copy-Item -LiteralPath $source -Destination $target
     $copied+=,$file
@@ -98,7 +104,7 @@ try{
 }finally{$output.Dispose()}
 if((Get-Item -LiteralPath $executable).VersionInfo.ProductVersion -ne $label){throw 'Compiled single-file version mismatch.'}
 $files|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $run 'delivery-hashes.json') -Encoding utf8NoBOM
-[ordered]@{status='passed';removed=$removed;removed_count=$removed.Count;removed_bytes=($removed|Measure-Object bytes -Sum).Sum;deduplicated_embedded_copies=$files.Count-$seen.Count;unique_blobs=$seen.Count;runtime_paths_retained=$files.Count;runtime_trimmed=$false;licenses_retained=$true;old_files_deleted=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $run 'cleanup.json') -Encoding utf8NoBOM
+[ordered]@{status='passed';removed=$removed;removed_count=$removed.Count;removed_bytes=($removed|ForEach-Object {[long]$_.bytes}|Measure-Object -Sum).Sum;catalogued_native_files_retained=$plan.RequiredNativeFiles;deduplicated_embedded_copies=$files.Count-$seen.Count;unique_blobs=$seen.Count;runtime_paths_retained=$files.Count;runtime_trimmed=$false;licenses_retained=$true;old_files_deleted=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $run 'cleanup.json') -Encoding utf8NoBOM
 $report=[ordered]@{status='prepared';build_id=$BuildId;source_snapshot_id=$snapshot;release_label=$label;version=$build.version;executable=$executable;executable_sha256=(Get-FileHash -LiteralPath $executable).Hash.ToLowerInvariant();bytes=(Get-Item -LiteralPath $executable).Length;delivery_files=1;data_folder='AutumnOS_Data';program_relative_path=('AutumnOS_Data/System/Product-'+$payloadHash.Substring(0,20));payload_sha256=$payloadHash;logical_files=$files.Count;unique_blobs=$seen.Count;native_tests='not_run';setup='not_created_pending_native_acceptance';public_release=$false;authenticode='not_signed';production_trust=$(if(@($build.build_properties|Where-Object {$_ -like '-p:ProductionUpdateTrustFile=*'}).Count){'embedded_public_root_requires_signed_release'}else{'unconfigured_signed_install_disabled'});compiler=$compiler;compiler_sha256=(Get-FileHash -LiteralPath $compiler).Hash.ToLowerInvariant();compiler_version=(Get-Item -LiteralPath $compiler).VersionInfo.FileVersion;evidence=$run;inbox_framework='Windows .NET Framework 4.x';net10_winappsdk_webview2='embedded_self_contained_no_global_install'}
 $report|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $buildRoot 'package-single-file.json') -Encoding utf8NoBOM
 $report|ConvertTo-Json -Depth 6

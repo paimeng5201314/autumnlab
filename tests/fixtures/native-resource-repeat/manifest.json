@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "appId": "dev.autumnos.resourcerepeat",
+  "name": "原生资源重复读取回归",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": []
+}

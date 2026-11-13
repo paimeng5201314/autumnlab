@@ -27,7 +27,7 @@ internal sealed class RestrictedBrowserChild(NativeHostLaunchManifest manifest, 
         try
         {
             station.VerifyRuntime();
-            if (!job.created || job.limit_flags != 0 || !job.Empty) throw new InvalidDataException("PREBOUND_FRESH_EMPTY_ZERO_FLAGS_JOB_REQUIRED");
+            if (!job.created || job.limit_flags != OwnedJobPolicy.LimitFlags || !job.Empty) throw new InvalidDataException("PREBOUND_FRESH_RESOURCE_LIMITED_JOB_REQUIRED");
             var security = new Native.SecurityAttributes { Length = (uint)Marshal.SizeOf<Native.SecurityAttributes>(), Inherit = true };
             stage = "owned_stdout_pipe"; Native.Check(Native.CreatePipe(out read, out write, ref security, 4096), stage);
             Native.Check(Native.SetHandleInformation(read, 1, 0), "stdout_read_not_inherited");
@@ -118,11 +118,16 @@ internal sealed class RestrictedBrowserChild(NativeHostLaunchManifest manifest, 
     {
         SignalInputEof();
         output?.Dispose();
+        var grace = System.Diagnostics.Stopwatch.StartNew();
         while (true)
         {
             job.Observe(audit); audit.RefreshExits();
             if (job.Empty && audit.AllSignaled && (no_child_created_proven || audit.Held.Count > 0 && originalThread != IntPtr.Zero &&
                 Native.WaitForSingleObject(originalThread, 0) == Native.WaitObject0)) break;
+            // EOF is cooperative. An unresponsive original child group is
+            // terminated through its private Job after grace, never by PID.
+            // Termination success alone cannot satisfy the exit predicate above.
+            job.RequestRecovery(grace.Elapsed);
             await Task.Delay(100).ConfigureAwait(false);
         }
         if (originalThread != IntPtr.Zero)

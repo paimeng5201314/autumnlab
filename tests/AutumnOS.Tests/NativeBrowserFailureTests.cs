@@ -12,6 +12,10 @@ internal static class NativeBrowserFailureTests
         yield return ("native.failure.fixed_revocation_and_probe_status", Revocation);
         yield return ("native.failure.rejects_untrusted_payloads", RejectMalformed);
         yield return ("native.failure.win32_code_is_bounded_numeric_only", Win32Code);
+        yield return ("native.close.diagnostic_distinguishes_unknown_live_empty_and_sdk_error", CloseFacts);
+        yield return ("native.close.diagnostic_steps_hresult_and_no_exception_text", CloseStages);
+        yield return ("native.close.diagnostic_rejects_untrusted_or_contradictory_fields", CloseMalformed);
+        yield return ("native.close.clean_requires_original_handle_sdk_zero_and_normal_event", CloseClean);
     }
 
     private static void RoundTrip()
@@ -60,6 +64,44 @@ internal static class NativeBrowserFailureTests
             string result = NativeBrowserFailure.Sanitize(payload);
             Check(payload.Length <= 128 && result.StartsWith("NBF1|read_package|w32_" + unchecked((uint)code).ToString(System.Globalization.CultureInfo.InvariantCulture) + "|", StringComparison.Ordinal)
                 && !result.Contains("SECRET", StringComparison.Ordinal));
+        }
+    }
+    private static void CloseFacts()
+    {
+        var facts = new NativeBrowserCloseObservation { Step = NativeBrowserCloseStep.Observe, TimedOut = true };
+        Check(NativeBrowserFailure.Sanitize(facts.Failure()) == "NBC1|observe|timeout|00000000|unknown|-|-|none");
+        facts.OriginalBrowserSignaled = false; facts.SdkProcessCount = 3; facts.SdkQueryHresult = 0;
+        Check(NativeBrowserFailure.Sanitize(facts.Failure()).EndsWith("|live|3|00000000|none", StringComparison.Ordinal));
+        facts.OriginalBrowserSignaled = true; facts.SdkProcessCount = null; facts.SdkQueryHresult = unchecked((int)0x80004005);
+        Check(NativeBrowserFailure.Sanitize(facts.Failure()).EndsWith("|exited|-|80004005|none", StringComparison.Ordinal) && !facts.Clean);
+    }
+    private static void CloseStages()
+    {
+        foreach (NativeBrowserCloseStep step in Enum.GetValues<NativeBrowserCloseStep>())
+        {
+            var facts = new NativeBrowserCloseObservation { Step = step };
+            var error = new System.Runtime.InteropServices.COMException("SECRET token path", unchecked((int)0x80070005));
+            byte[] bytes = facts.Failure(error); string text = NativeBrowserFailure.Sanitize(bytes);
+            Check(bytes.Length <= 128 && text.StartsWith("NBC1|", StringComparison.Ordinal) && text.Contains("|error|80070005|", StringComparison.Ordinal) && !text.Contains("SECRET", StringComparison.Ordinal));
+        }
+    }
+    private static void CloseMalformed()
+    {
+        foreach (string value in new[] { "NBC1|secret|error|80004005|unknown|-|-|none", "NBC1|observe|error|80004005|secret|-|-|none",
+            "NBC1|observe|error|80004005|exited|0|80004005|normal", "NBC1|observe|error|80004005|exited|-|00000000|normal",
+            "NBC1|observe|unconfirmed|00000000|exited|00|00000000|normal", "NBC1|observe|timeout|00000000|live|-|-|secret",
+            "NBC1|observe|timeout|00000000|live|2147483648|00000000|none", "NBC1|observe|timeout|00000000|live|-|-|none|extra" })
+            Check(NativeBrowserFailure.Sanitize(Encoding.ASCII.GetBytes(value)) == NativeBrowserFailure.Fallback);
+    }
+    private static void CloseClean()
+    {
+        foreach (bool? signaled in new bool?[] { null, false, true })
+        foreach (int? count in new int?[] { null, 0, 1 })
+        foreach (int? hr in new int?[] { null, 0, unchecked((int)0x80004005) })
+        foreach (NativeBrowserCloseExit kind in Enum.GetValues<NativeBrowserCloseExit>())
+        {
+            var facts = new NativeBrowserCloseObservation { OriginalBrowserSignaled = signaled, SdkProcessCount = count, SdkQueryHresult = hr, ExitKind = kind };
+            Check(facts.Clean == (signaled == true && count == 0 && hr == 0 && kind == NativeBrowserCloseExit.Normal));
         }
     }
     private static void Check(bool condition) { if (!condition) throw new InvalidOperationException("Native browser safe diagnostic mismatch."); }

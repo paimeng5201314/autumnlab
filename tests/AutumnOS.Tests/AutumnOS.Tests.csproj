@@ -3,6 +3,8 @@
   <ItemGroup>
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativePlatformPolicy.cs" Link="NativeHost/NativePlatformPolicy.cs" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativeBrowserFailure.cs" Link="NativeHost/NativeBrowserFailure.cs" />
+    <Compile Include="../../src/AutumnOS.NativeHost.Windows/BrowserResponseStream.cs" Link="NativeHost/BrowserResponseStream.cs" />
+    <Compile Include="../../src/AutumnOS.NativeHost.Windows/Native/OwnedJobPolicy.cs" Link="NativeHost/OwnedJobPolicy.cs" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativePointerInput.cs;../../src/AutumnOS.NativeHost.Windows/NativeKeyboardInput.cs" Link="NativeHost/%(Filename)%(Extension)" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativeViewport.cs" Link="NativeHost/NativeViewport.cs" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativeInputQueue.cs" Link="NativeHost/NativeInputQueue.cs" />
@@ -12,6 +14,7 @@
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativeHostBootstrapProtocol.cs" Link="NativeHost/NativeHostBootstrapProtocol.cs" />
     <Compile Include="../../src/AutumnOS.Shell/RuntimeViewBackendEvents.cs" Link="Runtime/RuntimeViewBackendEvents.cs" />
     <Compile Include="../../src/AutumnOS.Shell/PreviewAuthorityRouter.cs" Link="Runtime/PreviewAuthorityRouter.cs" />
+    <Compile Include="../../src/AutumnOS.Shell/NativeDeploymentIdentity.cs" Link="NativeHost/NativeDeploymentIdentity.cs" />
     <Compile Include="../../tools/AutumnOS.Update.Cli/ProductionUpdateSigner.cs" Link="Update/ProductionUpdateSigner.cs" />
     <Compile Include="../../src/AutumnOS.SingleFile/StartupFailure.cs" Link="Startup/StartupFailure.cs" />
     <Compile Include="../../src/AutumnOS.SingleFile/BundleFooter.cs" Link="Startup/BundleFooter.cs" />

@@ -99,6 +99,12 @@ try {
     New-Item -ItemType Directory -Path $fixture,$temporaryRoot | Out-Null
     $temporaryCreated = $true
     $status = 'failed'
+    $phase = 'packaging_publication_guards'
+    $packagingReportPath=Join-Path $reportDirectory 'packaging-publication.json'
+    & "$ProjectRoot/tests/packaging-publication-tests.ps1" -BuildId $BuildId -SourceSnapshotId $SourceSnapshotId -ReportPath $packagingReportPath | Out-Null
+    $packagingReport=Get-Content -LiteralPath $packagingReportPath -Raw|ConvertFrom-Json
+    Assert-Case 'packaging_publication_guards' ($packagingReport.status -ceq 'passed' -and $packagingReport.failed -eq 0 -and
+        $packagingReport.build_id -ceq $BuildId -and $packagingReport.source_snapshot_id -ceq $SourceSnapshotId)
     $source = Join-Path $fixture 'inert-source'
     New-Item -ItemType Directory -Path $source | Out-Null
     # These names exercise the real package contract, but all three files are inert text.

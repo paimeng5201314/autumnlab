@@ -49,6 +49,35 @@ internal static class UpdateCoreTests
             Reject(() => UpdateSignature.Verify(p.Bytes, p.Signature, Trust(), Now, 8), "UPDATE_METADATA_REPLAY");
             Check(UpdateSignature.Verify(p.Bytes, p.Signature, Trust(), Now, 7).Sequence == 7); await Task.CompletedTask;
         }));
+        yield return ("update.production_root_migration_requires_complete_new_trust", () => Run(async f =>
+        {
+            var original = f.Add("1.1.0", 7).Manifest;
+            using var replacementKey = RSA.Create(3072);
+            var oldTrust = new UpdateTrustStore(new(1, 1, "production", [new("old-publisher", SigningKey.Value.ExportSubjectPublicKeyInfoPem())]));
+            var newTrust = new UpdateTrustStore(new(1, 1, "production", [new("replacement-publisher", replacementKey.ExportSubjectPublicKeyInfoPem())]));
+            byte[] oldBytes = UpdateManifestCodec.Serialize(original with { KeyId = "old-publisher" });
+            byte[] newBytes = UpdateManifestCodec.Serialize(original with { KeyId = "replacement-publisher", Sequence = 8 });
+            byte[] oldSignature = UpdateSignature.Create(oldBytes, SigningKey.Value, "old-publisher", 1);
+            byte[] newSignature = UpdateSignature.Create(newBytes, replacementKey, "replacement-publisher", 1);
+
+            Check(UpdateSignature.Verify(oldBytes, oldSignature, oldTrust, Now, 7).KeyId == "old-publisher");
+            Check(UpdateSignature.Verify(newBytes, newSignature, newTrust, Now, 7).KeyId == "replacement-publisher");
+            Reject(() => UpdateSignature.Verify(newBytes, newSignature, oldTrust, Now, 7), "UPDATE_UNKNOWN_KEY");
+            Reject(() => UpdateSignature.Verify(oldBytes, oldSignature, newTrust, Now, 7), "UPDATE_UNKNOWN_KEY");
+            var relabeledOldTrust = new UpdateTrustStore(new(1, 1, "production", [new("replacement-publisher", SigningKey.Value.ExportSubjectPublicKeyInfoPem())]));
+            Reject(() => UpdateSignature.Verify(newBytes, newSignature, relabeledOldTrust, Now, 7), "UPDATE_SIGNATURE_INVALID");
+            await Task.CompletedTask;
+        }));
+        yield return ("update.production_root_retains_sequence_floor_and_exact_expiry", () => Run(async f =>
+        {
+            var pair = f.Add("1.1.0", 7);
+            var productionTrust = new UpdateTrustStore(Trust().Document with { Purpose = "production" });
+            Check(UpdateSignature.Verify(pair.Bytes, pair.Signature, productionTrust, Now, 7).Sequence == 7);
+            Reject(() => UpdateSignature.Verify(pair.Bytes, pair.Signature, productionTrust, Now, 8), "UPDATE_METADATA_REPLAY");
+            Check(UpdateSignature.Verify(pair.Bytes, pair.Signature, productionTrust, pair.Manifest.ExpiresAtUtc.AddTicks(-1), 7).Sequence == 7);
+            Reject(() => UpdateSignature.Verify(pair.Bytes, pair.Signature, productionTrust, pair.Manifest.ExpiresAtUtc, 7), "UPDATE_METADATA_EXPIRED");
+            await Task.CompletedTask;
+        }));
         yield return ("update.strict_json_duplicates_unknown_bom_missing", () => Run(async f =>
         {
             var p = f.Add("1.1.0"); string json = Encoding.UTF8.GetString(p.Bytes);

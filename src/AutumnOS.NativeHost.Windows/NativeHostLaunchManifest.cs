@@ -204,7 +204,9 @@ public sealed class NativeHostLaunchManifest : IDisposable
         return result;
     }
 
-    internal static string PlainAbsolute(string value, bool directory)
+    // Host-only validation shared by the Shell before it reads installation metadata.
+    // This validates an existing path; it neither grants access nor admits a package.
+    public static string PlainAbsolute(string value, bool directory)
     {
         if (value.Length is < 4 or > 32760 || value[1] != ':' || value[2] != '\\' ||
             !(value[0] is >= 'A' and <= 'Z' or >= 'a' and <= 'z') || value.Contains('/') || value.EndsWith('\\'))

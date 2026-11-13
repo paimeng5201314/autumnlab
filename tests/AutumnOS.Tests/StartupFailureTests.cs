@@ -30,6 +30,7 @@ internal static class StartupFailureTests
                     "Native error identity must survive classification without being guessed from message text.");
             });
         yield return ("startup.policy_not_inferred_from_exception_text_or_hresult", DoesNotGuessPolicy);
+        yield return ("startup.migration_codes_are_fixed_and_preserve_original_exception_evidence", MigrationCodes);
         yield return ("startup.typed_long_path_error_is_distinct_and_preserves_data_guidance", LongPathClassification);
         yield return ("startup.only_exact_product_error_codes_are_retained", ExactProductCodes);
         yield return ("startup.report_contains_numeric_and_build_evidence_without_exception_secrets", ReportEvidence);
@@ -57,6 +58,32 @@ internal static class StartupFailureTests
             if (error is not Win32Exception)
                 Check(failure.NativeErrorCode is null, "A managed exception must not invent a native error code.");
         }
+    }
+
+    private static void MigrationCodes()
+    {
+        foreach (string code in new[] { "UPDATE_INSTALL_RECEIPT_REQUIRED", "UPDATE_MINIMUM_SECURITY_VERSION",
+            "UPDATE_FAILED_BUILD_BLOCKED", "UPDATE_SECURITY_LEDGER_BUSY", "UPDATE_SECURITY_LEDGER_INVALID",
+            "UPDATE_SECURITY_LEDGER_MISSING", "UPDATE_SECURITY_LEGACY_RECOVERY_REQUIRED", "UPDATE_SECURITY_SEQUENCE_CONFLICT" })
+        {
+            var error = new AutumnOS.Update.UpdateException(code);
+            var failure = Create(error);
+            Check(failure.Code == "STARTUP_FAILED", "Only the typed bootstrap caller supplies update diagnostics.");
+            failure.AcceptUpdateSecurityCode(error.Code);
+            Check(failure.Code == code && failure.HResult == error.HResult && failure.ExceptionType == error.GetType().FullName &&
+                failure.NativeErrorCode is null, "A safe code must not replace original exception facts.");
+            Check(failure.Message("").Contains("未清除用户数据", StringComparison.Ordinal), "Recovery must preserve user data.");
+            Check(Create(new IOException(code)).Code == code, "The same fixed IO guard must remain readable.");
+            var invalid = Create(new InvalidOperationException());
+            invalid.AcceptUpdateSecurityCode(code + "\nprivate details");
+            Check(invalid.Code == "STARTUP_FAILED", "Code prefixes cannot disclose exception text.");
+        }
+        var unknown = Create(new InvalidOperationException());
+        unknown.AcceptUpdateSecurityCode("UPDATE_SECURITY_SYNTHETIC_SECRET");
+        Check(unknown.Code == "STARTUP_FAILED", "Arbitrary security-looking messages stay rejected.");
+        var native = Create(new Win32Exception(4551));
+        native.AcceptUpdateSecurityCode("UPDATE_MINIMUM_SECURITY_VERSION");
+        Check(native.Code == "STARTUP_WINDOWS_POLICY_BLOCKED", "Update text cannot replace observed native classification.");
     }
 
     private static void ExactProductCodes()

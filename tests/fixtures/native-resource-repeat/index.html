@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>原生资源重复读取回归</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="loader.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="brand">AUTUMNOS · 测试专用 · 制作人：派蒙</p>
+    <h1>原生资源重复读取</h1>
+    <p>顺序挂载同一包内脚本 <strong>1,024 次</strong>。每一次都必须执行一次并完成加载；不申请网络或存档权限。</p>
+    <button id="start" type="button" disabled>准备中</button>
+    <p id="status" role="status" aria-live="polite" data-outcome="not_run">尚未开始；如果此状态一直不变，加载器没有成功执行。</p>
+    <p class="counter"><span id="count">0</span><span class="total"> / 1024</span></p>
+    <progress id="progress" max="1024" value="0" aria-label="脚本执行次数"></progress>
+    <p id="detail">每次加载最长等待 15 秒；整轮最长 10 分钟。超时、加载错误、重复或漏执行均判失败。</p>
+    <p class="scope">本页只报告脚本执行和加载事件。宿主是否逐次进入资源处理器，仍须结合旧版本失败基线与原生证据；本页不代表完整隔离通过。</p>
+    <pre id="result">{"status":"not_run"}</pre>
+  </main>
+</body>
+</html>

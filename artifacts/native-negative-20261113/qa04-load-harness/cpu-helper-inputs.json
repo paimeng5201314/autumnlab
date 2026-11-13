@@ -1,0 +1,22 @@
+[
+  {
+    "name": "AutumnOS.CpuLoad.Helper.exe",
+    "bytes": 162304,
+    "sha256": "d4e25688c686ea5d8d0256accc1b81bfc3431f629b0c22d13c1fffba351f8bba"
+  },
+  {
+    "name": "AutumnOS.CpuLoad.Helper.dll",
+    "bytes": 14848,
+    "sha256": "b6c71f4142a74dec9e61adda5e0172559a8cad2c1564a2e2cbb2a41a1f33552b"
+  },
+  {
+    "name": "AutumnOS.CpuLoad.Helper.deps.json",
+    "bytes": 517,
+    "sha256": "750ba58dc2dad0dd4ca8605b40560306a2825f2755116db9443ca6f3735003d6"
+  },
+  {
+    "name": "AutumnOS.CpuLoad.Helper.runtimeconfig.json",
+    "bytes": 374,
+    "sha256": "64f6e92559a3ff326652a277bceee9745d0fe35cde800954bec2d5e16aae7fdd"
+  }
+]

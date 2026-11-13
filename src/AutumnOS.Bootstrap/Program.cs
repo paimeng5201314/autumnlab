@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AutumnOS.UpdateProtocol;
+using AutumnOS.Update;
 using AutumnOS.Startup;
 using System.Reflection;
 
@@ -34,6 +35,8 @@ internal static class Program
                 stage = "recovery_wait";
                 if (!updater.WaitForExit(180000) || updater.ExitCode != 0) throw new IOException("UPDATE_RECOVERY_REQUIRED");
             }
+            stage = "security_state";
+            _ = UpdateTransaction.RequireCurrentInstallation(root);
             stage = "client_start"; target = "AutumnOS.Client.exe";
             var launch = new ProcessStartInfo(Path.Combine(root, target)) { UseShellExecute = false, WorkingDirectory = root };
             using var child = Process.Start(launch) ?? throw new IOException("UPDATE_CLIENT_START_FAILED");
@@ -47,6 +50,7 @@ internal static class Program
             var failure = StartupFailure.Create(e, "bootstrap", stage, target,
                 metadata.FirstOrDefault(x => x.Key == "BuildId")?.Value ?? "unknown",
                 metadata.FirstOrDefault(x => x.Key == "SourceSnapshotId")?.Value ?? "unknown");
+            if (e is UpdateException updateError) failure.AcceptUpdateSecurityCode(updateError.Code);
             string report = failure.TryWrite(data);
             try { Console.Error.WriteLine($"AUTUMNOS_BOOTSTRAP role=failed stage={stage} code={failure.Code} native={failure.NativeErrorCode} hresult={failure.HResult}"); }
             catch (Exception outputError) when (outputError is not OutOfMemoryException) { }

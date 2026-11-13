@@ -4,8 +4,8 @@
   "purpose": "production",
   "keys": [
     {
-      "keyId": "autumnos-release-20261024",
-      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEArLrJ4\u002BPpMgYipoc5\u002Btk2\nLATdzhBqFGtJN1MqqrOxbKKhgT44GDW3m6WWSNkY0yLzdfb6K3TTdH3oDWmMVY\u002BS\n91oR1yx1TIWKkbwvKoumHuw6N4ta0nZG2iuem4XEf10hfsNfLaMHFJ468RWA1Brf\nL6IV7AoBAbdGSIf0eVmzkqatvW\u002BReKpkt6FtizmoRjF2tz0ZKcZ54zFzIsxc2RDe\nZjkkrXB9EyuMui9XNa76GbzJ7A5GmWYg2qg5A\u002BZPiXivfihss8ERcJIK2Zj3DlXA\nwQEnkyduCqRu3XB8G5BBmFktfDhTfvCRZ/m1o3Bb0/N0avV9ulej2uiD8NfJkviM\nNpOqrRzui8ip7umgzOm03xddRbKEEcIjNLWyLh9TIeormEzDNpdq9Hv\u002Bbg8DTL2K\nAKCZK5XgJBz\u002BNgolJmBh8tXoK1NEGiZiN\u002BxYuc2lyfbVmqxNSac5i8MGmzQvBNW9\nXEywEJi6d5vNOC\u002BoEPC3v9FlYmhIhwCf5\u002BYDiYiPb/9ZAgMBAAE=\n-----END PUBLIC KEY-----",
+      "keyId": "autumnos-release-20261112-v1",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAwY3yFU1Pp7v2M/WJfUBg\nh8rXkcSXCqO1VRsRz577Be7Dz/mjIt9WpXsBUQRMngQ2p77JbHSvmuVnGsAB1MXt\nDDhe2jjMuzogdzGweEhngrIk9nQC7umWpZnh/hHDk93\u002BCHagBZhpzeKtaYvEG8\u002Br\nQCqvZBFXp2vc4/NIi0xrgj6h213Iut\u002BTLg9Muez6LqmSNgs/6hPoEImp7cYojktp\nX\u002Bi7PO/0IV2g7DpaqgTIXANhlUd7UW29CumeBMH5v\u002BWWe0I\u002Bk0CN4yuC9VkRGms6\nirD7C6deJl43x0ShsAocLzSL1tJpDNjqpQqY1vqwcTEN7m3UIlCZmRAa6WRVaziv\n4kV1Kie8GfIbgCFPL/QuaF1/fDXrgRFmpAx3qnNUl4cBxQ7X9w9p53QW5dneU3oO\noyhYShyXAt64fIG2PSaf06wKVbetg5ZSwJuQIHnLiUW5ZLU6nSX0Zg3T2KYyWFlp\nE4VVI9IfZAWQ/mWnS7NgyhvVnxsGip2rNtosZrQzX9t1AgMBAAE=\n-----END PUBLIC KEY-----",
       "revoked": false
     }
   ]

@@ -1,5 +1,7 @@
 # 远端投递排序内核 · G2-B1
 
+2026-11-12现状校正：下文“原生peer未安装”“本阶段没有OS witness”描述2026-11-04的历史阶段。当前源码已经由RemoteViewDelivery连接原始native进程组退休，并由NativeWebViewDeliveryTarget在原浏览器STA实际Post后回传匹配回执。正常路径已有对应旧候选限定实测；新v1候选正在补资源额度、异常回收与完整矩阵，不能因此将全部隔离验收改为通过。
+
 制作人：派蒙。排序内核在 `src/AutumnOS.Runtime/RuntimeDeliveryCoordinator.cs`。2026-11-04 新增宿主专用 `IRuntimeAuthorityMutations` 与 `RuntimeAuthorityMutationCoordinator`，已将权限、身份和实例权威提交接到屏障之前；真实远端宿主和原生 peer decoder 仍未安装，第三方启动门禁保持拒绝。此代码不生成原生 Post 或操作系统退出证明。
 
 ## 本地接续与提交接线（2026-11-04）

@@ -268,7 +268,9 @@ internal sealed partial class RemoteApplicationView(Grid container, RuntimeSessi
             if (!Map(e, out var x, out var y)) return;
             if (!surface.Focus(FocusState.Pointer) || !SurfaceHasFocus())
             { crashed("native_input_focus_unavailable"); return; }
-            surface.CapturePointer(e.Pointer); pressed = true;
+            if (!surface.CapturePointer(e.Pointer))
+            { audit("native_pointer_capture_unavailable"); return; }
+            pressed = true;
             lastPointerX = x; lastPointerY = y;
             Input(NativeViewKind.Pointer, new { action = "down", x, y }, gesture:true); e.Handled = true;
         };
@@ -281,10 +283,10 @@ internal sealed partial class RemoteApplicationView(Grid container, RuntimeSessi
             }
             Input(NativeViewKind.Pointer, new { action = "up", x, y }); surface.ReleasePointerCapture(e.Pointer); e.Handled = true;
         };
-        surface.PointerCaptureLost += (_, _) => { if (pressed && !disposed) crashed("native_pointer_binding_lost"); };
+        surface.PointerCaptureLost += (_, _) => { if (pressed && !disposed) _ = LoseForegroundAsync(); };
         surface.PointerMoved += (_, e) =>
         {
-            if (!pressed || !isForeground() || !e.GetCurrentPoint(surface).Properties.IsLeftButtonPressed ||
+            if (disposed || !ViewportInputReady || !isForeground() ||
                 !Map(e, out var x, out var y) || (x == lastPointerX && y == lastPointerY)) return;
             lastPointerX = x; lastPointerY = y;
             if (!disposed && !inputs.TryEnqueuePointerMove(x, y, viewport))
@@ -404,11 +406,12 @@ internal sealed partial class RemoteApplicationView(Grid container, RuntimeSessi
             if (displayed && original.Snapshot.State == NativeProcessOwnerState.Authenticated)
             {
                 // Normal teardown asks the original STA to close its controller and wait for the
-                // browser. A stuck or broken transport is cut only to initiate cleanup. Neither
-                // a timer nor even a valid Closed reply releases the original OS-group lease.
-                using var abort = new CancellationTokenSource(TimeSpan.FromSeconds(12));
-                using var watch = abort.Token.Register(static state => _ = ((NativeProcessOwner)state!).RequestCloseAsync(), original);
-                var reply = await original.ExchangeAsync(NativeViewKind.Close, [], abort.Token);
+                // browser. Bound waiting for the wire, then let ExchangeAsync own its actual
+                // 15-second I/O deadline. A queue timer must not tear down an in-flight Close:
+                // the native browser itself has a bounded cooperative exit observation period.
+                // Neither deadline nor a valid Closed reply releases the original OS-group lease.
+                using var beforeWrite = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+                var reply = await original.ExchangeAsync(NativeViewKind.Close, [], beforeWrite.Token);
                 if (reply.Kind == NativeViewKind.Closed) audit("native_close_reply");
             }
         }

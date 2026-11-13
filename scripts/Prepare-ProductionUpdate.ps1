@@ -8,6 +8,7 @@ param([Parameter(Mandatory)][string]$BuildId,
 if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$'){throw 'Tracked T06 build required.'}
 $evidence=Join-Path $ProjectRoot "artifacts/builds/$BuildId"
 $build=Get-Content -LiteralPath (Join-Path $evidence 'build-result.json') -Raw|ConvertFrom-Json
+Assert-ProductionUpdateBuild -Build $build
 $package=Get-Content -LiteralPath (Join-Path $evidence 'package-prepared.json') -Raw|ConvertFrom-Json
 $tests=Get-Content -LiteralPath (Join-Path $evidence 'tests.json') -Raw|ConvertFrom-Json
 if($build.status -ne 'passed' -or $build.test_build -or $tests.status -ne 'passed' -or $package.status -cne 'prepared' -or

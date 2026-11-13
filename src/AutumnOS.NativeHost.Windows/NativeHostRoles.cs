@@ -34,7 +34,7 @@ internal static class NativeHostRoles
             job.Create();
             var auditRoots = manifest.ProcessAuditRoots;
             job.Observe(new ProcessAudit(auditRoots.Host, auditRoots.Runtime, null));
-            if (!job.Empty || job.limit_flags != 0) throw new InvalidDataException("NATIVE_FRESH_EMPTY_JOB_REQUIRED");
+            if (!job.Empty || job.limit_flags != OwnedJobPolicy.LimitFlags) throw new InvalidDataException("NATIVE_FRESH_RESOURCE_LIMITED_JOB_REQUIRED");
             Native.Check(Native.GetProcessTimes(current.DangerousGetHandle(), out var creation, out _, out _, out _), "native_role_original_creation");
             await NativeHostBootstrapProtocol.WriteAsync(pipe, manifest, new(NativeBootstrapKind.JobReady,
                 (uint)Environment.ProcessId, creation.Value, unchecked((ulong)job.Handle.ToInt64()))).ConfigureAwait(false);

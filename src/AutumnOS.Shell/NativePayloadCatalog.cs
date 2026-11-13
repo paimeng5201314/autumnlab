@@ -10,24 +10,36 @@ namespace AutumnOS.Shell;
 
 // Compiled from the fresh native publish and the fixed runtime at build time. An installed
 // package, JSON in the data directory, command line or environment cannot grant eligibility.
-internal sealed record NativePayloadCatalog(string? AcceptanceRoot, NativeHostFileBinding[] Host, NativeHostFileBinding[] Runtime)
+internal sealed record NativePayloadCatalog(int SchemaVersion, string BuildId, string SourceSnapshotId, string RuntimePolicy,
+    string? AcceptanceRoot, NativeHostFileBinding[] Host, NativeHostFileBinding[] Runtime)
 {
     internal static NativePayloadCatalog ForLaunch(InstallationRoot root)
     {
         using var data = typeof(NativePayloadCatalog).Assembly.GetManifestResourceStream("AutumnOS.NativePayloadTable");
         var table = data is { Length: > 0 and <= 4 * 1024 * 1024 }
             ? JsonSerializer.Deserialize<NativePayloadCatalog>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) : null;
-        // Before the full ordinary-user matrix is certified, only the exact private acceptance
-        // installation built for this run can exercise the production route with third-party bytes.
-        string actual = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root.InstallationDirectory));
-        // A private candidate can also be unpacked without the developer's drive/path on a
-        // target workstation. This is a separate per-user installation, never the normal data root.
-        string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "AutumnOS-Acceptance", BrandInfo.BuildId);
-        if (table?.AcceptanceRoot is not { Length: > 0 } path ||
-            !(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)).Equals(actual, StringComparison.OrdinalIgnoreCase) ||
-              target.Equals(actual, StringComparison.OrdinalIgnoreCase)))
-            throw new PackageException("RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE");
+        if (table is not { SchemaVersion: 2, RuntimePolicy: "autumn-native-owned-v1", Host.Length: > 0, Runtime.Length: > 0 } ||
+            table.BuildId != BrandInfo.BuildId || table.SourceSnapshotId != BrandInfo.SourceSnapshotId)
+            throw new PackageException("RUNTIME_NATIVE_CATALOG_INVALID");
+        // Support portable/installed layouts using the running build's identity, not a developer
+        // drive name. The receipt cannot alter the compiled catalog or grant execution on its own:
+        // RemoteApplicationView still pins all files, verifies the original isolated processes and
+        // keeps the document parser blocked until the per-instance native challenge succeeds.
+        string program = NativeHostLaunchManifest.PlainAbsolute(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root.ProgramDirectory)), true);
+        string current = NativeHostLaunchManifest.PlainAbsolute(Path.TrimEndingDirectorySeparator(Path.GetFullPath(AppContext.BaseDirectory)), true);
+        if (!program.Equals(current, StringComparison.OrdinalIgnoreCase))
+            throw new PackageException("RUNTIME_NATIVE_INSTALLATION_IDENTITY_INVALID");
+        for (string? ancestor = program; ancestor is not null; ancestor = Path.GetDirectoryName(ancestor))
+            if ((File.GetAttributes(ancestor) & FileAttributes.ReparsePoint) != 0)
+                throw new PackageException("RUNTIME_NATIVE_INSTALLATION_IDENTITY_INVALID");
+        string receiptPath = NativeHostLaunchManifest.PlainAbsolute(Path.Combine(program, "autumn.install.json"), false);
+        using (var receipt = new FileStream(receiptPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            if (receipt.Length is < 1 or > NativeDeploymentIdentity.MaximumReceiptBytes)
+                throw new PackageException("RUNTIME_NATIVE_INSTALLATION_IDENTITY_INVALID");
+            var bytes = new byte[(int)receipt.Length]; receipt.ReadExactly(bytes);
+            NativeDeploymentIdentity.ValidateReceipt(bytes, BrandInfo.BuildId, BrandInfo.Version);
+        }
         var version = new OsVersion { Size = Marshal.SizeOf<OsVersion>(), ServicePack = "" };
         if (RtlGetVersion(ref version) != 0 || !NativePlatformPolicy.IsVersionAllowed(version.ProductType, version.Build) ||
             !Environment.UserInteractive || !Environment.Is64BitProcess)

@@ -68,8 +68,29 @@ namespace AutumnOS.Startup
                     case "UPDATE_RECORD_INVALID": case "UPDATE_TRANSACTION_INVALID":
                         failure.Code = error.Message; break;
                 }
+                failure.AcceptUpdateSecurityCode(error.Message);
             }
             return failure;
+        }
+
+        // The .NET 10 bootstrap may pass the Code of a typed UpdateException.
+        // This shared C# 5 file cannot reference that assembly. Keep the original
+        // exception identity/HRESULT and accept only this fixed diagnostic set.
+        internal void AcceptUpdateSecurityCode(string code)
+        {
+            if (Code != "STARTUP_FAILED") return;
+            switch (code)
+            {
+                case "UPDATE_INSTALL_RECEIPT_REQUIRED": case "UPDATE_MINIMUM_SECURITY_VERSION":
+                case "UPDATE_FAILED_BUILD_BLOCKED": case "UPDATE_SECURITY_DATA_ROOT_MISMATCH":
+                case "UPDATE_SECURITY_LEDGER_BUSY": case "UPDATE_SECURITY_LEDGER_INVALID":
+                case "UPDATE_SECURITY_LEDGER_MISSING": case "UPDATE_SECURITY_SEQUENCE_CONFLICT":
+                case "UPDATE_SECURITY_FAILED_BUILDS_LIMIT": case "UPDATE_SECURITY_LEGACY_BINDING_INVALID":
+                case "UPDATE_SECURITY_LEGACY_RECOVERY_REQUIRED": case "UPDATE_SECURITY_LEGACY_SOURCES_LIMIT":
+                case "UPDATE_STATE_INVALID": case "UPDATE_METADATA_INVALID":
+                case "UPDATE_METADATA_ENCODING_OR_SIZE":
+                    Code = code; break;
+            }
         }
 
         internal string TryWrite(string dataDirectory)
@@ -102,6 +123,19 @@ namespace AutumnOS.Startup
                 ? "Windows 安全策略阻止了程序启动。需要符合本机策略、具有可信发布者签名的构建。"
                 : Code == "STARTUP_PATH_TOO_LONG"
                 ? "程序所在目录过深。请正常退出后，将 AutumnOS.exe 与同级 AutumnOS_Data 一起移到更短的目录，再重试；不要删除 AutumnOS_Data。"
+                : Code == "UPDATE_INSTALL_RECEIPT_REQUIRED" || Code == "UPDATE_INSTALL_RECEIPT_INVALID"
+                ? "安装版本信息缺失或损坏。请用完整发行版修复安装，并保留 AutumnOS_Data。"
+                : Code == "UPDATE_MINIMUM_SECURITY_VERSION"
+                ? "当前安装版本低于已记录的安全下限。请使用符合安全下限的完整新版本，并保留 AutumnOS_Data。"
+                : Code == "UPDATE_FAILED_BUILD_BLOCKED"
+                ? "此版本此前未通过更新验证。请使用其他完整发行版本，并保留 AutumnOS_Data。"
+                : Code == "UPDATE_SECURITY_LEDGER_BUSY"
+                ? "安全更新记录正由另一操作使用。请稍后重试。"
+                : Code == "UPDATE_SECURITY_LEGACY_RECOVERY_REQUIRED"
+                ? "旧运行目录仍有未完成的更新事务。请先通过对应旧版本入口完成恢复；不要删除旧运行目录或 AutumnOS_Data。"
+                : Code.StartsWith("UPDATE_SECURITY_", StringComparison.Ordinal) || Code == "UPDATE_STATE_INVALID" ||
+                    Code == "UPDATE_METADATA_INVALID" || Code == "UPDATE_METADATA_ENCODING_OR_SIZE"
+                ? "安装或安全更新记录无法确认，原文件已保留。请恢复完整记录；不要删除安全更新记录或 AutumnOS_Data。"
                 : "AutumnOS 启动失败。";
             return Code + "\n" + detail + "\n阶段：" + Stage + "；目标：" + Target +
                 (NativeErrorCode.HasValue ? "；Windows 错误码：" + NativeErrorCode.Value : "") +
