@@ -9,6 +9,7 @@ public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable, 
     private readonly IRuntimeAuthorityMutations? authorityMutations;
     private readonly string scope = Guid.NewGuid().ToString("N");
     private CancellationTokenSource epochLifetime = new();
+    private CancellationTokenSource networkLifetime = new();
     private long epoch;
     private long authorityRevision;
     private bool disposed;
@@ -18,6 +19,21 @@ public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable, 
     { this.authorityMutations = authorityMutations; }
     public string Account { get { lock (gate) return account; } }
     public bool Offline { get { lock (gate) return offline; } }
+    /// <summary>Every live offline-policy transition invalidates the previous network
+    /// generation, including an off/on cycle without an account epoch change.</summary>
+    public CancellationToken NetworkPolicyInvalidated { get { lock (gate) { EnsureActive(); return networkLifetime.Token; } } }
+    public IDisposable EnterNetworkPolicyLease(CancellationToken expectedGeneration)
+    {
+        Monitor.Enter(gate);
+        try
+        {
+            EnsureActive();
+            if (expectedGeneration.IsCancellationRequested || expectedGeneration != networkLifetime.Token)
+                throw new RuntimeCapabilityException("NETWORK_POLICY_CHANGED");
+            return new GateLease(gate);
+        }
+        catch { Monitor.Exit(gate); throw; }
+    }
     public bool UsesTestAccount => Account != "live";
     public event EventHandler<IdentitySnapshot>? Changed;
     public IdentitySnapshot Snapshot
@@ -36,27 +52,29 @@ public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable, 
     }
     public void SetOffline(bool value)
     {
-        IdentitySnapshot? snapshot = null;
-        CommitIdentity(() => snapshot = SetOfflineCore(value));
-        if (snapshot is not null) Changed?.Invoke(this, snapshot);
+        CancellationTokenSource? previous = null; IdentitySnapshot? snapshot = null;
+        CommitIdentity(() => (previous, snapshot) = SetOfflineCore(value));
+        PublishSwitch(previous, snapshot);
     }
     public async Task SetOfflineAsync(bool value, CancellationToken cancellationToken = default)
     {
         lock (gate) EnsureActive();
-        IdentitySnapshot? snapshot = null;
-        await CommitIdentityAsync(() => snapshot = SetOfflineCore(value, cancellationToken), cancellationToken).ConfigureAwait(false);
-        if (snapshot is not null) Changed?.Invoke(this, snapshot);
+        CancellationTokenSource? previous = null; IdentitySnapshot? snapshot = null;
+        await CommitIdentityAsync(() => (previous, snapshot) = SetOfflineCore(value, cancellationToken), cancellationToken).ConfigureAwait(false);
+        PublishSwitch(previous, snapshot);
     }
-    private IdentitySnapshot? SetOfflineCore(bool value, CancellationToken cancellationToken = default)
+    private (CancellationTokenSource?, IdentitySnapshot?) SetOfflineCore(bool value, CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
             EnsureActive();
             cancellationToken.ThrowIfCancellationRequested();
-            if (offline == value) return null;
+            if (offline == value) return (null, null);
             long nextRevision = checked(authorityRevision + 1);
+            var previous = networkLifetime;
+            networkLifetime = new CancellationTokenSource();
             offline = value; authorityRevision = nextRevision;
-            return Snapshot;
+            return (previous, Snapshot);
         }
     }
     public void SwitchAccount(string value)
@@ -177,8 +195,14 @@ public sealed class DeveloperPreviewSimulation : IIdentityService, IDisposable, 
     }
     private void CompleteDisposal(CancellationTokenSource? previous)
     {
+        if (previous is null) return; // Another concurrent disposal already owns both lifetimes.
         try { previous?.Cancel(); }
-        finally { previous?.Dispose(); Changed = null; }
+        finally
+        {
+            previous?.Dispose();
+            try { networkLifetime.Cancel(); }
+            finally { networkLifetime.Dispose(); Changed = null; }
+        }
     }
     private void CommitIdentity(Action commit)
     {
@@ -233,6 +257,7 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         account.EnsureCurrent();
         if (!PermissionService.Supported.Contains(permission)) throw new RuntimeCapabilityException("CAPABILITY_UNAVAILABLE");
         if (!app.DeclaredPermissions.Contains(permission)) throw new RuntimeCapabilityException("PERMISSION_NOT_DECLARED");
+        if (permission == "network") _ = NetworkDomainPolicy.CopyValidated(app.NetworkDomains);
     }
     public PermissionDecision Query(RuntimeAccountContext account, RuntimeApplication app, string permission)
     {
@@ -244,7 +269,9 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
             bool testAccount = account.AccountKey.StartsWith("developer-preview:", StringComparison.Ordinal);
             PermissionDecision inherited = testAccount ? PermissionDecision.Prompt : original.Query(account, app, permission);
             if (inherited is PermissionDecision.Denied or PermissionDecision.Revoked) return inherited;
-            if (decisions.TryGetValue((account.AccountKey, app.BindingKey, permission), out var record)) return record.Decision;
+            if (decisions.TryGetValue((account.AccountKey, app.BindingKey, permission), out var record))
+                return permission == "network" && record.NetworkScopeHash != NetworkDomainPolicy.ScopeHash(app.NetworkDomains)
+                    ? PermissionDecision.Prompt : record.Decision;
             return inherited;
         }
     }
@@ -344,6 +371,8 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
     {
         Validate(account, app, permission);
         var key = (account.AccountKey, app.BindingKey, permission);
+        string[]? networkDomains = permission == "network" ? NetworkDomainPolicy.CopyValidated(app.NetworkDomains) : null;
+        string? networkScope = networkDomains is null ? null : NetworkDomainPolicy.ScopeHash(networkDomains);
         long revision;
         lock (gate)
         {
@@ -358,7 +387,7 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, account.Invalidated);
         try
         {
-            string[] fields = permission == "identity.profile" ? ["appScopedUserId", "displayName", "avatarUrl", "isCached"] : [];
+            string[] fields = permission == "identity.profile" ? ["appScopedUserId", "displayName", "avatarUrl", "isCached"] : networkDomains ?? [];
             var request = new RuntimePermissionPrompt(app.Identity.AppId, app.DisplayName, app.Source, permission,
                 "独立开发预览：决定仅保留在本次预览内存中，不修改正式用户授权。", fields);
             bool accepted = await prompt(request, linked.Token).WaitAsync(linked.Token).ConfigureAwait(false);
@@ -370,6 +399,8 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
                     EnsureActive(); using var inherited = EnterOriginalDecisionLease(account, app, permission);
                     using var lease = account.EnterCommitLease?.Invoke(); linked.Token.ThrowIfCancellationRequested(); account.EnsureCurrent();
                     if (revision != GetRevision(account, app, permission)) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
+                    if (networkScope is not null && networkScope != NetworkDomainPolicy.ScopeHash(app.NetworkDomains))
+                        throw new RuntimeCapabilityException("NETWORK_POLICY_CHANGED");
                     change = Save(account, app, permission, accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
                 }
             }, linked.Token).ConfigureAwait(false);
@@ -417,7 +448,8 @@ public sealed class DeveloperPreviewPermissions : IPermissionService, IDisposabl
         long nextBindingRevision = checked(revisions.GetValueOrDefault(binding) + 1);
         _ = checked(denialRevision + nextPermissionRevision + (IsTestAccount(account) ? 0 : original.GetRevision(account, app, permission)));
         _ = checked(denialRevision + nextBindingRevision + (IsTestAccount(account) ? 0 : original.GetRevision(account, app)));
-        decisions[key] = new(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName, app.Source, permission, decision);
+        decisions[key] = new(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName, app.Source, permission, decision,
+            permission == "network" ? NetworkDomainPolicy.ScopeHash(app.NetworkDomains) : null);
         permissionRevisions[key] = nextPermissionRevision;
         revisions[binding] = nextBindingRevision;
         return new(account.AccountKey, app.BindingKey, permission, decision);

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Program.cs" Link="Program.cs" /><Compile Include="LegacyCloseSequence.cs" />
+    <Compile Include="../../../../src/AutumnOS.NativeHost.Windows/NativeBrowserFailure.cs" Link="NativeBrowserFailure.cs" />
+    <Compile Include="../../../../tests/AutumnOS.Tests/NativeBrowserCloseSequenceTests.cs" Link="NativeBrowserCloseSequenceTests.cs" />
+  </ItemGroup>
+</Project>

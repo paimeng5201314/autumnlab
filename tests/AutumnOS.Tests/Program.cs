@@ -53,6 +53,12 @@ if (args.Contains("--probe-logto"))
 
 var cases = StorageTests.Cases().Concat(DesktopPreferencesTests.Cases()).Concat(DesktopLayoutTests.Cases()).Concat(IdentityTests.Cases()).Concat(RuntimeTests.Cases()).Concat(PackageTests.Cases()).Concat(ContractCases());
 cases = cases.Concat(RuntimeViewBackendEventTests.Cases());
+cases = cases.Concat(NetworkPackageTests.Cases());
+cases = cases.Concat(NetworkRuntimeTests.Cases());
+cases = cases.Concat(NetworkPermissionTests.Cases());
+cases = cases.Concat(PreviewAuthorityBindingTests.Cases());
+cases = cases.Concat(NetworkTransportTests.Cases());
+cases = cases.Concat(NetworkPolicyLeaseTests.Cases());
 cases = cases.Concat(RuntimeDeliveryCoordinatorTests.Cases());
 cases = cases.Concat(RuntimeDeliveryWireProtocolTests.Cases());
 cases = cases.Concat(RuntimeNativeDeliveryActorTests.Cases());
@@ -62,6 +68,7 @@ cases = cases.Concat(NativePlatformPolicyTests.Cases());
 cases = cases.Concat(NativeOwnedJobPolicyTests.Cases());
 cases = cases.Concat(NativeDeploymentIdentityTests.Cases());
 cases = cases.Concat(NativeBrowserFailureTests.Cases());
+cases = cases.Concat(NativeBrowserCloseSequenceTests.Cases());
 cases = cases.Concat(BrowserResponseStreamTests.Cases());
 cases = cases.Concat(NativePointerInputTests.Cases());
 cases = cases.Concat(NativeViewportTests.Cases());

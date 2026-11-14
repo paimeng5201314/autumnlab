@@ -3,7 +3,8 @@ namespace AutumnOS.Packages;
 public sealed record AutumnPackageManifest(int SchemaVersion, string AppId, string Name, string Version,
     string Runtime, string Entry, string[] Permissions,
     PackageDesktopDeclarations? Desktop = null, Dictionary<string, string>? PermissionPurposes = null,
-    int SaveFormatVersion = 1, int? MinReadableSaveFormatVersion = null, int? MaxReadableSaveFormatVersion = null);
+    int SaveFormatVersion = 1, int? MinReadableSaveFormatVersion = null, int? MaxReadableSaveFormatVersion = null,
+    string[]? NetworkDomains = null);
 
 public sealed record PackageShortcut(string Id, string Title, string Action);
 public sealed record PackageWidget(string Id, string Title);

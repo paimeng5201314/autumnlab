@@ -7,6 +7,12 @@ async function validUsage() {
   await autumn.request("identity.requestProfile", {});
   await autumn.request("permissions.query", { name: "saves" });
   await autumn.request("permissions.request", { name: "identity.profile" });
+  await autumn.request("permissions.request", { name: "network" });
+  const network = await autumn.request("network.getStatus", {});
+  const unknownInternet: "unknown" = network.internetAccess;
+  const http = await autumn.request("network.request", { url: "https://api.github.com/rate_limit", method: "GET", headers: { accept: "application/json" }, timeoutMs: 10000 });
+  const encoding: "base64" = http.encoding;
+  void unknownInternet; void encoding;
   await autumn.request("saves.list", {});
   const read = await autumn.request("saves.read", { slot: "game" });
   const value: JsonValue = read.value;
@@ -50,6 +56,12 @@ autumn.request("saves.write", { slot: "game" });
 autumn.request("identity.getProfile", { userId: "other" });
 // @ts-expect-error unknown permission is not part of protocol 1
 autumn.request("permissions.request", { name: "host.execute" });
+// @ts-expect-error method cannot tunnel arbitrary protocols
+autumn.request("network.request", { url: "https://api.github.com/", method: "CONNECT" });
+// @ts-expect-error headers cannot supply host cookies
+autumn.request("network.request", { url: "https://api.github.com/", headers: { cookie: "synthetic" } });
+// @ts-expect-error network timeout is a number
+autumn.request("network.request", { url: "https://api.github.com/", timeoutMs: "1000" });
 // @ts-expect-error file path cannot replace an opaque handle
 autumn.request("files.read", { path: "C:/private" });
 // @ts-expect-error count is a number

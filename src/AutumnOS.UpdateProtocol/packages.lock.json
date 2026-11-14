@@ -9,26 +9,29 @@
         "type": "Project"
       },
       "autumnos.packages": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "AutumnOS.Contracts": "[1.0.0, )"
+        }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.4.1-desktop-multitask, )"
+          "AutumnOS.Contracts": "[1.0.0, )"
         }
       },
       "autumnos.store": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.4.1-desktop-multitask, )",
-          "AutumnOS.Packages": "[0.4.1-desktop-multitask, )",
-          "AutumnOS.Storage": "[0.4.1-desktop-multitask, )"
+          "AutumnOS.Contracts": "[1.0.0, )",
+          "AutumnOS.Packages": "[1.0.0, )",
+          "AutumnOS.Storage": "[1.0.0, )"
         }
       },
       "autumnos.update": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Store": "[0.4.1-desktop-multitask, )"
+          "AutumnOS.Store": "[1.0.0, )"
         }
       }
     },

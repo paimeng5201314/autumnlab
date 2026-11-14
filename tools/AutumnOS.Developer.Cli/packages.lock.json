@@ -6,20 +6,23 @@
         "type": "Project"
       },
       "autumnos.packages": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "AutumnOS.Contracts": "[1.0.0, )"
+        }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.3.2-t03-callback, )"
+          "AutumnOS.Contracts": "[1.0.0, )"
         }
       },
       "autumnos.store": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.3.2-t03-callback, )",
-          "AutumnOS.Packages": "[0.3.2-t03-callback, )",
-          "AutumnOS.Storage": "[0.3.2-t03-callback, )"
+          "AutumnOS.Contracts": "[1.0.0, )",
+          "AutumnOS.Packages": "[1.0.0, )",
+          "AutumnOS.Storage": "[1.0.0, )"
         }
       }
     },

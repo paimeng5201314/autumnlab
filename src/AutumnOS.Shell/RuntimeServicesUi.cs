@@ -31,7 +31,8 @@ public sealed partial class MainWindow
     private static RuntimeApplication BindApplication(InstalledPackage installed) => new(
         new(installed.Manifest.AppId, installed.HostSource?.StartsWith("github:", StringComparison.Ordinal) == true && long.TryParse(installed.HostSource[7..], out var repositoryId) ? repositoryId : null, null), installed.HostSource ?? (installed.Manifest.AppId == "cn.labchronicles.elementpairs"
             ? "bundled:cn.labchronicles.elementpairs" : "local-preview:" + installed.PackageSha256),
-        installed.Manifest.Name, installed.Manifest.Permissions, installed.Manifest.PermissionPurposes);
+        installed.Manifest.Name, installed.Manifest.Permissions, installed.Manifest.PermissionPurposes,
+        installed.Manifest.NetworkDomains is null ? null : Array.AsReadOnly(NetworkDomainPolicy.CopyValidated(installed.Manifest.NetworkDomains)));
 
     private void InitializeRuntimeServices()
     {
@@ -64,7 +65,9 @@ public sealed partial class MainWindow
     private RuntimeSessionServices CreateRuntimeServicesCore(InstalledPackage installed, Func<RuntimeSession> session, CancellationToken token,
         RuntimeAccountContext? accountOverride = null, IPermissionService? permissionsOverride = null,
         Func<RuntimeAccountContext, CancellationToken, Task<RuntimeProfile>>? profileOverride = null, bool suppressIdentity = false,
-        IIdentityService? identityOverride = null, IRuntimeAuthorityMutations? authorityOverride = null)
+        IIdentityService? identityOverride = null, IRuntimeAuthorityMutations? authorityOverride = null,
+        Func<bool>? networkDisabled = null, Func<CancellationToken>? networkPolicyInvalidated = null,
+        Func<CancellationToken, IDisposable>? enterNetworkPolicyLease = null)
     {
         if (permissionService is null) throw new RuntimeCapabilityException("PERMISSION_STORE_UNAVAILABLE");
         var app = BindApplication(installed);
@@ -113,6 +116,8 @@ public sealed partial class MainWindow
         return new RuntimeSessionServices
         {
             AuthorityMutations = authorityOverride ?? authorityMutations,
+            Network = new RuntimeNetworkService(), NetworkDisabled = networkDisabled, NetworkPolicyInvalidated = networkPolicyInvalidated,
+            EnterNetworkPolicyLease = enterNetworkPolicyLease,
             Account = account, Application = app, Permissions = permissions, Identity = identityOverride ?? (suppressIdentity ? null : identityService),
             GetProfile = profileOverride,
             RequestPermission = (prompt, ct) => RequestApplicationPermissionAsync(session().Instance.Id.Value, prompt, ct), Desktop = desktopExtensions,
@@ -241,7 +246,7 @@ public sealed partial class MainWindow
         return completion.Task;
     }
     private static string PermissionTitle(string permission) => permission switch
-    { "identity.profile" => "基本资料", "saves" => "私有存档", "storage" => "私有文件", "files.open" => "选择文件", "files.save" => "导出文件", "notifications" => "通知和角标", "shortcuts" => "长按快捷操作", "widgets" => "小组件", "links" => "内部链接", _ => permission };
+    { "identity.profile" => "基本资料", "saves" => "私有存档", "storage" => "私有文件", "files.open" => "选择文件", "files.save" => "导出文件", "notifications" => "通知和角标", "shortcuts" => "长按快捷操作", "widgets" => "小组件", "links" => "内部链接", "network" => "访问声明的网络域名", _ => permission };
 
     private void RefreshPermissionsUi()
     {
@@ -253,13 +258,11 @@ public sealed partial class MainWindow
         var applications = new Dictionary<string, (RuntimeApplication App, bool Current)>();
         foreach (var installed in new[] { installedSample, developerPreviewHost?.Installed }.Concat(applicationInstaller?.GetInstalled().Select(a => a.Package) ?? []).Where(item => item is not null))
         { var app = BindApplication(installed!); applications[app.BindingKey] = (app, true); }
-        foreach (var group in permissionService.List(account).GroupBy(record => record.BindingKey))
-        {
-            if (applications.ContainsKey(group.Key)) continue;
-            var record = group.First();
-            var app = new RuntimeApplication(new(record.AppId, null, null), record.Source, record.DisplayName, group.Select(item => item.Permission).Distinct().ToArray());
-            if (app.BindingKey == group.Key) applications.Add(group.Key, (app, false));
-        }
+        // Historical records do not contain the installed repository/signing
+        // identity or the declared network domain set. Never invent a weaker
+        // application binding to manage them; retain a revoke-only record path.
+        var historical = permissionService.List(account).Where(record => !applications.ContainsKey(record.BindingKey))
+            .GroupBy(record => record.BindingKey).ToArray();
         foreach (var (app, current) in applications.Values)
         {
           PermissionsContent.Children.Add(Paragraph(app.DisplayName + " · " + app.Source + (current ? "" : " · 历史授权（允许需重新打开已验证应用）")));
@@ -269,6 +272,8 @@ public sealed partial class MainWindow
             PermissionDecision decision;
             try { decision = permissionService.Query(account, app, permission); } catch (RuntimeCapabilityException) { continue; }
             row.Children.Add(Paragraph(PermissionTitle(permission) + " · " + decision));
+            if (permission == "network" && app.NetworkDomains is { Count: > 0 })
+                row.Children.Add(Paragraph("可访问域名：" + string.Join("、", app.NetworkDomains)));
             var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             foreach (var action in new[] { ("允许", PermissionDecision.Granted), ("拒绝", PermissionDecision.Denied), ("撤销", PermissionDecision.Revoked) })
             {
@@ -284,6 +289,27 @@ public sealed partial class MainWindow
             }
             row.Children.Add(actions); PermissionsContent.Children.Add(row);
           }
+        }
+        foreach (var group in historical)
+        {
+            var first = group.First();
+            PermissionsContent.Children.Add(Paragraph(first.DisplayName + " · " + first.Source + " · 历史授权（允许需重新打开已验证应用）"));
+            foreach (var record in group)
+            {
+                var row = new StackPanel { Spacing = 8 };
+                row.Children.Add(Paragraph(PermissionTitle(record.Permission) + " · " + record.Decision));
+                if (record.Permission == "network") row.Children.Add(Paragraph("历史域名范围需重新核对安装包；此处只能撤销。"));
+                var revoke = ActionButton("撤销历史授权", "RevokeHistorical-" + record.BindingKey[..12] + "-" + record.Permission, async (_, _) =>
+                {
+                    try { await TrackOwnedAuthorityAsync(permissionService.RevokeHistoricalAsync(account, record, lifetime.Token)); permissionResult.Text = "已撤销历史授权。"; }
+                    catch (RuntimeCapabilityException error) { permissionResult.Text = error.Code + " · 历史记录未改变，请刷新后重试。"; }
+                    catch (OperationCanceledException) { permissionResult.Text = "权限操作已取消。"; }
+                    catch (Exception error) when (error is not OutOfMemoryException) { permissionResult.Text = "AUTHORITY_COMMIT_FAILED · 历史授权未改变。"; }
+                    RefreshPermissionsUi();
+                });
+                revoke.IsEnabled = record.Decision != PermissionDecision.Revoked;
+                row.Children.Add(revoke); PermissionsContent.Children.Add(row);
+            }
         }
         if (installedSample is null) return;
         PermissionsContent.Children.Add(Paragraph("存档默认按游客和账号分开，退出不会删除。将游客存档复制到当前账号需明确确认，目标已有存档时不会覆盖。"));

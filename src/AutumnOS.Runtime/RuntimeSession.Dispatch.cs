@@ -15,15 +15,17 @@ public sealed class RuntimeResponseStamp
     internal long GuestPermission { get; }
     internal long Permission { get; }
     internal IdentitySnapshot? Identity { get; }
+    internal CancellationToken NetworkPolicy { get; }
     internal long EventRevision { get; }
     internal string? Method { get; }
     internal string? ResponseHash { get; }
     internal RuntimeResponseStamp(RuntimeSession owner, Guid instanceId, long epoch, long lifecycle, long guestPermission,
-        long permission, IdentitySnapshot? identity, long eventRevision, string? method = null, string? responseHash = null)
+        long permission, IdentitySnapshot? identity, long eventRevision, string? method = null, string? responseHash = null,
+        CancellationToken networkPolicy = default)
     { Owner = owner; InstanceId = instanceId; InstanceEpoch = epoch; Lifecycle = lifecycle; GuestPermission = guestPermission;
-      Permission = permission; Identity = identity; EventRevision = eventRevision; Method = method; ResponseHash = responseHash; }
+      Permission = permission; Identity = identity; EventRevision = eventRevision; Method = method; ResponseHash = responseHash; NetworkPolicy = networkPolicy; }
     internal RuntimeResponseStamp Bind(string? method, string hash) => new(Owner, InstanceId, InstanceEpoch, Lifecycle,
-        GuestPermission, Permission, Identity, EventRevision, method, hash);
+        GuestPermission, Permission, Identity, EventRevision, method, hash, NetworkPolicy);
 }
 public sealed record RuntimePreparedResponse(string Response, RuntimeResponseStamp Stamp);
 
@@ -264,7 +266,8 @@ public sealed partial class RuntimeSession
         lock (stateGate) return (instance, StampLocked(permission, identity));
     }
     private RuntimeResponseStamp StampLocked(long permission, IdentitySnapshot? identity) => new(this, instance.Id.Value,
-        instance.Epoch.Value, lifecycleRevision, permissionRevision, permission, identity, checked(eventRevision + permission));
+        instance.Epoch.Value, lifecycleRevision, permissionRevision, permission, identity, checked(eventRevision + permission),
+        networkPolicy: services?.NetworkPolicyInvalidated?.Invoke() ?? default);
 
     public async Task<string> HandleMessageAsync(string source, string json,
         Func<string, CancellationToken, Task<bool>> requestPermission, CancellationToken cancellationToken = default)
@@ -307,6 +310,9 @@ public sealed partial class RuntimeSession
             return "SESSION_EXPIRED";
         if (stamp.GuestPermission != permissionRevision || stamp.Permission != permission) return "PERMISSION_REVOKED";
         if (stamp.Identity != identity) return "SESSION_EXPIRED";
+        if (stamp.Method?.StartsWith("network.", StringComparison.Ordinal) == true &&
+            (stamp.NetworkPolicy.IsCancellationRequested || stamp.NetworkPolicy != (services?.NetworkPolicyInvalidated?.Invoke() ?? default)))
+            return "NETWORK_POLICY_CHANGED";
         return null;
     }
     private string RevalidatePreparedLocked(string method, RuntimeResponseStamp stamp, string response, long permission, IdentitySnapshot? identity)
@@ -361,7 +367,7 @@ public sealed partial class RuntimeSession
     private string WithResponseAuthority(string method, RuntimeResponseStamp stamp, string response, Action<string> post)
     {
         ArgumentNullException.ThrowIfNull(stamp); ArgumentNullException.ThrowIfNull(post);
-        IDisposable? permissionLease = null, identityLease = null;
+        IDisposable? permissionLease = null, identityLease = null, networkPolicyLease = null;
         try
         {
             if (services is { } runtime)
@@ -376,6 +382,8 @@ public sealed partial class RuntimeSession
             lock (stateGate)
             {
                 if (services is not null && IsActive) identityLease = services.Account.EnterCommitLease?.Invoke();
+                if (method.StartsWith("network.", StringComparison.Ordinal))
+                    networkPolicyLease = services?.EnterNetworkPolicyLease?.Invoke(stamp.NetworkPolicy);
                 IdentitySnapshot? identity = services?.Identity?.Snapshot;
                 string validated = RevalidatePreparedLocked(method, stamp, response, permission, identity);
                 if (StampErrorLocked(stamp, permission, identity) is null) post(validated);
@@ -383,7 +391,7 @@ public sealed partial class RuntimeSession
             }
         }
         catch (RuntimeCapabilityException error) { return Error(ResponseRequestId(response), error.Code); }
-        finally { identityLease?.Dispose(); permissionLease?.Dispose(); }
+        finally { networkPolicyLease?.Dispose(); identityLease?.Dispose(); permissionLease?.Dispose(); }
     }
 
     public bool DeliverEvent(string name, RuntimeResponseStamp stamp, Action post)

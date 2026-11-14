@@ -3,6 +3,7 @@
   <ItemGroup>
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativePlatformPolicy.cs" Link="NativeHost/NativePlatformPolicy.cs" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativeBrowserFailure.cs" Link="NativeHost/NativeBrowserFailure.cs" />
+    <Compile Include="../../src/AutumnOS.NativeHost.Windows/BrowserCloseSequence.cs" Link="NativeHost/BrowserCloseSequence.cs" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/BrowserResponseStream.cs" Link="NativeHost/BrowserResponseStream.cs" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/Native/OwnedJobPolicy.cs" Link="NativeHost/OwnedJobPolicy.cs" />
     <Compile Include="../../src/AutumnOS.NativeHost.Windows/NativePointerInput.cs;../../src/AutumnOS.NativeHost.Windows/NativeKeyboardInput.cs" Link="NativeHost/%(Filename)%(Extension)" />

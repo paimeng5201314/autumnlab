@@ -189,7 +189,8 @@ internal static class PackageTests
     private static void UnsupportedCapabilities()
     {
         RejectEntries(Entries(manifest: Manifest(runtime: "native")), "PACKAGE_RUNTIME_UNSUPPORTED");
-        RejectEntries(Entries(manifest: Manifest(permissions: ["network"])), "PACKAGE_PERMISSION_UNSUPPORTED");
+        RejectEntries(Entries(manifest: Manifest(permissions: ["network"])), "PACKAGE_NETWORK_DOMAINS_INVALID");
+        RejectEntries(Entries(manifest: Manifest(permissions: ["future.permission"])), "PACKAGE_PERMISSION_UNSUPPORTED");
         RejectEntries(Entries(manifest: Manifest(permissions: ["saves", "saves"])), "PACKAGE_PERMISSION_UNSUPPORTED");
     }
 

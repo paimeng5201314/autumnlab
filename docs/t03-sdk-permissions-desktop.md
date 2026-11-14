@@ -1,10 +1,10 @@
 # T03 SDK：资料、权限、数据及桌面扩展
 
-制作人：派蒙。SDK 0.3.0，消息协议仍为 1。T01/T02 的 `request`、`onLifecycle` 与长会话保护兼容；此页对应当前 C# 服务、`sdk/autumn-sdk.d.ts` 和 `sdk/message.schema.json`。Windows 实测状态以当前构建报告为准。
+制作人：派蒙。SDK 0.4.0，消息协议仍为 1；新增网络合同见 [网络 SDK](sdk-network.md)。T01/T02 的 `request`、`onLifecycle` 与长会话保护兼容；此页对应当前 C# 服务、`sdk/autumn-sdk.d.ts` 和 `sdk/message.schema.json`。Windows 实测状态以当前构建报告为准。
 
 ## 所有接口的共同约定
 
-只在内部受控 WebView 中调用 `window.autumn`。每条请求仅包含 protocolVersion/requestId/method/params；实例、账号、代次、安装来源由宿主绑定。禁止 appId/userId/sessionEpoch/path 等额外定位字段。所有列出的参数对象拒绝额外字段。未接入的 `identity.beginAppSession`、网络能力、外部协议等返回 CAPABILITY_UNAVAILABLE，不模拟成功。
+只在内部受控 WebView 中调用 `window.autumn`。每条请求仅包含 protocolVersion/requestId/method/params；实例、账号、代次、安装来源由宿主绑定。禁止 appId/userId/sessionEpoch/path 等额外定位字段。所有列出的参数对象拒绝额外字段。未接入的 `identity.beginAppSession`、外部协议等返回 CAPABILITY_UNAVAILABLE，不模拟成功。
 
 最大请求 32768 UTF-8 字节，深度 32；响应也限制 32768 字节，超限 RESPONSE_TOO_LARGE。本次修订的桥接 JSON 使用 UTF-8 友好编码，仅通过 PostWebMessageAsJson 发送，不拼入 HTML/可执行脚本；saves.write 与 preferences.set 在提交前按完整未来读取响应（含最坏 64 字符 requestId）预检预算，拒绝时保留旧数据。每实例最多 16 个挂起请求、滚动一分钟 120 次，默认宿主超时 30 秒；宿主可配置至 120 秒。SDK `timeoutMs` 为 1–120000，只停止调用者本地等待；AbortSignal 同样不撤销已经提交的写入。切换账号、关闭应用、宿主超时取消实际宿主工作。调用者收到 TIMEOUT/USER_CANCELLED 后要读取实际状态，不盲目重试写入。
 
@@ -18,14 +18,14 @@ SDK 单调 BigInt ID 不设累计 4096 限制；宿主保留最多 2048 个待�
 
 | 方法 | params | result | 权限与失败 |
 |---|---|---|---|
-| platform.getCapabilities | `{}` | 实际已接线能力、账号模式及限制 | 无；networkSandboxVerified 仍 false |
+| platform.getCapabilities | `{}` | 实际已接线能力、账号模式及限制 | 无；networkSandboxVerified 取当前实例原生证明 |
 | lifecycle.getState | `{}` | `{state,blocksMaintenance}` | 无；与后台继续/结束规则共用真实实例 |
 | permissions.query | `{name}` | `{name,state}`，state=prompt/granted/denied/revoked | 权限必须在清单声明 |
 | permissions.request | `{name}` | 同上 | prompt 时需要原生输入；展示应用、来源、用途和字段 |
 | identity.getProfile | `{}` | `{appScopedUserId,displayName,avatarUrl,isCached}` | 已登录且 identity.profile 已允许 |
 | identity.requestProfile | `{}` | 同上 | 登录和资料授权分开；不会自动打开浏览器登录 |
 
-支持的权限名：saves、identity.profile、storage、files.open、files.save、notifications、shortcuts、widgets、links。最小资料不含邮箱、手机号、claims 或令牌；avatarUrl 仅 HTTPS，不能验证为 HTTPS 时返回 null。isCached=true 表示宿主的真实离线缓存状态。appScopedUserId 是本地资料关联标识，绝非服务器登录凭证。正常读取不会触发登录循环。
+支持的权限名：saves、identity.profile、storage、files.open、files.save、notifications、shortcuts、widgets、links、network（须同时声明精确域名）。最小资料不含邮箱、手机号、claims 或令牌；avatarUrl 仅 HTTPS，不能验证为 HTTPS 时返回 null。isCached=true 表示宿主的真实离线缓存状态。appScopedUserId 是本地资料关联标识，绝非服务器登录凭证。正常读取不会触发登录循环。
 
 ```js
 // 放在实际按钮的 click 回调中；宿主独立观察原生输入，不接受 userGesture: true。

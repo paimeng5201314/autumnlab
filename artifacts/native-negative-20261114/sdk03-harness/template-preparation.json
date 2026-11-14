@@ -1,0 +1,38 @@
+{
+  "status": "template_only_final_product_bytes_not_verified",
+  "frozen_product": "T06-20261114-sdk-runtime-03",
+  "source_snapshot_id": "sha256:b776cc0ec00fca576a075e5d80be09749fdf6b5139d0515c973661a9241fd536",
+  "table_sha256": "da12bf0e85d40ea4221d806b0d0ddcdb6275ae2a6817439e2c3c21ce6bce3aed",
+  "driver_revision": "sdk03-negative-01-label-height",
+  "template_program_sha256": "d8cf15021817a6e3795fb373af0bf4339ca2b13631d90866d4b9c40ada03efdb",
+  "prepared_root": "D:\\gpt\\化学启动器\\continuation-20261104\\artifacts\\packages\\T06-20261114-sdk-runtime-03\\AutumnOS-1.0.0-rc.7-win-x64-development",
+  "harness_files": [
+    {
+      "path": "Program.cs",
+      "bytes": 24666,
+      "sha256": "160a5b9fb848f834fea36b9b73d94d9304e0187b69640eabae082760479d12f6"
+    },
+    {
+      "path": "Sdk03.NativeNegative.csproj",
+      "bytes": 953,
+      "sha256": "3cce19a0577779e677fc5df25258ee5f87139815ec321c9371de0be2e9fd6f21"
+    },
+    {
+      "path": "Directory.Build.props",
+      "bytes": 734,
+      "sha256": "60bb90e7266cdc31e8a54cbf3940e8319e427d2dc5d512d8751e2ff4bc945f4c"
+    },
+    {
+      "path": "packages.lock.json",
+      "bytes": 116,
+      "sha256": "a88a601f99e73076c5567445f00aa228aac9781079b03c99f4688732b7a8876f"
+    }
+  ],
+  "delivery_files_verified": 0,
+  "delivery_hashes_sha256": null,
+  "prepared_bytes_read": false,
+  "harness_compiled": false,
+  "owner_started": false,
+  "matrix_status": "not_run",
+  "shared_product_outputs_modified": false
+}

@@ -4,7 +4,7 @@
 
 SDK/manifest.schema.json、store.schema.json、release.schema.json和message.schema.json均采用JSON Schema2020-12。store/release通过固定URN引用manifest定义，验证器必须注册相应Schema；合同工具已经这样加载。正例是交付四模板和Tests/contracts中的协议用例，负例包括多余身份字段、路径穿越、错误权限、source.zip附件和不合规版本。Schema不验证ZIP实际存在的资源、重复JSON键、Windows设备名、来源与三层一致、签名或跨字段存档范围；真实PackageInstaller/ReleaseMetadata检查不可省略。
 
-包权限仅九种已支持值。permissionPurposes只能为已声明权限解释用途，desktop声明最多各四个快捷操作、link动作和widget，快捷操作指向自己声明的link。缺能力返回CAPABILITY_UNAVAILABLE，不能因在清单里写一个名字就获得实现。minReadableSaveFormatVersion≤saveFormatVersion≤maxReadableSaveFormatVersion，默认旧清单为1；这是安装兼容约束，不自动转换存档JSON。
+当前SDK0.4支持十种权限，含network；原SDK0.3九种权限保持兼容。network与networkDomains必须成对声明，后者为1至16个精确小写ASCII域名；新增或修改域名集合需要重新授权。旧宿主不支持新network清单，发布工具把此类包最低SDK提升到0.4.0。permissionPurposes只能为已声明权限解释用途，desktop声明最多各四个快捷操作、link动作和widget，快捷操作指向自己声明的link。缺能力返回CAPABILITY_UNAVAILABLE，不能因在清单里写一个名字就获得实现。minReadableSaveFormatVersion≤saveFormatVersion≤maxReadableSaveFormatVersion，默认旧清单为1；这是安装兼容约束，不自动转换存档JSON。
 
 开发工具只打包HTML/JS/CSS/JSON/PNG/JPG/SVG/WOFF2/WASM等受限内容，拒绝原生可执行魔数、隐藏私密文件、重解析点、越界、输出在源内部等危险输入。当前项目上限128文件、32目录、12级、8MiB单文件和16MiB总内容；商店附件另限20MiB。不要把开发者包、node_modules、凭据、用户数据混进应用目录。
 

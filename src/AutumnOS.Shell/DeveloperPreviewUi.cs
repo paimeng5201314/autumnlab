@@ -56,7 +56,9 @@ public sealed partial class MainWindow
         developerPreviewServices = CreateRuntimeServicesCore(installed, session, token,
             testAccount ? simulation.BindAccount(token) : null, developerPreviewPermissions,
             testAccount ? simulation.GetProfileAsync : null, suppressIdentity: testAccount, identityOverride: testAccount ? simulation : null,
-            authorityOverride: developerPreviewAuthority);
+            authorityOverride: developerPreviewAuthority, networkDisabled: () => simulation.Offline,
+            networkPolicyInvalidated: () => simulation.NetworkPolicyInvalidated,
+            enterNetworkPolicyLease: expected => simulation.EnterNetworkPolicyLease(expected));
         return developerPreviewServices;
     }
     private async Task StartDeveloperPreviewHostAsync(CancellationToken cancellationToken)
@@ -164,7 +166,7 @@ public sealed partial class MainWindow
     {
         DeveloperPreviewSimulationStatus state = DeveloperSimulationStatus();
         developerSimulationStatus.Text = developerPreviewHost is null ? "开发预览模拟：无运行预览。"
-            : $"【独立开发预览／{(state.IsTestSimulation ? "测试模拟" : "真实身份")}】账号：{state.Account} · 权限：{(state.PermissionsDenied ? "强制拒绝" : "正常询问")} · 网络状态：{(state.Offline ? "模拟离线" : "未模拟离线")}\n模拟不改变 Logto、正式授权或其他应用数据；外部网络仍按原安全规则阻止。";
+            : $"【独立开发预览／{(state.IsTestSimulation ? "测试模拟" : "真实身份")}】账号：{state.Account} · 权限：{(state.PermissionsDenied ? "强制拒绝" : "正常询问")} · 网络状态：{(state.Offline ? "模拟离线" : "未模拟离线")}\n模拟仅作用于此预览；SDK网络请求仍需域名声明和授权，网页直接联网继续受隔离策略限制。";
         DeveloperSimulationBanner.Text = developerSimulationStatus.Text;
     }
     private async Task SwitchDeveloperSimulationAccountAsync(string command, string sessionId, CancellationToken cancellationToken)

@@ -59,6 +59,8 @@ public static class ReleaseMetadata
     {
         PackageInspection inspection = PackageInstaller.Inspect(packagePath, cancellationToken);
         AutumnPackageManifest m = inspection.Manifest;
+        if (m.Permissions.Contains("network", StringComparer.Ordinal) && SemanticVersion.Parse(minimumSdkVersion).CompareTo(SemanticVersion.Parse("0.4.0")) < 0)
+            minimumSdkVersion = "0.4.0";
         ReleaseManifest release = new(1, m.AppId, m.Version, SemanticVersion.Parse(m.Version).IsPrerelease ? "preview" : "stable", m.Runtime,
             minimumHostVersion, minimumSdkVersion, m.Entry, Path.GetFileName(packagePath), new FileInfo(packagePath).Length, inspection.Sha256, m.Permissions, m.SaveFormatVersion);
         return ParseRelease(JsonSerializer.SerializeToUtf8Bytes(release, JsonOptions));

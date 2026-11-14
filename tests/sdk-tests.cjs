@@ -227,7 +227,61 @@ test("T03 schema and TypeScript cover the same method and event names", () => {
   for (const event of messages.$defs.sdkEvent.oneOf) {
     const name = event.properties.event.const; assert.ok(types.includes('"' + name + '":'), name);
   }
-  assert.equal(messages.$defs.permissionName.enum.length, 9);
+  assert.equal(messages.$defs.permissionName.enum.length, 10);
   assert.equal(messages.$defs.profile.additionalProperties, false);
   assert.deepEqual(messages.$defs.profile.required, ["appScopedUserId", "displayName", "avatarUrl", "isCached"]);
+});
+
+test("SDK 0.4 network status reports only OS link availability", async () => {
+  const f = fixture(); assert.equal(f.sdk.version, "0.4.0"); assert.equal(f.sdk.protocolVersion, 1);
+  const p = f.sdk.request("network.getStatus"); f.ok(0, { available: true, internetAccess: "unknown" });
+  assert.equal((await p).internetAccess, "unknown");
+  const invalid = f.sdk.request("network.getStatus"); f.ok(1, { available: true, internetAccess: "verified" });
+  await assert.rejects(invalid, { code: "INVALID_RESPONSE" }); f.close();
+});
+test("SDK network permission events preserve listener isolation", () => {
+  const f = fixture(), seen = []; f.sdk.onEvent("permissions.changed", p => seen.push(p.name + ":" + p.state));
+  f.deliver({ event: "permissions.changed", data: { name: "network", state: "revoked" } });
+  assert.deepEqual(seen, ["network:revoked"]); f.close();
+});
+test("SDK network result keeps binary body and status without interpreting HTTP failure as transport failure", async () => {
+  const f = fixture(), p = f.sdk.request("network.request", { url: "https://api.github.com/", method: "POST", body: "AAEC/w==" });
+  f.ok(0, { status: 403, headers: { "content-type": "application/octet-stream" }, body: "AAEC/w==", encoding: "base64" });
+  const result = await p; assert.equal(result.status, 403); assert.equal(result.body, "AAEC/w=="); f.close();
+});
+test("SDK network results reject undeclared headers, noncanonical or oversized bodies and malformed status", async () => {
+  const f = fixture(), valid = { status: 200, headers: {}, body: "", encoding: "base64" };
+  const invalid = [ { ...valid, status: 99 }, { ...valid, status: 200.5 }, { ...valid, headers: { "set-cookie": "synthetic" } },
+    { ...valid, headers: { authorization: "Bearer synthetic-test-only" } }, { ...valid, headers: { etag: "bad\r\nheader" } },
+    { ...valid, headers: { etag: "中文" } },
+    { ...valid, body: "AB==" }, { ...valid, body: "AAB=" }, { ...valid, body: "AAAA".repeat(5462) },
+    { ...valid, encoding: "utf8" }, { ...valid, extra: "unknown" }, { ...valid, headers: { etag: "x".repeat(4097) } } ];
+  for (let i = 0; i < invalid.length; i++) { const p = f.sdk.request("network.request", { url: "https://api.github.com/" }); f.ok(i, invalid[i]); await assert.rejects(p, { code: "INVALID_RESPONSE" }); }
+  f.close();
+});
+test("SDK network maximum 16 KiB response stays readable", async () => {
+  const f = fixture(), p = f.sdk.request("network.request", { url: "https://api.github.com/" });
+  const body = Buffer.alloc(16384, 255).toString("base64"); f.ok(0, { status: 200, headers: {}, body, encoding: "base64" });
+  assert.equal((await p).body, body); f.close();
+});
+test("SDK network response headers share the host 4096 byte aggregate budget", async () => {
+  const f = fixture(); let p = f.sdk.request("network.request", { url: "https://api.github.com/" });
+  f.ok(0, { status: 200, headers: { etag: "x".repeat(4092) }, body: "", encoding: "base64" });
+  assert.equal((await p).headers.etag.length, 4092);
+  p = f.sdk.request("network.request", { url: "https://api.github.com/" });
+  f.ok(1, { status: 200, headers: { etag: "x".repeat(4090), expires: "" }, body: "", encoding: "base64" });
+  await assert.rejects(p, { code: "INVALID_RESPONSE" }); f.close();
+});
+test("SDK rejects extra response envelope fields and budgets original wire UTF8 bytes", async () => {
+  const f = fixture();
+  let p = f.sdk.request("future.method"); f.deliver({ requestId: f.sent[0].requestId, ok: true, result: {}, accessToken: "synthetic-not-a-token" });
+  await assert.rejects(p, { code: "INVALID_RESPONSE" });
+  p = f.sdk.request("future.method");
+  const raw = JSON.stringify({ requestId: f.sent[1].requestId, ok: true, result: "中".repeat(5500) }).replaceAll("中", "\\u4e2d");
+  assert.ok(Buffer.byteLength(raw) > 32768); f.deliver(raw); await assert.rejects(p, { code: "INVALID_RESPONSE" }); f.close();
+});
+test("SDK response validation keeps supported nested JSON readback", async () => {
+  const f = fixture(); let value = "leaf"; for (let i = 0; i < 28; i++) value = { nested: value };
+  const p = f.sdk.request("saves.read", { slot: "game" }); f.ok(0, { exists: true, value });
+  assert.equal((await p).exists, true); f.close();
 });

@@ -1,4 +1,4 @@
-/** AutumnOS SDK 0.3.0 · 制作人：派蒙. Protocol 1 remains compatible with T01/T02. */
+/** AutumnOS SDK 0.4.0 · 制作人：派蒙. Protocol 1 remains compatible with T01/T02. */
 export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 export type LifecycleState = "starting" | "foreground" | "background" | "suspended" | "closing" | "closed" | "crashed";
 export interface AutumnError {
@@ -10,7 +10,28 @@ export interface Request { protocolVersion: 1; requestId: string; method: string
 export type Response = { requestId: string; ok: true; result: JsonValue }
   | { requestId: string | null; ok: false; error: AutumnError & { correlationId: string } };
 export interface LifecycleEvent { event: "lifecycle.stateChanged"; state: LifecycleState }
-export type PermissionName = "saves" | "identity.profile" | "storage" | "files.open" | "files.save" | "notifications" | "shortcuts" | "widgets" | "links";
+export type PermissionName = "saves" | "identity.profile" | "storage" | "files.open" | "files.save" | "notifications" | "shortcuts" | "widgets" | "links" | "network";
+/** OS link and this instance's network policy availability; never an Internet reachability probe. */
+export interface NetworkStatus { available: boolean; internetAccess: "unknown" }
+export type NetworkMethod = "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE";
+export interface NetworkRequest {
+  /** HTTPS port 443, exact domain declared in the installed package. */
+  url: string;
+  method?: NetworkMethod;
+  /** Explicit application Bearer credentials only; no host credentials or cookies. */
+  headers?: Partial<Record<"accept" | "content-type" | "authorization" | "if-none-match" | "if-modified-since", string>>;
+  /** Canonical base64, at most 16 KiB decoded. GET/HEAD cannot have a body. */
+  body?: string;
+  /** Network deadline, integer 1..20000 ms; default 10000. Separate from request options. */
+  timeoutMs?: number;
+}
+export interface NetworkResponse {
+  status: number;
+  headers: Partial<Record<"content-type" | "content-language" | "content-length" | "content-encoding" | "etag" | "last-modified" | "cache-control" | "expires" | "retry-after" | "location", string>>;
+  /** Canonical base64, at most 16 KiB decoded; never silently truncated. */
+  body: string;
+  encoding: "base64";
+}
 export interface Profile { appScopedUserId: string; displayName: string; avatarUrl: string | null; isCached: boolean }
 export interface Appearance { theme: "light" | "dark" | "system"; language: string; scale: number; reduceMotion: boolean }
 export interface Shortcut { id: string; title: string; action: string }
@@ -28,7 +49,7 @@ export interface SdkEvents {
 export type SdkEvent = { [E in keyof SdkEvents]: { event: E; data: SdkEvents[E] } }[keyof SdkEvents];
 export interface Capabilities {
   protocolVersion: 1;
-  capabilities: ("lifecycle" | "permissions" | "identity.profile" | "saves" | "storage" | "preferences" | "files.open" | "files.save" | "appearance" | "notifications" | "shortcuts" | "widgets" | "links.internal")[];
+  capabilities: ("lifecycle" | "permissions" | "identity.profile" | "saves" | "storage" | "preferences" | "files.open" | "files.save" | "appearance" | "notifications" | "shortcuts" | "widgets" | "links.internal" | "network")[];
   accountMode: "guest" | "account";
   /** True only after the host verified this live native WebView instance's network policy. */
   networkSandboxVerified: boolean;
@@ -45,6 +66,9 @@ export interface LifecycleSnapshot { state: LifecycleState; blocksMaintenance: b
 export interface SdkMethods {
   "platform.getCapabilities": { params: Record<string, never>; result: Capabilities };
   "lifecycle.getState": { params: Record<string, never>; result: LifecycleSnapshot };
+  "network.getStatus": { params: Record<string, never>; result: NetworkStatus };
+  /** Requires network permission for the current declared domains. GET/HEAD follow at most three validated hops; every hop drops Authorization. Other methods return 3xx without replaying their body. */
+  "network.request": { params: NetworkRequest; result: NetworkResponse };
   "permissions.query": { params: { name: PermissionName }; result: PermissionState };
   /** Requires a recent native host-observed input when the permission is still prompt. */
   "permissions.request": { params: { name: PermissionName }; result: PermissionState };
@@ -82,7 +106,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 export interface AutumnSdk {
-  readonly version: "0.3.0"; readonly protocolVersion: 1;
+  readonly version: "0.4.0"; readonly protocolVersion: 1;
   request<M extends keyof SdkMethods>(method: M, params: SdkMethods[M]["params"], options?: RequestOptions): Promise<SdkMethods[M]["result"]>;
   request(method: "platform.getCapabilities", params?: Record<string, never>, options?: RequestOptions): Promise<Capabilities>;
   request(method: "lifecycle.getState", params?: Record<string, never>, options?: RequestOptions): Promise<LifecycleSnapshot>;

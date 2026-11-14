@@ -1,9 +1,9 @@
-/* Lab Chronicles AutumnOS SDK 0.3.0 · 制作人：派蒙. No external dependencies. */
+/* Lab Chronicles AutumnOS SDK 0.4.0 · 制作人：派蒙. No external dependencies. */
 (function (root) {
   "use strict";
   const MAX_PENDING = 16, MAX_BYTES = 32768, MAX_PER_MINUTE = 120, RATE_WINDOW_MS = 60000;
   const STATES = new Set(["starting", "foreground", "background", "suspended", "closing", "closed", "crashed"]);
-  const PERMISSIONS = new Set(["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links"]);
+  const PERMISSIONS = new Set(["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links", "network"]);
   const EVENT_NAMES = new Set(["appearance.changed", "permissions.changed", "identity.changed", "links.opened", "shortcuts.invoked", "lifecycle.changed"]);
   const MAX_LISTENERS = 64;
   const bridge = root.chrome && root.chrome.webview;
@@ -26,6 +26,23 @@
   function exact(value, names) { return isObject(value) && Object.keys(value).length === names.length && names.every(name => Object.prototype.hasOwnProperty.call(value, name)); }
   function actionId(value) { return typeof value === "string" && /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(value); }
   function declaredId(value) { return typeof value === "string" && /^[a-z][a-z0-9_-]{0,39}$/.test(value); }
+  const NETWORK_RESPONSE_HEADERS = new Set(["content-type", "content-language", "content-length", "content-encoding", "etag", "last-modified", "cache-control", "expires", "retry-after", "location"]);
+  function canonicalBase64(value) {
+    if (typeof value !== "string" || value.length > 21848 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)) return false;
+    const padding = value.endsWith("==") ? 2 : value.endsWith("=") ? 1 : 0;
+    if (value.length / 4 * 3 - padding > 16384) return false;
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    return padding === 0 || (alphabet.indexOf(value[value.length - padding - 1]) & (padding === 2 ? 15 : 3)) === 0;
+  }
+  function safeNetworkResult(method, value) {
+    if (method === "network.getStatus") return exact(value, ["available", "internetAccess"]) && typeof value.available === "boolean" && value.internetAccess === "unknown";
+    if (method !== "network.request") return true;
+    return exact(value, ["status", "headers", "body", "encoding"]) && Number.isInteger(value.status) && value.status >= 100 && value.status <= 599
+      && value.encoding === "base64" && canonicalBase64(value.body) && isObject(value.headers)
+      && Object.entries(value.headers).every(([key, text]) => NETWORK_RESPONSE_HEADERS.has(key) && typeof text === "string"
+        && text.length <= 4096 && /^[\u0020-\u007e]*$/.test(text))
+      && Object.entries(value.headers).reduce((bytes, [key, text]) => bytes + key.length + text.length, 0) <= 4096;
+  }
   function safeEvent(name, value) {
     if (name === "appearance.changed") return exact(value, ["theme", "language", "scale", "reduceMotion"])
       && ["light", "dark", "system"].includes(value.theme) && typeof value.language === "string"
@@ -48,17 +65,17 @@
     set.add(listener); return () => set.delete(listener);
   }
   // Reject values JSON.stringify silently changes; the host independently enforces limits.
-  function assertJson(value, depth = 0, ancestors = new Set()) {
+  function assertJson(value, depth = 0, ancestors = new Set(), maximumDepth = 27) {
     if (value === null || typeof value === "string" || typeof value === "boolean") return;
     if (typeof value === "number" && Number.isFinite(value)) return;
-    if (typeof value !== "object" || depth > 27 || ancestors.has(value)) throw failure("INVALID_ARGUMENT", "Parameters must contain finite, acyclic JSON values with at most 28 nested containers.");
+    if (typeof value !== "object" || depth > maximumDepth || ancestors.has(value)) throw failure("INVALID_ARGUMENT", "Parameters must contain finite, acyclic JSON values with at most 28 nested containers.");
     if (!Array.isArray(value) && Object.prototype.toString.call(value) !== "[object Object]") throw failure("INVALID_ARGUMENT", "Parameters must contain plain JSON objects.");
     ancestors.add(value);
     if (Array.isArray(value)) {
-      for (let index = 0; index < value.length; index++) assertJson(value[index], depth + 1, ancestors);
+      for (let index = 0; index < value.length; index++) assertJson(value[index], depth + 1, ancestors, maximumDepth);
     } else {
       if (typeof value.toJSON === "function" || Object.getOwnPropertySymbols(value).length) throw failure("INVALID_ARGUMENT", "Parameters cannot contain custom JSON serialization or symbol keys.");
-      for (const key of Object.keys(value)) assertJson(value[key], depth + 1, ancestors);
+      for (const key of Object.keys(value)) assertJson(value[key], depth + 1, ancestors, maximumDepth);
     }
     ancestors.delete(value);
   }
@@ -78,6 +95,7 @@
   }
   function receive(event) {
     let message = event.data;
+    const incomingBytes = typeof message === "string" ? new TextEncoder().encode(message).length : null;
     if (typeof message === "string") { try { message = JSON.parse(message); } catch (_) { return; } }
     if (!isObject(message)) return;
     if (message.event === "lifecycle.stateChanged" && exact(message, ["event", "state"]) && STATES.has(message.state)) {
@@ -96,8 +114,13 @@
       return;
     }
     if (typeof message.requestId !== "string" || !pending.has(message.requestId)) return;
-    if (message.ok === true && Object.prototype.hasOwnProperty.call(message, "result")) settle(message.requestId, null, message.result);
-    else if (message.ok === false && isObject(message.error)
+    try {
+      if (incomingBytes !== null && incomingBytes > MAX_BYTES) throw new Error("wire response budget");
+      assertJson(message, 0, new Set(), 31);
+      if (new TextEncoder().encode(JSON.stringify(message)).length > MAX_BYTES) throw new Error("response budget");
+    } catch (_) { settle(message.requestId, failure("INVALID_RESPONSE", "The host returned an invalid SDK response.")); return; }
+    if (message.ok === true && exact(message, ["requestId", "ok", "result"]) && safeNetworkResult(pending.get(message.requestId).method, message.result)) settle(message.requestId, null, message.result);
+    else if (message.ok === false && exact(message, ["requestId", "ok", "error"]) && exact(message.error, ["code", "message", "retryable", "correlationId"])
       && typeof message.error.code === "string" && typeof message.error.message === "string"
       && typeof message.error.retryable === "boolean" && typeof message.error.correlationId === "string") {
       const error = message.error;
@@ -131,7 +154,7 @@
       } catch (error) { reject(error instanceof AutumnSdkError ? error : failure("INVALID_ARGUMENT", "Parameters could not be serialized.")); return; }
       const abort = () => settle(requestId, failure("USER_CANCELLED", "The caller stopped waiting. Submitted host work, including saves, may still complete."));
       const timer = root.setTimeout(() => settle(requestId, failure("TIMEOUT", "No host response arrived before the deadline. Submitted host work, including saves, may still complete.")), timeoutMs);
-      pending.set(requestId, { resolve, reject, timer, signal, abort });
+      pending.set(requestId, { resolve, reject, timer, signal, abort, method });
       if (signal) signal.addEventListener("abort", abort, { once: true });
       recentRequests.push(now);
       try { bridge.postMessage(message); }
@@ -141,7 +164,7 @@
   if (bridge) bridge.addEventListener("message", receive);
   root.addEventListener("pagehide", dispose, { once: true });
   root.autumn = Object.freeze({
-    version: "0.3.0", protocolVersion: 1, request,
+    version: "0.4.0", protocolVersion: 1, request,
     onLifecycle(listener) {
       if (typeof listener !== "function") throw new TypeError("A lifecycle listener is required.");
       if (ended) return () => {};

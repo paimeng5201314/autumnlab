@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using AutumnOS.Contracts;
 
 namespace AutumnOS.Packages;
 
@@ -191,7 +192,7 @@ public static class PackageInstaller
         string[] keys = ["schemaVersion", "appId", "name", "version", "runtime", "entry", "permissions"];
         if (root.ValueKind != JsonValueKind.Object) Fail("PACKAGE_MANIFEST_INVALID");
         JsonProperty[] properties = root.EnumerateObject().ToArray();
-        string[] optional = ["desktop", "permissionPurposes", "saveFormatVersion", "minReadableSaveFormatVersion", "maxReadableSaveFormatVersion"];
+        string[] optional = ["desktop", "permissionPurposes", "saveFormatVersion", "minReadableSaveFormatVersion", "maxReadableSaveFormatVersion", "networkDomains"];
         if (properties.Select(p => p.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length ||
             keys.Any(key => !root.TryGetProperty(key, out _)) ||
             properties.Any(p => !keys.Contains(p.Name, StringComparer.Ordinal) && !optional.Contains(p.Name, StringComparer.Ordinal))) Fail("PACKAGE_MANIFEST_INVALID");
@@ -217,7 +218,7 @@ public static class PackageInstaller
         ValidateResourcePath(entry, directory: false);
         if (!entry.EndsWith(".html", StringComparison.OrdinalIgnoreCase)) Fail("PACKAGE_ENTRY_INVALID");
         JsonElement permissionArray = root.GetProperty("permissions");
-        string[] allowedPermissions = ["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links"];
+        string[] allowedPermissions = ["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links", "network"];
         if (permissionArray.ValueKind != JsonValueKind.Array || permissionArray.GetArrayLength() > allowedPermissions.Length) Fail("PACKAGE_PERMISSION_UNSUPPORTED");
         string[] permissions = permissionArray.EnumerateArray().Select(permission =>
         {
@@ -226,6 +227,17 @@ public static class PackageInstaller
             return permission.GetString()!;
         }).ToArray();
         if (permissions.Distinct(StringComparer.Ordinal).Count() != permissions.Length) Fail("PACKAGE_PERMISSION_UNSUPPORTED");
+        string[]? networkDomains = null;
+        bool hasNetworkDomains = root.TryGetProperty("networkDomains", out var domains);
+        if (permissions.Contains("network", StringComparer.Ordinal) != hasNetworkDomains) Fail("PACKAGE_NETWORK_DOMAINS_INVALID");
+        if (hasNetworkDomains)
+        {
+            if (domains.ValueKind != JsonValueKind.Array || domains.GetArrayLength() is < 1 or > NetworkDomainPolicy.MaximumDomains)
+                Fail("PACKAGE_NETWORK_DOMAINS_INVALID");
+            if (domains.EnumerateArray().Any(item => item.ValueKind != JsonValueKind.String)) Fail("PACKAGE_NETWORK_DOMAINS_INVALID");
+            try { networkDomains = NetworkDomainPolicy.CopyValidated(domains.EnumerateArray().Select(item => item.GetString()!)); }
+            catch (RuntimeCapabilityException) { Fail("PACKAGE_NETWORK_DOMAINS_INVALID"); }
+        }
         var desktop = ParseDesktop(root);
         if (desktop is not null && ((desktop.Shortcuts.Length > 0 && !permissions.Contains("shortcuts")) ||
             (desktop.Links.Length > 0 && !permissions.Contains("links")) || (desktop.Widgets.Length > 0 && !permissions.Contains("widgets")))) Fail("PACKAGE_PERMISSION_UNSUPPORTED");
@@ -247,7 +259,7 @@ public static class PackageInstaller
         if (minimum > saveVersion || maximum < saveVersion) Fail("PACKAGE_SAVE_FORMAT_INVALID");
         return new(1, appId, name, version, runtime, entry, permissions, desktop, purposes, saveVersion,
             root.TryGetProperty("minReadableSaveFormatVersion", out _) ? minimum : null,
-            root.TryGetProperty("maxReadableSaveFormatVersion", out _) ? maximum : null);
+            root.TryGetProperty("maxReadableSaveFormatVersion", out _) ? maximum : null, networkDomains);
     }
 
     private static PackageDesktopDeclarations? ParseDesktop(JsonElement root)

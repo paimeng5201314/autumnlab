@@ -1,6 +1,6 @@
 # 从空目录做第一个应用
 
-适用 AutumnOS 0.5.1、SDK 0.3.0、协议1。制作人：派蒙。以下只依赖完整便携包的Developer目录、PowerShell和正常运行的宿主，不使用工作区隐藏文件。使用一个全新目录；已有项目、包和数据不会被覆盖。
+保留 AutumnOS 0.5.1 文档包路径；当前 SDK 0.4.0、协议1兼容原0.3接口。制作人：派蒙。以下只依赖完整便携包的Developer目录、PowerShell和正常运行的宿主，不使用工作区隐藏文件。使用一个全新目录；已有项目、包和数据不会被覆盖。
 
 在Developer目录打开PowerShell：
 
@@ -71,7 +71,7 @@ $session = $changed.sessionId
 
 account-b、account-guest、reset-simulation同样读取新ID。A/B显示“开发测试账号 A/B”，没有头像或任何凭据；它们不能调用真实后端。身份和数据命名空间包含本次预览的随机范围；同一范围回切A可读取自己的A存档，B/游客不共享；关闭开发模式后再预览使用新范围，不复用上一范围。
 
-响应中的simulation字段明确给出isTestSimulation、account（live/guest/account-a/account-b）、permissionsDenied、offline和networkScope=preview_only_external_network_already_blocked。state是宿主枚举文本Starting/Foreground/Background/Suspended/Closing/Closed/Crashed，与应用SDK的小写生命周期值不同。状态不是独立账号认证或系统断网证据。机器合同在SDK/developer.schema.json，专用管道只接受固定动作与当前32位hex sessionId，不接受token、userId、任意参数或命令。帧≤65536字节、JSON深度8；连接3秒、客户端总等待125秒、宿主操作120秒。USER_CANCELLED、DEVELOPER_BUSY、DEVELOPER_MODE_DISABLED、DEVELOPER_PREVIEW_SESSION_EXPIRED按实际响应处理，超时后先status确认，不自动重放切换。
+响应中的simulation字段明确给出isTestSimulation、account（live/guest/account-a/account-b）、permissionsDenied、offline和networkScope=preview_only_network_broker_and_direct_browser_policy。state是宿主枚举文本Starting/Foreground/Background/Suspended/Closing/Closed/Crashed，与应用SDK的小写生命周期值不同。状态不是独立账号认证或系统断网证据。机器合同在SDK/developer.schema.json，专用管道只接受固定动作与当前32位hex sessionId，不接受token、userId、任意参数或命令。帧≤65536字节、JSON深度8；连接3秒、客户端总等待125秒、宿主操作120秒。USER_CANCELLED、DEVELOPER_BUSY、DEVELOPER_MODE_DISABLED、DEVELOPER_PREVIEW_SESSION_EXPIRED按实际响应处理，超时后先status确认，不自动重放切换。
 
 按同一命令创建identity-app、save-game、desktop-extension，使用不同appId和新目录。identity-app在游客下应AUTH_REQUIRED；save-game首次明确保存才请求saves，恢复备份/迁移都需明确点击；desktop-extension先申请各权限，再点击通知/组件/链接。四模板不得继承内置元素配对的权限或存档。
 

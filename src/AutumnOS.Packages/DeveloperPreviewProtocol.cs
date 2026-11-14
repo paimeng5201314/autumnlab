@@ -15,7 +15,7 @@ namespace AutumnOS.Packages;
 public sealed record DeveloperPreviewRequest(int ProtocolVersion, string Command, string? PackagePath = null,
     string? Sha256 = null, string? SessionId = null);
 public sealed record DeveloperPreviewSimulationStatus(bool IsTestSimulation, string Account, bool PermissionsDenied, bool Offline,
-    string NetworkScope = "preview_only_external_network_already_blocked");
+    string NetworkScope = "preview_only_network_broker_and_direct_browser_policy");
 public sealed record DeveloperPreviewResponse(bool Ok, string Code, string? SessionId = null,
     string? AppId = null, string? State = null, DeveloperSdkCall[]? Trace = null, DeveloperPreviewSimulationStatus? Simulation = null);
 

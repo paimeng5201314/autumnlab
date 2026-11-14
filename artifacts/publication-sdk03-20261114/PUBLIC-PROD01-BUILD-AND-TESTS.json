@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "scope": "Actual formal-configuration Build and automatic reports only; no formal native/GUI acceptance claim",
+  "build": {
+    "build_id": "T06-20261114-sdk-prod-01",
+    "status": "passed",
+    "source_snapshot_id": "sha256:b776cc0ec00fca576a075e5d80be09749fdf6b5139d0515c973661a9241fd536",
+    "version": "1.0.0",
+    "release_label": "plus-v1.0.0",
+    "configuration": "Release",
+    "rid": "win-x64",
+    "sdk": "10.0.401",
+    "environment": "Microsoft Windows NT 10.0.20348.0",
+    "temporary_platform_acceptance": false,
+    "native_payload_table_sha256": "14782ed55e5581bd07f226700cf220fdefc689c46471762f3a5f924b0a66b167",
+    "started_utc": "2026-11-14T02:57:48.5882213-04:00",
+    "finished_utc": "2026-11-14T03:00:28.5493376-04:00",
+    "build_errors": 0,
+    "existing_CA1416_test_warnings": 29,
+    "original_build_report_sha256": "ca932cb9453c8bb0599f1655d55fe191681addce7f334f6e5241eeb06cc93564"
+  },
+  "source_manifest": {
+    "path": "artifacts/builds/T06-20261114-sdk-prod-01/source-snapshot.json",
+    "files": 600,
+    "sha256": "1ecd298a07f6f3291b399320b2d1f3c35b5acac204727be5a25bb044bd66b415"
+  },
+  "automatic": {
+    "status": "all_nine_groups_passed",
+    "groups": [
+      {
+        "name": "tests",
+        "status": "passed",
+        "total": 1295,
+        "failed": 0,
+        "original_report_sha256": "bcde2d437810eede0a13d3cf32875feaaba6a6922239ef4373aa3c499e05de0b"
+      },
+      {
+        "name": "sdk-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "527ee3c18324cec167e036cbcbede5d763f32d1c2208104baa82dac1d16e1bf8"
+      },
+      {
+        "name": "machine-contracts",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "774c8a3bf3bd97f6241fec7f98ccc0b99e21f9912b1ae6e3dcab5c384844f7a2"
+      },
+      {
+        "name": "sample-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "06ef9c5d7b9a91bbc1aa5bfa27fbff8b0df50f247eb1a49be2e6186a5e8b4036"
+      },
+      {
+        "name": "server-http-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "e1314b539ff1f74a53ecc716bd0440e10985c39e9ceb464e57a750d7dfc7540c"
+      },
+      {
+        "name": "t04-tools-tests",
+        "status": "passed",
+        "total": 12,
+        "failed": 0,
+        "original_report_sha256": "6654560a171a1f5f5091e50db323d92f2d8b31dc7173275409a9c8ff301057e2"
+      },
+      {
+        "name": "production-update-tools",
+        "status": "passed",
+        "total": 18,
+        "failed": 0,
+        "original_report_sha256": "88544699b9401cd279869086a3177a126e265d3dd92ffc67b687562cbce130ca"
+      },
+      {
+        "name": "chemleap-model-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "243eb1715dbde543111df7aad8b2cd448ca2670f88a5e52386b74fd5c82b369c"
+      },
+      {
+        "name": "native-client-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "baa806292d09d8be5c3dc0db0e29bcead2e225b8c2f0aa18aad7972d2b315a3b"
+      }
+    ]
+  },
+  "formal_native": "not_run",
+  "formal_GUI": "not_run",
+  "binary_packaging": "prepared",
+  "binary_executable_bytes": 504264933,
+  "binary_executable_sha256": "5061691ba87c157c6e6bde1fce3eb398266816548d6f325d3fbccc3f7294bbed",
+  "payload_sha256": "1f7557b1291f473065f78350d178a32a2170d5c94db867ae57c96832c810bbd6",
+  "logical_files": 1977,
+  "unique_blobs": 1173,
+  "binary_native_tests": "not_run",
+  "binary_uploaded": false,
+  "full_isolation": "not_completed",
+  "windows10_11": "paused_by_user_not_run",
+  "original_raw_reports_in_public_source": false,
+  "private_keys_logs_Data_process_IDs_or_account_namespaces_included": false,
+  "qualification": "SDK03 temporary platform candidate has independent limited Server20348 native/GUI evidence; those results are not transferred to this formal binary."
+}

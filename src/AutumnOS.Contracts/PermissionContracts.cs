@@ -18,7 +18,8 @@ public sealed record RuntimeAccountContext(string AccountKey, long Epoch, bool I
 
 public enum PermissionDecision { Prompt, Granted, Denied, Revoked }
 public sealed record PermissionRecord(string AccountKey, string BindingKey, string AppId, string DisplayName,
-    string Source, string Permission, PermissionDecision Decision);
+    string Source, string Permission, PermissionDecision Decision,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? NetworkScopeHash = null);
 public sealed record PermissionChange(string AccountKey, string BindingKey, string Permission, PermissionDecision Decision);
 public interface IPermissionService
 {
@@ -45,7 +46,8 @@ public interface IPermissionService
 }
 
 public sealed record RuntimeApplication(AppIdentity Identity, string Source, string DisplayName,
-    IReadOnlyCollection<string> DeclaredPermissions, IReadOnlyDictionary<string, string>? PermissionPurposes = null)
+    IReadOnlyCollection<string> DeclaredPermissions, IReadOnlyDictionary<string, string>? PermissionPurposes = null,
+    IReadOnlyCollection<string>? NetworkDomains = null)
 {
     public string BindingKey => Hash($"autumnos.app-binding.v1\0{Identity.AppId}\0{Identity.RepositoryId?.ToString(CultureInfo.InvariantCulture)}\0{Identity.SigningKeyFingerprint}\0{Source}");
     public static string Hash(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));

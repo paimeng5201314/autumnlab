@@ -9,15 +9,17 @@ namespace AutumnOS.Runtime;
 public sealed class PermissionService : IPermissionService
 {
     public static readonly IReadOnlySet<string> Supported = new HashSet<string>(StringComparer.Ordinal)
-    { "saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links" };
+    { "saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links", "network" };
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         Converters = { new JsonStringEnumConverter<PermissionDecision>() }
     };
     private readonly object gate = new();
     private readonly string path;
+    private readonly string networkPath;
     private readonly Func<IDisposable>? enterCritical;
     private readonly IRuntimeAuthorityMutations? authorityMutations;
     private readonly Dictionary<string, PermissionRecord> records = new(StringComparer.Ordinal);
@@ -35,20 +37,34 @@ public sealed class PermissionService : IPermissionService
         this.authorityMutations = authorityMutations;
         if (!Path.IsPathFullyQualified(configurationDirectory)) throw new ArgumentException("An absolute configuration directory is required.", nameof(configurationDirectory));
         path = Path.Combine(Path.GetFullPath(configurationDirectory), "application-permissions.v1.json");
-        SafePath(path, false);
-        if (!File.Exists(path)) return;
+        networkPath = Path.Combine(Path.GetFullPath(configurationDirectory), "application-network-permissions.v1.json");
+        Load(path, network: false);
+        Load(networkPath, network: true);
+    }
+
+    private void Load(string sourcePath, bool network)
+    {
+        SafePath(sourcePath, false);
+        if (!File.Exists(sourcePath)) return;
         try
         {
-            var info = new FileInfo(path);
+            var info = new FileInfo(sourcePath);
             if (info.Length is <= 0 or > MaximumBytes) throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
-            using var document = JsonDocument.Parse(File.ReadAllBytes(path), new JsonDocumentOptions { MaxDepth = 12 });
+            using var document = JsonDocument.Parse(File.ReadAllBytes(sourcePath), new JsonDocumentOptions { MaxDepth = 12 });
             if (RuntimeSession.HasDuplicateProperties(document.RootElement)) throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
             var stored = document.RootElement.Deserialize<PermissionDocument>(JsonOptions);
             if (stored is null || stored.SchemaVersion != 1 || stored.Records is null || stored.Records.Length > MaximumRecords)
                 throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
+            // Preserve the exact old seven-field record family, including strict
+            // old-client readers that reject even a new field whose value is null.
+            if (!network && document.RootElement.GetProperty("records").EnumerateArray().Any(
+                row => row.ValueKind == JsonValueKind.Object && row.TryGetProperty("networkScopeHash", out _)))
+                throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
             foreach (var record in stored.Records)
             {
                 Validate(record);
+                if ((record.Permission == "network") != network || records.Count >= MaximumRecords)
+                    throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
                 if (!records.TryAdd(Key(record.AccountKey, record.BindingKey, record.Permission), record))
                     throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
             }
@@ -60,7 +76,14 @@ public sealed class PermissionService : IPermissionService
     public PermissionDecision Query(RuntimeAccountContext account, RuntimeApplication app, string permission)
     {
         ValidateRequest(account, app, permission);
-        lock (gate) return records.TryGetValue(Key(account.AccountKey, app.BindingKey, permission), out var item) ? item.Decision : PermissionDecision.Prompt;
+        lock (gate)
+        {
+            if (!records.TryGetValue(Key(account.AccountKey, app.BindingKey, permission), out var item)) return PermissionDecision.Prompt;
+            // A grant is for the complete declared DNS set, not just the unchanged
+            // application/source binding. Old records without a scope never grant network.
+            if (permission == "network" && item.NetworkScopeHash != NetworkDomainPolicy.ScopeHash(app.NetworkDomains)) return PermissionDecision.Prompt;
+            return item.Decision;
+        }
     }
 
     public IReadOnlyList<PermissionRecord> List(RuntimeAccountContext account)
@@ -110,6 +133,8 @@ public sealed class PermissionService : IPermissionService
     {
         ValidateRequest(account, app, permission);
         string key = Key(account.AccountKey, app.BindingKey, permission);
+        string[]? networkDomains = permission == "network" ? NetworkDomainPolicy.CopyValidated(app.NetworkDomains) : null;
+        string? networkScope = networkDomains is null ? null : NetworkDomainPolicy.ScopeHash(networkDomains);
         long revision;
         lock (gate)
         {
@@ -123,7 +148,7 @@ public sealed class PermissionService : IPermissionService
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, account.Invalidated);
         try
         {
-            var fields = permission == "identity.profile" ? new[] { "appScopedUserId", "displayName", "avatarUrl", "isCached" } : Array.Empty<string>();
+            var fields = permission == "identity.profile" ? new[] { "appScopedUserId", "displayName", "avatarUrl", "isCached" } : networkDomains ?? Array.Empty<string>();
             string purpose = app.PermissionPurposes is not null && app.PermissionPurposes.TryGetValue(permission, out var declaredPurpose)
                 ? $"应用声明用途：{declaredPurpose}\n平台边界：{Purpose(permission)}" : Purpose(permission);
             var request = new RuntimePermissionPrompt(app.Identity.AppId, app.DisplayName, app.Source, permission, purpose, fields);
@@ -136,6 +161,8 @@ public sealed class PermissionService : IPermissionService
                     linked.Token.ThrowIfCancellationRequested();
                     account.EnsureCurrent();
                     if (revisions.GetValueOrDefault(key) != revision) throw new RuntimeCapabilityException("PERMISSION_REVOKED");
+                    if (networkScope is not null && networkScope != NetworkDomainPolicy.ScopeHash(app.NetworkDomains))
+                        throw new RuntimeCapabilityException("NETWORK_POLICY_CHANGED");
                     change = SaveDecision(account, app, permission, accepted ? PermissionDecision.Granted : PermissionDecision.Denied);
                 }
             }, linked.Token).ConfigureAwait(false);
@@ -182,6 +209,27 @@ public sealed class PermissionService : IPermissionService
         Changed?.Invoke(change!);
     }
 
+    /// <summary>Host settings may revoke an exact historical row without reconstructing
+    /// an application or inventing its former domains/repository identity. Never grants.</summary>
+    public async Task RevokeHistoricalAsync(RuntimeAccountContext account, PermissionRecord record,
+        CancellationToken cancellationToken = default)
+    {
+        account.EnsureCurrent(); Validate(record);
+        if (record.AccountKey != account.AccountKey) throw new RuntimeCapabilityException("PERMISSION_RECORD_STALE");
+        PermissionChange? change = null;
+        await CommitMutationAsync(account, record.BindingKey, () =>
+        {
+            lock (gate)
+            {
+                cancellationToken.ThrowIfCancellationRequested(); account.EnsureCurrent();
+                if (!records.TryGetValue(Key(record.AccountKey, record.BindingKey, record.Permission), out var current) || current != record)
+                    throw new RuntimeCapabilityException("PERMISSION_RECORD_STALE");
+                change = PersistDecision(account, record with { Decision = PermissionDecision.Revoked });
+            }
+        }, cancellationToken).ConfigureAwait(false);
+        Changed?.Invoke(change!);
+    }
+
     private void CommitMutation(RuntimeAccountContext account, RuntimeApplication app, Action commit)
     {
         if (authorityMutations is null) { commit(); return; }
@@ -191,51 +239,61 @@ public sealed class PermissionService : IPermissionService
 
     private async Task CommitMutationAsync(RuntimeAccountContext account, RuntimeApplication app, Action commit,
         CancellationToken beforeIntentCancellation)
+        => await CommitMutationAsync(account, app.BindingKey, commit, beforeIntentCancellation).ConfigureAwait(false);
+
+    private async Task CommitMutationAsync(RuntimeAccountContext account, string binding, Action commit,
+        CancellationToken beforeIntentCancellation)
     {
         if (authorityMutations is null) { beforeIntentCancellation.ThrowIfCancellationRequested(); commit(); return; }
-        var mutation = await authorityMutations.BeginAsync(RuntimeMutationScope.ForApplication(account.AccountKey, app.BindingKey),
+        var mutation = await authorityMutations.BeginAsync(RuntimeMutationScope.ForApplication(account.AccountKey, binding),
             beforeIntentCancellation).ConfigureAwait(false);
         // Once intent exists, cancellation must not abandon its one-shot permit.
         await mutation.CommitAsync(commit).ConfigureAwait(false);
     }
 
     private PermissionChange SaveDecision(RuntimeAccountContext account, RuntimeApplication app, string permission, PermissionDecision decision)
+        => PersistDecision(account, new PermissionRecord(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName,
+            app.Source, permission, decision, permission == "network" ? NetworkDomainPolicy.ScopeHash(app.NetworkDomains) : null));
+
+    private PermissionChange PersistDecision(RuntimeAccountContext account, PermissionRecord item)
     {
         using var critical = enterCritical?.Invoke();
         using var lease = account.EnterCommitLease?.Invoke();
         account.EnsureCurrent();
-        string key = Key(account.AccountKey, app.BindingKey, permission);
-        string bindingKey = Key(account.AccountKey, app.BindingKey, "");
+        string key = Key(account.AccountKey, item.BindingKey, item.Permission);
+        string bindingKey = Key(account.AccountKey, item.BindingKey, "");
         // Check every next stamp before staging bytes or changing any decision.
         long nextPermissionRevision = checked(revisions.GetValueOrDefault(key) + 1);
         long nextBindingRevision = checked(bindingRevisions.GetValueOrDefault(bindingKey) + 1);
         if (!records.ContainsKey(key) && records.Count >= MaximumRecords) throw new RuntimeCapabilityException("QUOTA_EXCEEDED");
-        var item = new PermissionRecord(account.AccountKey, app.BindingKey, app.Identity.AppId, app.DisplayName, app.Source, permission, decision);
         Validate(item);
         var copy = new Dictionary<string, PermissionRecord>(records, StringComparer.Ordinal) { [key] = item };
-        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(new PermissionDocument(1, copy.Values.ToArray()), JsonOptions);
+        bool network = item.Permission == "network";
+        string destination = network ? networkPath : path;
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(new PermissionDocument(1,
+            copy.Values.Where(record => (record.Permission == "network") == network).ToArray()), JsonOptions);
         if (bytes.Length > MaximumBytes) throw new RuntimeCapabilityException("QUOTA_EXCEEDED");
-        SafePath(path, true);
-        string temp = Path.Combine(Path.GetDirectoryName(path)!, $".permission-{Guid.NewGuid():N}.tmp");
+        SafePath(destination, true);
+        string temp = Path.Combine(Path.GetDirectoryName(destination)!, $".permission-{Guid.NewGuid():N}.tmp");
         try
         {
             using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
             { stream.Write(bytes); stream.Flush(true); }
             account.EnsureCurrent();
-            SafePath(path, false);
-            if (File.Exists(path))
+            SafePath(destination, false);
+            if (File.Exists(destination))
             {
-                string backup = path + ".bak";
+                string backup = destination + ".bak";
                 SafePath(backup, false);
-                File.Replace(temp, path, backup);
+                File.Replace(temp, destination, backup);
             }
-            else File.Move(temp, path, false);
+            else File.Move(temp, destination, false);
             records[key] = item;
             revisions[key] = nextPermissionRevision;
             bindingRevisions[bindingKey] = nextBindingRevision;
         }
         finally { if (File.Exists(temp)) File.Delete(temp); }
-        return new(account.AccountKey, app.BindingKey, permission, decision);
+        return new(account.AccountKey, item.BindingKey, item.Permission, item.Decision);
     }
 
     private static void ValidateRequest(RuntimeAccountContext account, RuntimeApplication app, string permission)
@@ -243,6 +301,7 @@ public sealed class PermissionService : IPermissionService
         account.EnsureCurrent();
         if (!Supported.Contains(permission)) throw new RuntimeCapabilityException("CAPABILITY_UNAVAILABLE");
         if (!app.DeclaredPermissions.Contains(permission, StringComparer.Ordinal)) throw new RuntimeCapabilityException("PERMISSION_NOT_DECLARED");
+        if (permission == "network") _ = NetworkDomainPolicy.CopyValidated(app.NetworkDomains);
         if (!RuntimeSession.IsValidAppId(app.Identity.AppId) || string.IsNullOrWhiteSpace(app.Source) || app.Source.Length > 512
             || app.Source.Any(char.IsControl) || string.IsNullOrWhiteSpace(app.DisplayName) || app.DisplayName.Length > 128
             || app.DisplayName.Any(char.IsControl)) throw new RuntimeCapabilityException("INVALID_REQUEST");
@@ -258,7 +317,9 @@ public sealed class PermissionService : IPermissionService
             || record.BindingKey is null || record.BindingKey.Length != 64 || !record.BindingKey.All(char.IsAsciiHexDigit)
             || !RuntimeSession.IsValidAppId(record.AppId) || string.IsNullOrWhiteSpace(record.DisplayName) || record.DisplayName.Length > 128 || record.DisplayName.Any(char.IsControl)
             || string.IsNullOrWhiteSpace(record.Source) || record.Source.Length > 512 || record.Source.Any(char.IsControl) || !Supported.Contains(record.Permission)
-            || !Enum.IsDefined(record.Decision)) throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
+            || !Enum.IsDefined(record.Decision) || record.NetworkScopeHash is not null &&
+                (record.Permission != "network" || record.NetworkScopeHash.Length != 64 || record.NetworkScopeHash.Any(c => c is not (>= '0' and <= '9' or >= 'a' and <= 'f'))))
+            throw new RuntimeCapabilityException("PERMISSION_STORE_CORRUPT");
     }
 
     internal static void SafePath(string path, bool createDirectory)
@@ -295,6 +356,7 @@ public sealed class PermissionService : IPermissionService
         "shortcuts" => "注册清单中声明的应用快捷操作。",
         "widgets" => "更新清单中声明的小组件资料。",
         "links" => "发送指向本应用声明动作的内部链接。",
+        "network" => "经宿主向清单列出的完整域名集合发送有界 HTTPS 请求；不共享宿主 Cookie、系统凭据或登录令牌。",
         _ => "受限应用能力。"
     };
     private sealed record PermissionDocument(int SchemaVersion, PermissionRecord[] Records);

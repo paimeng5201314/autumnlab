@@ -15,33 +15,36 @@
         "type": "Project"
       },
       "autumnos.packages": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "AutumnOS.Contracts": "[1.0.0, )"
+        }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.0-t05-development, )"
+          "AutumnOS.Contracts": "[1.0.0, )"
         }
       },
       "autumnos.store": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.0-t05-development, )",
-          "AutumnOS.Packages": "[0.5.0-t05-development, )",
-          "AutumnOS.Storage": "[0.5.0-t05-development, )"
+          "AutumnOS.Contracts": "[1.0.0, )",
+          "AutumnOS.Packages": "[1.0.0, )",
+          "AutumnOS.Storage": "[1.0.0, )"
         }
       },
       "autumnos.update": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Store": "[0.5.0-t05-development, )"
+          "AutumnOS.Store": "[1.0.0, )"
         }
       },
       "autumnos.updateprotocol": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Launcher": "[0.5.0-t05-development, )",
-          "AutumnOS.Update": "[0.5.0-t05-development, )"
+          "AutumnOS.Launcher": "[1.0.0, )",
+          "AutumnOS.Update": "[1.0.0, )"
         }
       }
     },

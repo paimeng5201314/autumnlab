@@ -76,7 +76,7 @@ public sealed partial class MainWindow
         try
         {
             nextInstaller = new(dataRoot, nextDownloads, applicationInstaller!, test);
-            nextCatalog = new GitHubStoreCatalog(Path.Combine(dataRoot, "Cache", "GitHubStore"), BrandInfo.Version, "0.3.0", transport);
+            nextCatalog = new GitHubStoreCatalog(Path.Combine(dataRoot, "Cache", "GitHubStore"), BrandInfo.Version, "0.4.0", transport);
         }
         catch { nextDownloads.Dispose(); throw; }
         storeQuery?.Cancel(); storeRevision++; RetireStoreDownloads(); approvedDownloadInstalls.Clear();

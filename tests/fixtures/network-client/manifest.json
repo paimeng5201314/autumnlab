@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "appId": "cn.labchronicles.sdknetworkcheck",
+  "name": "网络 SDK 验证",
+  "version": "0.1.0",
+  "runtime": "web",
+  "entry": "index.html",
+  "permissions": ["network"],
+  "networkDomains": ["api.github.com"],
+  "permissionPurposes": { "network": "读取 GitHub 公开速率状态，验证实际 SDK 请求；不上传账号或存档。" }
+}

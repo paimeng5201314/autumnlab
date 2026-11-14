@@ -1291,3 +1291,62 @@ qa05正在完整Build/Test/Prepare，尚无产品UI迁移通过结论。拟只�
 - 当前源码及两个 EXE、payload、源码 ZIP 已再次按实际字节核对，详见 `artifacts/release-v1-20261112/LOCAL_DELIVERY.json` 和 `FINAL-SHA256SUMS.txt`。正式包不含临时平台放行，本机 Server 上未声称运行通过。
 - 从精确历史提交 `6f634fa7c3f7457b32de6a5aec061cfddbc5a969` 的公开归档 Reports/package-single-file.json 核对目标旧发布 meta-v0.5.2-local.9：实际目录为 Product-42d4cf9c5d351ad0ebe7，EXE SHA6db3dceec996df71fe0030a7f006d4c2ac18f383c17e538d2865b78cb84dfe11。它不是早期固定 Product 布局，但尚未下载验证旧live二进制或实测该真实旧版迁移。早期固定 Product 是额外未验证边界，不以它推断本次目标旧发布普遍失败。
 - 公开源白名单v3为153项 artifacts 文本源码/脱敏摘要，正常 tests 根另覆盖10项；历史106项原生源码完整保留。维护工具只增加cjs文本扩展和PUBLICATION_STATUS.md入口；无路径改名副本，无二进制、数据、凭据或私钥上传。新发布状态入口为 PUBLICATION_STATUS.md。
+
+### 2026-11-13 源码准备分支已更新，Release 未改
+
+依据用户本次上传授权，GitHub连接将875项整理后源码更新到 codex/release-v1.0.0-preparation-20261112；提交 `7dcf54792bca3329cea2d95f4b304325ddcec0eb`，tree `76c8ead2bf4779cf76c84f8b6fd28270cc215d7d`。作者/提交者均核对为 paimeng5201314 / 派蒙。106项新增或变化，875项Git blob与本地字节逐项核对，582项冻结构建文件匹配；76项远端历史记录原样保留，未改main/标签，不强推。分支头回读通过，旧Release422539615的名称、标签、更新时间及10个附件身份/大小/digest均与操作前一致。
+
+本地完整公开源归档及逐项验证见 `artifacts/publication-v1-qa05-prod02-20261113/public-source-archive.json`；源码上传报告为同目录 publication-result.json。GitHub连接可更新源码但没有Release二进制上传工具；未伪称已发布EXE，未上传私钥、用户数据或原始运行日志。正式Release仍因完整验收缺项及附件发布能力未就绪而未完成。
+
+## 2026-11-13 SDK与程序继续修复
+
+用户已告知Edge登录GitHub，并明确暂停Win10/11验证，优先修程序与SDK。暂停仅改变该矩阵的执行状态，保留要求与not_run，不降低正式门禁。当前轮先补network.getStatus/request端到端合同、域名权限与有界真实网络实现，并独立复核qa03关闭故障；旧qa05/prod02结果只属于其冻结字节。新修改将另生成build ID，不覆盖旧失败、用户入口或存档；当前不操作浏览器账户或替换Release。
+
+### SDK 0.4 与关闭清理增量（新构建前）
+
+本地补齐network.getStatus/request及声明域名合同、SDK类型/Schema/脚本和网络示例，协议仍为1。网络授权按完整域名集合绑定，独立application-network-permissions.v1.json避免破坏旧九项权限文件；历史权限只可按原始记录撤销，不重构来源授予。预览策略增加短期policy lease，覆盖实际I/O启动与最终响应投递，避免live预览的真实账号锁不能保护模拟offline切换的窗口。所有等待仍在短租约之外。详细限制见docs/sdk-network.md。
+
+关闭路径新增独立清理编排，某一步异常不跳过后续controller/stream/原始句柄处理；保留首个错误，不将异常/Unknown视为Closed。8项异常注入通过，只能证明该确定缺陷被修复，不能证明qa03 EOF根因已找到。
+
+截至当前：SDK脚本29/29，机器合同397/397，源码静态检查111/111；模块隔离测试和独立审查在artifacts/sdk-runtime-20261113中逐次保留，含前置失败。此时尚未新产品Build或原生GUI验收，旧qa05/prod02不得转记到新源。
+
+为新构建腾空间，仅将qa05冗余single-file打包暂存目录迁至C:/Users/admin/AppData/Local/AutumnOS-BuildArchive/T06-20261113-release-v1-qa05/，1979项文件逐个哈希核对；原完整EXE、prepared目录、源归档及原始诊断报告未动。映射见artifacts/sdk-runtime-20261113/previous-packaging-stage-relocation.json。当前未完成修复/验证，不执行全局完成后清理、重置卡或休眠；Win10/11继续paused_by_user_not_run。
+
+### 构建警告更正
+新sdk-runtime-01完整构建通过（29条CA1416/0错误），source sha256:a14d906a732c325987c48657abd33843cea1de3e47b73247ed9695be82adfeba。回查qa05/prod02原始build.log同为29条CA1416/0错误，均来自未改字节的MigrationSecurityTests.cs；此前本日志及交付摘要的零警告表述错误，予以更正。未压制警告、未改变旧原始日志或测试结论；SDK01完整自动测试正在执行，原生GUI尚未运行。
+
+
+### SDK01 冻结构件与自动检查
+
+新构件T06-20261113-sdk-runtime-01，1.0.0-rc.5 / 1.0.0-platform-test.6，源码sha256:a14d906a732c325987c48657abd33843cea1de3e47b73247ed9695be82adfeba。Release编译0错误/29条既有CA1416测试平台标注警告；九组自动检查全部通过，含1295项C#、30项SDK、397项机器合同，源码检查111项通过。Test.ps1尾部负向CLI的遗留LASTEXITCODE=2被root外层包装误判；本次九份当前build/source绑定报告均已核passed且脚本无throw，原外层退出记录保留，未为消除该包装结果重跑测试。核对清单见artifacts/sdk-runtime-20261113/automatic-verification-sdk01.json。
+
+默认生产网络服务（无测试DNS/HTTP/Connector替换、无凭据、无TLS宽松回调）匿名GET api.github.com/rate_limit得到200/424字节；是模块公网诊断，尚不是GUI通过。117项集中模块回归最后逐源码哈希冻结复跑通过。Windows自有loopback TLS fixture因Schannel不支持其临时私钥在服务端握手失败，仍保留失败，未借此放松产品证书校验。
+
+完整EXE：artifacts/single-file/T06-20261113-sdk-runtime-01/AutumnOS.exe，504264560字节，SHA7560e0638cf29f214c8b6777404d7f23bc8b52a3b2e2f1ce1319ae58899a8d34。600文件构建源码快照ZIP为artifacts/sdk-runtime-20261113/AutumnOS-sdk01-source.zip，SHA33d7a897474477741f3312e0a30f6f94fb68c9eb643dc42c25935c51181541f3。随包CLI已将Examples/network-client实际打为7074字节.autumn，SHA2e7e708e0958f3a07b309fa87100c6960cfe279084f918597a9f8af051520aca。
+
+完成的single-file打包暂存树1986项迁至C:/Users/admin/AppData/Local/AutumnOS-BuildArchive/T06-20261113-sdk-runtime-01/逐项核hash，给D盘原生运行腾出空间；见sdk01-packaging-stage-relocation.json。prepared目录与产物未迁移。新EXE仅替换已有portable-qa02合成游客测试入口，35项Config/Apps/Saves等原文件基线留证；用户真实入口和Data未动。SDK01原生4项矩阵开始，GUI尚not_run；Win10/11暂停，完整隔离和正式Release仍未宣称完成。
+
+### 2026-11-14 SDK01 实测及窄屏桌面修复
+SDK01 四项原生测试 normal-close/browser-failure/root-stall/pipe-close 全通过；保留 harness .tools/dotnet junction 无效启动与先前 qa03 原始失败，不将其根因认定已解决。GUI 完整 EXE 启动、游戏 H2O20 读回/保存、桌面恢复、正常结束后新实例读回、数字键跳跃至 Ca(OH)2 30 分并实际保存通过。两个游戏原实例及两个网络预览最终原进程/线程/Job/句柄全部退出、ResourcesRetired=true，无恢复救援。
+
+SDK0.4真实预览中，原生确认完整列出来源与api.github.com，允许后匿名公网GET200/424字符；未声明域名NETWORK_DOMAIN_NOT_ALLOWED；模拟offline为NETWORK_OFFLINE，online恢复200；强制deny为denied，解除恢复200。首次权限请求超过30秒，前后观察错过弹窗；快速重测未修改字节即通过，不把它误判为程序构造故障，首次TIMEOUT原报告保留。详细GUI-SDK01.md及对应JSON/冻结日志在artifacts/sdk-runtime-20261113。
+
+真实发现720 DIP窄屏桌面固定三列导致右侧入口裁切；只修改MainWindow.xaml与DesktopInteractionsUi.cs使窄屏纵排、实际视口1至3列、拖放索引一致、不可见区域拒绝及宽屏恢复，待新SDK02构建实测。111静态检查通过不等于新EXE通过。正式用户入口和存档未改，Win10/11继续paused_by_user_not_run；完整隔离、真实Logto、正式发布与完整安装升级矩阵保持未完成。
+
+### SDK02 新源构建与原生矩阵
+T06-20261114-sdk-runtime-02 / 1.0.0-rc.6 / 1.0.0-platform-test.7 已实际完成Release构建0错误29既有CA1416警告；新源sha256:da3b718ae777d0a8e9ab166044e7d025df89107bf4b4561fac42c6b6bcbdada4。当前九组自动测试均passed（C#1295、SDK30、机器合同397），静态111。Build-Sdk02.ps1外层按当前九份report与source核验，不误用负向CLI遗留LASTEXITCODE，完整流水线exit0。
+新完整EXE504265783字节，SHA9da5050d4819feedc0b811080315aa7ad72c67f85630684b4f893dd4fd7234fe。600文件源码ZIP SHA665e51dd47142e2572c0d0c40004c4408b90090a94a87c55013b147ecd6e0b3c。完整prepared1997文件由原生驱动准备逐项核验。普通用户合成fixture仅换入口，39份已有Config/Apps/Saves等字节在复制期间保持。
+当前SDK02四项直接apphost原生回归各一次通过，normal38.97s、browser-failure38.84s、root-stall65.16s、pipe-close38.00s；真实frame/STA Post/pageACK/fence和原组强退休、独立原句柄Job0及staging移除核验通过，无驱动救援。root-stall产品OwnedJobRecovery=true，所有StationRecovery=false。GUI尚pending，旧SDK01GUI不转记。详见artifacts/native-negative-20261114/sdk02-series.json与当前sdk02-delivery.json。
+
+### SDK02 GUI 收尾与 SDK03 行高修复
+SDK02 完整 EXE 两次启动、窄屏纵向布局/滚动、拖动排序、无效区域拒绝、排序重启保留、ChemLeap 启动并读取 Ca(OH)2/30 分旧存档实际通过；正常结束游戏并退出。GUI 同时确认长应用名称第二行被136 DIP固定行高截断，因此SDK02不作为最终交付。仅两个已审查布局文件把行高及drop pitch统一156、三行滚动上限480，保留两行名称，准备新T06-20261114-sdk-runtime-03。111项源码检查通过；第一次手工静态命令误用了不存在的OutputPath参数，未执行检查，已按实际ReportPath参数修正并成功，非产品测试失败。SDK03构建/原生/GUI未执行前保持not_run。Windows10/11继续paused_by_user_not_run，未上传。
+
+### SDK03 新源构件自动验证与打包
+T06-20261114-sdk-runtime-03 / 1.0.0-rc.7 / 1.0.0-platform-test.8流水线exit0；源sha256:b776cc0ec00fca576a075e5d80be09749fdf6b5139d0515c973661a9241fd536。只改SDK02两个布局文件，600文件快照核对。Release0错误29既有CA1416警告；九组实际新源检查全部passed，C#1295、SDK30、机器合同397，静态111。600文件source-bytes.zip SHAef9fcff13a59a3a5cf2db3444162397abf9e7baae66173e6ac21ee7f0fb3bb2c。完整EXE504265896字节SHAd189d1cc3bf6a5b9c05ad77a18bedeb9290682c25c47a5c5b0a207f7c3d780d4；新Product-c77e5d68cbd8bef9e9fb。此时原生与GUI仍待实际运行，不转记旧构建成绩。旧prod01/prod02的package-t05暂存54文件及旧qa02 single-file暂存1979文件原字节迁C盘并逐项回读验证，给新打包腾空间；最终EXE/准备目录/用户Data/qa03失败未动，归档报告保留实际路径。
+
+### SDK03 本地程序与 SDK 修复交付（2026-11-14）
+SDK03四项原生各一次normal40.67s/browser38.69s/root-stall65.72s/pipe40.84s全部通过；真实frame/STA Post/pageACK/fence、原process/thread/Job0/句柄强退休与独立原句柄核验、staging移除均通过；只有root-stall产品OwnedJobRecovery=true，无harness救援。series SHA5bdb6e6e412f0051d333f03f4a233930220ad822e4ba35d98247e4b7737978b7。完整GUI已独立通过：初启/重启、689x873滚动及720x1432最大化的两行名称不截断、拖放rev2、无效放置不改hash、重启排序保持；ChemLeap旧CaOH30→键2得到CaCO3/40→实际保存→整个Shell退出重启后新实例读回40。
+网络SDK0.4独立预览通过原生域名确认、真实匿名GET200/424字符、未声明域拒绝、offline返回NETWORK_OFFLINE、online恢复200、deny返回denied、restore恢复200。两个游戏实例和一个预览最终原组强退休/双lease释放、无恢复；两次Shell shutdown_ready全部清零，最终Sky/CIM无AutumnOS。仅为合成游客与preview内存许可验证，不冒充真实账号或普通已安装应用持久权限GUI。原41Data文件复制期间不变，实测之后仅排序及game/game.bak正常改变，新增本轮预览包保留。
+桌面和父工作根新建“AutumnOS SDK 修复验收版.lnk”，指向artifacts/portable-qa02/AutumnOS.exe；原正式用户入口/旧快捷方式/真实Data未动。SDK开发套件在artifacts/packages/T06-20261114-sdk-runtime-03/AutumnOS-1.0.0-rc.7-win-x64-development/Developer。CURRENT已对应本次限定交付，完整说明与GUI/原生/自动验证索引在artifacts/sdk-runtime-20261113/DELIVERY-SDK03.md及sdk03-delivery.json。最终逐600文件hash未改变，入口SHAd189d1cc3bf6a5b9c05ad77a18bedeb9290682c25c47a5c5b0a207f7c3d780d4。
+Win10/11按用户要求paused_by_user_not_run。完整隔离、旧qa03正常关闭失败根因、真实Logto、硬件输入/IME、完整安装/升级/回退、普通网络应用持久授权GUI与外部开发者验收仍未完成；普通第三方门禁不放行，不支持任意EXE。没有远端上传/发布、没有正式v1.0完成宣称。维护自动广泛清理未跑，保留未解决qa03诊断和未完成验收材料；已完成暂存按独立报告原字节迁C盘归档以腾出D盘空间。没有消费重置卡或休眠电脑。
+收尾为后续游戏运行空间，将历史SDK02 prepared完整1997文件/1,410,622,900字节按原delivery表逐hash迁C归档，报告artifacts/sdk-runtime-20261113/sdk02-prepared-relocation.json；当前SDK03 prepared/EXE和全部Data未动，D空约2.52GiB。

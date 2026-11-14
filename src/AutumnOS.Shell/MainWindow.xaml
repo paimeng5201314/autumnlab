@@ -52,9 +52,11 @@
             <Button Content="外观" Click="OnAppearance" Background="{StaticResource GlassFill}" BorderBrush="{StaticResource GlassStroke}" Foreground="{StaticResource DesktopInk}" CornerRadius="16" Padding="16,6" AutomationProperties.AutomationId="AppearanceButton"/>
           </StackPanel>
         </Grid>
-        <Grid Grid.Row="1" Margin="32,68,24,0" VerticalAlignment="Top" ColumnSpacing="28">
-          <Grid.ColumnDefinitions><ColumnDefinition Width="0.95*"/><ColumnDefinition Width="1.35*"/></Grid.ColumnDefinitions>
-          <StackPanel Spacing="12" MaxWidth="370" HorizontalAlignment="Left">
+        <ScrollViewer x:Name="DesktopContentScroll" Grid.Row="1" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top">
+        <Grid x:Name="DesktopContentGrid" Margin="32,68,24,0" VerticalAlignment="Top" ColumnSpacing="28">
+          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+          <Grid.ColumnDefinitions><ColumnDefinition x:Name="DesktopIntroColumn" Width="0.95*"/><ColumnDefinition x:Name="DesktopEntriesColumn" Width="1.35*"/></Grid.ColumnDefinitions>
+          <StackPanel x:Name="DesktopIntroPanel" Spacing="12" MaxWidth="370" HorizontalAlignment="Left">
             <TextBlock Text="A LITTLE SPACE FOR CURIOSITY" CharacterSpacing="200" FontSize="10" Foreground="{StaticResource DesktopMuted}"/>
             <TextBlock x:Name="DesktopTime" FontSize="76" FontWeight="Light" FontFamily="Segoe UI Variable Display" Foreground="{StaticResource DesktopInk}"/>
             <TextBlock x:Name="DesktopDate" FontSize="15" Foreground="{StaticResource DesktopInk}"/>
@@ -63,18 +65,16 @@
             <TextBlock x:Name="DesktopAppearance" FontSize="12" Margin="0,12,0,0" Foreground="{StaticResource DesktopMuted}" AutomationProperties.AutomationId="DesktopAppearance"/>
             <StackPanel x:Name="DesktopWidgetContainer" Spacing="8" AutomationProperties.AutomationId="DesktopWidgetContainer"/>
           </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="20" Margin="0,24,0,0">
-            <ScrollViewer x:Name="DesktopAppScroll" MaxHeight="420" HorizontalScrollMode="Disabled" HorizontalContentAlignment="Left">
-            <Grid x:Name="AppGrid" ColumnSpacing="12" HorizontalAlignment="Left">
-              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-              <Grid.ColumnDefinitions><ColumnDefinition Width="118"/><ColumnDefinition Width="118"/><ColumnDefinition Width="118"/></Grid.ColumnDefinitions>
-            </Grid>
+          <StackPanel x:Name="DesktopEntriesPanel" Grid.Column="1" Spacing="20" Margin="0,24,0,0">
+            <ScrollViewer x:Name="DesktopAppScroll" MaxHeight="480" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Left">
+            <Grid x:Name="AppGrid" HorizontalAlignment="Left"/>
             </ScrollViewer>
             <InfoBar x:Name="DesktopError" IsOpen="False" IsClosable="True" Severity="Error" MaxWidth="400"/>
           </StackPanel>
         </Grid>
+        </ScrollViewer>
         <StackPanel Grid.Row="2" Spacing="10" HorizontalAlignment="Center" Margin="0,20,0,14">
-          <TextBlock x:Name="DesktopGestureHint" Text="拖动图标调整位置 · 双击桌面空白处查看后台" FontSize="12" Foreground="{StaticResource DesktopMuted}" HorizontalAlignment="Center" AutomationProperties.AutomationId="DesktopGestureHint"/>
+          <TextBlock x:Name="DesktopGestureHint" Text="拖动图标调整位置 · 双击桌面空白处查看后台" FontSize="12" Foreground="{StaticResource DesktopMuted}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" AutomationProperties.AutomationId="DesktopGestureHint"/>
           <Ellipse Width="5" Height="5" Fill="{StaticResource DesktopInk}" Opacity="0.65"/>
           <Border Background="{StaticResource GlassFill}" BorderBrush="{StaticResource GlassStroke}" BorderThickness="1" CornerRadius="30" Padding="18,12">
             <StackPanel x:Name="Dock" Orientation="Horizontal" Spacing="18"/>

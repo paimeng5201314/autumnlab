@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "scope": "SDK03 temporary platform test candidate on Windows Server20348/Medium synthetic guest; source evidence only",
+  "build_id": "T06-20261114-sdk-runtime-03",
+  "source_snapshot_id": "sha256:b776cc0ec00fca576a075e5d80be09749fdf6b5139d0515c973661a9241fd536",
+  "version": "1.0.0-rc.7",
+  "release_label": "1.0.0-platform-test.8",
+  "temporary_platform_acceptance": true,
+  "native_table_sha256": "da12bf0e85d40ea4221d806b0d0ddcdb6275ae2a6817439e2c3c21ce6bce3aed",
+  "automatic": {
+    "groups_passed": 9,
+    "csharp_passed": 1295,
+    "sdk_passed": 30,
+    "machine_contracts_passed": 397,
+    "build_errors": 0,
+    "existing_CA1416_test_warnings": 29
+  },
+  "native": {
+    "cases": [
+      {
+        "mode": "normal-close",
+        "status": "passed",
+        "elapsed_seconds": 40.6683736,
+        "normal_close_ack": true,
+        "owned_job_recovery": false,
+        "station_recovery": false,
+        "original_handles_signaled_job0": true,
+        "staging_removed": true,
+        "harness_rescue": false
+      },
+      {
+        "mode": "browser-failure",
+        "status": "passed",
+        "elapsed_seconds": 38.6858344,
+        "normal_close_ack": false,
+        "owned_job_recovery": false,
+        "station_recovery": false,
+        "original_handles_signaled_job0": true,
+        "staging_removed": true,
+        "harness_rescue": false
+      },
+      {
+        "mode": "root-stall",
+        "status": "passed",
+        "elapsed_seconds": 65.7210398,
+        "normal_close_ack": false,
+        "owned_job_recovery": true,
+        "station_recovery": false,
+        "original_handles_signaled_job0": true,
+        "staging_removed": true,
+        "harness_rescue": false
+      },
+      {
+        "mode": "pipe-close",
+        "status": "passed",
+        "elapsed_seconds": 40.841864,
+        "normal_close_ack": false,
+        "owned_job_recovery": false,
+        "station_recovery": false,
+        "original_handles_signaled_job0": true,
+        "staging_removed": true,
+        "harness_rescue": false
+      }
+    ],
+    "all_original_groups_strongly_retired": true,
+    "STA_post_page_ACK_fence_observed": true
+  },
+  "gui": {
+    "scope": "Limited Server20348 synthetic guest; not Windows10/11 or hardware input matrix",
+    "portrait_layout_and_two_line_names": "passed",
+    "drag_valid_invalid_and_restart_persistence": "passed",
+    "game_old_save_then_new_save_then_new_instance_readback": "passed",
+    "network_preview_exact_domain_permission_real_HTTPS200": "passed",
+    "undeclared_domain_offline_and_deny_restore": "passed",
+    "preview_permissions": "in_memory_only",
+    "three_instances_original_groups_retired_and_both_leases_released": true,
+    "forced_recovery": false,
+    "client_shutdown_counters_zero": true,
+    "baseline_data_files": 41,
+    "baseline_unchanged": 38,
+    "expected_changed": 3
+  },
+  "limitations": [
+    "SDK03 EXE is a temporary platform test candidate, not a formal OTA package.",
+    "Formal configuration build/results are not claimed by this SDK03 summary.",
+    "Historical release-v1-qa03 intermittent normal-close failure root cause remains unproven.",
+    "Full isolation/permission-account mutation matrix not complete.",
+    "Windows10/11 target matrix paused by user and not_run.",
+    "Real Logto, full hardware/IME, external developer acceptance and normal installed network persistent-permission GUI remain unverified.",
+    "No unsigned unattended update is enabled."
+  ],
+  "local_evidence_sources": [
+    "artifacts/native-negative-20261114/sdk03-series.json",
+    "artifacts/sdk-runtime-20261113/GUI-SDK03.md",
+    "artifacts/sdk-runtime-20261113/GUI-SDK03-EVIDENCE.md",
+    "artifacts/sdk-runtime-20261113/sdk03-delivery.json"
+  ],
+  "raw_logs_process_ids_account_namespaces_private_keys_or_user_data_included": false
+}

@@ -1,0 +1,3009 @@
+{
+  "schema_version": 1,
+  "source_snapshot_id": "sha256:b776cc0ec00fca576a075e5d80be09749fdf6b5139d0515c973661a9241fd536",
+  "commit": "not_applicable",
+  "algorithm": "SHA-256",
+  "canonical_format": "UTF-8, sorted relative paths, sha256 + two spaces + path, LF, no trailing LF",
+  "files": [
+    {
+      "path": "autumnos-spec/config/logto.public.json",
+      "bytes": 660,
+      "sha256": "1723776a22b94e2ccebc4c022bccff0fd89e6503806eb23b42e9a1abfea06063"
+    },
+    {
+      "path": "autumnos-spec/config/logto.registration-status.json",
+      "bytes": 1237,
+      "sha256": "38640af8e83f91b10083168492a5a5bcbfb5cb600806bf9a403e0e130d1ea62d"
+    },
+    {
+      "path": "AutumnOS.slnx",
+      "bytes": 2399,
+      "sha256": "78c9fc364d06d5dfb84c0d13331f6f1a92c4d523cd6e14011f5466c4355e5219"
+    },
+    {
+      "path": "build-inputs/update-trust.production.json",
+      "bytes": 867,
+      "sha256": "3ffef0734efc7ed01466c5097527c3e6bb7c010e8678e2d3082c3ef8be5eb074"
+    },
+    {
+      "path": "build/Brand.props",
+      "bytes": 586,
+      "sha256": "504059bf3efce00be5aa01ef9218a56fd30de6a56b247669f40836ed83380cbd"
+    },
+    {
+      "path": "build/update-trust.production.json",
+      "bytes": 867,
+      "sha256": "3ffef0734efc7ed01466c5097527c3e6bb7c010e8678e2d3082c3ef8be5eb074"
+    },
+    {
+      "path": "Directory.Build.props",
+      "bytes": 2019,
+      "sha256": "bfdfd9c14cd73a42c835fe5aec23f230561808253903f639a721a340058c76f2"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "bytes": 674,
+      "sha256": "a6959272a5e17dca1c15b6fbe50bb65bd1b0109c7bb271e140b1b143a112ebd3"
+    },
+    {
+      "path": "docs/新版EXE构建.md",
+      "bytes": 7393,
+      "sha256": "014549d4355ee1a0210b60fc806e0482b5d30a0e5513ea1614ace3999a5af18f"
+    },
+    {
+      "path": "docs/adr-0003-launcher-single-instance.md",
+      "bytes": 12918,
+      "sha256": "6bfdfba54051f8224d105540d7038423584eb2bdd111d69e6b8c680fdfefb126"
+    },
+    {
+      "path": "docs/adr-0004-native-identity-session.md",
+      "bytes": 8654,
+      "sha256": "4dc5785a5775dcdd1d05d14c52ce4e4f52b6a54b547be24a86303b3a54e32067"
+    },
+    {
+      "path": "docs/adr-0005-independent-server-identity.md",
+      "bytes": 4151,
+      "sha256": "64199a3e42a0664dfe1f2cb555a8d92c5ffd94091d4fc931e8946ef4d2869610"
+    },
+    {
+      "path": "docs/adr-0006-app-profile-and-permissions.md",
+      "bytes": 5992,
+      "sha256": "3ba2bb8d3c2bbe3f52e895227bd3ff3a560c0bf9829e77b1c0b872d9d3133817"
+    },
+    {
+      "path": "docs/adr-0007-safe-update-transaction.md",
+      "bytes": 11386,
+      "sha256": "21b4e8f0dae59780e7deb690636daf79e9070d2afe3ac6865dbe919c1f06238c"
+    },
+    {
+      "path": "docs/adr-0008-appcontainer-ui-initialization.md",
+      "bytes": 12030,
+      "sha256": "d671cefcab1daa2efbbd421f0d87d586b99a45546ad56ce8c494a461f375aa0d"
+    },
+    {
+      "path": "docs/adr-0009-ordinary-session-window-station.md",
+      "bytes": 11564,
+      "sha256": "61cc6c2e68f81e193ab8f083a66551ffcd0b1c9f95f068f5d5b4852c75a71520"
+    },
+    {
+      "path": "docs/adr-0010-native-ime-control.md",
+      "bytes": 7697,
+      "sha256": "ef7bc49a349067fb305707a3184056541c60de7cc2bae2f3cc478bfbb561c10d"
+    },
+    {
+      "path": "docs/adr/0001-native-foundation.md",
+      "bytes": 1871,
+      "sha256": "c7b5e1a445e4012d2ce4f26ff620e561c64d81b44fa93029ee3cb861bbc46944"
+    },
+    {
+      "path": "docs/architecture.md",
+      "bytes": 4147,
+      "sha256": "d2e189b55115267dc1a2651acbd0600bef6a36ef965aa14bc3defd1aef6589ae"
+    },
+    {
+      "path": "docs/chemleap-game.md",
+      "bytes": 10077,
+      "sha256": "5795fe9d707132f662992db04b7d65a5a3732345909443829b4cdde076315082"
+    },
+    {
+      "path": "docs/chemleap-integration.md",
+      "bytes": 8264,
+      "sha256": "f658ce54fac73222648ff5487ab9ed2a272282ea689218c08f65915270e1a3d3"
+    },
+    {
+      "path": "docs/continuation-20261104.md",
+      "bytes": 3359,
+      "sha256": "5f119bfde766f5d0f9c33a8a77dc293277f9e9c20b14894d85bd0026826d7d5b"
+    },
+    {
+      "path": "docs/data-foundation.md",
+      "bytes": 6898,
+      "sha256": "c65eb0d188fac5e2970c0dda5bc35d0960573868aedcd28615d6ec780d5ae7e1"
+    },
+    {
+      "path": "docs/dependencies.md",
+      "bytes": 3470,
+      "sha256": "85e8f90970358cdc81f8fc4d518b407d476cc8e218119d33a80d7e38cf6ba880"
+    },
+    {
+      "path": "docs/desktop-checkpoint.md",
+      "bytes": 6295,
+      "sha256": "1ed44c32647dcf8e2022b939ee7dbbd631c0d916e31343291682d15af8409f78"
+    },
+    {
+      "path": "docs/desktop-multitask-arrange.md",
+      "bytes": 6443,
+      "sha256": "649e8428f2471bc4915ca9d865a36b0bc723faef3c608b4cd94ac1e13f40f9c3"
+    },
+    {
+      "path": "docs/desktop-preferences.md",
+      "bytes": 3629,
+      "sha256": "b9edf34890febf24585336e8cac76ad9cdbb255cf15af63d372513339b4f6293"
+    },
+    {
+      "path": "docs/history/README-local-before-upload.md",
+      "bytes": 7450,
+      "sha256": "fe92f41754858efc78f44784ac85f6bd74638554d7ee3a1b76c428a4f22470ab"
+    },
+    {
+      "path": "docs/isolation-completion-plan.md",
+      "bytes": 19696,
+      "sha256": "dbddb9fcfe6a7c70e2e0b90a3924d758c1d813b868e84c09473e4537adfeb4fc"
+    },
+    {
+      "path": "docs/isolation-manual-verification.md",
+      "bytes": 8682,
+      "sha256": "5d8ee481813080d25a3790a10160f0f4400015c8afadf03c75f8bc3b60b1ee9b"
+    },
+    {
+      "path": "docs/isolation-repair-20261103.md",
+      "bytes": 7031,
+      "sha256": "0158a3df247b3b6200c0a2f64fa44482a0e3a21c27bb1b82d69349f26a5644d8"
+    },
+    {
+      "path": "docs/local-refresh-20261017.md",
+      "bytes": 5868,
+      "sha256": "5cd9709609ee33c168b001804a16586ac6b17ffcb66d385de25c7f9a8c5510c9"
+    },
+    {
+      "path": "docs/local-review-template.md",
+      "bytes": 740,
+      "sha256": "07f6a94b56ed4e983e47fb928cee6f5f8a6bcb2bffaf71c1bd3dbe026c8b70b2"
+    },
+    {
+      "path": "docs/logto-configuration.md",
+      "bytes": 11447,
+      "sha256": "0825ec28311a6280b2a57a06181672e1562caa187b1c7b3581babefb95469bab"
+    },
+    {
+      "path": "docs/migration-20261031-progress.md",
+      "bytes": 327463,
+      "sha256": "79b86f331b087af7a5ae641bba6867f27fb951853f7c0ded3a6071b31623a2ed"
+    },
+    {
+      "path": "docs/native-store-host.md",
+      "bytes": 10777,
+      "sha256": "16f22f5ec13ed7ce053c1baabcdf8a8ab19cb4643f43722c61183e4f97d3eee2"
+    },
+    {
+      "path": "docs/production-update-signing.md",
+      "bytes": 7072,
+      "sha256": "6041f8053ff4ad9263534dcaa03a585caa1b90a17e3d1090d4b8f4988018395d"
+    },
+    {
+      "path": "docs/release-v1-migration.md",
+      "bytes": 5402,
+      "sha256": "97d800771fffd287b9bf13959c2ec642be6e9f5191c09b8cf5b0ea1fc041adaa"
+    },
+    {
+      "path": "docs/report-follow-up.md",
+      "bytes": 9085,
+      "sha256": "ac249ee184deb6f08a32246e116170fde4d933bc1adc528193ce26a58fcb4948"
+    },
+    {
+      "path": "docs/runtime-delivery-coordinator.md",
+      "bytes": 8859,
+      "sha256": "3bb2edbfc1e27432619523797db24ad24368b4665fb35d9cabd112aba7801c80"
+    },
+    {
+      "path": "docs/runtime-delivery-wire.md",
+      "bytes": 3936,
+      "sha256": "b4cd4cd0d356ce7dc777bde3574686a2f55040b43a51f887092a11bb46638942"
+    },
+    {
+      "path": "docs/runtime-isolation.md",
+      "bytes": 20651,
+      "sha256": "94b4e2341ef772d6e166b63805c96e6cc25f8f49cee8e20c4087b8d79df58295"
+    },
+    {
+      "path": "docs/runtime-security.md",
+      "bytes": 3328,
+      "sha256": "3fed4b9225c058339720cae28dd46f2ec5a854ce5ca04dd5cb2a2f533872a92b"
+    },
+    {
+      "path": "docs/runtime-view-backend.md",
+      "bytes": 5607,
+      "sha256": "bad7d8a7f50bb6f2f39a4c2c3a8053845a52035592120247641dd36d93e810ae"
+    },
+    {
+      "path": "docs/sdk-network.md",
+      "bytes": 7624,
+      "sha256": "80a8ca6e5b90a3685dcf8b79d3d67e352e8e9a8e963157cf21a67e98f4c159f4"
+    },
+    {
+      "path": "docs/sdk-t01.md",
+      "bytes": 11054,
+      "sha256": "c07fc22a09348c46ef91cfe95e9dd89bdddd3fc9c15093907ac9ebb540d01015"
+    },
+    {
+      "path": "docs/t00-t01-evidence-audit.md",
+      "bytes": 14259,
+      "sha256": "b5f3a3ae93082cbe7d1be3f8ea005a7916e75d58d57b49fe78d7f3028cff92fc"
+    },
+    {
+      "path": "docs/t02-single-instance-baseline-audit.md",
+      "bytes": 10033,
+      "sha256": "a93b7b976ec27dc305e62452a91d8b9c48beb4f5f6b907594d888376e1c01862"
+    },
+    {
+      "path": "docs/t03-callback-page.md",
+      "bytes": 1583,
+      "sha256": "6d8d2d8d4fa5c3a110b8b2f892becdd428ca5bb3f909bbee7f9a46fbb42b4104"
+    },
+    {
+      "path": "docs/t03-data-recovery-ui.md",
+      "bytes": 4696,
+      "sha256": "4a65dff052207e58efb0cdc2359ca22fa63ab3de26f2cc53e29786f7999fc000"
+    },
+    {
+      "path": "docs/t03-developer-tools.md",
+      "bytes": 6407,
+      "sha256": "f038d9e32f48bae567c0f70040db4cd855c9078565157db3c1bdfd4f066a5285"
+    },
+    {
+      "path": "docs/t03-implementation-coverage.md",
+      "bytes": 11929,
+      "sha256": "fa496a204fa17f500e8a0ede5a07a1e96ea4ee880e23c621a5aa0cef3a02b7d2"
+    },
+    {
+      "path": "docs/t03-native-account-guide.md",
+      "bytes": 9967,
+      "sha256": "462e9cb3ad253f80b1e60ccbd343b5c0e42fac8c1bd915fcd94b6701a6c97b11"
+    },
+    {
+      "path": "docs/t03-samples-guide.md",
+      "bytes": 8704,
+      "sha256": "b7c82819f2b6db125f3dc88ba27acbe5541852a0d99d1ddc7a8562dd35e281b0"
+    },
+    {
+      "path": "docs/t03-sdk-permissions-desktop.md",
+      "bytes": 14441,
+      "sha256": "0443b3ca49f232c576d826fbcdb3f595bb15810a25a3557c30106f5b35a1c95f"
+    },
+    {
+      "path": "docs/t03-storage-and-migration.md",
+      "bytes": 12472,
+      "sha256": "1a57aab675779226a777d4a8148776e4f5745ad14ab0916d3c2e1fef4ae7d2f9"
+    },
+    {
+      "path": "docs/t03-windows-validation.md",
+      "bytes": 5705,
+      "sha256": "288522fd301addf32b64d4709cd7a65f96ffd4ebd8d9bdeb91f344cf075ab0be"
+    },
+    {
+      "path": "docs/t04-catalog.md",
+      "bytes": 13114,
+      "sha256": "72796281811822997b6344ff5e0c079db0293505b31a7039fb6e1dd4abe192ef"
+    },
+    {
+      "path": "docs/t04-developer-cli.md",
+      "bytes": 5771,
+      "sha256": "882b8260b2918d793f4faf89da055d174b28720ebdb6f473904bed12e63c2d2e"
+    },
+    {
+      "path": "docs/t04-downloads.md",
+      "bytes": 10814,
+      "sha256": "662d100194310180263144a3354a6ea143dfbf07de1f119b4e1253a2190fac46"
+    },
+    {
+      "path": "docs/t04-installation.md",
+      "bytes": 10972,
+      "sha256": "e6facf353794a55a123c1c42964da21b8e145462eb5c464d97e87b03eaf975b5"
+    },
+    {
+      "path": "docs/t04-store-checkpoint.md",
+      "bytes": 7697,
+      "sha256": "205ff92655b141c189ac6eb92ed9e2c0fb2a05ba342f02ed8bec253de5bc5ae1"
+    },
+    {
+      "path": "docs/t05-maintenance.md",
+      "bytes": 9097,
+      "sha256": "40f01ff757cc2fd6c0a9a36fa30f1d376952e472eeebc6aa2bffec1969ea7f27"
+    },
+    {
+      "path": "docs/t05-release-engineering.md",
+      "bytes": 16013,
+      "sha256": "ad6ffd03294afa37398e473afd99250acd9e0fd642776042ff435bcdeef371cd"
+    },
+    {
+      "path": "docs/t05-signatures.md",
+      "bytes": 13442,
+      "sha256": "a33757819c6b4f98a718350ad9a9057564fac17a79edb1f7bf52612f54650e3a"
+    },
+    {
+      "path": "docs/t05-updates-and-recovery.md",
+      "bytes": 8287,
+      "sha256": "2de27d6e9b7a818e97575415af48b2c54bbeef595e2d87630ff0bd3781947933"
+    },
+    {
+      "path": "docs/t06-performance.md",
+      "bytes": 3965,
+      "sha256": "d36045ded0d8792d3fc82cd47b4c4f736d8342f9880807d3d0bdf556542457c0"
+    },
+    {
+      "path": "docs/t06-single-file.md",
+      "bytes": 4419,
+      "sha256": "42d56823bfa6e11ff3227baafe0e6f4da00169a120c8b31055ef44c40a08a20e"
+    },
+    {
+      "path": "docs/t06-webview-security.md",
+      "bytes": 3323,
+      "sha256": "339d71ca3c52e3b504e411ca1eeaa8ff72264153cd75a773987493e16d601dfb"
+    },
+    {
+      "path": "docs/update-first-login-validation.md",
+      "bytes": 11527,
+      "sha256": "1702f7207ed85f37faa0d8199ce4c33d714795a7de8ab8d1b565dd9666fa81e3"
+    },
+    {
+      "path": "docs/update-trust.legacy-20261024.json",
+      "bytes": 884,
+      "sha256": "d973775e1b5b1a60042034560e445072f59643da69eed7ec4fcb5ab3eff8f98c"
+    },
+    {
+      "path": "docs/versions/0.5.1/app-publishing.md",
+      "bytes": 2210,
+      "sha256": "61df6a123d2d572c1163d2b721af1cc96563fecd26fc129add8afbdd677c2fa3"
+    },
+    {
+      "path": "docs/versions/0.5.1/architecture.md",
+      "bytes": 1975,
+      "sha256": "93445612cb598dc528bda6c2c15337dd6a63d3edbd9cc86cbe60e0d05b7ca4b5"
+    },
+    {
+      "path": "docs/versions/0.5.1/collaboration.md",
+      "bytes": 2502,
+      "sha256": "39eb088ecca92cda79b1e336a50c2286407a52191a9222c63cf7ee69b0341e0a"
+    },
+    {
+      "path": "docs/versions/0.5.1/core-development.md",
+      "bytes": 2458,
+      "sha256": "b4516279bad67cce63fd4c408b169a318d9451aeaa6fe31a96e680760d6d0825"
+    },
+    {
+      "path": "docs/versions/0.5.1/data.md",
+      "bytes": 4176,
+      "sha256": "f2c016ebc1cd960046fa816688b58b092cb2f22e2b81f46456318fc3f8d4351a"
+    },
+    {
+      "path": "docs/versions/0.5.1/design.md",
+      "bytes": 1937,
+      "sha256": "89f0b25811fff9621bc93c1643f1df06b033caddeaf9f684077c2427648476ff"
+    },
+    {
+      "path": "docs/versions/0.5.1/desktop-extension.md",
+      "bytes": 2037,
+      "sha256": "9821ba79fbaad19b2c2dc0a31d82bd850749f7c616e43b90a5e24b25fa4e3d88"
+    },
+    {
+      "path": "docs/versions/0.5.1/first-app.md",
+      "bytes": 6654,
+      "sha256": "aa635ae6ad600760e5dbcbd3c57875ecd39ab1f2762df6965265e8bff497f501"
+    },
+    {
+      "path": "docs/versions/0.5.1/host-publishing.md",
+      "bytes": 2029,
+      "sha256": "90f315c5ec3df9087a8406c9a2ed350be4b4ba7cee2fa65a8503ed52b0cbcf6d"
+    },
+    {
+      "path": "docs/versions/0.5.1/identity-permissions.md",
+      "bytes": 3063,
+      "sha256": "9fc7ef47922ce2ec5bb3713e8dcb55629b06f54177e2fae457baef9b2cf82f5b"
+    },
+    {
+      "path": "docs/versions/0.5.1/network.md",
+      "bytes": 7799,
+      "sha256": "c3e24a15a02ed5bc01c692feceea40781324ba8a04ac3c1477ead9d33ba7f6d5"
+    },
+    {
+      "path": "docs/versions/0.5.1/packages.md",
+      "bytes": 2475,
+      "sha256": "4097a780a2c578c54b4e812e974d8c867e6a4dcdd11b7ecacca4e2a6d172eb69"
+    },
+    {
+      "path": "docs/versions/0.5.1/product.md",
+      "bytes": 2061,
+      "sha256": "cd8147a8f9ba3fdb354b2d167ea543c147b3387727d9d5aeded0397552c91b70"
+    },
+    {
+      "path": "docs/versions/0.5.1/README.md",
+      "bytes": 3663,
+      "sha256": "ac491aa3e823f4955ef05ca4e7a3da1312ecebd1edf58c6c2cd4300b6e6ce284"
+    },
+    {
+      "path": "docs/versions/0.5.1/sdk-reference.md",
+      "bytes": 14706,
+      "sha256": "6e61b52dcb5a751b63a7acb20948c8573a9328b9cf9bc0ebd376ae7883221b92"
+    },
+    {
+      "path": "docs/versions/0.5.1/server.md",
+      "bytes": 3800,
+      "sha256": "e2a2617f868eec5615db00c1c52ad0d995f8cea48b102b342e5e4a982d9113c6"
+    },
+    {
+      "path": "docs/versions/0.5.1/troubleshooting.md",
+      "bytes": 4598,
+      "sha256": "982cdd9b06df01b31ed875b0ccf89bb417d6e3cff48483a68d4debb739276261"
+    },
+    {
+      "path": "docs/windows-startup-signing.md",
+      "bytes": 4709,
+      "sha256": "8be6d739d8eb3658c083f20bda8903cf4a52aeb0bcd61d3f50e15a28204fbf2e"
+    },
+    {
+      "path": "global.json",
+      "bytes": 105,
+      "sha256": "4e7d5022b2a5a8d02bb951bb264a4c8613eabc332572a0af5f9743d23f23d84e"
+    },
+    {
+      "path": "NuGet.Config",
+      "bytes": 482,
+      "sha256": "f6fc5699d3de6c97c8bcfd501fa00b5768715f4d0150e25d7addf010a4a3d563"
+    },
+    {
+      "path": "samples/backend-identity/Build-Sources.ps1",
+      "bytes": 3545,
+      "sha256": "053de948447b9f8a759fc031b91a2aacf534ed0649182e166ad9e6d1b5ad31ac"
+    },
+    {
+      "path": "samples/backend-identity/README.md",
+      "bytes": 2620,
+      "sha256": "f646a10a2f27cb9729b976a11b17938c9b87c2761538302707c0ca462aab2fff"
+    },
+    {
+      "path": "samples/chemleap/autumn-sdk.js",
+      "bytes": 11671,
+      "sha256": "03787d8434476a80f9be0174ba584f0a1260653e5c4c306dd6dd2f862447168c"
+    },
+    {
+      "path": "samples/chemleap/chemistry.js",
+      "bytes": 6096,
+      "sha256": "223e1e2a471c2a49fbcd189403d5bef1bea005a3570a40b0de8f872e1dd56bfa"
+    },
+    {
+      "path": "samples/chemleap/game.css",
+      "bytes": 10243,
+      "sha256": "a8894a9b9f176d6f5cb635f46dae9ca69afc246324ca50cf0d035113c303f95b"
+    },
+    {
+      "path": "samples/chemleap/game.js",
+      "bytes": 16596,
+      "sha256": "dda74037bd742c16009a217535620467093ff33d7f547d3ede6295f0e921723b"
+    },
+    {
+      "path": "samples/chemleap/index.html",
+      "bytes": 6317,
+      "sha256": "60ea408003d3d085e5ccc2e81c3ed6747b2d12194966cb865f0690f98c081d48"
+    },
+    {
+      "path": "samples/chemleap/manifest.json",
+      "bytes": 426,
+      "sha256": "89ba486bec9179d621430a9d723d9a0f39b0bd7eb689f89ad80cdb77169e1b4f"
+    },
+    {
+      "path": "samples/chemleap/model.js",
+      "bytes": 9691,
+      "sha256": "65bbe3722e1b039dfa9d3557bddabee154556f2eaab193c584020b74d1ca278d"
+    },
+    {
+      "path": "samples/chemleap/renderer.js",
+      "bytes": 24385,
+      "sha256": "6026c5766ea6df6e3ff552d9135b5458601e722ae11b64c63af00db63d260679"
+    },
+    {
+      "path": "samples/desktop-extension/desktop.js",
+      "bytes": 2128,
+      "sha256": "2ac309ec7cc9dc79c907f9d7f1cd94ed4f8ad5fded8cdae5803f7357fdb12ff1"
+    },
+    {
+      "path": "samples/desktop-extension/index.html",
+      "bytes": 2152,
+      "sha256": "e38e5598fdfcd95f8a28a91740ae9b8b9d86d1dc050cb1a5ebb4f7c9c891f92b"
+    },
+    {
+      "path": "samples/desktop-extension/manifest.json",
+      "bytes": 629,
+      "sha256": "57a2ad33094931d803463e8074c4fa02b017ccc74bef353dfd4c0548518ffe66"
+    },
+    {
+      "path": "samples/element-pairs/game.css",
+      "bytes": 6594,
+      "sha256": "8c9457d4fc93cd93936fc8a601839670882cacf17a928a40994633f3e120d3e1"
+    },
+    {
+      "path": "samples/element-pairs/game.js",
+      "bytes": 12144,
+      "sha256": "493c461f005b7f301948676425737e6ad5a9d0e57b352c61896fa121619faead"
+    },
+    {
+      "path": "samples/element-pairs/index.html",
+      "bytes": 8781,
+      "sha256": "a95f8d83ada5557dfff5dd555eb2c202604613c2902ec9beb02628da120382fe"
+    },
+    {
+      "path": "samples/element-pairs/manifest.json",
+      "bytes": 1108,
+      "sha256": "2506885e44ffb2ed89d556ae7fba61209d5526b2bfe0941e78effdc3bdeffb5c"
+    },
+    {
+      "path": "samples/element-pairs/t03-features.css",
+      "bytes": 3717,
+      "sha256": "33d6c422e1d6060a5d26e09a031cfaa926341c638e900238926f2626af769fb2"
+    },
+    {
+      "path": "samples/element-pairs/t03-features.js",
+      "bytes": 17527,
+      "sha256": "43ea2821a60355b16edbc3e6282bfb68199697f030e3004b050770258e14496a"
+    },
+    {
+      "path": "samples/hello-app/hello.js",
+      "bytes": 360,
+      "sha256": "088b7d53a2dc9f779e400484fc36a17335faaa42682c3430c146c0a90864aaa1"
+    },
+    {
+      "path": "samples/hello-app/index.html",
+      "bytes": 1372,
+      "sha256": "0794431705680013e6a4137c1a2ea82f099dbc329662479e199b8e3ef497ec61"
+    },
+    {
+      "path": "samples/hello-app/manifest.json",
+      "bytes": 184,
+      "sha256": "6a0fe568ebbaab28d77d3bf8c7aec61a5416d6ef4edb851f3fdfbeea705d9cad"
+    },
+    {
+      "path": "samples/identity-app/identity.js",
+      "bytes": 1933,
+      "sha256": "edc19378fd8d8a0c78cc3fe339428a1ba160cf78b546ae3c597246ee1919e0f2"
+    },
+    {
+      "path": "samples/identity-app/index.html",
+      "bytes": 1734,
+      "sha256": "4da4b834cfca608a4fae91b07b74dc0c0221ad2cb39426fd9c23ade56f232362"
+    },
+    {
+      "path": "samples/identity-app/manifest.json",
+      "bytes": 346,
+      "sha256": "5b2defeea3abe2a5279786ba5720074a68bd86bd3f10a9c36070230362d7da5c"
+    },
+    {
+      "path": "samples/native-identity-client/AutumnOS.NativeIdentity.Sample.csproj",
+      "bytes": 773,
+      "sha256": "7b4b5cff4fbafd120cb997c63991504839abcd7bb0958cb3e5bb3cc83bc1d23a"
+    },
+    {
+      "path": "samples/native-identity-client/ClientConfiguration.cs",
+      "bytes": 3879,
+      "sha256": "0ed6d75ddc2e311e8db487960cf4c3dae2be2f7a7e35e2bdf13919464732c65b"
+    },
+    {
+      "path": "samples/native-identity-client/ClientFixtures.cs",
+      "bytes": 17758,
+      "sha256": "da2e7c0f8d464b8b89bd984cc6b873e6877051edafb798a1c1dc8ed19c169744"
+    },
+    {
+      "path": "samples/native-identity-client/config.example.json",
+      "bytes": 181,
+      "sha256": "d7585ba13f457699432e653142d91807734fa3ca7bdf4715d0c43dba66c8e4f8"
+    },
+    {
+      "path": "samples/native-identity-client/config.schema.json",
+      "bytes": 1106,
+      "sha256": "9976502a8429f7c7d8f2978be150bdcf456e32a7c8f44fcd44fe1feb11b51880"
+    },
+    {
+      "path": "samples/native-identity-client/LocalResourceClient.cs",
+      "bytes": 3775,
+      "sha256": "571e7d9463cddc4c24caef020ebbc96ffb6acca9771f9b4260905a2e31d8a160"
+    },
+    {
+      "path": "samples/native-identity-client/packages.lock.json",
+      "bytes": 3668,
+      "sha256": "e3e6dc03565bf1f53580ff128fed9745de782ba23f8a86a7d457053fee2c5730"
+    },
+    {
+      "path": "samples/native-identity-client/Program.cs",
+      "bytes": 2183,
+      "sha256": "9a4e55ec6dddc6124ae9aa0301978e4fdd6f734c06e3239ab7171bda06366fab"
+    },
+    {
+      "path": "samples/native-identity-client/README.md",
+      "bytes": 13079,
+      "sha256": "ca8a0176f6cc9a0fa5ec5cbf6e3c4f97463a6d502748c4253e80fcb18edc3d01"
+    },
+    {
+      "path": "samples/save-game/game.css",
+      "bytes": 6594,
+      "sha256": "8c9457d4fc93cd93936fc8a601839670882cacf17a928a40994633f3e120d3e1"
+    },
+    {
+      "path": "samples/save-game/game.js",
+      "bytes": 14059,
+      "sha256": "209f375934cadab78fd46bc601df5e44c8fb90be54c740af2a9994a954d708e1"
+    },
+    {
+      "path": "samples/save-game/index.html",
+      "bytes": 3787,
+      "sha256": "80e48b5755af31e8cd34aa0dcccd5943fe28b72450ec2ced441932effaf50e19"
+    },
+    {
+      "path": "samples/save-game/manifest.json",
+      "bytes": 431,
+      "sha256": "74b7f178d106305e90d384ebde143373d3d91adc54013a0e49923557bb8271a5"
+    },
+    {
+      "path": "samples/save-game/save-model.js",
+      "bytes": 2370,
+      "sha256": "447fd392f2c7bae7755dab5efddf0c831b27c6fd49f7ee191ca54b7ffa266f98"
+    },
+    {
+      "path": "samples/server-identity/AutumnOS.ServerIdentity.Sample.csproj",
+      "bytes": 358,
+      "sha256": "ee04e62bd2b3f8062d41c85faa22e6fd163861851f671775c35c6d45f6d30f69"
+    },
+    {
+      "path": "samples/server-identity/openapi.json",
+      "bytes": 10192,
+      "sha256": "5ff0c7ba6342a6a948620997537568f4d52cbfad64707ef7b798d91bcaee3063"
+    },
+    {
+      "path": "samples/server-identity/packages.lock.json",
+      "bytes": 1628,
+      "sha256": "87baeebff413437910ecca3cde9be692cac4533355e074299f8ef2649b2fe415"
+    },
+    {
+      "path": "samples/server-identity/Program.cs",
+      "bytes": 3828,
+      "sha256": "937ccee466f8d92b2def572528a70d4795cbe35bd2bad53dd2437fae953946af"
+    },
+    {
+      "path": "samples/server-identity/README.md",
+      "bytes": 5848,
+      "sha256": "6b6693f5970c3fa985b01e1f6b090fdf8205b6943f52f7d667392235eb939839"
+    },
+    {
+      "path": "samples/server-identity/ServerTokenVerifier.cs",
+      "bytes": 9212,
+      "sha256": "037ba84fe3abd663735779cf4727f58ddde60c319899930835fd55b6eb9e8952"
+    },
+    {
+      "path": "samples/store-probe/index.html",
+      "bytes": 1411,
+      "sha256": "3d776d901e89caa14b1ce176d6cf357234eff0ef22bd390061860260b2e7592f"
+    },
+    {
+      "path": "samples/store-probe/manifest.json",
+      "bytes": 493,
+      "sha256": "f061fc24942d20112248144e00e6d535058c036dd24b391acf075c7ad4bdc2b9"
+    },
+    {
+      "path": "samples/store-probe/probe.css",
+      "bytes": 1341,
+      "sha256": "4cd98f4de462dd48044f82daad40652d07257198936068658018c45b7b534dfd"
+    },
+    {
+      "path": "samples/store-probe/probe.js",
+      "bytes": 3080,
+      "sha256": "594d6c41dc64a7827f12a0f4d549efa2f1140cce19a9061ca51e8a765f3d60fd"
+    },
+    {
+      "path": "samples/template-shared/sample-ui.css",
+      "bytes": 1518,
+      "sha256": "fd08d209160799df0544bb23700728b3dbde02f1bb44b379ebc988541610408c"
+    },
+    {
+      "path": "samples/template-shared/sample-ui.js",
+      "bytes": 4461,
+      "sha256": "407148ed692cbd00a80c560463380a4813883c88ac265a846ba4258886a93149"
+    },
+    {
+      "path": "schemas/autumn.update.schema.json",
+      "bytes": 3535,
+      "sha256": "93b9544de60c84842d8d62cc059456b195cb543002331d43ed7270039de7e189"
+    },
+    {
+      "path": "schemas/autumn.update.sig.schema.json",
+      "bytes": 618,
+      "sha256": "0a7f453358c25c739ee6ce2b9f18a3b43a7e316132ed9ce40dae00c5b0fb255e"
+    },
+    {
+      "path": "schemas/autumn.update.trust.schema.json",
+      "bytes": 881,
+      "sha256": "e3f846131f9d4c6efcb6b52e57ff3fcc9557f8077b2b36220959413980c6205c"
+    },
+    {
+      "path": "scripts/Build-ClipboardIsolationProbe.ps1",
+      "bytes": 10997,
+      "sha256": "ab9ce737b3456db68fc6af41e5b6922dbd0011161d9d1247eb8279bd5f85e6ac"
+    },
+    {
+      "path": "scripts/Build-DesktopNativeProbe.ps1",
+      "bytes": 8485,
+      "sha256": "bfa24d74f203560ce315e2c9480f03a962e87c644e3064b87e1b425708ff25e0"
+    },
+    {
+      "path": "scripts/Build-IsolationBrowserProbe.ps1",
+      "bytes": 8981,
+      "sha256": "5819cabfb82c9293981a6c2e4728803223ede153e2595ce3c0c3b690c44c1660"
+    },
+    {
+      "path": "scripts/Build-NetOnlyStationProbe.ps1",
+      "bytes": 6771,
+      "sha256": "70dc0eef1c62dd66e05601f1e6d55cb7c3081cf973ebe2975fc53121d323c1f6"
+    },
+    {
+      "path": "scripts/Build-ProtocolPeer.ps1",
+      "bytes": 4478,
+      "sha256": "fec5d9c3b2efc71f1b03f405255ade1cb460ec39cfee0c960ad7fa8ccff70cad"
+    },
+    {
+      "path": "scripts/Build-SessionBrowserPrototype.ps1",
+      "bytes": 11632,
+      "sha256": "270ee8bdcc3de22f088889d53fd7070fd9f23a36e4aff43bee0139d85311ce14"
+    },
+    {
+      "path": "scripts/Build-SingleFile.ps1",
+      "bytes": 13465,
+      "sha256": "6909be05ee0ac8a8e03e196ab5da8187ea8ec6228c04e5027a00acdfaa3c22ca"
+    },
+    {
+      "path": "scripts/Build-T05LocalDrill.ps1",
+      "bytes": 4816,
+      "sha256": "6e6530c5c44ab61a6e58447c7cd331e2e6244d90bbf01f8f47cb887512f46a57"
+    },
+    {
+      "path": "scripts/Build.ps1",
+      "bytes": 8517,
+      "sha256": "58ab8ddde263de12fec00696c98676d3f21ab46aa81a0b4006b1eb9574dab319"
+    },
+    {
+      "path": "scripts/Cache-OfficialPackages.ps1",
+      "bytes": 2295,
+      "sha256": "ff5998af3f6c4cd6fc1022fae9aac05c80a6bac69238f0c4189eae8e42462d2a"
+    },
+    {
+      "path": "scripts/Cache-WebViewRuntime.ps1",
+      "bytes": 1849,
+      "sha256": "78c86e42f1109f06955340415363676f5b3dcea16243cdcb3136aabb6cdd583e"
+    },
+    {
+      "path": "scripts/Common.ps1",
+      "bytes": 1198,
+      "sha256": "a29194d74b5ce74e25e045cdcd35c7afeb96da7260ccfccd85ab06340e3d397b"
+    },
+    {
+      "path": "scripts/Export-SourceSnapshot.ps1",
+      "bytes": 4378,
+      "sha256": "d4cf51ccf1fe645bb25f26624122660b9b337729ba3b7734511cfd58b33f5ee7"
+    },
+    {
+      "path": "scripts/Get-Environment.ps1",
+      "bytes": 1675,
+      "sha256": "2f2e2ecc94c7f908e03a5f6dbe368d13f4fe61e16806cf99385f5ed9c6399f0e"
+    },
+    {
+      "path": "scripts/Inspect-NativeLoaderImports.ps1",
+      "bytes": 3764,
+      "sha256": "7f7bcb871cf7583266c3b36a7a26856eaee83a38723d106ed9b0e1ba6d72ed4a"
+    },
+    {
+      "path": "scripts/Install-LocalSdk.ps1",
+      "bytes": 1385,
+      "sha256": "e1f481f9f75a3b88aee0a6319d6272ed7a96502c402dee91ed1eaeed749d2fad"
+    },
+    {
+      "path": "scripts/Invoke-CiBuild.ps1",
+      "bytes": 11404,
+      "sha256": "aa4f2c1d434240a6bbfe220431df7e46b48111ed3cbe34a43278b8f45b5314f7"
+    },
+    {
+      "path": "scripts/Measure-T06Performance.ps1",
+      "bytes": 19326,
+      "sha256": "10fcfc8fd35affe5a49c5dee6d64c6f835757a4920bf032590c4d71fd60cf6aa"
+    },
+    {
+      "path": "scripts/New-DeveloperSample.ps1",
+      "bytes": 1148,
+      "sha256": "4db2279f3e8177ddab874841124ea2077480619cd5984691537ea79cce48b1d9"
+    },
+    {
+      "path": "scripts/New-NativePayloadTable.ps1",
+      "bytes": 1594,
+      "sha256": "5aaccd34fc6ec0b2e200f1bef553e4ea9048a7bc5dfc3a1cc8564ca0398771ab"
+    },
+    {
+      "path": "scripts/New-SamplePackage.ps1",
+      "bytes": 1522,
+      "sha256": "235078fe9ebd8d4b5889c158350ed5a62eee20dd56a395c935a69e30d5189f4d"
+    },
+    {
+      "path": "scripts/New-SourceSnapshot.ps1",
+      "bytes": 2740,
+      "sha256": "5feeebe591947c9d4d28786d1c4c3c773e1fe78120ee500481d8ded1b7e9686c"
+    },
+    {
+      "path": "scripts/New-StoreFixturePackages.ps1",
+      "bytes": 5822,
+      "sha256": "136ab18106f8e5cc320bd70f99e14774b135d1bc5151b2c166f64442b5223a3e"
+    },
+    {
+      "path": "scripts/New-T06ReviewBundle.ps1",
+      "bytes": 5058,
+      "sha256": "29a64bde7cca416139923a807c4fc26a13c8dd67a7038eaafa38c946ba37b978"
+    },
+    {
+      "path": "scripts/Package-ChemLeap.ps1",
+      "bytes": 4636,
+      "sha256": "da8aa571a997b39404af3d5055d6e04e6b9cb278ad550c71173dc2d0b1a6340f"
+    },
+    {
+      "path": "scripts/Package-CodeHandoff.ps1",
+      "bytes": 9723,
+      "sha256": "e4f516920cca2001c5fab5d302233129de88808a660d035cd0b1ce10e006d2c5"
+    },
+    {
+      "path": "scripts/Package-DeveloperKit.ps1",
+      "bytes": 6033,
+      "sha256": "3022336bef443e79cbeeba43e22eb36fb90ab4be31392d6d08d6efab4b363ffa"
+    },
+    {
+      "path": "scripts/Package-SingleFile.ps1",
+      "bytes": 11377,
+      "sha256": "73a63d84f723c24b6373ae8afd5b29d7ae9a1255398d19c5ca0d2efdb594871b"
+    },
+    {
+      "path": "scripts/Package-T04.ps1",
+      "bytes": 12174,
+      "sha256": "3d5cb7e7dcb6be92e64a504461f57b84bf4ba13c411db0a287119b6bb9e75488"
+    },
+    {
+      "path": "scripts/Package-T05.ps1",
+      "bytes": 14268,
+      "sha256": "4f91ad40c711d3059447f3dc6b0915372c34f4aefe31f27763951ace3e98aac2"
+    },
+    {
+      "path": "scripts/Package.ps1",
+      "bytes": 17145,
+      "sha256": "c4d976817a79aa770c91dccf06cd61ddfcfc559aa35beef4e57b2254f49509f6"
+    },
+    {
+      "path": "scripts/Prepare-ProductionUpdate.ps1",
+      "bytes": 8113,
+      "sha256": "c1bcd7b2c33afd3e2d3c9d58001f28103e5df52b109ddbfcce94dfa3c88a6f1a"
+    },
+    {
+      "path": "scripts/Publish-GitHubRelease.ps1",
+      "bytes": 13201,
+      "sha256": "f5be631187c699fac58a8c9defd07750b3c2ed0604f51e249acb54e97ed0d64d"
+    },
+    {
+      "path": "scripts/Read-SessionBrowserLiveReport.ps1",
+      "bytes": 10206,
+      "sha256": "df24214f0d6f164088ecd969597ba4a1b5c506e621a95bf99069927c82f81768"
+    },
+    {
+      "path": "scripts/Recover-OwnedClipboardCase.ps1",
+      "bytes": 9308,
+      "sha256": "1e41bbdceaf7e978c9255903504cc50dd157501bb86d3e0b683cad2e34a03936"
+    },
+    {
+      "path": "scripts/Restore.ps1",
+      "bytes": 470,
+      "sha256": "41dc7c7578aef522600f57d7b35fbcf5ab42d38c55a897ab62ebc7be53b1ab0e"
+    },
+    {
+      "path": "scripts/Run-ClipboardIsolationProbe.ps1",
+      "bytes": 32581,
+      "sha256": "dd332bb5f9fdefd714894e09dc93382f524cb7a9a546459464ddbbd72402dd9e"
+    },
+    {
+      "path": "scripts/Run-DesktopNativeProbe.ps1",
+      "bytes": 14195,
+      "sha256": "645370c74f67e2a5446e84ba27c5778da91849beb5cbf5ed61f66ed1a028ba4b"
+    },
+    {
+      "path": "scripts/Run-IsolationBrowserProbe.ps1",
+      "bytes": 5974,
+      "sha256": "fa249589d2440e9249bc2832554fd3660daf6321ea09fd160a9a6ac58c10eee2"
+    },
+    {
+      "path": "scripts/Run-NetOnlyStationProbe.ps1",
+      "bytes": 13584,
+      "sha256": "595bfc8c349315bc4b78d2f3223e4d3afb20020df97d051f0610f5d604333452"
+    },
+    {
+      "path": "scripts/Run-SessionBrowserPrototype.ps1",
+      "bytes": 34453,
+      "sha256": "2abcc5aa1d06b6748b47562e818c602d26852070f7af601b56bd7b7786934cf7"
+    },
+    {
+      "path": "scripts/Run.ps1",
+      "bytes": 690,
+      "sha256": "fcf1ec040b1bada9364b2a81d720929f23e9ab3d1220cc7ba3a1344e1df1fdeb"
+    },
+    {
+      "path": "scripts/security-probes/LoopbackObserver.cs",
+      "bytes": 5210,
+      "sha256": "a0e1292dcd2996844cf0825a74818812540d19824d74d95c98a5af4343aaefc7"
+    },
+    {
+      "path": "scripts/security-probes/probe.js",
+      "bytes": 5188,
+      "sha256": "28faeee05536992ab12ebf6797560a5a49156ce3af67963f41de9fa75069f873"
+    },
+    {
+      "path": "scripts/SingleFilePayloadFiles.ps1",
+      "bytes": 2314,
+      "sha256": "cfbddf1af5bb9c302595284e0612e3e9a43eebddd6907550082900ca6394514c"
+    },
+    {
+      "path": "scripts/Smoke-NativeAppInput.ps1",
+      "bytes": 25436,
+      "sha256": "a81692c380ec28c3a489a6f726a378fcf82d824c9807cf58c5103c313d23bacc"
+    },
+    {
+      "path": "scripts/T06-NativeHelpers.ps1",
+      "bytes": 10288,
+      "sha256": "81ac08d66522e6ca2db8aef8127a94aa9def2c137be0a29db6e1808eec1deab9"
+    },
+    {
+      "path": "scripts/Test-ChemLeapIsolationEvidence.ps1",
+      "bytes": 15460,
+      "sha256": "149b71b2d58817cdc780e0145e70dcfaf2ba911c06bf8e294a48562c7c48b650"
+    },
+    {
+      "path": "scripts/Test-ChemLeapNativeSmoke.ps1",
+      "bytes": 25638,
+      "sha256": "f9a2f75c13c13295d5ac6d414836580ee051b941ab3005b548c4a02dc6f688b7"
+    },
+    {
+      "path": "scripts/Test-ChemLeapStoreSmoke.ps1",
+      "bytes": 33349,
+      "sha256": "94d315388b7bd9fb027b16dbe3487ee08c94eec32e9c1ccae7e8aee41cddec55"
+    },
+    {
+      "path": "scripts/Test-DeliveredLauncher.ps1",
+      "bytes": 33080,
+      "sha256": "d6d0ec2934b868e68b2f7528d3064ec26cc436844fb57043703300d19aa8b1cc"
+    },
+    {
+      "path": "scripts/Test-DesktopInteractionSmoke.ps1",
+      "bytes": 109312,
+      "sha256": "fd98d11cab9492c0dd42037a121c9ed1982f166115a2e36bd7e19a6178143836"
+    },
+    {
+      "path": "scripts/Test-DesktopSmoke.ps1",
+      "bytes": 49079,
+      "sha256": "39a9df46c504e115207fa6b58051bef0ce34655fa051b57bc0528831cf938e9f"
+    },
+    {
+      "path": "scripts/Test-ExecutionContext.ps1",
+      "bytes": 4050,
+      "sha256": "9b6635fc056d4f243e0f3f2a01d0ded9a10ebc1f2f7f0f414bbcf783af878eb8"
+    },
+    {
+      "path": "scripts/Test-IsolationMechanisms.ps1",
+      "bytes": 5015,
+      "sha256": "ac71f296ec172df0635200625577f45d448faa462198e006366d69d92a3ecca4"
+    },
+    {
+      "path": "scripts/Test-NativeLoaderEntry.ps1",
+      "bytes": 5442,
+      "sha256": "ad690e4097dec06820eb6036b6b9d364997f920023222a4e9e615c8e030607a1"
+    },
+    {
+      "path": "scripts/Test-NativeStoreAcceptance.ps1",
+      "bytes": 18292,
+      "sha256": "09c0d9661d7c290f6c63d550c2f19a3f49f3c22daca45078e683fbf5622cf589"
+    },
+    {
+      "path": "scripts/Test-NormalLocalApp.ps1",
+      "bytes": 37718,
+      "sha256": "a78fb519cacd94e5255cee71ff4789eb8b67eddf6fd7c5dc3b7470de6d13f18c"
+    },
+    {
+      "path": "scripts/Test-OwnedStationAbsence.ps1",
+      "bytes": 3447,
+      "sha256": "1fd03551d488dab0c0216cfedcf1a7e3c30f6ff5f741456fae8e5fd178798a1a"
+    },
+    {
+      "path": "scripts/Test-ProductionUpdateTools.ps1",
+      "bytes": 19991,
+      "sha256": "57b2ac5c4ea2990899454002b638f55d65523f35ddfdcef3c85f24fcb98384d5"
+    },
+    {
+      "path": "scripts/Test-RuntimeIsolationNative.ps1",
+      "bytes": 38278,
+      "sha256": "4f1f9eb5abd6785730a3113fc09b9f875f22a6b4b4b5cb74f1b25b83deaf0956"
+    },
+    {
+      "path": "scripts/Test-ServerIdentitySample.ps1",
+      "bytes": 5528,
+      "sha256": "ae0a0963a572d9c0bbb9ac1d674620971ae28861684a7dbcb8ccbd8e9c0bfcf4"
+    },
+    {
+      "path": "scripts/Test-SingleFileSmoke.ps1",
+      "bytes": 27340,
+      "sha256": "d195681450fbcacab43eb2d14ba518dbcaa82117f9833644a9bdfa07df994fe0"
+    },
+    {
+      "path": "scripts/Test-SingleInstanceSmoke.ps1",
+      "bytes": 89026,
+      "sha256": "b868d2361a07ab722dddd8dac1019ba44811efba85e14ff1b4bae1f141bf26b8"
+    },
+    {
+      "path": "scripts/Test-Source.ps1",
+      "bytes": 6699,
+      "sha256": "dd4fc9356a4f421e25ba1dc9f29d1e4228350780beb5c710cd4a2d3ef5edca22"
+    },
+    {
+      "path": "scripts/Test-StoreRepositorySmoke.ps1",
+      "bytes": 20937,
+      "sha256": "4ec6b107b159ceb6c8f3433777bbf5be53d371544fda208ce4105934c795b0aa"
+    },
+    {
+      "path": "scripts/Test-T03AccountSmoke.ps1",
+      "bytes": 19994,
+      "sha256": "dbafbcc703e0c6efc46950c1436af77749a75756b35be237320a15ac35b91a1e"
+    },
+    {
+      "path": "scripts/Test-T03FeaturesSmoke.ps1",
+      "bytes": 23928,
+      "sha256": "00bca041ef87ed997cabddc9295396f44a1cd9e010b069a8bc9fd18c74f674fd"
+    },
+    {
+      "path": "scripts/Test-T03RecoveryFilesSmoke.ps1",
+      "bytes": 40031,
+      "sha256": "aeb659e1fccfcc8633cb6fdbffce796eb0c820295e2b5d11b4209c57e2bc639f"
+    },
+    {
+      "path": "scripts/Test-T04DeveloperTools.ps1",
+      "bytes": 10810,
+      "sha256": "098860644792836508f87aa29e87ea808e7ddd90bf2231050078e3c24ddd9c30"
+    },
+    {
+      "path": "scripts/Test-T04StoreSmoke.ps1",
+      "bytes": 45793,
+      "sha256": "f77223247eeca657c9a4c7e892bc060526dcb88db23b564ec2f6730ed4e8b694"
+    },
+    {
+      "path": "scripts/Test-T05Setup.ps1",
+      "bytes": 4757,
+      "sha256": "533d6aeede6439439f6f65d81434a9bb2b7eb3b7165a6f593b5fc5886e8b3b32"
+    },
+    {
+      "path": "scripts/Test-T05UpdateSmoke.ps1",
+      "bytes": 66665,
+      "sha256": "94bab301987daf17b7035ac07a94e09d79c3d18448397898527e5e74a8b6873c"
+    },
+    {
+      "path": "scripts/Test-T06DeveloperSmoke.ps1",
+      "bytes": 37996,
+      "sha256": "bd8a830a4c803fb20ba44d79faed0dc355db8142a67181ea4be81303b42fdcf2"
+    },
+    {
+      "path": "scripts/Test-T06IntegrationSmoke.ps1",
+      "bytes": 30904,
+      "sha256": "00aea3d9c34f034f7e73e4d740130dc84b9cc5f37eba29d0dcccf6e9579f7b5b"
+    },
+    {
+      "path": "scripts/Test-T06WebViewSecurity.ps1",
+      "bytes": 19685,
+      "sha256": "bc03e8b8a778f600b2252ffb5e449f28cdc7cc06db99dbe24342dc891cb335ef"
+    },
+    {
+      "path": "scripts/Test-UpdateFaultDrill.ps1",
+      "bytes": 3868,
+      "sha256": "b50d29360982fab6f9a710b0b9e3343544e1fb2a8c03c6a803a4e656842ef5c2"
+    },
+    {
+      "path": "scripts/Test-WindowsSmoke.ps1",
+      "bytes": 30320,
+      "sha256": "d929504aaa66ea5cc8795e9e20e968b3fe863639ebc1bfc07110ccb7e9036e3d"
+    },
+    {
+      "path": "scripts/Test.ps1",
+      "bytes": 8331,
+      "sha256": "244f76be48917f334388621faacc55eee71c4121b690751a9d0e0ac5d0ef2ac8"
+    },
+    {
+      "path": "scripts/update-faults/Make-BusyFileDriver.ps1",
+      "bytes": 7273,
+      "sha256": "2c77ec65071409e8e048450b0c93a774a3e32be9d998ae914111f26b6130decb"
+    },
+    {
+      "path": "scripts/update-faults/Make-FaultDriver.ps1",
+      "bytes": 6526,
+      "sha256": "2d67d748a21638c06c651f4e27615d9a7d8199ee30d0855da8a4c9d7a36ef81b"
+    },
+    {
+      "path": "scripts/update-faults/Make-LegacyDriver.ps1",
+      "bytes": 6235,
+      "sha256": "046d49ac46a7c528187e67fbd9f1d5f3aa8b1d6391d723eefb627e8568eb2975"
+    },
+    {
+      "path": "scripts/update-faults/Read-T05Observation.ps1",
+      "bytes": 1228,
+      "sha256": "c4f6058ba04106a7e7170f514f3d117424f7a69947dad91481cca8f580004d94"
+    },
+    {
+      "path": "scripts/update-faults/Wait-T05BusyFileTransaction.ps1",
+      "bytes": 5265,
+      "sha256": "05bcca8bd66eb17913a41abd9414eede409a18860c37cfa30a2ddbf03270484f"
+    },
+    {
+      "path": "scripts/update-faults/Wait-T05FaultTransaction.ps1",
+      "bytes": 9523,
+      "sha256": "1664a4e8f5b23b7e82b5f4aef0d54442e89a438fb040b52f1b6eeddf2aa9f83d"
+    },
+    {
+      "path": "scripts/update-faults/Wait-T05LegacyTransaction.ps1",
+      "bytes": 11896,
+      "sha256": "85643fd40f9de44038c81150e18c6cc4237e88aaaba6b4369c822c44ebbb8722"
+    },
+    {
+      "path": "scripts/UpdatePreparationFiles.ps1",
+      "bytes": 2555,
+      "sha256": "ae3745ac7a3a2994c285f5df6608cb19489b5df8d03cac8beb5f5b62493b45e6"
+    },
+    {
+      "path": "sdk/autumn-sdk.d.ts",
+      "bytes": 9071,
+      "sha256": "c0d6f68494fe09e741d8b594ff8c3406282d3877d99f4b14d25b74fb4672f027"
+    },
+    {
+      "path": "sdk/autumn-sdk.js",
+      "bytes": 13980,
+      "sha256": "06e9de2402426c670e44cd5569d63b303e3b72cba89342c5e04c28926ed150f9"
+    },
+    {
+      "path": "sdk/developer.schema.json",
+      "bytes": 6100,
+      "sha256": "a639dc741e8a9fb625c148ea1d49726dd63910ad73f6692780860198b2c30804"
+    },
+    {
+      "path": "sdk/manifest.schema.json",
+      "bytes": 6609,
+      "sha256": "08393fb2b2b99889f8170906a58d1c40756d70e9430dc521127b9f1c87fefd06"
+    },
+    {
+      "path": "sdk/message.schema.json",
+      "bytes": 42278,
+      "sha256": "d78907b018f4a8ec3dc3ffde64e918504d035a77b461901f88288b5afe5d2753"
+    },
+    {
+      "path": "sdk/release.schema.json",
+      "bytes": 2281,
+      "sha256": "b06d779c35b491a0c0790f1bb68f5e23cda155607e3f867c17bc809106390e4b"
+    },
+    {
+      "path": "sdk/store.schema.json",
+      "bytes": 1892,
+      "sha256": "e95b55db00775521869088e99a1ea6424314f364698ebd1d4ad70a5bcc4cc0cc"
+    },
+    {
+      "path": "src/AutumnOS.Bootstrap/AutumnOS.Bootstrap.csproj",
+      "bytes": 712,
+      "sha256": "c5486e7b20a642fb5499622f3d7f107a94b380127ddd87c3db8f43121e9d2d74"
+    },
+    {
+      "path": "src/AutumnOS.Bootstrap/packages.lock.json",
+      "bytes": 1376,
+      "sha256": "f1d3fdd2d821136c3b04f99f408a82b04af7b8c052885027a91c865d555562f6"
+    },
+    {
+      "path": "src/AutumnOS.Bootstrap/Program.cs",
+      "bytes": 3538,
+      "sha256": "67e43f5d1c38c0a1e280229d5fc6e62caf1d319e67067a42b73155cc76df0592"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/ApplicationContracts.cs",
+      "bytes": 1012,
+      "sha256": "e97a86dd63882a4620f7d94df468e91b2e77203b843ff8957590dab7c9f46c95"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/AutumnOS.Contracts.csproj",
+      "bytes": 36,
+      "sha256": "8d654c44b7bebb6b31a9f2f606927f45b5072193adc4eef8cce3f3cf3b278df3"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/BrandInfo.cs",
+      "bytes": 1091,
+      "sha256": "cb7d64d3f8f072267e7b10789d6b719f6c1c41ecfcec3fb8f3f43eebd73dd28a"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/IdentityContracts.cs",
+      "bytes": 1638,
+      "sha256": "c0385a3fdb1cccc2a201476a276e73077c9d23dc4f6096ee5ee66804c1651c35"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/NetworkDomainPolicy.cs",
+      "bytes": 1919,
+      "sha256": "f417f4217656a02810f580758d33de6978ed95300c3e3d38167b09114a81040d"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/packages.lock.json",
+      "bytes": 94,
+      "sha256": "1e39b4149e1289978e01a366893a0697356e855bc7156b7c70747288030042f9"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/PermissionContracts.cs",
+      "bytes": 3898,
+      "sha256": "2ec295951ed00e040b7315129db49f14f9d727285b313b82f6a3b6c490c0729f"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/PortableLayout.cs",
+      "bytes": 1824,
+      "sha256": "c4f242a73091d869f3d2b62ec660002a035e282df818eeb2674b2150d47027b9"
+    },
+    {
+      "path": "src/AutumnOS.Contracts/RuntimeAuthorityMutationContracts.cs",
+      "bytes": 1994,
+      "sha256": "e9e7edc2d29ade3a3bc8b810f0f652308674236a931b479a28340d2bcf204510"
+    },
+    {
+      "path": "src/AutumnOS.Identity/AssemblyInfo.cs",
+      "bytes": 153,
+      "sha256": "3cebb600a35f2811e0844959c8a4561462777af9a1e1f7a78da12339b3f2bd0e"
+    },
+    {
+      "path": "src/AutumnOS.Identity/AutumnOS.Identity.csproj",
+      "bytes": 396,
+      "sha256": "1da27cdcd53fff4efd6b35f79babbf70769dff700025577d430383d8333e6810"
+    },
+    {
+      "path": "src/AutumnOS.Identity/CallbackResponsePage.cs",
+      "bytes": 11746,
+      "sha256": "48c773be049b5e49784e3b368dd1b6c75b123c84c31a46e9886c5b6d45e925d4"
+    },
+    {
+      "path": "src/AutumnOS.Identity/IdentityJson.cs",
+      "bytes": 4515,
+      "sha256": "313b476a887be4081c93e71f2ba854c5858101999a4931fb4f71a1190642d083"
+    },
+    {
+      "path": "src/AutumnOS.Identity/IdentityUserMessage.cs",
+      "bytes": 3123,
+      "sha256": "87bbb914768171b1138c4e16dac5dcd9f054e08bf4ae02847545e39239320a7e"
+    },
+    {
+      "path": "src/AutumnOS.Identity/LogtoConfigurationLoader.cs",
+      "bytes": 5951,
+      "sha256": "bed5fc9aece98de97b1451861cafd2f3c0c435c7461b45f4b18a7d7ed6b7e688"
+    },
+    {
+      "path": "src/AutumnOS.Identity/LogtoDiscoveryProbe.cs",
+      "bytes": 11007,
+      "sha256": "4305ed8465835d698e7e02a9f3b4bff8a8228696a6296ac3fc83fad774e1faa6"
+    },
+    {
+      "path": "src/AutumnOS.Identity/LogtoIdentityService.cs",
+      "bytes": 34095,
+      "sha256": "e0b4f304928b8f91b294db20e0ce1d86cccd666a1565d0ae65c85e8ee8fd80bf"
+    },
+    {
+      "path": "src/AutumnOS.Identity/LogtoPublicOptions.cs",
+      "bytes": 2482,
+      "sha256": "8751c787d388eca4ff2c022ed8a10e178c4e7cf1a432b1881a9853559e7b9807"
+    },
+    {
+      "path": "src/AutumnOS.Identity/LoopbackCallback.cs",
+      "bytes": 7004,
+      "sha256": "9a3a26ffe03083d9aa782d4efa70e07fe1f60e6062ccaa1bbac118ba2dd9e26d"
+    },
+    {
+      "path": "src/AutumnOS.Identity/NativeOidcFlow.cs",
+      "bytes": 18247,
+      "sha256": "b8f51e6d9abe5443df7799b3c664e6629825b03b748c2cba9dba2690671523f3"
+    },
+    {
+      "path": "src/AutumnOS.Identity/NativeResourceRequest.cs",
+      "bytes": 1151,
+      "sha256": "29a03b63fa782fc70f60cb612ac774dd1642923e67ffff4c066a38eed12eabfe"
+    },
+    {
+      "path": "src/AutumnOS.Identity/packages.lock.json",
+      "bytes": 3273,
+      "sha256": "dacb78f7de534c85a285649d65944852083fd2e110af751f47905442503537da"
+    },
+    {
+      "path": "src/AutumnOS.Identity/RegistrationStatusLoader.cs",
+      "bytes": 5845,
+      "sha256": "f91960471187a41901a6976bc210fd6c2b7c80c9ff6c7c70ace35d125a0f5a2f"
+    },
+    {
+      "path": "src/AutumnOS.Identity/SignedIdentityTokenValidator.cs",
+      "bytes": 3035,
+      "sha256": "654857d02a887cef2f969d93502c78dc839c370f3a52c1b2b3015cde45d64d46"
+    },
+    {
+      "path": "src/AutumnOS.Identity/WindowsCredentialVault.cs",
+      "bytes": 6607,
+      "sha256": "8686af0f7561c52aca0d2464e76e1ab11136cfcc09641647e46fd783614e3734"
+    },
+    {
+      "path": "src/AutumnOS.Launcher/AutumnOS.Launcher.csproj",
+      "bytes": 209,
+      "sha256": "ea8db313dd40484b50a3a7f31095c153272fe8e025bed4e0c8edff80a5ae04b4"
+    },
+    {
+      "path": "src/AutumnOS.Launcher/LauncherCoordinator.cs",
+      "bytes": 12303,
+      "sha256": "bba34cbf142df8ac7f69318a3cc2a513513fc6123612d2445601557c6dd16006"
+    },
+    {
+      "path": "src/AutumnOS.Launcher/LauncherProtocol.cs",
+      "bytes": 2308,
+      "sha256": "9645200c78d0bb2125ce5cb804fba8b37f59386e0e95ebf122f60d53ba2958a9"
+    },
+    {
+      "path": "src/AutumnOS.Launcher/LocalPipeServer.cs",
+      "bytes": 2405,
+      "sha256": "f1c69c4298d3c4ca9c8d87162abe2ac668ef8f2c4f503f147666d909177271f6"
+    },
+    {
+      "path": "src/AutumnOS.Launcher/packages.lock.json",
+      "bytes": 94,
+      "sha256": "1e39b4149e1289978e01a366893a0697356e855bc7156b7c70747288030042f9"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Controller/AutumnOS.NativeHost.Controller.csproj",
+      "bytes": 1453,
+      "sha256": "de3f4a24ab8f9b7079f37aaea7f72c808f280469c5c4a5c3484e21f58cf7162a"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Controller/packages.lock.json",
+      "bytes": 116,
+      "sha256": "a88a601f99e73076c5567445f00aa228aac9781079b03c99f4688732b7a8876f"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/AutumnOS.NativeHost.Windows.csproj",
+      "bytes": 1598,
+      "sha256": "c9aa3e76415dc1ff22e3d55b85f75acd277f4d24bd3f0119b2f355bf11915c2c"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserCloseSequence.cs",
+      "bytes": 2390,
+      "sha256": "952f38e073707782d1b8ae6d5f2848ae325e7dec6a6317838bd1588e423d762e"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserDeliveryChannel.cs",
+      "bytes": 2661,
+      "sha256": "a2b9e1ed038c5ec0225ec936434d96b591ad1790fa1d8738c71c831881a5786f"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserDocument.cs",
+      "bytes": 12094,
+      "sha256": "42e83d68b493ec6565d83581926fdf924606e1573307c48641eb59d4857cc5a8"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserInput.cs",
+      "bytes": 7520,
+      "sha256": "ef715e38ae490610824c4bb74ea5ac010946aa684d33254ec3bd25d017be4184"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserInputReset.cs",
+      "bytes": 1652,
+      "sha256": "901ce2b30a7858893f8017ae295f350215812fdb085b73ade1f5be3fba9022e2"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserNativeScope.cs",
+      "bytes": 4194,
+      "sha256": "c1e811cb19d8056a358d00c2b6ceda8ac464d741d65a49631e01b52c5dc3601a"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserResponseStream.cs",
+      "bytes": 4217,
+      "sha256": "ed5cfce9553f7d6cfc7e2c2afeb644b67865cec31a6d3d42d26ed721b3f1ca12"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserStartup.cs",
+      "bytes": 6366,
+      "sha256": "6d4269f7f0eff09712fd4bd4156dba19d40a1abc5aa71b134043a123f2e25dc0"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/BrowserWindow.cs",
+      "bytes": 18566,
+      "sha256": "5223135074644636ccfa3dc123bb16bf6885d34ea62f23dae37c5d1e289edaef"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/CleanupJournal.cs",
+      "bytes": 1450,
+      "sha256": "c05343229d25b7f7723f11023f1e107c7665d0f75b8319b9ce6b7983e7650e1d"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/DesktopFreshness.cs",
+      "bytes": 6366,
+      "sha256": "1ccebc14caf12f6ec615ad8630dfba6e223bcd4088f3d3b7ad8345895c672dff"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/JobEvidence.cs",
+      "bytes": 6809,
+      "sha256": "e8ba91cb2566699096aafec8fc727ceeba6468f23a235871490e5d6960b30154"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/Native.cs",
+      "bytes": 7674,
+      "sha256": "05c11f5e3d5049cb51c5e28a4cffd073c5e5a7c797f615d7c6549d56afa97065"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/NetOnlyLaunch.cs",
+      "bytes": 9270,
+      "sha256": "9db03089963410eee207bd6bfc66e2ffdba5ed1e7073be59a6dc4496604b7ab9"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/OwnedFiles.cs",
+      "bytes": 7300,
+      "sha256": "304c00d93ca6056e0db5ce8daf8f778eab253dae5311f09023fb66aa36f8dc7e"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/OwnedJobPolicy.cs",
+      "bytes": 7764,
+      "sha256": "5cbafc3ef864aa5e56116a93dccf2abf24a4da741f315eb8cd579c35d06ddc5b"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/OwnedStation.cs",
+      "bytes": 14408,
+      "sha256": "6b40b1678834c15aa8a259492df2f4be73a96d20a84e60e9bc24994cf5943b70"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/ProcessAudit.cs",
+      "bytes": 11348,
+      "sha256": "400f27cc7285ed2b2fdc3c5906366c908eb42b48fdae9fe0d3d88f318654f1dd"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/RestrictedBrowserChild.cs",
+      "bytes": 11046,
+      "sha256": "18124a34c4de8a50a6355cfb00dd9fd6c56526f15d440d3afe09b63f47ec81e1"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/SessionJobWitness.cs",
+      "bytes": 6179,
+      "sha256": "f9100acb1cca208255ddc6190681a95921bced2bc065bbab23f6f930c7759c2d"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/Native/SessionNative.cs",
+      "bytes": 12591,
+      "sha256": "f8d99e1b194b4bfacb8f2c149b31529a9d084c231b8c3e0b7dd938a9282e0710"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeBrowserFailure.cs",
+      "bytes": 7819,
+      "sha256": "ef1357b23920ff630c0180e03af784cc8ac4a9376e4d2b9a35b44ec562622697"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeBrowserRole.cs",
+      "bytes": 3892,
+      "sha256": "deb7531369784a0ef647e3f9adb213c0e5dcd645cac408ec85d026f41a9b7011"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeFailure.cs",
+      "bytes": 575,
+      "sha256": "3b3883ce006ffaa9f5b42c4b7d4211f38d73eef3519f1be846424a4b8bfb634b"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeHostBinding.cs",
+      "bytes": 1871,
+      "sha256": "913f0853c112247be4ccd348792711c5aaf8b1203a13a1c08b69a9b1954e3849"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeHostBootstrapProtocol.cs",
+      "bytes": 6316,
+      "sha256": "31c085c67ca30619c5147e2dcb6132046b1983cd945cb02cbd69de7b1e67122b"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeHostContextFacts.cs",
+      "bytes": 7024,
+      "sha256": "233952175e57888614087c9b4bedcdf092e077c3055da5f9fc4d22a40ff96741"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeHostLaunchManifest.cs",
+      "bytes": 26183,
+      "sha256": "c13cc8bdc0fcc2b65b8ec88612875c4c370bd11b38d1d87bb0cd99a7f5addf9a"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeHostRoles.cs",
+      "bytes": 11335,
+      "sha256": "3005a87752b29ba7f5e55b3edaea6f584eaf2656455b6bc14b7790a31b682d43"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeInputQueue.cs",
+      "bytes": 5098,
+      "sha256": "0703711f893e527fb642f35c01cdc33cde194c9b2822bf52e8fe9ca03aa3ca44"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeKeyboardInput.cs",
+      "bytes": 5508,
+      "sha256": "c8b70ef2b620b20e1c88bd847d126feefe5215ed0d306c1b40db5629607579ab"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativePlatformPolicy.cs",
+      "bytes": 590,
+      "sha256": "1a433090244f8a893be7af3aea35266d867e13f85baab4bbd01ae645fcd3f08a"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativePointerInput.cs",
+      "bytes": 3198,
+      "sha256": "26074bd37f0703be1bf16d8f90c871041b3f9b128e8e8b73f3b57533f49991a8"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeProcessOwner.cs",
+      "bytes": 27041,
+      "sha256": "d2bc4f27482c9802f8ba5095c2e39e5a68f525321f9666364ea859edd8bd7b6a"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeViewport.cs",
+      "bytes": 3017,
+      "sha256": "a29da70e383c528cf4581032bde3b2ae4291b81237204bd5129bb4918815b56e"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeViewProtocol.cs",
+      "bytes": 3468,
+      "sha256": "daf167d02faf9b8c3655ccf87f24dfe3cd1e5b0c3ae9db37bd59abea948924a2"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/NativeWebViewDeliveryTarget.cs",
+      "bytes": 5728,
+      "sha256": "9f0365f3f1012a683b4dc8244163d8fa4ac00e2429ec1d7026b3c57cf3bea74d"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/packages.lock.json",
+      "bytes": 722,
+      "sha256": "666296946945a384976981f74a829be43b825a55f32c722824d47c37cdd64289"
+    },
+    {
+      "path": "src/AutumnOS.NativeHost.Windows/RuntimeHostStaging.cs",
+      "bytes": 27129,
+      "sha256": "6c451f5faf31133d54a4a2f7b6bc57aad7ab72ad355488f497d89a51a435a6b9"
+    },
+    {
+      "path": "src/AutumnOS.Packages/ApplicationInstallModels.cs",
+      "bytes": 1655,
+      "sha256": "5b3322973fa3bf8a3c0c4cce24800f69a10f1a81430641c351ae9203181d06e1"
+    },
+    {
+      "path": "src/AutumnOS.Packages/ApplicationInstallService.cs",
+      "bytes": 26024,
+      "sha256": "1d203b4bcaa526c0e97b83749aeb6852dfbda1968a6665120d20dfac41eb1bc6"
+    },
+    {
+      "path": "src/AutumnOS.Packages/AutumnOS.Packages.csproj",
+      "bytes": 157,
+      "sha256": "4e0e042177bdc2b095d13c6fb94746b57270c0a699b2b1c204803c70d0e8609e"
+    },
+    {
+      "path": "src/AutumnOS.Packages/DeveloperPreviewProtocol.cs",
+      "bytes": 9512,
+      "sha256": "48b218a806a05055fd53893d1f827376cc1b3adc2b80f34fd4b4cb3dbafa0292"
+    },
+    {
+      "path": "src/AutumnOS.Packages/DeveloperToolsService.cs",
+      "bytes": 19017,
+      "sha256": "5dd9ce47ebfb601b6f8a3d5d734978f33fffaee9ad4516327c93089ac8961f11"
+    },
+    {
+      "path": "src/AutumnOS.Packages/InstalledSaveGuard.cs",
+      "bytes": 6033,
+      "sha256": "be48db9a03dff886a332f5e868b46b72155c026fe11a4e5f0ba18f8940b471f0"
+    },
+    {
+      "path": "src/AutumnOS.Packages/PackageInstaller.cs",
+      "bytes": 28425,
+      "sha256": "ccbbcb507fdf6d81ad2c73d3341db19f831cdfa40573335745528ed5683ddc18"
+    },
+    {
+      "path": "src/AutumnOS.Packages/PackageModels.cs",
+      "bytes": 1240,
+      "sha256": "7715965575759485548130762f53d104a0af663a600e1ae56b4cdab1ffb0a0b5"
+    },
+    {
+      "path": "src/AutumnOS.Packages/packages.lock.json",
+      "bytes": 167,
+      "sha256": "39437c00fe4c2624435698ac8cc99a7c7520df1f097bc42769112075d8b624bb"
+    },
+    {
+      "path": "src/AutumnOS.Packages/ReleaseManifestValidator.cs",
+      "bytes": 4966,
+      "sha256": "bea633b9f827b4329711c9dd81459472a6947c76e73527c5d02f8eeee6819ea4"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/AccountDataRequestHandler.cs",
+      "bytes": 4661,
+      "sha256": "6cb61aa4d26908919f02afe3c67bd38ee26982a9d9ed4c8bfebe33fb23dfd252"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/AssemblyInfo.cs",
+      "bytes": 341,
+      "sha256": "1a7b82de898dbd19d798c8b00dd943f546db5de3997493f6d41794349faf373c"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/AutumnOS.Runtime.csproj",
+      "bytes": 236,
+      "sha256": "05e8f3f28ec33a131dc061c20b50879880fa0fcd1b2280497ed80b9bfb376468"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/BridgeJson.cs",
+      "bytes": 1330,
+      "sha256": "b18a25936a361a3fce1e0bda2c439a5e3109ee5c8ea7a908eb1f075580d461ea"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/DesktopExtensionService.cs",
+      "bytes": 21776,
+      "sha256": "4dfda6dbbbc0a9be848c0c136ad02446ae62ed1afd796383f71bd8f26b966704"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/DeveloperPreviewSimulation.cs",
+      "bytes": 28141,
+      "sha256": "4d16cc4ca14bb6799892b0924cc6acfad4e41770f4f947da295f91ef89064a49"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/GuestSaveStore.cs",
+      "bytes": 5630,
+      "sha256": "e05647af6768fe1c79ae78e0114d9ff93a0473abe7f70e16aec04eb42906d37f"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/packages.lock.json",
+      "bytes": 317,
+      "sha256": "7ec37e9c7d80e6a53b81e38b5c98773f3b5eb127497e0f5cca3788e15474811d"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/PermissionService.cs",
+      "bytes": 21956,
+      "sha256": "16ebc5143f168af1f95c897c6557daa4c9daf416b3b52f97fc3cc34e304f956b"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeAuthorityMutationCoordinator.cs",
+      "bytes": 3688,
+      "sha256": "c27ca37d756f310fc27755b39cc70fceec77e458c43f801357a7693eac08bc1b"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeDeliveryCoordinator.cs",
+      "bytes": 35229,
+      "sha256": "16ce38a7d3bc7c68bc2f3472876b235e918f4519a3b09c08f7091dfb8b9d7917"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeDeliveryParentTransport.cs",
+      "bytes": 5568,
+      "sha256": "233d2398ffcb0a780dc0a4142bbfafd9dabbda16b326cfd635e55163bc3d027b"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeDeliveryWireProtocol.cs",
+      "bytes": 20165,
+      "sha256": "dd0bef8172e07a0d0b721a2aebf43f908cac3b4ee973ed8a1778d8c46cf405e9"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeIsolationPolicy.cs",
+      "bytes": 13809,
+      "sha256": "42041665a4c034b6196fdd52990369bc5f9ba97c5aaa5ae1f87b134ae5c38d72"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeNativeDeliveryActor.cs",
+      "bytes": 14951,
+      "sha256": "2a491eb631667fca9c20812e7931bf02cf7d3ea9b7f348cbf85f244a4be3b97f"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeNavigationGuard.cs",
+      "bytes": 1853,
+      "sha256": "4a4efe70b045928c836787c03c399e43ca6a1425717d056e9842a6562792ea42"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeNetworkAddressPolicy.cs",
+      "bytes": 1465,
+      "sha256": "550d99b72a1b174591e0b47cf4538148879d8a36ee2d648423527cb76ea50620"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeNetworkAuthorityStream.cs",
+      "bytes": 3476,
+      "sha256": "0d8c181f6552880a0fc5233485bfa5de8d596b9ba5561ea133a6b65584d8b153"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeNetworkService.cs",
+      "bytes": 19244,
+      "sha256": "5305b037ff5eafbc94774cdd25271d6e9be739e89e60efb9265b9d41b794da7d"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeParserGateChallenge.cs",
+      "bytes": 9432,
+      "sha256": "bc8c97163dc46fba12a691f71bdce643e2eee64cca6ac4d38ef7871e44825e62"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeSdkEvent.cs",
+      "bytes": 460,
+      "sha256": "098c5355c354a6cf3e2cb1a022d71b56e56cf4fd1b2d15c79ab157b6f6960d93"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeServices.cs",
+      "bytes": 1760,
+      "sha256": "c66d43782f6c44db122df4d2b4c800ac1c6e013b695dc04e0ec60114cfc0e6d0"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeSession.cs",
+      "bytes": 23222,
+      "sha256": "08d7f011d7664b2bccffc235ee5ba8a4ad6e471810576122b83d73f5cad2a960"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeSession.Dispatch.cs",
+      "bytes": 24757,
+      "sha256": "4dc2936e2fa44fea8bc8fc6df0b3163dadcca7d5ea8a6f9b96c2c1b2adef6a38"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeSession.Managed.cs",
+      "bytes": 31088,
+      "sha256": "b45e1abae3569f1c19970e972f4071278282ede7992504df68fb7e1a8c10263b"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeSession.Network.cs",
+      "bytes": 6174,
+      "sha256": "9564a4055e2b996d58c503884e239f20dd92e781c530460ff96ceec6596e6307"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/RuntimeSession.RemoteDelivery.cs",
+      "bytes": 3215,
+      "sha256": "17fa31cd34354b7f26fe5831b9563dd7cc65e4c5839927f7c4254039fecd4653"
+    },
+    {
+      "path": "src/AutumnOS.Runtime/WebViewProfileDirectory.cs",
+      "bytes": 1486,
+      "sha256": "35c2dd02583c48f8c8338d5ae7f4241d37031eb81ab826a3ecb1ec0cee7e4c4e"
+    },
+    {
+      "path": "src/AutumnOS.Setup/AutumnOS.Setup.csproj",
+      "bytes": 901,
+      "sha256": "b2d60cbb2a405453e7acf0285945eaa93d04e745dec2758c66188299c7b582a3"
+    },
+    {
+      "path": "src/AutumnOS.Setup/packages.lock.json",
+      "bytes": 1376,
+      "sha256": "f1d3fdd2d821136c3b04f99f408a82b04af7b8c052885027a91c865d555562f6"
+    },
+    {
+      "path": "src/AutumnOS.Setup/Program.cs",
+      "bytes": 6431,
+      "sha256": "e5840cdb001660aedbbc5c4ca147f8137326a6e490c6ae3844f1e8c732686f58"
+    },
+    {
+      "path": "src/AutumnOS.Setup/SetupTransaction.cs",
+      "bytes": 19115,
+      "sha256": "8ea91257900d72cf3f05f53ff0ec413c6c0d5e5d99f8a2539c4a6817d50c237e"
+    },
+    {
+      "path": "src/AutumnOS.Shell/AccountUi.cs",
+      "bytes": 16324,
+      "sha256": "4b3ce0893471d72542b52265c911649753edd652bc205cc06bc60eeb6611c170"
+    },
+    {
+      "path": "src/AutumnOS.Shell/app.manifest",
+      "bytes": 885,
+      "sha256": "89ff140b8d6c633dd09320dc8727ac776778a65d17cdd3639d3f5d9b91062cf6"
+    },
+    {
+      "path": "src/AutumnOS.Shell/App.xaml",
+      "bytes": 463,
+      "sha256": "b30975dd3d6503f10ee34e702272b7ce672aec3242985e6cc53abdf2fa509d4b"
+    },
+    {
+      "path": "src/AutumnOS.Shell/App.xaml.cs",
+      "bytes": 708,
+      "sha256": "30771a045cf2624e3440140d46ff9a9dc9085f8a308770433951387eee707f4e"
+    },
+    {
+      "path": "src/AutumnOS.Shell/AutumnOS.Shell.csproj",
+      "bytes": 3015,
+      "sha256": "af79808f08f7f5337d7f517efce48d234d6e7fffc24ac524be52ac5654a1e898"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DataRecoveryUi.cs",
+      "bytes": 22231,
+      "sha256": "b201f764a0a6bb14bfa49e7dc14493a5c14d67da7e37599902824940ab7c12c7"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DesktopExtensionsUi.cs",
+      "bytes": 4436,
+      "sha256": "bbdd6ba575e4ecccaf6b3d0eb7064e3135ecaa1d606007d7979ab93709e972e7"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DesktopInteractionsUi.cs",
+      "bytes": 23249,
+      "sha256": "a90ff3d02e415dae8f1b07b22d5c1366a66542b4c2038c3da5909c5a43f90684"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DesktopUi.cs",
+      "bytes": 19693,
+      "sha256": "7834c76b31cc11e163274e99f171bad93a60cddf954a263ffc6fc337508336b8"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DeveloperPipeUi.cs",
+      "bytes": 5805,
+      "sha256": "d1fbd4569d996b4467b5a3d440a3c5ed794eb12f122cb6b7b3726131a1614f23"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DeveloperPreviewUi.cs",
+      "bytes": 15561,
+      "sha256": "d4891fb08699fd8548bb4623fafcf13f587f62ec81038697596f0ea521d43f14"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DeveloperProjectUi.cs",
+      "bytes": 6243,
+      "sha256": "3df8233b2e14e4a5e2d1d9340286fd6b93ff5110640b7a4c62e862b7d97c7ef6"
+    },
+    {
+      "path": "src/AutumnOS.Shell/DeveloperToolsUi.cs",
+      "bytes": 15882,
+      "sha256": "b7465c6b8b2ba4b3204b83471dd1c258dc825acd14a3df84557b4965707b095b"
+    },
+    {
+      "path": "src/AutumnOS.Shell/FirstRunAccountUi.cs",
+      "bytes": 6863,
+      "sha256": "4125eb68bda8f00347e416e7baa248570edb1105208ab121a71d57da2d3c8f23"
+    },
+    {
+      "path": "src/AutumnOS.Shell/GameShortcutsUi.cs",
+      "bytes": 11885,
+      "sha256": "61e65c4b9761d096d2348fecb2b859ab42252072b60324dea8d620c9ca2b14e3"
+    },
+    {
+      "path": "src/AutumnOS.Shell/LauncherDiagnostics.cs",
+      "bytes": 2628,
+      "sha256": "59399496a78d6aacb4bfadd85084e653fbb413af76383c9bbebd3394dc20b61a"
+    },
+    {
+      "path": "src/AutumnOS.Shell/LauncherWindowActivation.cs",
+      "bytes": 2820,
+      "sha256": "56c0514687506261115285b73b234f989f2f56564caf0964a57c677bfe3087e7"
+    },
+    {
+      "path": "src/AutumnOS.Shell/MainWindow.Shutdown.cs",
+      "bytes": 12081,
+      "sha256": "79f16bdc0578026e01d2305e5b26e55e9d1a9956a02e7b501261e4e38ca42973"
+    },
+    {
+      "path": "src/AutumnOS.Shell/MainWindow.xaml",
+      "bytes": 41125,
+      "sha256": "3ba858bcf493386bccf672515821506b7fc49b220373a1e5794f653a436330f3"
+    },
+    {
+      "path": "src/AutumnOS.Shell/MainWindow.xaml.cs",
+      "bytes": 22758,
+      "sha256": "8cffa01c652bc84853319c95f9efeef607d817d50e90fdff8a7b2caa9c9c6d22"
+    },
+    {
+      "path": "src/AutumnOS.Shell/NativeCompositionTransaction.cs",
+      "bytes": 6752,
+      "sha256": "0eb24dea1805b635e41be0e69500b93bc23669138dfb14baf0260306e2ec25cf"
+    },
+    {
+      "path": "src/AutumnOS.Shell/NativeDeploymentIdentity.cs",
+      "bytes": 2027,
+      "sha256": "1f483d45384637ed0877dc2910c90f827f263b649e092ecdc79bf16d010a7796"
+    },
+    {
+      "path": "src/AutumnOS.Shell/NativeGameKeyboardBridge.cs",
+      "bytes": 4829,
+      "sha256": "b1f609c51f93e2c083e8a942df583d4866608844e79792074ff73cf33f3b0d9e"
+    },
+    {
+      "path": "src/AutumnOS.Shell/NativePayloadCatalog.cs",
+      "bytes": 4267,
+      "sha256": "0452760eca715913d299233941f24da250af001778eda72cadc5d7a4ed545e46"
+    },
+    {
+      "path": "src/AutumnOS.Shell/NativeReleaseNotes.cs",
+      "bytes": 5519,
+      "sha256": "b6b7ad74702472fa1fd2ac2976fea4b8933842b3c0daa54f8c2d13daec285000"
+    },
+    {
+      "path": "src/AutumnOS.Shell/OwnedModalWindows.cs",
+      "bytes": 2615,
+      "sha256": "c854716685cc0b2bbc8b199cb24c2061278153e6b526506aed1b23626ab36a9f"
+    },
+    {
+      "path": "src/AutumnOS.Shell/OwnedUiOperations.cs",
+      "bytes": 4228,
+      "sha256": "e7fa5fb9ec70b31b2e3b1f78de41c4baeae01010a218d62db7e5c2118f920c5c"
+    },
+    {
+      "path": "src/AutumnOS.Shell/packages.lock.json",
+      "bytes": 11034,
+      "sha256": "b2932a1ad43dcc7ed234f5cb1b21a5307c5994a5e158b7270de2bd66cf8b9690"
+    },
+    {
+      "path": "src/AutumnOS.Shell/PreviewAuthorityRouter.cs",
+      "bytes": 3428,
+      "sha256": "7480d099a01af8f54767a14672d91b8beca2aba377d3d8d817a1ba49dda17af5"
+    },
+    {
+      "path": "src/AutumnOS.Shell/Program.cs",
+      "bytes": 2562,
+      "sha256": "8af66153a32ebe713b80a8c3afbe697ba65792d9e77f640eea5017ecca21c0bd"
+    },
+    {
+      "path": "src/AutumnOS.Shell/RemoteApplicationView.Composition.cs",
+      "bytes": 4570,
+      "sha256": "927496003f4546a0bca1f41d834a13c39435c2eaa80affb7405f19a208134985"
+    },
+    {
+      "path": "src/AutumnOS.Shell/RemoteApplicationView.cs",
+      "bytes": 26073,
+      "sha256": "45a9bd094e623c5d363c4e6415f7ab4da1998bb134f279b92a3a5e177cc1463a"
+    },
+    {
+      "path": "src/AutumnOS.Shell/RemoteViewDelivery.cs",
+      "bytes": 3640,
+      "sha256": "dc01aa10cfbbbf1414aec865dbe8476ea9be477d76aaa778f0327ec3ac87ca15"
+    },
+    {
+      "path": "src/AutumnOS.Shell/RunningAppUi.cs",
+      "bytes": 1807,
+      "sha256": "c77058af6501f71f33cb0ce8a781def5c506bcbe2152d8c79bc46492f9f07230"
+    },
+    {
+      "path": "src/AutumnOS.Shell/RuntimeServicesUi.cs",
+      "bytes": 24917,
+      "sha256": "ab2bb48dc59918a254e87981d243b4162a957b7d1db56d8a1eb3c9225b37763f"
+    },
+    {
+      "path": "src/AutumnOS.Shell/RuntimeViewBackend.cs",
+      "bytes": 19678,
+      "sha256": "e30cee9415dda7ed8a4e505a827c567ac25fb0643145ff2336968bcbcfa9fb54"
+    },
+    {
+      "path": "src/AutumnOS.Shell/RuntimeViewBackendEvents.cs",
+      "bytes": 2534,
+      "sha256": "243e47271c31303c9a1787bdf3da1b3ac754524bfb6a100b7708b59918c50e2d"
+    },
+    {
+      "path": "src/AutumnOS.Shell/SettingsUi.cs",
+      "bytes": 3446,
+      "sha256": "1862a60d23692a9d1c0067e488ab8bacd20a4a9d2a33d152a5aadefd77d06d8d"
+    },
+    {
+      "path": "src/AutumnOS.Shell/StoreApplicationsUi.cs",
+      "bytes": 20694,
+      "sha256": "590b8f503b6f739d7a0c84db358ef57a81fa2d8bfaf294c9bb82f6df1d439138"
+    },
+    {
+      "path": "src/AutumnOS.Shell/StoreMediaUi.cs",
+      "bytes": 3919,
+      "sha256": "1fe768fdddc353dc3f433411cc3187ecdbdcdcbf193de85c3f1a36ccd9e3811d"
+    },
+    {
+      "path": "src/AutumnOS.Shell/StoreNotificationsUi.cs",
+      "bytes": 2136,
+      "sha256": "350bef4e2cd987eef88884c342dbe5630c85141a865eceb3954132521a42e98f"
+    },
+    {
+      "path": "src/AutumnOS.Shell/StoreServicesUi.cs",
+      "bytes": 20056,
+      "sha256": "f20a2dcc3f5c46986938c8fc1f3755456de6ba0bb97b1820f87c7b1d4bea5d6e"
+    },
+    {
+      "path": "src/AutumnOS.Shell/StoreTestUi.cs",
+      "bytes": 4409,
+      "sha256": "cfe037ae45643fffaceb9a876e92e527459b3e10404790e360a37fef501fc3dd"
+    },
+    {
+      "path": "src/AutumnOS.Shell/StoreUi.cs",
+      "bytes": 29787,
+      "sha256": "ca7fad3929aa33ccc9e83016312c88c00eceb3fa9a0390e9a5c6d12e3bb27428"
+    },
+    {
+      "path": "src/AutumnOS.Shell/SupportBundleUi.cs",
+      "bytes": 2587,
+      "sha256": "3fb2160c389911bc9f2ec7037347b7a91d05d9363d4433c24621b462bc327577"
+    },
+    {
+      "path": "src/AutumnOS.Shell/UpdateDialogsUi.cs",
+      "bytes": 16096,
+      "sha256": "d6ffab53ef74f4af8cf436f103d6307101a5cc493ac829ac8fd5fdc875da16d3"
+    },
+    {
+      "path": "src/AutumnOS.Shell/UpdateHandoffUi.cs",
+      "bytes": 4123,
+      "sha256": "2ea1df55c55c02d258ad9a52a52d8f2177d5634475866b6fa9a301370c66c99e"
+    },
+    {
+      "path": "src/AutumnOS.Shell/UpdateUi.cs",
+      "bytes": 28275,
+      "sha256": "1f50189ddb8fe23b6d5eb9dadde250c9c9e8d1190f5c8b685a251ba7294e6cf7"
+    },
+    {
+      "path": "src/AutumnOS.Shell/WebAppHost.cs",
+      "bytes": 50424,
+      "sha256": "4558bbf223c6d2a562c146e9c30476d6e31cd24b331a1a8411f992d60b4bf3dd"
+    },
+    {
+      "path": "src/AutumnOS.Shell/WelcomeExperience.cs",
+      "bytes": 9081,
+      "sha256": "e434c15c213d3aad74b030e5be5fbfdc237519c104d5501c1a05d75cb10743c4"
+    },
+    {
+      "path": "src/AutumnOS.SingleFile/BundleFooter.cs",
+      "bytes": 6760,
+      "sha256": "e275c8f08363e2acca7d612182cb311c8b44f324f05fa8634b91e5060592c308"
+    },
+    {
+      "path": "src/AutumnOS.SingleFile/Program.cs",
+      "bytes": 39367,
+      "sha256": "874f1ab23e52ae02f05f9c9a73848212e0b3b707804cd9055a9cd01826171e06"
+    },
+    {
+      "path": "src/AutumnOS.SingleFile/StartupFailure.cs",
+      "bytes": 9332,
+      "sha256": "d21cc3ec2c1002e5b601f74a5280b58ac4713deac562dfa27e649137a41d8364"
+    },
+    {
+      "path": "src/AutumnOS.Storage/AccountDataStore.cs",
+      "bytes": 27572,
+      "sha256": "6733e17841ed054de19e49c3296273554372ea434bd9bddd40dda181e4accaa3"
+    },
+    {
+      "path": "src/AutumnOS.Storage/AutumnOS.Storage.csproj",
+      "bytes": 149,
+      "sha256": "c9304a9bd553648c2d6298985b73299ef93acf06ba6c1566650fd1fd45d9704d"
+    },
+    {
+      "path": "src/AutumnOS.Storage/CriticalOperationCoordinator.cs",
+      "bytes": 8562,
+      "sha256": "679fc831517ac47792bd1c88f51035f7a5b7c398415aca44c9d37012e55968e1"
+    },
+    {
+      "path": "src/AutumnOS.Storage/DesktopLayoutStore.cs",
+      "bytes": 11325,
+      "sha256": "1b55023be3b3903ae934560c934d72482639a46101f197d4804dd87cc91f44e9"
+    },
+    {
+      "path": "src/AutumnOS.Storage/DesktopPreferencesStore.cs",
+      "bytes": 9738,
+      "sha256": "e3454196f2a84a84de0ffb9ac8e7c6bb7ace730c1961a010fdde5d663b42661c"
+    },
+    {
+      "path": "src/AutumnOS.Storage/FileCapabilityBroker.cs",
+      "bytes": 17333,
+      "sha256": "e2a456c5e74cc59868a1d1e7369f905391264dbba1375b47827e853f4f950aa0"
+    },
+    {
+      "path": "src/AutumnOS.Storage/FirstRunAccountCoordinator.cs",
+      "bytes": 4652,
+      "sha256": "8b70345f0a3a0ebd245c0be1b9509b692ce48b0ed7f2e11d868751ff5e19427a"
+    },
+    {
+      "path": "src/AutumnOS.Storage/FirstRunStateStore.cs",
+      "bytes": 11725,
+      "sha256": "d538407ff0e10c956a71a0f6b80c31294964aa836176647c7ab9c85866890607"
+    },
+    {
+      "path": "src/AutumnOS.Storage/InstallationRoot.cs",
+      "bytes": 4811,
+      "sha256": "6c1031a2189482c9ecbd61126ffcefdf0cab337bb6c47319b1b8ac2b79ef1aa7"
+    },
+    {
+      "path": "src/AutumnOS.Storage/packages.lock.json",
+      "bytes": 167,
+      "sha256": "39437c00fe4c2624435698ac8cc99a7c7520df1f097bc42769112075d8b624bb"
+    },
+    {
+      "path": "src/AutumnOS.Storage/ScopedStorageContracts.cs",
+      "bytes": 5439,
+      "sha256": "0dd75a70a4e3a91be90613550d9061ff9aadde44c4dbde3c5227f6e7a2258201"
+    },
+    {
+      "path": "src/AutumnOS.Storage/StorageResults.cs",
+      "bytes": 3594,
+      "sha256": "a4a6b1e76c624c1fea1081c7b473445c3525a10b529ac22db75aac88231200d0"
+    },
+    {
+      "path": "src/AutumnOS.Storage/StructuredLog.cs",
+      "bytes": 5173,
+      "sha256": "add8c7e8ef28d12731aa340ff783f372f10e4275fc9302a357683aca85bf2d66"
+    },
+    {
+      "path": "src/AutumnOS.Storage/SupportBundleService.cs",
+      "bytes": 13291,
+      "sha256": "76e365b1cf656c4905884623a2e97f37028506f101f070a6df871fe31d115337"
+    },
+    {
+      "path": "src/AutumnOS.Storage/VersionedConfigurationStore.cs",
+      "bytes": 9260,
+      "sha256": "28bbd81fb7c523f494787b80675f573ab9d59cb5f7889b63952c3417377ed042"
+    },
+    {
+      "path": "src/AutumnOS.Store/AutumnOS.Store.csproj",
+      "bytes": 471,
+      "sha256": "69f1b23cd16100b1a9b8f75d9151917bb3594fc80aebb6e0fff33634bf94a745"
+    },
+    {
+      "path": "src/AutumnOS.Store/CatalogModels.cs",
+      "bytes": 3383,
+      "sha256": "7e9be8c96e5c83d539e2b8fcad459b6401fd8a722368b9f86b163687fff4c7d0"
+    },
+    {
+      "path": "src/AutumnOS.Store/CatalogResponseCache.cs",
+      "bytes": 9559,
+      "sha256": "1395fc8c9ddff937da17ecd4875225ede698fc7ba0854a39fd82a101d551c47a"
+    },
+    {
+      "path": "src/AutumnOS.Store/DeveloperPublicationService.cs",
+      "bytes": 6006,
+      "sha256": "d607ab5042cdbf0f2126e1db8680d43849d78078e3c81eba326d2b2bb49096fc"
+    },
+    {
+      "path": "src/AutumnOS.Store/DownloadModels.cs",
+      "bytes": 1208,
+      "sha256": "e51de47f500c11d940fb873e875bc144bd391af3b61f4ec44285f4c6e57d15f2"
+    },
+    {
+      "path": "src/AutumnOS.Store/DownloadService.cs",
+      "bytes": 26262,
+      "sha256": "b2063a5f5b9eb9ffdd1ac54f57d9e3a2b7ffaa6855862dc5fc6202e7bec566fc"
+    },
+    {
+      "path": "src/AutumnOS.Store/GitHubCatalog.cs",
+      "bytes": 21876,
+      "sha256": "17fd5e8d92c3ab49742c518ebfecdd1d044aa3f3293a71e6597ca60484aaf776"
+    },
+    {
+      "path": "src/AutumnOS.Store/GitHubTransport.cs",
+      "bytes": 13656,
+      "sha256": "af9cc3df8f03a3947c10367b997db809cfd211287d478e6d76fec1f4775f2d97"
+    },
+    {
+      "path": "src/AutumnOS.Store/packages.lock.json",
+      "bytes": 468,
+      "sha256": "0c02fed8c7fc5681a4a02ce2bd0ebb8abbec9fceea3761fc712cf86ccec4b0c5"
+    },
+    {
+      "path": "src/AutumnOS.Store/ReleaseMetadata.cs",
+      "bytes": 8011,
+      "sha256": "94e5e2308f79583b25c01012a51e918f48ecccce7861a65d7eb4a64e6a016f16"
+    },
+    {
+      "path": "src/AutumnOS.Store/SemanticVersion.cs",
+      "bytes": 2363,
+      "sha256": "c1337b65b589394b5f95a8b7ae08df320e4df1b113fab4eec19c853635d573bf"
+    },
+    {
+      "path": "src/AutumnOS.Store/StoreInstallCoordinator.cs",
+      "bytes": 12973,
+      "sha256": "0caf51ab961268ba058216787e4a24bb872c57a0e6b96259adb1060b982264de"
+    },
+    {
+      "path": "src/AutumnOS.Store/StoreNetworkSettings.cs",
+      "bytes": 3279,
+      "sha256": "10304687f75deeba1196c8ba59d897af8c0aa766f7f2571acaa477bb31b56f1e"
+    },
+    {
+      "path": "src/AutumnOS.Store/StoreTestSource.cs",
+      "bytes": 14025,
+      "sha256": "da97b6fadfe77dc47a29749667bedca4ddfe35f7c5101b3393346dcad7e762d6"
+    },
+    {
+      "path": "src/AutumnOS.Update/AutumnOS.Update.csproj",
+      "bytes": 1490,
+      "sha256": "24528a89fc9cd18c808025646a96056e8d3a1048e1f0be7d2bbc2da788fc3199"
+    },
+    {
+      "path": "src/AutumnOS.Update/packages.lock.json",
+      "bytes": 705,
+      "sha256": "e752c47701ddb1caefe2aa2dd80624bca426df191229aaa41cfd430bebf9f41c"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateApplySourceGuard.cs",
+      "bytes": 6475,
+      "sha256": "7f7db141b435e244ba2ef9b9f4ac2b73af92688a575752bae90cbf4ac8c710e2"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateAuthorization.cs",
+      "bytes": 2127,
+      "sha256": "66f7d3a8613cca885b1d5d15a6091948957702b716f1565d7b675ceef2e6d70e"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateManifestCodec.cs",
+      "bytes": 6057,
+      "sha256": "4a1b215c32e8409ac957997a77ce828ffd0cd992f01013313c4519b0649dc61d"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateMetadataClient.cs",
+      "bytes": 6905,
+      "sha256": "3f009dbdc27e10cca3722b6ce22ecbee666a1fc61b09523fb1981e40a60d6d8b"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateModels.cs",
+      "bytes": 3692,
+      "sha256": "5a521fa1f5e62a067c70fe68397364d427b03601ac19bab5269ad8f861f29dd5"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdatePaths.cs",
+      "bytes": 3562,
+      "sha256": "80e81d1d81ad2322aa1bb27e89c45273ee1f1e54b8f3828f2448cb448d3960bd"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdatePayload.cs",
+      "bytes": 5839,
+      "sha256": "3f4bc69997985ff81c29f2dc5c6e9b07953c681b37b9718be4338011a362b033"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateSecurityLedgerStore.cs",
+      "bytes": 18789,
+      "sha256": "ac9053d5e4174e0d1fd02f74e0abf2104a05863f7cc7fd43fb31b7c7f14e0110"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateService.cs",
+      "bytes": 48478,
+      "sha256": "caca6a585c0bbd47276ed37c5c8006bea8b7657cdb24d004da3475357b42571c"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateSignature.cs",
+      "bytes": 6252,
+      "sha256": "bdfd5375895a869c2331fb571622494f79f1dc3f566ce4bf2b12b09f1aff8e3d"
+    },
+    {
+      "path": "src/AutumnOS.Update/UpdateTestFeed.cs",
+      "bytes": 6761,
+      "sha256": "ee3ab237ea0abcc786d5c53cdb8b538667b0316751adaceca5e19ae4b5447990"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/AutumnOS.UpdateProtocol.csproj",
+      "bytes": 467,
+      "sha256": "7ae7f78ba1a1dc5624aa510b9eaa3ec4fecc3e3c88a9ac7c1471f37e4df1b323"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/packages.lock.json",
+      "bytes": 917,
+      "sha256": "07ced97c5244066f1b249a3735790a1eb509682a82522decb6e63086af5f1224"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/PortableEntryBinding.cs",
+      "bytes": 1396,
+      "sha256": "b2de04c985167c0c14af9ce143c9fd4cc209b788484fe21a1ac5160a32c511e1"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/UpdateCoordination.cs",
+      "bytes": 2741,
+      "sha256": "a12d46c9ef9f6ad3b825a6804f5d5d5ba06cb9950b41cf4cb7f188777fa98af2"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/UpdateDataSnapshot.cs",
+      "bytes": 7676,
+      "sha256": "c31e2f57347a1b438ce3d279a990b05b1839d35fe8db5bc6213d1abb49dcb256"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/UpdateFiles.cs",
+      "bytes": 5641,
+      "sha256": "4ed9ee1c69c4e47343a20a52c796532ec1c5fe7e794f67efc5370a23ab585e12"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/UpdateLaunchGuard.cs",
+      "bytes": 4218,
+      "sha256": "ebcfbba6fea05c79c66e12e584c906f7c789baed0f84c0c7360a0ba58f5acbd2"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/UpdatePipe.cs",
+      "bytes": 3438,
+      "sha256": "092e31083e40eea1eb3dcd288dc6151cb641f3148774929878d8b633202f04d1"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/UpdaterHandoff.cs",
+      "bytes": 3605,
+      "sha256": "d646fa8b58fdbea73246caebc492f7808ad025378eadf19f9e2f40de13276de1"
+    },
+    {
+      "path": "src/AutumnOS.UpdateProtocol/UpdateTransaction.cs",
+      "bytes": 31749,
+      "sha256": "ea53cd513271ae648a52bd1b7f7a82ac93e0326be9779b58ea430d11dbe48d62"
+    },
+    {
+      "path": "src/AutumnOS.Updater/AutumnOS.Updater.csproj",
+      "bytes": 588,
+      "sha256": "e13c22b90f3c5da1183f663dbdab791bf0d479fe470781ca53797593ce3fba3c"
+    },
+    {
+      "path": "src/AutumnOS.Updater/packages.lock.json",
+      "bytes": 1376,
+      "sha256": "f1d3fdd2d821136c3b04f99f408a82b04af7b8c052885027a91c865d555562f6"
+    },
+    {
+      "path": "src/AutumnOS.Updater/Program.cs",
+      "bytes": 2443,
+      "sha256": "25bb7eac162b10bb1ff3e6f949e1ace874449e5da1332aa3f1b334e1d6b86c5f"
+    },
+    {
+      "path": "tests/AutumnOS.OwnedJob.Probe/AutumnOS.OwnedJob.Probe.csproj",
+      "bytes": 496,
+      "sha256": "0dce43233d03ba098bacaee864d008f8d8ecf2971dd4e974d0af891f2013ed36"
+    },
+    {
+      "path": "tests/AutumnOS.OwnedJob.Probe/packages.lock.json",
+      "bytes": 116,
+      "sha256": "a88a601f99e73076c5567445f00aa228aac9781079b03c99f4688732b7a8876f"
+    },
+    {
+      "path": "tests/AutumnOS.OwnedJob.Probe/Program.cs",
+      "bytes": 11900,
+      "sha256": "da2a9b9bc98fc51526575264def219e88f42b0a9b974025701d7bf905eb88b4e"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/AutumnOS.Tests.csproj",
+      "bytes": 3887,
+      "sha256": "300507e60c6969739ed883e4f62edf270257871723441e060feedec1896a5d90"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/BrowserResponseStreamTests.cs",
+      "bytes": 9715,
+      "sha256": "a1ad32e405df18a0c26de0d88ecb9225b3607059bdfb70ac47f616dfa96fdd54"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/BrowserRoleProtocolTests.cs",
+      "bytes": 13587,
+      "sha256": "0c15bf94cf9f3359b926c3c690de866b283356db22980e7c993a8f5783a2126a"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/BundleFooterTests.cs",
+      "bytes": 9636,
+      "sha256": "10112d63563d960f40cb786ec77176baf81e516515d0eb6a0b93fe7660db8cbb"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/CallbackResponseTests.cs",
+      "bytes": 11666,
+      "sha256": "1f42dff9793706f707830912b63b8c7ab181e4f1e7d200b1798a22d0794e5f52"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/DataBridgeTests.cs",
+      "bytes": 19826,
+      "sha256": "d51860bb9f2c50191498380338bd77c8c8fa663514dc0dce8f891737e6bf7797"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/DesktopLayoutTests.cs",
+      "bytes": 18165,
+      "sha256": "41e67c918ea49e22f6cbe3bfbcd22f6d47429d84e92f485aef6dc830bd3f481d"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/DesktopPreferencesTests.cs",
+      "bytes": 17619,
+      "sha256": "b0ea85a0b437688f0ad37e899ff36463a635ffe1f12cf4d1960056a4eba44ac0"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/DeveloperSimulationTests.cs",
+      "bytes": 25642,
+      "sha256": "bfac557cf9be374137cad1fb02a82684a78d5a18b9fa1ef5d7a432e6fbfbed80"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/DeveloperToolsTests.cs",
+      "bytes": 24699,
+      "sha256": "48f0173eb0f57a84ef35c40eec23c2bcbe792274048b028c79a07f280b642594"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/FirstRunAccountTests.cs",
+      "bytes": 15475,
+      "sha256": "fd4f94ecc33f60bbc956dceebc42ad9e72ae52c380d6285db8f9d75339552e5f"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/IdentityAuthorityMutationTests.cs",
+      "bytes": 20704,
+      "sha256": "85fa0b083eeaef10d2ef7fcabf0c83081a2b70229e114ef376a4bcf2a5e315c3"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/IdentityPersistenceTests.cs",
+      "bytes": 24458,
+      "sha256": "2171c03ba0904176cf52d267e54e1aab4056ceb11d5ee695db7851f78962eca7"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/IdentityProtocolTests.cs",
+      "bytes": 18164,
+      "sha256": "5c7e92e810ecb38a5ba62832796db2923b948a89012fca4f9b4fbdac13b56c2a"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/IdentitySessionTests.cs",
+      "bytes": 33133,
+      "sha256": "1e0646ce64f185cb6832da8a8847053169bab293fe0f3d8ac68e2adfe6e096f8"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/IdentityTests.cs",
+      "bytes": 25994,
+      "sha256": "117e4eabf5eb8d263d27628109d81f59daa75f83bb8ea23ac1e666930663067a"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/LauncherTests.cs",
+      "bytes": 26373,
+      "sha256": "8d8a1ffac97a70ae5fe7e46e24ce9aa7469f3d088f1c7d5f5eb2539bf6582009"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/MaintenanceTests.cs",
+      "bytes": 24049,
+      "sha256": "5828cabdab1672a6cdd00789029e31ac79aab54ad3bb07a16e68c97f7b43cbe2"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/MigrationSecurityTests.cs",
+      "bytes": 25048,
+      "sha256": "e64dbcdb5baa9e6b0d8c079867e9bc97bd1ac05a5460da32cb9f93c50fa419ec"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeBrowserCloseSequenceTests.cs",
+      "bytes": 6842,
+      "sha256": "4c64e2facc889e91b6d9027c0bec8b8ce54d2025aa38f4c9b5e5e88a8083d558"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeBrowserFailureTests.cs",
+      "bytes": 7125,
+      "sha256": "4a8869579d5cd4fed855f92ae37f95d0db61935d83dfa2ba22dc34ef9819ef18"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeDeploymentIdentityTests.cs",
+      "bytes": 3643,
+      "sha256": "1c0bf1d29f8890948e5ad198b709ce947d8b7ad6cf62d85155f5b493ac133e3e"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeHostWindowsTests.cs",
+      "bytes": 20528,
+      "sha256": "c92b7ed0079e8e95e8f97f6a2b2f8e91f60bc7570f48071e5f8792656844f52e"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeInputQueueTests.cs",
+      "bytes": 11808,
+      "sha256": "3d1bdf4de5236e1cd3eb0fbf32953a30a8af0eaba05d2599b86f43149cc574e2"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeKeyboardInputTests.cs",
+      "bytes": 5794,
+      "sha256": "f5f49e48d4716333e5508396dfad0bf8cada3fc9be040d4eda0e6796f1912129"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeOwnedJobPolicyTests.cs",
+      "bytes": 10498,
+      "sha256": "4b7f72e89406000ead2e9fe29234edb16c63cb9b6daf94278e0ebd2f99aa0252"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativePlatformPolicyTests.cs",
+      "bytes": 2181,
+      "sha256": "9d974f9fa02a2e55af862d8ae3c9e60917bdf5d29750a67baf9aa9c5912bdb14"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativePointerInputTests.cs",
+      "bytes": 3804,
+      "sha256": "f9fecc975e7a708806c693941fe29b47e13615136e0e4a2148fc60f5005d37b1"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeViewBoundaryTests.cs",
+      "bytes": 5616,
+      "sha256": "a0d7d621e5fcc91fc3c44a5f595731c9db0e7b31d1b6b68596c3b46e236c12a6"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NativeViewportTests.cs",
+      "bytes": 6641,
+      "sha256": "c54ce76cfa770045ff1fa1b1f7f4252beadf924a606ed7bd39191201ecd50584"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NetworkPackageTests.cs",
+      "bytes": 6780,
+      "sha256": "23c5eed0934c86f7ca6a56c7a221cd18c5fc9ddae07014070d02e914c23b0eef"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NetworkPermissionTests.cs",
+      "bytes": 25266,
+      "sha256": "4efc88fc9cd3ee90486891fc94c7efde48a91ba056f899e03c199227acbf3edd"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NetworkPolicyLeaseTests.cs",
+      "bytes": 10114,
+      "sha256": "52fdb6686e75a581ffa44e5a8b489c347188f571bf03e7f0c9318e303bbd8ab4"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NetworkRuntimeTests.cs",
+      "bytes": 29072,
+      "sha256": "03176548d1e4ef6b7e9d35c5489cde792420ff6bf5ff1571b4315094385686ca"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/NetworkTransportTests.cs",
+      "bytes": 13115,
+      "sha256": "da04c7658cf47571b8da0b08a560ce2edef837f9edc8ab1a3745916d92d17525"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/PackageDesktopTests.cs",
+      "bytes": 13417,
+      "sha256": "ea1c05a42b62ab11ea8d55074b5063eb95dc4f779dc063bf7c14279d934ae265"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/packages.lock.json",
+      "bytes": 4796,
+      "sha256": "17eff6842733a2d91b31ed011c32dc975fa17db841d6733ee4d4f9109297d98c"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/PackageTests.cs",
+      "bytes": 21593,
+      "sha256": "918167258ab9e77e3af20ebba29fa3fc8bbdd06719a212bb5e671ca3b93d99f0"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/PermissionAuthorityMutationTests.cs",
+      "bytes": 26227,
+      "sha256": "ca10db85b03a5ccc16721eb026526cc5a94b9251a0fcabd6050451caeaab6044"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/PermissionRevisionTests.cs",
+      "bytes": 4930,
+      "sha256": "1b8c016d61271789b90758a0d9c605d0e2fbdc310336c4f554285ddc6a432d9e"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/PortableLayoutTests.cs",
+      "bytes": 3770,
+      "sha256": "c1d41d0c83f3b4371901ae6ad323ea6cda370a77f68494a6cbf61293a6c54205"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/PreviewAuthorityBindingTests.cs",
+      "bytes": 7437,
+      "sha256": "fc689f9f6b3323103bb44e9a97d17fb8fc40ce9a84d5ebdc1ad59f5e27c79e49"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/ProductionUpdateSignerTests.cs",
+      "bytes": 15308,
+      "sha256": "6032b2bfce86684aa6bcce33d1ad6fbdbe9496bad7779c518d8a303c94389540"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/Program.cs",
+      "bytes": 9156,
+      "sha256": "050aa0020379532be47d33a0e132cb7210f5d6e00ee793938f9f55aac7a66885"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeAuthorityMutationCoordinatorTests.cs",
+      "bytes": 11399,
+      "sha256": "992e21c20a8599795eb6342d42e811abe495166978962b915ceb1a268a1534a8"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeAuthorityMutationTests.cs",
+      "bytes": 19819,
+      "sha256": "2c2db00076d6fb90e81ed3035ee4a7b00ba03d2bae34c9151e6dfe69aef625ee"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeDeliveryCoordinatorTests.cs",
+      "bytes": 39763,
+      "sha256": "e737f63690a1bdaa6636768ffad9c329bafb9e008d04bf3093f18c1895d466a9"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeDeliveryParentTransportTests.cs",
+      "bytes": 11665,
+      "sha256": "05c2d42cb16a3fdde8f00ea5120ab9ccf3e61f8374b08b1120a09ed300e398ab"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeDeliveryWireProtocolTests.cs",
+      "bytes": 27495,
+      "sha256": "913b55bdfaba3f05cb1826717b338f05d9f6cd6123d2d2b1a9f195f4ee39813d"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeIsolationPolicyTests.cs",
+      "bytes": 15192,
+      "sha256": "96f464d218735c06f7db5f02532fe2d79930e928a593b04604e31804ff08c59c"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeIsolationSessionTests.cs",
+      "bytes": 8685,
+      "sha256": "f5d6eadd18e4d64f44ed5dfcdbca81b4de287af94af64cdca30a3a446aec7c10"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeNativeDeliveryActorTests.cs",
+      "bytes": 20143,
+      "sha256": "484cbb4c1fa6a6b90df8af3fe5ccaeeaf97b80ee9999516d671dccbcfe6641d4"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeParserGateTests.cs",
+      "bytes": 12911,
+      "sha256": "c2a0d34e8163b5f4ebbb4f24094aa55adf7a37d5be801704d313748bd5da5152"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeTests.cs",
+      "bytes": 40379,
+      "sha256": "c469d44ef3680bd886b8512b5478e3be6baba4ed1a0d629aff32e9329545c9c7"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/RuntimeViewBackendEventTests.cs",
+      "bytes": 6771,
+      "sha256": "88334e4fbaaeb3ad0bb8b50e3620519ff3afa6a3596f48bff144ece48aee1d46"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/ScopedStorageTests.cs",
+      "bytes": 73250,
+      "sha256": "75253c92fecc5eb36321ca57e25c3ee6d22efa7cee573a69ac8711d035f89111"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/ServerIdentityTests.cs",
+      "bytes": 6516,
+      "sha256": "2a013b968be98fc105e0b2c4549e99cf48e086079c465e0278f098b5d519992d"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/SetupTransactionTests.cs",
+      "bytes": 9000,
+      "sha256": "4108f81a52ade948357e204a40c213cc6771b7f79d7f51ecd3aeeebfd6c80b1d"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StartupFailureTests.cs",
+      "bytes": 14811,
+      "sha256": "82bd44a63a0bf4533b0584d4074b1ab26930ffc52d07ac7a3a699afb3a94129c"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StorageTests.cs",
+      "bytes": 25824,
+      "sha256": "90c5c59ce2b6d07c992935b46faaf35ef4dbd1f92961e43f69bd08ddee909e4f"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StoreCatalogTests.cs",
+      "bytes": 22357,
+      "sha256": "d2a49e268fe2cff6f4e012cdc681413ea0c543504fda0df2e04236c9359c80b0"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StoreCoordinatorTests.cs",
+      "bytes": 21624,
+      "sha256": "9d91fcba435e00bee85ff5a94f5f4f201976e2d2417e70852c42e979d1025ec0"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StoreDownloadTests.cs",
+      "bytes": 25435,
+      "sha256": "4838e1c137c30d2adef2a04c457548d526a23213e1f57c029cb1e95673364429"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StoreInstallTests.cs",
+      "bytes": 21412,
+      "sha256": "e52ce77f3cac0d11a1fb5744de17061240ff862e32a3398851000945a81e1c44"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StoreLiveProbe.cs",
+      "bytes": 7001,
+      "sha256": "43b2fc81a30f27d86360c118c32b4672b9d64ac065ad4af32d91fd767994640a"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/StoreRepositoryLookupTests.cs",
+      "bytes": 17403,
+      "sha256": "2b7a543ac4ea4a37660d973ec8bf8fa5de3e2fcff1a2a8a55fa09dc85eabaabe"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/SupportBundleTests.cs",
+      "bytes": 13235,
+      "sha256": "c7482a3190f1d1899716f46481dc30b5683e2e25819a6b9919b512586d1c97e8"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/T03RuntimeTests.cs",
+      "bytes": 67064,
+      "sha256": "8e4f87272f71127cff230c554f8cf316cbad1610bd2ceedccdbabad8bd695fb6"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/UpdateCoreTests.cs",
+      "bytes": 42717,
+      "sha256": "7ef2b21ae4c708f7166a5871d7278bcf711198ef5fd2ebb73b3167e06620bb3f"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/UpdateProtocolTests.cs",
+      "bytes": 24059,
+      "sha256": "8f90cd34f24cd9b4fafc681fce738c320fbd5ed95d137c163973f22df2f39130"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/UpdateRollbackTests.cs",
+      "bytes": 18366,
+      "sha256": "7e778bfa47f3227cba3afb36a72e8fe3a561c4ceee0e62890d3be492409beb8a"
+    },
+    {
+      "path": "tests/AutumnOS.Tests/UpdateShutdownTests.cs",
+      "bytes": 20507,
+      "sha256": "f446ab0310b789f40a01ea8cf1a8b6e3b28239fc5628fe89f45e1c53f1336123"
+    },
+    {
+      "path": "tests/chemleap-browser-tests.cjs",
+      "bytes": 11997,
+      "sha256": "b541b8a71100651a0b9448ad4a79ff0524fd44040109829c68586b453edbf066"
+    },
+    {
+      "path": "tests/chemleap-lifecycle-tests.cjs",
+      "bytes": 9667,
+      "sha256": "2d30b46c7539f5768d49aa23d0df8a01246778028e279947cf12f89b02d178da"
+    },
+    {
+      "path": "tests/chemleap-model-tests.cjs",
+      "bytes": 17238,
+      "sha256": "3cc905ba81ef256f542a41e140584a49400be20dee6adfa5129e149451cb5eee"
+    },
+    {
+      "path": "tests/contracts/method-cases.json",
+      "bytes": 8121,
+      "sha256": "748df209923b378a2e769fba1da7734fd7a3b2817998d1806293e4baf7d379dc"
+    },
+    {
+      "path": "tests/contracts/public-api-baseline.json",
+      "bytes": 9640,
+      "sha256": "46ef4ce9cad0b8304d477bb6660a658ed7a44e175c181831566c52d6825c37ee"
+    },
+    {
+      "path": "tests/contracts/sdk-types.ts",
+      "bytes": 5397,
+      "sha256": "a66e7e570a4bd5715734c259d2d1dd12d78d3635797206e486ffc4e4dcf90e0f"
+    },
+    {
+      "path": "tests/contracts/tsconfig.json",
+      "bytes": 232,
+      "sha256": "db30bbc4ac8dd05ed5f551fe078ff6151d50adaf1b3b7d58e7bba05a4319ef55"
+    },
+    {
+      "path": "tests/fixtures/native-resource-repeat/index.html",
+      "bytes": 1373,
+      "sha256": "7f8b134ad860af13395cb640baf456772a467f1dbbbf7acf0c3218012bcbf7c4"
+    },
+    {
+      "path": "tests/fixtures/native-resource-repeat/loader.js",
+      "bytes": 4664,
+      "sha256": "0557aa4d52446107b082b02d504cec2a9561dd75410c6201c1da611c3d15577e"
+    },
+    {
+      "path": "tests/fixtures/native-resource-repeat/manifest.json",
+      "bytes": 199,
+      "sha256": "3e8361fa4cafe3b62b8af2242f03b34c9f60e08ae795c17ff99914acc4d2bf2f"
+    },
+    {
+      "path": "tests/fixtures/native-resource-repeat/repeat.js",
+      "bytes": 474,
+      "sha256": "9c495c6ffdd643aa527223b143f34b20cce863dc35e341022c56d1e87c4e7ac5"
+    },
+    {
+      "path": "tests/fixtures/native-resource-repeat/style.css",
+      "bytes": 1183,
+      "sha256": "c6b452d5c474579b8c08ecc5d00feb985190998b0a8a0dde3aa90b3f20995335"
+    },
+    {
+      "path": "tests/fixtures/network-client/client.js",
+      "bytes": 2027,
+      "sha256": "7e06107ac4ee68d28c4be952321210ae3a120adfaeff11aec25afb3ebe9f8eed"
+    },
+    {
+      "path": "tests/fixtures/network-client/index.html",
+      "bytes": 663,
+      "sha256": "ae3d23be326a806c4e7ae1747c717efd59fedb5dc7288f35fa8c6e10d623748f"
+    },
+    {
+      "path": "tests/fixtures/network-client/manifest.json",
+      "bytes": 371,
+      "sha256": "6edc12a3eb3cb8466c91fbb10f77e1b257e6ee3a66e11ab6f03f843ef9b089ef"
+    },
+    {
+      "path": "tests/fixtures/network-client/style.css",
+      "bytes": 442,
+      "sha256": "ca51a46b5ceb25b65ed0016fc3827bb5e38f59ee9b61f2e9c88372ff0885e30e"
+    },
+    {
+      "path": "tests/fixtures/normal-local/autumn-sdk.js",
+      "bytes": 11671,
+      "sha256": "03787d8434476a80f9be0174ba584f0a1260653e5c4c306dd6dd2f862447168c"
+    },
+    {
+      "path": "tests/fixtures/normal-local/game.css",
+      "bytes": 6594,
+      "sha256": "8c9457d4fc93cd93936fc8a601839670882cacf17a928a40994633f3e120d3e1"
+    },
+    {
+      "path": "tests/fixtures/normal-local/game.js",
+      "bytes": 12144,
+      "sha256": "493c461f005b7f301948676425737e6ad5a9d0e57b352c61896fa121619faead"
+    },
+    {
+      "path": "tests/fixtures/normal-local/index.html",
+      "bytes": 2824,
+      "sha256": "18d00565b8bf72bcb8f56a9310e0e2bd1c0b5570c5567ed0fac2aa74daa3d4cf"
+    },
+    {
+      "path": "tests/fixtures/normal-local/manifest.json",
+      "bytes": 440,
+      "sha256": "5c6e4e2047742a856a66c63bf2a59e35e98a4f5d72631555412d74e5a64db8c6"
+    },
+    {
+      "path": "tests/fixtures/normal-local/README.md",
+      "bytes": 896,
+      "sha256": "14561bf4d16233a3fe33edfb32cf0503cff24f704ed9bba134633b4a719147ce"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/config.js",
+      "bytes": 337,
+      "sha256": "b4c170f03dac4bd93b73c655e03badff6daadaec06ce6b2d04999f8dfb3c8006"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/index.html",
+      "bytes": 1556,
+      "sha256": "ee5950709f34f69b0a673a4a7f92392c7dac4352a219ffcadc0113934b10c20c"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/LoopbackNetworkObserver.cs",
+      "bytes": 8757,
+      "sha256": "93eb7bdc912a9475f8f5e3131415a5c5689f3913cab57025aada5fcac39435c8"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/manifest.json",
+      "bytes": 202,
+      "sha256": "fcd073ea768d620c794c3855d3bb8184831df90a7d777196cfa5d4ad65400f41"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/network.css",
+      "bytes": 324,
+      "sha256": "87a927360f1092cf3a32dbeed7b25cf9a001ed1b443caca373cda8d1aaf79fc7"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/probe.css",
+      "bytes": 637,
+      "sha256": "cb555be402bbb1a03951762cb2b6df3328b53882ba29bc0bf93401b081bcd671"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/probe.js",
+      "bytes": 29350,
+      "sha256": "e377ab66df6e94d9e9bc1f80a8e5a61fda2c9bb404b20492b61ce78dbac63e0a"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/README.md",
+      "bytes": 8662,
+      "sha256": "044e1b9828993d2e95dc15e5dc44f18e0f195b3b477e3a4253d39bc9ef4881e7"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/service-worker.js",
+      "bytes": 150,
+      "sha256": "5b6133f8aa3ebc5d5b3eb29e1f942a7209f254e40e57ae0f41b9cf309c6fbe1d"
+    },
+    {
+      "path": "tests/fixtures/runtime-isolation/worker.js",
+      "bytes": 468,
+      "sha256": "b2202c4c083252dca8091380865902667120f8fdead79fabd5c224aae93f7b8a"
+    },
+    {
+      "path": "tests/packaging-publication-tests.ps1",
+      "bytes": 12072,
+      "sha256": "eb55ba6690d1060114997a1af82b9cb765dce30aa2e23a01db812815dc0dd952"
+    },
+    {
+      "path": "tests/sdk-tests.cjs",
+      "bytes": 19745,
+      "sha256": "4203039f79e8341496e420b0c9a20c6f37665d378c9abdfd3720aa263cec5c9b"
+    },
+    {
+      "path": "tests/SingleFilePreparation/PreparationTests.cs",
+      "bytes": 13347,
+      "sha256": "cf5d5c7822bdad4c499189a27c0f55fecfe3cb2421993fe027e06c4940a7d8b4"
+    },
+    {
+      "path": "tests/SingleFilePreparation/Run.ps1",
+      "bytes": 2513,
+      "sha256": "142e1c6a86f80244d9b776a5042c3ac0849167e5651505fddb90725543322a81"
+    },
+    {
+      "path": "tests/t03-sample-tests.cjs",
+      "bytes": 7578,
+      "sha256": "d2dcc1b88b396a1592ae75e409b3c4d3053ddf30266b07fd3cf502559fc6dd3b"
+    },
+    {
+      "path": "tools/AutumnOS.Developer.Cli/AutumnOS.Developer.Cli.csproj",
+      "bytes": 459,
+      "sha256": "6c68051ed45f5428bafad458f91389378b9d7872fe0350bba79d960e8d542d90"
+    },
+    {
+      "path": "tools/AutumnOS.Developer.Cli/packages.lock.json",
+      "bytes": 705,
+      "sha256": "e752c47701ddb1caefe2aa2dd80624bca426df191229aaa41cfd430bebf9f41c"
+    },
+    {
+      "path": "tools/AutumnOS.Developer.Cli/Program.cs",
+      "bytes": 11262,
+      "sha256": "88943020f974f4e4a8f24cac35c39ee67f19caa85563c194fc8b317c5670d60c"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/AutumnOS.Isolation.Probe.csproj",
+      "bytes": 693,
+      "sha256": "1d8ba20b8a2103b9f2d9458fd842477985d7681365c809e33417480f0fbd6d0b"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/NetworkPolicyWindow.cs",
+      "bytes": 26661,
+      "sha256": "5fdcb3bf65ab33d081fe1334aecf957f00e4f9089bca99540659404a38bab5e4"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/packages.lock.json",
+      "bytes": 1066,
+      "sha256": "6d4445faf30ab3b80db2f4a17efdfdaa2881b5798c62daf69a2be11ed6759cb2"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/Program.cs",
+      "bytes": 15162,
+      "sha256": "88d79a4b120c108db125dd1456c7a39633b0daeb39bdd353818331d3b8666d5e"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/README.md",
+      "bytes": 3636,
+      "sha256": "34896a329b96e701b4e4c15a56565b42c039862fee3a323cec2a8951d0e56c8f"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/ResourceStorageWindow.cs",
+      "bytes": 18113,
+      "sha256": "456c9e8aa7fa388889b47f96c8cf499a7922dd6cb0e118a62b0d059b812e564c"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/RuntimePolicyWindow.cs",
+      "bytes": 9944,
+      "sha256": "dddc08b9d42ff29795288b929cd9c4ac1d873764b92f1d0257426a8bc2003f6a"
+    },
+    {
+      "path": "tools/AutumnOS.Isolation.Probe/SameOriginWindow.cs",
+      "bytes": 8765,
+      "sha256": "33f34ea8e39c524f5d0b0473f62a01a1d51b05c984714db52f4bf2088e3b3aaf"
+    },
+    {
+      "path": "tools/AutumnOS.Lpac.Probe/AutumnOS.Lpac.Probe.csproj",
+      "bytes": 313,
+      "sha256": "f6fe7570d8b745fc063989eef8a6aa3755de60e6b4c0b069f6cc7cb800a795cb"
+    },
+    {
+      "path": "tools/AutumnOS.Lpac.Probe/packages.lock.json",
+      "bytes": 116,
+      "sha256": "a88a601f99e73076c5567445f00aa228aac9781079b03c99f4688732b7a8876f"
+    },
+    {
+      "path": "tools/AutumnOS.Lpac.Probe/Program.cs",
+      "bytes": 46370,
+      "sha256": "ca27f0dcc8c160b9275db64e438a6e78f111bd1481b46d15edd4a157dd7b1945"
+    },
+    {
+      "path": "tools/AutumnOS.Lpac.Probe/README.md",
+      "bytes": 10635,
+      "sha256": "518a99f438f3425fe113242d49e4f8f796bef30a7801a9cfab03e871b29170e5"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/AutumnOS.Update.Cli.csproj",
+      "bytes": 311,
+      "sha256": "9d15507c56c402ba43fc0227ca3b40b05f4c7afac7bba102fba651d569e70153"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/packages.lock.json",
+      "bytes": 1124,
+      "sha256": "1e572ef3ac24720e6c28b8a60920e052feaafb0925f6a181950945da9104fc2f"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/ProductionUpdateSigner.cs",
+      "bytes": 13001,
+      "sha256": "b687ba49db08ae7a2d7d7402c34225f5946595ec1d97e36659bbbc8ce2515212"
+    },
+    {
+      "path": "tools/AutumnOS.Update.Cli/Program.cs",
+      "bytes": 12572,
+      "sha256": "8d00138782d2fda51a2b998e66d8188ff44a59a4d25e54aac99d202833ef4c4b"
+    },
+    {
+      "path": "tools/contract-checks/contract-check.cjs",
+      "bytes": 24787,
+      "sha256": "d5045130a9959e638fcac512a98016b794212d2306cc98a7449c25a65e0288c5"
+    },
+    {
+      "path": "tools/contract-checks/package-lock.json",
+      "bytes": 7761,
+      "sha256": "a39c42c352572bbe0b984a6f1b74ed0ccbf82dbf862bb41d88b4e1a8d63ec957"
+    },
+    {
+      "path": "tools/contract-checks/package.json",
+      "bytes": 349,
+      "sha256": "79927c088fa8eea48e9c1a27d0441d8e6912bc8d62b3e67cf82ba3648e6ba798"
+    },
+    {
+      "path": "tools/contract-checks/restore-tools.ps1",
+      "bytes": 2546,
+      "sha256": "562d2cb06bd50cd9687ffc8a423e0b623f67544fe8c4391e4b8cb356bc436706"
+    },
+    {
+      "path": "tools/contract-checks/toolchain.json",
+      "bytes": 342,
+      "sha256": "b092ffa3e1b1eb6a2b7127a87860d747d5a6bfec7a9863715410bd4d705f332c"
+    }
+  ]
+}

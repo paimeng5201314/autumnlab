@@ -21,7 +21,8 @@
           "notifications",
           "shortcuts",
           "widgets",
-          "links.internal"
+          "links.internal",
+          "network"
         ],
         "accountMode": "guest",
         "networkSandboxVerified": false,
@@ -328,6 +329,35 @@
       "result": {
         "delivered": true,
         "action": "focus"
+      }
+    },
+    {
+      "method": "network.getStatus",
+      "params": {},
+      "resultSchema": "networkStatus",
+      "result": {
+        "available": true,
+        "internetAccess": "unknown"
+      }
+    },
+    {
+      "method": "network.request",
+      "params": {
+        "url": "https://api.github.com/rate_limit",
+        "method": "GET",
+        "headers": {
+          "accept": "application/json"
+        },
+        "timeoutMs": 10000
+      },
+      "resultSchema": "networkResponse",
+      "result": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": "e30=",
+        "encoding": "base64"
       }
     }
   ]

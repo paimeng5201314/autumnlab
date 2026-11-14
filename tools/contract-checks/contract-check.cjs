@@ -56,7 +56,7 @@ async function main() {
   const baseline = json(path.join(testDir, "public-api-baseline.json"));
   check("public declaration contract unchanged", declarations === baseline.declarations);
   const runtimeJs = read(path.join(sdkDir, "autumn-sdk.js"));
-  check("SDK version and protocol agree", baseline.sdkVersion === "0.3.0" && baseline.protocolVersion === 1 && runtimeJs.includes('version: "0.3.0", protocolVersion: 1'));
+  check("SDK version and protocol agree", baseline.sdkVersion === "0.4.0" && baseline.protocolVersion === 1 && runtimeJs.includes('version: "0.4.0", protocolVersion: 1'));
   const compiled = cp.spawnSync(process.execPath, [localRequire.resolve("typescript/bin/tsc"), "--project", path.join(testDir, "tsconfig.json"), "--pretty", "false"], { encoding: "utf8", windowsHide: true, timeout: 60000 });
   report.typescript = { exitCode: compiled.status, stdout: compiled.stdout, stderr: compiled.stderr, negativeFixtures: (read(path.join(testDir, "sdk-types.ts")).match(/@ts-expect-error/g) || []).length };
   check("actual TypeScript strict compilation with negative cases", compiled.status === 0, compiled.stdout || compiled.stderr || "");
@@ -70,7 +70,7 @@ async function main() {
   const methods = json(path.join(testDir, "method-cases.json")).cases;
   const methodNames = sourceFile.statements.find(node => ts.isInterfaceDeclaration(node) && node.name.text === "SdkMethods").members.map(node => node.name.text).sort();
   const declared = schemas.message.value.$defs.request.allOf.map(item => item.if.properties.method.const).sort();
-  check("26 actual public methods have fixtures and schemas", equal(methodNames, methods.map(item => item.method).sort()) && equal(methodNames, declared) && methodNames.length === 26);
+  check("28 actual public methods have fixtures and schemas", equal(methodNames, methods.map(item => item.method).sort()) && equal(methodNames, declared) && methodNames.length === 28);
   for (const item of methods) {
     schemaCheck(item.method + " valid request", schemas.message.validate, { protocolVersion: 1, requestId: "fixture1", method: item.method, params: item.params });
     schemaCheck(item.method + " rejects identity smuggling envelope", schemas.message.validate, { protocolVersion: 1, requestId: "fixture1", method: item.method, params: item.params, appId: "other.app" }, false);
@@ -82,6 +82,23 @@ async function main() {
   for (const [method, params] of [["saves.read", { slot: "../other" }], ["storage.read", { key: "CON" }], ["preferences.get", { key: "x".repeat(60) }], ["notifications.setBadge", { count: -1 }], ["files.read", { handle: "C:/private" }], ["widgets.update", { id: "note", lines: Array(5).fill("x") }], ["links.openInternal", { action: "file:///private", arguments: {} }]])
     schemaCheck(method + " security boundary", schemas.message.validate, { protocolVersion: 1, requestId: "negative1", method, params }, false);
   const capabilitiesCase = methods.find(item => item.method === "platform.getCapabilities");
+  for (const [label, params] of [
+    ["plaintext URL", { url: "http://api.github.com/" }],
+    ["tunnel method", { url: "https://api.github.com/", method: "CONNECT" }],
+    ["default GET body", { url: "https://api.github.com/", body: "YQ==" }],
+    ["HEAD body", { url: "https://api.github.com/", method: "HEAD", body: "" }],
+    ["cookie header", { url: "https://api.github.com/", headers: { cookie: "synthetic" } }],
+    ["upper-case header", { url: "https://api.github.com/", headers: { Accept: "application/json" } }],
+    ["non-ASCII header", { url: "https://api.github.com/", headers: { accept: "中文" } }],
+    ["content-type without body", { url: "https://api.github.com/", method: "POST", headers: { "content-type": "text/plain" } }],
+    ["Bearer internal padding", { url: "https://api.github.com/", headers: { authorization: "Bearer abc=def" } }],
+    ["Bearer padding only", { url: "https://api.github.com/", headers: { authorization: "Bearer ==" } }],
+    ["noncanonical base64", { url: "https://api.github.com/", method: "POST", body: "AB==" }],
+    ["body above16KiB", { url: "https://api.github.com/", method: "POST", body: Buffer.alloc(16385).toString("base64") }],
+    ["unbounded timeout", { url: "https://api.github.com/", timeoutMs: 20001 }]])
+    schemaCheck("network rejects " + label, schemas.message.validate, { protocolVersion: 1, requestId: "networknegative", method: "network.request", params }, false);
+  schemaCheck("network exact16KiB binary body", schemas.message.validate, { protocolVersion: 1, requestId: "networkmaximum", method: "network.request", params: { url: "https://api.github.com/", method: "POST", body: Buffer.alloc(16384).toString("base64") } });
+  schemaCheck("network one millisecond and explicit empty content", schemas.message.validate, { protocolVersion: 1, requestId: "networkminimum", method: "network.request", params: { url: "https://api.github.com/", method: "POST", body: "", headers: { "content-type": "text/plain", authorization: "Bearer synthetic-only==" }, timeoutMs: 1 } });
   const capabilityResult = ajv.compile({ $ref: schemas.message.id + "#/$defs/capabilities" });
   schemaCheck("native verified capability boolean accepted", capabilityResult, { ...capabilitiesCase.result, networkSandboxVerified: true });
   schemaCheck("truthy string cannot claim native verification", capabilityResult, { ...capabilitiesCase.result, networkSandboxVerified: "true" }, false);
@@ -101,7 +118,7 @@ async function main() {
     schemaCheck("developer " + command + " arbitrary argument denied", schemas.developer.validate, { ...request, arguments: { accountId: "untrusted" } }, false);
   }
   const developerResponse = { ok: true, code: "OK", sessionId: "1".repeat(32), appId: "cn.example.hello", state: "Foreground", trace: [{ timestamp: "2026-10-02T00:00:00Z", method: "identity.getProfile", resultCode: "OK" }],
-    simulation: { isTestSimulation: true, account: "account-a", permissionsDenied: false, offline: true, networkScope: "preview_only_external_network_already_blocked" } };
+    simulation: { isTestSimulation: true, account: "account-a", permissionsDenied: false, offline: true, networkScope: "preview_only_network_broker_and_direct_browser_policy" } };
   schemaCheck("developer simulated response has no credential", schemas.developer.validate, developerResponse);
   schemaCheck("developer response arbitrary token denied", schemas.developer.validate, { ...developerResponse, accessToken: "not-real" }, false);
   schemaCheck("developer simulated account cannot claim live state", schemas.developer.validate, { ...developerResponse, simulation: { ...developerResponse.simulation, isTestSimulation: false } }, false);
@@ -116,6 +133,13 @@ async function main() {
     for (const file of fs.readdirSync(directory).filter(x => x.endsWith(".js"))) { const p = path.join(directory, file); read(p); const syntax = cp.spawnSync(process.execPath, ["--check", p], { encoding: "utf8", windowsHide: true }); check(name + "/" + file + " JavaScript parses", syntax.status === 0, syntax.stderr); }
   }
   const manifest = json(path.join(templateDir, "hello-app/manifest.json"));
+  const networkManifest = { ...manifest, permissions: ["network"], networkDomains: ["api.github.com"] };
+  schemaCheck("network package declares exact domains", schemas.manifest.validate, networkManifest);
+  const missingDomains = { ...networkManifest }; delete missingDomains.networkDomains;
+  schemaCheck("network package requires domains", schemas.manifest.validate, missingDomains, false);
+  schemaCheck("network package requires permission", schemas.manifest.validate, { ...networkManifest, permissions: [] }, false);
+  for (const domains of [[], ["*.github.com"], ["127.0.0.1"], ["api.github.com."], ["API.github.com"], ["host.local"], ["api.github.com", "api.github.com"], Array.from({ length: 17 }, (_, i) => "host" + i + ".github.com")])
+    schemaCheck("network domain shape " + JSON.stringify(domains), schemas.manifest.validate, { ...networkManifest, networkDomains: domains }, false);
   const store = { schemaVersion: 1, appId: manifest.appId, name: manifest.name, description: "本地合同测试", category: "sq", developer: { name: "派蒙" }, screenshots: [], offlineCapable: true };
   const release = { schemaVersion: 1, appId: manifest.appId, version: "0.1.0", channel: "stable", runtime: "web", minHostVersion: "0.5.1", minSdkVersion: "0.3.0", entry: "index.html", asset: "hello-app.autumn", bytes: 1024, sha256: "a".repeat(64), permissions: [], saveFormatVersion: 1 };
   schemaCheck("store valid", schemas.store.validate, store); schemaCheck("store invalid category", schemas.store.validate, { ...store, category: "verified" }, false);

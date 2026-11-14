@@ -13,7 +13,14 @@ namespace AutumnOS.Shell;
 
 public sealed partial class MainWindow
 {
-    private const double DesktopCellWidth = 130, DesktopCellHeight = 136;
+    private const double DesktopColumnWidth = 118, DesktopColumnSpacing = 12;
+    // 82 icon + 12 gap + 18 button padding + about 36 for two 13-DIP
+    // text lines needs 148 DIPs; reserve another 8 for the full second line.
+    private const double DesktopCellWidth = DesktopColumnWidth + DesktopColumnSpacing, DesktopCellHeight = 156;
+    private const int MaximumDesktopColumns = 3;
+    private int desktopColumns = MaximumDesktopColumns;
+    private bool? compactDesktopLayout;
+    private bool updatingDesktopLayout;
     private readonly Dictionary<Button, string> desktopIds = [];
     private DesktopLayoutStore? desktopLayoutStore;
     private List<string> desktopOrder = [];
@@ -45,9 +52,59 @@ public sealed partial class MainWindow
         {
             CancelDesktopDrag();
             SwitcherSurface.MaxHeight = Math.Max(180, Root.ActualHeight - 64);
+            UpdateDesktopViewportLayout();
         };
+        DesktopContentScroll.SizeChanged += (_, _) => UpdateDesktopViewportLayout();
+        DesktopAppScroll.SizeChanged += (_, _) => UpdateDesktopViewportLayout();
+        // A scrollbar can change the viewport without changing the control's
+        // ActualWidth. Reflow only when the resulting column count differs.
+        DesktopAppScroll.LayoutUpdated += (_, _) => UpdateDesktopViewportLayout();
+        DesktopPanel.Loaded += (_, _) => UpdateDesktopViewportLayout();
+        DesktopContentScroll.ViewChanged += (_, _) => CancelDesktopDrag();
+        DesktopAppScroll.ViewChanged += (_, _) => CancelDesktopDrag();
         Activated += (_, args) => { if (args.WindowActivationState == WindowActivationState.Deactivated) CancelDesktopDrag(); };
     }
+
+    private void UpdateDesktopViewportLayout()
+    {
+        if (updatingDesktopLayout || DesktopPanel.Visibility != Visibility.Visible || DesktopContentScroll.ActualWidth <= 0) return;
+        updatingDesktopLayout = true;
+        try
+        {
+            // Use WinUI layout DIPs rather than display pixels. Below this
+            // width the old two-column composition cannot fit three app cells.
+            bool compact = DesktopContentScroll.ActualWidth < 760;
+            if (compactDesktopLayout != compact)
+            {
+                CancelDesktopDrag();
+                compactDesktopLayout = compact;
+                DesktopContentGrid.ColumnSpacing = compact ? 0 : 28;
+                DesktopContentGrid.RowSpacing = compact ? 24 : 0;
+                DesktopContentGrid.Margin = compact ? new Thickness(16, 24, 16, 0) : new Thickness(32, 68, 24, 0);
+                DesktopIntroColumn.Width = new GridLength(compact ? 1 : 0.95, GridUnitType.Star);
+                DesktopEntriesColumn.Width = compact ? new GridLength(0) : new GridLength(1.35, GridUnitType.Star);
+                Grid.SetRow(DesktopEntriesPanel, compact ? 1 : 0);
+                Grid.SetColumn(DesktopEntriesPanel, compact ? 0 : 1);
+                DesktopEntriesPanel.Margin = compact ? new Thickness(0) : new Thickness(0, 24, 0, 0);
+                DesktopTime.FontSize = compact ? 52 : 76;
+            }
+
+            // The viewport excludes a visible vertical scrollbar. During a
+            // resize ActualWidth can update before ViewportWidth; choose the
+            // smaller valid width and let the next layout event finish reflow.
+            double available = VisibleViewportWidth(DesktopAppScroll);
+            if (available <= 0) return;
+            int columns = Math.Clamp((int)Math.Floor((available + DesktopColumnSpacing) / DesktopCellWidth), 1, MaximumDesktopColumns);
+            if (columns == desktopColumns && AppGrid.ColumnDefinitions.Count == columns) return;
+            CancelDesktopDrag();
+            desktopColumns = columns;
+            ArrangeDesktopEntries(); // Reflow never writes the saved ID order.
+        }
+        finally { updatingDesktopLayout = false; }
+    }
+
+    private static double VisibleViewportWidth(ScrollViewer viewer)
+        => viewer.ViewportWidth > 0 ? Math.Min(viewer.ActualWidth, viewer.ViewportWidth) : viewer.ActualWidth;
 
     private bool IsDesktopBlank(DependencyObject? source)
     {
@@ -90,12 +147,19 @@ public sealed partial class MainWindow
         }
         var byId = desktopIds.ToDictionary(pair => pair.Value, pair => pair.Key, StringComparer.Ordinal);
         int index = 0;
+        AppGrid.ColumnSpacing = DesktopColumnSpacing;
+        if (AppGrid.ColumnDefinitions.Count != desktopColumns)
+        {
+            AppGrid.ColumnDefinitions.Clear();
+            for (int column = 0; column < desktopColumns; column++)
+                AppGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(DesktopColumnWidth) });
+        }
         AppGrid.RowDefinitions.Clear();
         foreach (string id in desktopOrder)
         {
             if (!byId.TryGetValue(id, out var button)) continue;
-            while (AppGrid.RowDefinitions.Count <= index / 3) AppGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(DesktopCellHeight) });
-            Grid.SetRow(button, index / 3); Grid.SetColumn(button, index % 3);
+            while (AppGrid.RowDefinitions.Count <= index / desktopColumns) AppGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(DesktopCellHeight) });
+            Grid.SetRow(button, index / desktopColumns); Grid.SetColumn(button, index % desktopColumns);
             button.VerticalAlignment = VerticalAlignment.Top;
             button.TabIndex = index++;
         }
@@ -148,10 +212,15 @@ public sealed partial class MainWindow
     private int DesktopDropIndex(Point point, int count)
     {
         if (count == 0 || point.X < 0 || point.Y < 0 || point.X >= AppGrid.ActualWidth || point.Y >= AppGrid.ActualHeight) return -1;
-        // Reject drops outside the visible scrolling viewport even if the full grid continues below it.
-        Point viewportPoint = AppGrid.TransformToVisual(DesktopAppScroll).TransformPoint(point);
-        if (viewportPoint.Y < 0 || viewportPoint.Y >= DesktopAppScroll.ActualHeight) return -1;
-        return Math.Min(count - 1, (int)(point.Y / DesktopCellHeight) * 3 + Math.Min(2, (int)(point.X / DesktopCellWidth)));
+        // Both scroll viewers can clip the grid. A point in an offscreen cell
+        // must not reorder an entry through either invisible viewport edge.
+        foreach (ScrollViewer viewer in new[] { DesktopAppScroll, DesktopContentScroll })
+        {
+            Point viewportPoint = AppGrid.TransformToVisual(viewer).TransformPoint(point);
+            double height = viewer.ViewportHeight > 0 ? Math.Min(viewer.ActualHeight, viewer.ViewportHeight) : viewer.ActualHeight;
+            if (viewportPoint.X < 0 || viewportPoint.X >= VisibleViewportWidth(viewer) || viewportPoint.Y < 0 || viewportPoint.Y >= height) return -1;
+        }
+        return Math.Min(count - 1, (int)(point.Y / DesktopCellHeight) * desktopColumns + Math.Min(desktopColumns - 1, (int)(point.X / DesktopCellWidth)));
     }
 
     private void CompleteDesktopDrag(Button button, Point point)

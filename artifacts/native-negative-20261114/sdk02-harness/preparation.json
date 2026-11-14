@@ -1,0 +1,37 @@
+{
+  "status": "prepared_not_compiled_or_executed",
+  "driver_revision": "sdk02-negative-01-desktop",
+  "frozen_product": "T06-20261114-sdk-runtime-02",
+  "source_snapshot_id": "sha256:da3b718ae777d0a8e9ab166044e7d025df89107bf4b4561fac42c6b6bcbdada4",
+  "table_sha256": "c3c081994fea668703b57ab1c4643be77ec669b2655552fcb17e96ab7f33551b",
+  "independently_reviewed_table_sha256": "c3c081994fea668703b57ab1c4643be77ec669b2655552fcb17e96ab7f33551b",
+  "template_program_sha256": "2f9a8298a4e75a1e49be02f3ebbcb6ae61bea83dd74c26d5c1cf8e291ec4562f",
+  "prepared_root": "D:\\gpt\\化学启动器\\continuation-20261104\\artifacts\\packages\\T06-20261114-sdk-runtime-02\\AutumnOS-1.0.0-rc.6-win-x64-development",
+  "delivery_files_verified": 1997,
+  "delivery_hashes_sha256": "c41983c59bea3813013eacfc8bc27ad621e08f2051b8a16afb951df9202877cb",
+  "harness_files": [
+    {
+      "path": "Program.cs",
+      "bytes": 24661,
+      "sha256": "d8cf15021817a6e3795fb373af0bf4339ca2b13631d90866d4b9c40ada03efdb"
+    },
+    {
+      "path": "Sdk02.NativeNegative.csproj",
+      "bytes": 953,
+      "sha256": "c326955891c760ed24c5b9e2eaf7fbbb58fc5ad57313a362fa43c30ceff7e8c6"
+    },
+    {
+      "path": "Directory.Build.props",
+      "bytes": 734,
+      "sha256": "55dbe7e579a7bba33779db5e8c1c8331cca88e744e31162661d994e37b2a8612"
+    },
+    {
+      "path": "packages.lock.json",
+      "bytes": 116,
+      "sha256": "a88a601f99e73076c5567445f00aa228aac9781079b03c99f4688732b7a8876f"
+    }
+  ],
+  "owner_started": false,
+  "matrix_status": "not_run",
+  "shared_product_outputs_modified": false
+}

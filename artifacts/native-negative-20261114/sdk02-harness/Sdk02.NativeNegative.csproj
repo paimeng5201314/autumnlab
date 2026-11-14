@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><AssemblyName>AutumnOS.Sdk02.NativeNegative</AssemblyName>
+    <FrozenPreparedRoot>$(MSBuildThisFileDirectory)..\..\packages\T06-20261114-sdk-runtime-02\AutumnOS-1.0.0-rc.6-win-x64-development</FrozenPreparedRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutumnOS.NativeHost.Controller"><HintPath>$(FrozenPreparedRoot)\AutumnOS.NativeHost.Controller.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="AutumnOS.Runtime"><HintPath>$(FrozenPreparedRoot)\AutumnOS.Runtime.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="AutumnOS.Contracts"><HintPath>$(FrozenPreparedRoot)\AutumnOS.Contracts.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="AutumnOS.Storage"><HintPath>$(FrozenPreparedRoot)\AutumnOS.Storage.dll</HintPath><Private>true</Private></Reference>
+  </ItemGroup>
+</Project>

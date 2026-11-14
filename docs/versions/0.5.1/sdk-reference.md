@@ -1,8 +1,8 @@
-> 版本说明（2026-10-17）：本页保留 0.5.1 历史。当前宿主 `0.5.2-local.1`、SDK `0.3.0` / 协议 `1` 使用每实例原生证明，`networkSandboxVerified` 类型为 `boolean`，验证后返回 `true`；现版行为与范围见 [运行隔离](../../runtime-isolation.md)。
+> 版本说明（2026-11-13）：0.5.1 是保留的文档目录名。本页对应 SDK `0.4.0` / 协议 `1`；实际产品版本与冻结源码见交付目录 kit.json。`networkSandboxVerified` 是当前实例证明，不能代替完整隔离验收；范围见 [运行隔离](../../runtime-isolation.md)。
 
-# SDK 0.3.0 完整接口参考
+# SDK 0.4.0 完整接口参考
 
-适用 AutumnOS **0.5.1** 系列，SDK **0.3.0**，消息协议 **1**；制作人：派蒙。以下26方法与6事件均对应交付SDK/autumn-sdk.d.ts、message.schema.json及宿主已接通方法。类型方法从SDK0.3.0可用；平台仍应先检测实际capabilities。内部C#管理接口不在本页导出，identity.beginAppSession/network/任意命令不支持，返回CAPABILITY_UNAVAILABLE。
+SDK **0.4.0**、消息协议 **1**；制作人：派蒙。以下28方法与6事件对应交付SDK/autumn-sdk.d.ts、message.schema.json及宿主接入。原26方法保持SDK0.3兼容；两个network方法需要支持SDK0.4的宿主，并应先检测实际capabilities。内部C#管理接口不导出，identity.beginAppSession和任意命令仍不支持，返回CAPABILITY_UNAVAILABLE。
 
 ## 所有方法共同合同
 
@@ -18,14 +18,23 @@ requestId单调唯一；宿主保留最多2048个待处理及近期完成ID，�
 
 | 方法 / 目的 | params → result | 权限 / 空值 / 特定失败 / 重试 |
 |---|---|---|
-| platform.getCapabilities：协商支持 | `{}` → protocolVersion、capabilities、accountMode、networkSandboxVerified=false及limits | 无；只读。capabilities只列已接线服务，缺项不要调用 |
+| platform.getCapabilities：协商支持 | `{}` → protocolVersion、capabilities、accountMode、networkSandboxVerified及limits | 无；只读。networkSandboxVerified是当前实例的原生策略证明布尔值；capabilities只列已接线服务，缺项不要调用 |
 | lifecycle.getState：同步真实实例 | `{}` → `{state,blocksMaintenance}` | 无；挂起时仍可读，七状态为starting/foreground/background/suspended/closing/closed/crashed |
 | permissions.query：查决定 | `{name}` → `{name,state}` | 名称必须清单声明；PERMISSION_NOT_DECLARED。只读，不弹窗 |
 | permissions.request：请求决定 | `{name}` → 同上 | prompt要求手势；USER_GESTURE_REQUIRED/USER_CANCELLED，denied/revoked不自动重新询问。不自动重试 |
 | identity.getProfile：读已授权资料 | `{}` → `{appScopedUserId,displayName,avatarUrl,isCached}` | identity.profile且真实登录；AUTH_REQUIRED/AUTH_NOT_CONFIGURED/PERMISSION_DENIED/REVOKED/OFFLINE/PROFILE_INVALID。只读，不登录、不申请 |
 | identity.requestProfile：授权后读资料 | `{}` → 同上 | 登录与profile同意分开；需要时请求权限，不自动弹登录浏览器。不自动重试 |
 
-权限名仅saves、identity.profile、storage、files.open、files.save、notifications、shortcuts、widgets、links。appScopedUserId形如au1_加64位摘要，不是JWT或服务器凭证；昵称最大256字符，avatarUrl仅HTTPS或null，isCached是宿主真实离线缓存状态。不给邮箱、电话、完整claims或token，不加载远程头像。读取返回资料已披露，后续撤销不能远程擦除恶意应用内存。
+权限名为saves、identity.profile、storage、files.open、files.save、notifications、shortcuts、widgets、links、network。appScopedUserId形如au1_加64位摘要，不是JWT或服务器凭证；昵称最大256字符，avatarUrl仅HTTPS或null，isCached是宿主真实离线缓存状态。不给邮箱、电话、完整claims或token，不加载远程头像。读取返回资料已披露，后续撤销不能远程擦除恶意应用内存。
+
+## 网络
+
+| 方法 / 目的 | params → result | 权限与限制 |
+|---|---|---|
+| network.getStatus：读取链路及策略可用性 | `{}` → `{available,internetAccess:'unknown'}` | 不发网络请求，不要求network授权；不证明互联网可达 |
+| network.request：受限HTTP请求 | `{url,method?,headers?,body?,timeoutMs?}` → `{status,headers,body,encoding:'base64'}` | 当前network授权及精确声明域名；HTTPS443、固定公网地址连接；请求/响应体各16KiB，每实例并发2，最长20秒 |
+
+字段、错误、跳转、取消、账号与预览离线行为见[网络完整合同](network.md)。GET/HEAD最多3次校验跳转且移除Bearer；其他方法不自动重发body。HTTP错误状态按实际结果返回，传输或权限失败返回SDK错误，不能盲目重试写操作。
 
 ## 存档和私有数据
 

@@ -173,7 +173,7 @@
       "autumnos.identity": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.1, )",
+          "AutumnOS.Contracts": "[1.0.0, )",
           "Duende.IdentityModel.OidcClient": "[7.1.0, )",
           "Microsoft.IdentityModel.JsonWebTokens": "[8.23.0, )",
           "System.Security.Cryptography.ProtectedData": "[10.0.0, )"
@@ -186,40 +186,43 @@
         "type": "Project"
       },
       "autumnos.packages": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "AutumnOS.Contracts": "[1.0.0, )"
+        }
       },
       "autumnos.runtime": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.1, )",
-          "AutumnOS.Storage": "[0.5.1, )"
+          "AutumnOS.Contracts": "[1.0.0, )",
+          "AutumnOS.Storage": "[1.0.0, )"
         }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.1, )"
+          "AutumnOS.Contracts": "[1.0.0, )"
         }
       },
       "autumnos.store": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.1, )",
-          "AutumnOS.Packages": "[0.5.1, )",
-          "AutumnOS.Storage": "[0.5.1, )"
+          "AutumnOS.Contracts": "[1.0.0, )",
+          "AutumnOS.Packages": "[1.0.0, )",
+          "AutumnOS.Storage": "[1.0.0, )"
         }
       },
       "autumnos.update": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Store": "[0.5.1, )"
+          "AutumnOS.Store": "[1.0.0, )"
         }
       },
       "autumnos.updateprotocol": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Launcher": "[0.5.1, )",
-          "AutumnOS.Update": "[0.5.1, )"
+          "AutumnOS.Launcher": "[1.0.0, )",
+          "AutumnOS.Update": "[1.0.0, )"
         }
       },
       "Duende.IdentityModel.OidcClient": {

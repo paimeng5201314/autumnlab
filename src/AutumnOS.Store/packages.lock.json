@@ -6,12 +6,15 @@
         "type": "Project"
       },
       "autumnos.packages": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "AutumnOS.Contracts": "[1.0.0, )"
+        }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.5.1, )"
+          "AutumnOS.Contracts": "[1.0.0, )"
         }
       }
     },

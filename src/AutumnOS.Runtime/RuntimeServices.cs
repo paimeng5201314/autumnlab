@@ -16,6 +16,12 @@ public sealed class RuntimeSessionServices
     public Func<RuntimeAccountContext, CancellationToken, Task<RuntimeProfile>>? GetProfile { get; init; }
     public IIdentityService? Identity { get; init; }
     public IRuntimeAuthorityMutations? AuthorityMutations { get; init; }
+    public RuntimeNetworkService? Network { get; init; }
+    public Func<bool>? NetworkDisabled { get; init; }
+    public Func<CancellationToken>? NetworkPolicyInvalidated { get; init; }
+    /// <summary>Optional host policy gate; validate the captured generation and hold
+    /// only through synchronous I/O admission or native post, never across await.</summary>
+    public Func<CancellationToken, IDisposable>? EnterNetworkPolicyLease { get; init; }
     public Func<string, JsonElement, CancellationToken, Task<object>>? DataRequest { get; init; }
     public IReadOnlyList<string> DataCapabilities { get; init; } = ["saves", "storage", "preferences"];
     public DesktopExtensionService? Desktop { get; init; }

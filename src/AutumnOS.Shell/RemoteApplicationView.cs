@@ -62,6 +62,8 @@ internal sealed partial class RemoteApplicationView(Grid container, RuntimeSessi
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, closed.Token);
         try
         {
+            if (services.AuthorityMutations is PreviewAuthorityRouter previewRouter)
+                previewRouter.BindInstanceScope(session.AuthorityMutationScope);
             var route = services.AuthorityMutations is PreviewAuthorityRouter preview ? preview.For(session.AuthorityMutationScope) : services.AuthorityMutations;
             authority = route as RuntimeAuthorityMutationCoordinator ?? throw new PackageException("RUNTIME_AUTHORITY_UNAVAILABLE");
             services.Account.EnsureCurrent();

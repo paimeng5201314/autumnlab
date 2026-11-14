@@ -170,6 +170,7 @@ public sealed partial class RuntimeSession
         "storage.read" or "storage.write" or "storage.delete" or "preferences.get" or "preferences.set" => "storage",
         "files.pickOpen" or "files.read" => "files.open",
         "files.pickSave" or "files.write" => "files.save",
+        "network.request" => "network",
         _ => null
     };
 
@@ -252,6 +253,7 @@ public sealed partial class RuntimeSession
                 if (runtime.Identity is not null || runtime.GetProfile is not null) capabilities.Add("identity.profile");
                 if (runtime.DataRequest is not null) capabilities.AddRange(runtime.DataCapabilities);
                 if (runtime.Desktop is not null) capabilities.AddRange(["appearance", "notifications", "shortcuts", "widgets", "links.internal"]);
+                if (runtime.Network is not null) capabilities.Add("network");
                 return new { protocolVersion = 1, capabilities, accountMode = runtime.Account.IsGuest ? "guest" : "account", networkSandboxVerified = NetworkSandboxVerified,
                     limits = new { maximumMessageBytes = MaximumMessageBytes, maximumPendingRequests = MaximumPendingRequests,
                         maximumRequestsPerMinute = MaximumRequestsPerMinute, requestTimeoutMs = (int)requestTimeout.TotalMilliseconds,
@@ -260,6 +262,13 @@ public sealed partial class RuntimeSession
                 ExactManaged(parameters);
                 var current = Instance;
                 return new { state = current.State.ToString().ToLowerInvariant(), blocksMaintenance = current.BlocksMaintenance };
+            case "network.getStatus":
+                ExactManaged(parameters);
+                FreezePrivateResponseAuthority();
+                return new { available = runtime.Network is not null && runtime.Network.LinkAvailable && NetworkSandboxVerified && runtime.NetworkDisabled?.Invoke() != true,
+                    internetAccess = "unknown" };
+            case "network.request":
+                return await RequestNetworkAsync(RuntimeNetworkService.Parse(parameters), cancellationToken).ConfigureAwait(false);
             case "permissions.query":
                 ExactManaged(parameters, "name");
                 string queried = PermissionParameter(parameters);

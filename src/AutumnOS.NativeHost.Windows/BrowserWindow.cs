@@ -295,15 +295,25 @@ internal sealed partial class BrowserWindow : Form
 
     private async Task<bool> CloseOriginalAsync()
     {
-        closeObservation.Step = NativeBrowserCloseStep.Revoke;
-        closing = true; Revoke(); CompleteGate(false);
-        closeObservation.Step = NativeBrowserCloseStep.DeliveryDrain;
-        if (deliveryChannel is not null) await deliveryChannel.CloseAsync();
-        closeObservation.Step = NativeBrowserCloseStep.Controller;
-        controller?.Close();
-        closeObservation.Step = NativeBrowserCloseStep.Streams;
-        foreach (Stream stream in responseStreams) stream.Dispose();
-        responseStreams.Clear();
+        bool controllerClosed = false;
+        return await new BrowserCloseSequence(closeObservation).RunAsync(
+            () => { closing = true; Revoke(); },
+            () => CompleteGate(false),
+            () => deliveryChannel?.CloseAsync() ?? Task.CompletedTask,
+            () => { controller?.Close(); controllerClosed = true; },
+            responseStreams,
+            ObserveOriginalBrowserExitAsync,
+            () =>
+            {
+                browser?.Dispose(); browser = null;
+                // A throwing Close must not discard its owned controller/core
+                // references or turn an unknown cleanup into a local success.
+                if (controllerClosed) { core = null; controller = null; environment = null; }
+            });
+    }
+
+    private async Task<bool> ObserveOriginalBrowserExitAsync()
+    {
         // Local close status requires the original native browser handle AND SDK
         // process-set/exit event. The station independently retains its Job, OS
         // child handles and context owner even after receiving a Closed response.
@@ -336,9 +346,6 @@ internal sealed partial class BrowserWindow : Form
             }
             closeObservation.TimedOut = !observedExitSet;
         }
-        closeObservation.Step = NativeBrowserCloseStep.Release;
-        browser?.Dispose(); core = null; controller = null; environment = null;
-        closeObservation.Step = NativeBrowserCloseStep.Observe;
         return clean;
     }
 

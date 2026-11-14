@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:autumnos:schema:message:1",
-  "title": "AutumnOS SDK protocol 1 · T03 extension",
+  "title": "AutumnOS SDK protocol 1 · SDK 0.4 network extension",
   "description": "Requests and complete success responses are at most 32768 UTF-8 bytes, JSON depth 32, no duplicate keys. Before saves.write/preferences.set commit, the host serializes the full read response with a 64-character requestId; RESPONSE_TOO_LARGE rejects values that cannot be read back. Budgets count actual JSON escaping and UTF-8 bytes, not string length, and are enforced by the host in addition to this schema. Identity is host-bound, never a request property. Apply the method-specific parameter/result definitions in addition to the envelope.",
   "oneOf": [
     {
@@ -475,6 +475,38 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "network.getStatus"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/emptyParams"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "method": {
+                "const": "network.request"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/networkRequestParams"
+              }
+            }
+          }
         }
       ]
     },
@@ -647,10 +679,11 @@
               "notifications",
               "shortcuts",
               "widgets",
-              "links.internal"
+              "links.internal",
+              "network"
             ]
           },
-          "maxItems": 13,
+          "maxItems": 14,
           "uniqueItems": true
         },
         "accountMode": {
@@ -785,7 +818,8 @@
         "notifications",
         "shortcuts",
         "widgets",
-        "links"
+        "links",
+        "network"
       ]
     },
     "profile": {
@@ -1545,6 +1579,262 @@
           }
         }
       ]
+    },
+    "networkBase64": {
+      "type": "string",
+      "maxLength": 21848,
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$",
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 21844
+        },
+        {
+          "type": "string",
+          "pattern": "==$"
+        }
+      ],
+      "description": "Canonical base64 of at most 16384 bytes; empty is permitted. The host independently checks decoded bytes."
+    },
+    "networkStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "internetAccess"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "internetAccess": {
+          "const": "unknown"
+        }
+      }
+    },
+    "networkRequestHeaders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "accept": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "content-type": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "authorization": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 4096,
+          "pattern": "^Bearer [A-Za-z0-9._~+/-]+=*$"
+        },
+        "if-none-match": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "if-modified-since": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        }
+      },
+      "description": "ASCII header names and values share an 8192-byte aggregate host budget."
+    },
+    "networkRequestParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 2048,
+          "pattern": "^https://[^\\s]+$",
+          "description": "Host additionally enforces HTTPS443, exact declared host, no userinfo/fragment, public DNS addresses and pinned connections."
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ],
+          "default": "GET"
+        },
+        "headers": {
+          "$ref": "#/$defs/networkRequestHeaders"
+        },
+        "body": {
+          "$ref": "#/$defs/networkBase64"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000,
+          "default": 10000
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "anyOf": [
+              {
+                "not": {
+                  "properties": {
+                    "method": {}
+                  },
+                  "required": [
+                    "method"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "method"
+                ],
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "GET",
+                      "HEAD"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "body": {}
+              },
+              "required": [
+                "body"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "headers"
+            ],
+            "properties": {
+              "headers": {
+                "type": "object",
+                "required": [
+                  "content-type"
+                ],
+                "properties": {
+                  "content-type": {}
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "body"
+            ],
+            "properties": {
+              "body": {}
+            }
+          }
+        }
+      ]
+    },
+    "networkResponseHeaders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "content-type": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "content-language": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "content-length": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "content-encoding": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "etag": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "last-modified": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "cache-control": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "expires": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "retry-after": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 4096,
+          "pattern": "^[\\u0020-\\u007e]*$"
+        }
+      },
+      "description": "ASCII header names and values share a 4096-byte aggregate budget, enforced by the host and SDK."
+    },
+    "networkResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "headers",
+        "body",
+        "encoding"
+      ],
+      "properties": {
+        "status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "headers": {
+          "$ref": "#/$defs/networkResponseHeaders"
+        },
+        "body": {
+          "$ref": "#/$defs/networkBase64"
+        },
+        "encoding": {
+          "const": "base64"
+        }
+      }
     }
   }
 }
