@@ -1350,3 +1350,17 @@ SDK03四项原生各一次normal40.67s/browser38.69s/root-stall65.72s/pipe40.84s
 桌面和父工作根新建“AutumnOS SDK 修复验收版.lnk”，指向artifacts/portable-qa02/AutumnOS.exe；原正式用户入口/旧快捷方式/真实Data未动。SDK开发套件在artifacts/packages/T06-20261114-sdk-runtime-03/AutumnOS-1.0.0-rc.7-win-x64-development/Developer。CURRENT已对应本次限定交付，完整说明与GUI/原生/自动验证索引在artifacts/sdk-runtime-20261113/DELIVERY-SDK03.md及sdk03-delivery.json。最终逐600文件hash未改变，入口SHAd189d1cc3bf6a5b9c05ad77a18bedeb9290682c25c47a5c5b0a207f7c3d780d4。
 Win10/11按用户要求paused_by_user_not_run。完整隔离、旧qa03正常关闭失败根因、真实Logto、硬件输入/IME、完整安装/升级/回退、普通网络应用持久授权GUI与外部开发者验收仍未完成；普通第三方门禁不放行，不支持任意EXE。没有远端上传/发布、没有正式v1.0完成宣称。维护自动广泛清理未跑，保留未解决qa03诊断和未完成验收材料；已完成暂存按独立报告原字节迁C盘归档以腾出D盘空间。没有消费重置卡或休眠电脑。
 收尾为后续游戏运行空间，将历史SDK02 prepared完整1997文件/1,410,622,900字节按原delivery表逐hash迁C归档，报告artifacts/sdk-runtime-20261113/sdk02-prepared-relocation.json；当前SDK03 prepared/EXE和全部Data未动，D空约2.52GiB。
+
+### 2026-11-14 源码已上传，正式配置打包与 Release 续行
+用户再次明确要求以其账号上传 autumnlab。准备分支 codex/release-v1.0.0-preparation-20261112 已更新到 f8aac024717984914ce26ce0744201f8b5e934cc，tree23f392b579eae6b71b3cef23684a4a8620c49023；author/committer均paimeng5201314/派蒙。923项公开源码与远端blob逐项一致，103项改动、76项历史blob保留；600冻结源仍b776cc0ec00fca576a075e5d80be09749fdf6b5139d0515c973661a9241fd536。无强推、未改main/旧分支/标签，未上传Data/私钥/原始日志。源码ZIP3195750B SHA32e690926f89774086612b659d1a0fa64ccdd04605b65ff0667df194276186c1。
+同源新正式配置T06-20261114-sdk-prod-01/1.0.0/plus-v1.0.0，无临时开关；Release 29既有CA1416警告/0错误，九组passed（C#1295、SDK30、machine397），600源ZIP核验通过。完整EXE504264933B SHA5061691ba87c157c6e6bde1fce3eb398266816548d6f325d3fbccc3f7294bbed；内部payload588526762B SHA8340ed6b072007c039552f911c5c1df7b1235825abc1941dc0683cad5f4bdd4a；SDK0.4.0 ZIP37770580B SHA057f6ec183ccd84dc02c3b617fe129b7d14a044b861e155140f7130f12f906e5，356条目核验通过。详见artifacts/publication-sdk03-20261114/LOCAL-PRODUCTION-DELIVERY.md及production-package-final-hashes.json。
+当前正式配置原生GUI仍not_run；SDK03限定实测不可转记，完整隔离未完成，Win10/11按用户暂停。更新seq3清单仍IDs0/无签名，未上传为可安装更新；必须取得真实Release/Asset身份再绑定签名验证。当前旧Release422539615仍未替换，源码上传不代表二进制发行。浏览器已识别登录账号和编辑入口，附件操作尚在继续；最终状态以本目录publication-result.json和GitHub实际附件回读为准。
+为打包空间仅清理已完成的新native publish副本、新single-file冗余stage和一个旧prod02 prepared；完整hash清单与小证据已留存，旧prepared明确purged不可声称原路径可重放。旧完整EXE、源ZIP/历史结论、SDK03当前交付、SDK01/02历史prepared、qa03失败证据和全部Data保留。CURRENT本地测试入口仍SDK03，新增正式候选路径；source_uploaded=true，release_uploaded=false。
+
+## 2026-11-15 · GitHub 基础发行已发布，签名待解决
+
+- 按用户明确授权复用 Release 422539615，名称改为 autumn正式版v1.0.0，tag plus-v1.0.0，Latest 已实读核验。新标签指向 f8aac024717984914ce26ce0744201f8b5e934cc；旧 meta-v0.5.2-local.9 标签仍指向 753b26b13869fd27cd6e70122cc9113cf08b145e，未移动。既有 Release 的 target_commitish 历史字段保持旧值，实际源码以新 tag ref 为准。
+- 完整 AutumnOS.exe（748318676）、更新载荷（749582223）、SDK（748169209）、公开源码 ZIP（748167723）均已上传到该 Release，服务器大小及 SHA256 全部与本地冻结产物一致。旧附件采用版本化/legacy 改名保留。先前并发传输 storage request 失败已保留，后续单文件重传成功，未转记失败为通过。
+- 正式配置仍为 T06-20261114-sdk-prod-01，源 b776cc0e...；源码上传提交和产物均未因上传改字节。当前本机 SDK03 验收入口与用户数据保持不变。
+- 实际 bind-release 成功，但 sign-production 返回 CryptographicException，尚无有效 signature；verify 与旧根负控暂未运行。未签清单未上传，正在检查受控签名环境。完整发布/签名链暂不能标完成。
+- 证据：artifacts/publication-sdk03-20261114/release-metadata-saved.json、release-latest-and-tags-verified.json、remote-base-assets-verified.json、signed-release-422539615-749582223/、release-page.jpg。完整隔离仍未完成，Win10/11 与正式 GUI 仍 not_run。

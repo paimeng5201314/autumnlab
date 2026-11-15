@@ -1,31 +1,17 @@
 # AutumnOS v1.0.0 源码与验收状态
 
-制作人：派蒙。记录日期：2026-11-14。产品源码快照：`sha256:b776cc0ec00fca576a075e5d80be09749fdf6b5139d0515c973661a9241fd536`。
+制作人：派蒙。2026-11-15。当前构建 `T06-20261115-signing-recovery-prod-01`，产品 `1.0.0`，拟发布标签 `plus-v1.0.0-20261115`，源码 `sha256:a7699603f7e068739b4adf5a2db7508cd3bedc247c36086315604fe7c6d15a2e`。
 
-## 当前构件与证据范围
+本轮因原受控签名身份无法在当前允许环境恢复，按所有者授权创建全新生产身份 `autumnos-release-20261115-v2`（rootVersion 1）。新公开根 SHA256 为 `7609941f0705632b4353d350282388b18a2901a18c03a95d2677de82b40180dc`。两个独立新进程的非生产随机挑战已验证私钥可打开、签名可验且旧根拒绝；这不等于真实更新清单已签名或远端发布已完成。私钥没有公开。
 
-| 构件 | 版本与标签 | 已执行 | 尚未执行 |
-| --- | --- | --- | --- |
-| SDK03 限定平台验收 | `T06-20261114-sdk-runtime-03`，`1.0.0-rc.7` / `1.0.0-platform-test.8` | Release、九组自动检查；Server 20348 普通 Medium 合成游客上的四项原生组件及限定 GUI | Win10/11、完整隔离与全部硬件输入矩阵 |
-| prod01 正式配置 | `T06-20261114-sdk-prod-01`，`1.0.0` / `plus-v1.0.0` | Release、与本构件/源码绑定的九组自动报告全部 passed，含1295项C#；完整单文件打包完成 | 正式二进制原生/GUI 验收 `not_run`；附件尚未上传 |
+新公开根进入实际源快照，全部生产构建、九组自动报告和打包重新关联新字节，没有用新身份给旧 prod01 包补签。新正式配置未启用测试根、测试 feed 或临时平台验收开关。实际构建/九组状态与各报告摘要见 [当前构件摘要](artifacts/signing-recovery-20261115/publication/PUBLIC-REKEY-BUILD-AND-TESTS.json)，新公钥挑战的脱敏范围见 [身份摘要](artifacts/signing-recovery-20261115/publication/PUBLIC-SIGNING-IDENTITY.json)。二进制打包或远端资产若仍 pending，以该摘要和随后真实发布核验为准。
 
-两个构件使用同一产品源码。prod01 未启用临时平台验收开关，使用现有生产更新验证公钥；SDK03 的原生/GUI结果只属于其自身冻结字节。构建均为 0 错误、29 条既有 CA1416 测试平台标注警告。prod01 完整 EXE 为 504,264,933 字节，SHA256 `5061691ba87c157c6e6bde1fce3eb398266816548d6f325d3fbccc3f7294bbed`。Release 附件状态与后续说明另行记录，不据此声明已上传 EXE 或已完成 OTA。
+SDK 0.4 / 协议 1 的 `network.getStatus/request`、完整声明域权限、有界 HTTPS/DNS/重定向/头部/二进制预算、会话与预览策略租约、最终投递门禁已实现。原生运行时包含有界 IPC、原始进程/Job 与退出证据、资源限额、STA receipt/fence、独立关闭资源清理。桌面已修窄屏排列/滚动、拖放列数和两行名称行高。这些实现属于当前源码；它们不构成完整隔离验收通过。
 
-公开证据：[prod01 构建及九组摘要](artifacts/publication-sdk03-20261114/PUBLIC-PROD01-BUILD-AND-TESTS.json)、[prod01 实际源清单](artifacts/builds/T06-20261114-sdk-prod-01/source-snapshot.json)、[SDK03 限定结果](artifacts/publication-sdk03-20261114/PUBLIC-SDK03-RESULTS.json)。仅公开脱敏摘要，没有私钥、令牌、用户 Data 或原始进程/GUI日志。
+SDK03（旧 b776 源、临时平台验收配置）有独立的 Server20348/普通 Medium/合成游客限定原生与 GUI 证据：[历史结果](artifacts/publication-sdk03-20261114/PUBLIC-SDK03-RESULTS.json)。历史四项原生、桌面/游戏存档/网络预览 GUI 结果不转记给本轮新根构件。本轮正式 native/GUI 仍为 `not_run`，除非后续有明确同字节报告。旧 qa03 间歇正常关闭失败根因仍未证明，不能用后续通过覆盖。
 
-## 已实现与修复
+完整隔离未完成；Windows10/11 验证由用户暂停，保持 `paused_by_user_not_run`。普通第三方应用仍受权限和 `required_boundaries` 门禁约束，未验证边界继续拒绝。真实 Logto 浏览器往返、普通已安装网络应用持久许可 GUI、物理键鼠/触控/中文输入、完整 DPI/系统/安装器/失败回退矩阵仍需真实证据。预览内存许可不代表普通安装许可验收。
 
-- SDK 0.4 / 协议 1 已实现 `network.getStatus/request`，包含完整声明域集合绑定的权限、有界 HTTPS 代理、地址/重定向/头部与二进制预算、会话及预览策略租约。使用默认 TLS 验证，不提供宿主账号令牌；撤权、同 epoch 会话失效、离线和最终投递继续受门禁约束。接口见 [SDK 网络说明](docs/sdk-network.md)。
-- 原生运行时增加有界 IPC、原始进程/Job 退出证据与资源额度、STA Post receipt 和有序 fence。关闭中的独立资源清理不会因前一步异常跳过后续项，保留首个失败，不把 Unknown、断管或超时当作成功退出。
-- 桌面按实际视口重排并保持拖放列数一致，窄窗口纵向布局/滚动可达；行高与拖放 pitch 一致，保留两行名称显示。SDK03 已实测两行名称、排序保存/无效落点/重启保持、游戏旧档读写及新实例读回。
-- SDK03 原生正常关闭、浏览器失败、原宿主停滞、断管四项各一次通过。每组原进程/线程、原句柄与 Job0、资源退休及暂存释放均确认，无 harness 救援；仅停滞项请求产品原 Job 恢复。限定 GUI 另验网络预览精确域授权后真实 HTTP200、未声明域拒绝、offline/online、deny/restore，且最终实例强退休/双租约释放。
+旧 `plus-v1.0.0` tag 应保留在 `f8aac024717984914ce26ce0744201f8b5e934cc`；本轮使用新的 tag/source commit，不覆盖旧标签。旧客户端不会自动信任新根，现有版本未实现远程根轮换；同为 1.0.0 也不能承诺自动升级。首次迁移需要新完整入口并保留原 AutumnOS_Data、存档、凭据与安全账本，稳定 Updater/Bootstrap 的实际根和路径必须一致；不能删除 ledger 或启用未签名无人值守更新绕过。生产清单只有绑定真实 Release/Asset、验签及 payload 核验通过后才可提供，未绑定草稿不能安装。Authenticode 是独立证书事项，未声明已完成。
 
-旧 [迁移说明](docs/release-v1-migration.md) 中“SDK 网络未实现”的条目属于旧构件记录，当前已由 SDK0.4 实现与上述限定证据取代。该历史冻结文档字节保留；其余未完成项没有因此改为通过。旧 `release-v1-qa03` 间歇正常关闭失败根因仍未证明，后续通过不覆盖旧失败。
-
-## 继续保留的验收与发布边界
-
-完整隔离及权限/账号变更矩阵未完成；Windows 10/11 验证由用户暂停，状态 `paused_by_user_not_run`。正式配置 GUI、真实 Logto 浏览器往返、物理键鼠/触控/中文输入、完整 DPI/宽屏和一二列矩阵、普通已安装网络应用的持久许可 GUI、外部开发者接入、安装器与完整签名更新/失败回退矩阵仍需对应真实证据。临时预览内存授权不代表安装应用持久授权验收。
-
-普通第三方应用继续按实际权限和 `required_boundaries` 门禁处理，未验证边界不得以原型或构建成功放行。支持内部 Web/WASM `.autumn`，任意 Windows EXE 不属于应用支持范围。
-
-生产更新公钥已保留在源码；签名私钥没有公开。旧客户端不会自动信任新根，跨旧发行迁移仍须实际验证并保留数据/安全账本。未签名或未绑定真实 Release/Asset 的草稿不是可安装更新清单；不启用未签名无人值守更新。Authenticode 是独立证书事项，当前不声明已签名。
+历史冻结文档 `docs/production-update-signing.md` 和迁移说明中旧 keyId、旧发布限制或“SDK网络未实现”等内容只描述当时构件。当前源码/根及实现状态以本页、当前源清单和 SDK0.4 合同为准，其余历史失败与未执行项保留。

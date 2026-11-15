@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "key_id": "autumnos-release-20261115-v2",
+  "root_version": 1,
+  "purpose": "production",
+  "key_bits": 3072,
+  "public_trust_sha256": "7609941f0705632b4353d350282388b18a2901a18c03a95d2677de82b40180dc",
+  "public_key_sha256": "51457bbd4a6513331c58ae6ad12fb4cf793ab11ecd394e49378ba16c7a8c252d",
+  "two_fresh_process_open_sign_verify": "passed",
+  "old_roots_reject_new_challenge_signature": "passed",
+  "challenge_was_random_nonproduction_data": true,
+  "production_update_signature": "not_claimed_by_identity_challenge",
+  "private_key_exported": false,
+  "private_directory_and_process_identity_omitted": true,
+  "source_build_id": "T06-20261115-signing-recovery-prod-01",
+  "source_snapshot_id": "sha256:a7699603f7e068739b4adf5a2db7508cd3bedc247c36086315604fe7c6d15a2e"
+}

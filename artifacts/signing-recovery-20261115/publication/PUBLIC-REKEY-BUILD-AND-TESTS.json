@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "producer": "派蒙",
+  "scope": "New v2 ordinary production build and its own automatic reports; no inherited GUI/native result",
+  "build": {
+    "build_id": "T06-20261115-signing-recovery-prod-01",
+    "source_snapshot_id": "sha256:a7699603f7e068739b4adf5a2db7508cd3bedc247c36086315604fe7c6d15a2e",
+    "status": "passed",
+    "version": "1.0.0",
+    "release_label": "plus-v1.0.0-20261115",
+    "configuration": "Release",
+    "rid": "win-x64",
+    "sdk": "10.0.401",
+    "environment": "Microsoft Windows NT 10.0.20348.0",
+    "temporary_platform_acceptance": false,
+    "test_build": false,
+    "native_payload_table_sha256": "9d46d6b4f9774337ef676555034ad6bfaa6c9f05c6ab3b1c611f4afd9d06e23a",
+    "started_utc": "2026-11-15T00:33:34.174163-04:00",
+    "finished_utc": "2026-11-15T00:35:36.1774811-04:00",
+    "original_report_sha256": "6783e7e47d4e66b8a4a5f967c6f3399b005c2766d77f4433cd5b9aeef241a4f1"
+  },
+  "source_manifest": {
+    "path": "artifacts/builds/T06-20261115-signing-recovery-prod-01/source-snapshot.json",
+    "files": 600,
+    "sha256": "4d120afb3f9efad6a3c0b5ff244db84cd057d395fea7740baadb06e304b462e6",
+    "frozen_archive_sha256": "8e720b6839ec458e0b751e35ded324361543ca0cbcd3db486a347041076a650d"
+  },
+  "automatic": {
+    "status": "all_nine_current_groups_passed",
+    "groups": [
+      {
+        "name": "tests",
+        "status": "passed",
+        "total": 1295,
+        "failed": 0,
+        "original_report_sha256": "f94c1665ec5e7675725f8d56c41ee96e6cbaf227167fe0b9c44dba94c11967b9"
+      },
+      {
+        "name": "sdk-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "51562a8e3be359d4ca22430122ab01ee22662d11066350f39414de0395d4ba2c"
+      },
+      {
+        "name": "machine-contracts",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "25801c81e7f822790db2c4695926bae0bdcb90ddb5ece345eb5a861f59ea8b75"
+      },
+      {
+        "name": "sample-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "6d52fa81380090f7202318ae14be4c92c92d099506409018ae3e69f3927c602f"
+      },
+      {
+        "name": "chemleap-model-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "8e8736599ebf71bb26c887ab3f1cd17ee34a2f6d584be16ae137a5fa62363dbe"
+      },
+      {
+        "name": "native-client-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "00b09b305ba757c1232a09624fe7e879c306a945fb48e6689ce307c5bb622b95"
+      },
+      {
+        "name": "server-http-tests",
+        "status": "passed",
+        "total": null,
+        "failed": null,
+        "original_report_sha256": "105829d23ec4e85d7b374fa2397aa603051ce7042ed01c005d668b2ad6fc7492"
+      },
+      {
+        "name": "t04-tools-tests",
+        "status": "passed",
+        "total": 12,
+        "failed": 0,
+        "original_report_sha256": "c7010ae69d65d8c030956a9209b5afa4b774f3a4d0818b5232d1d2afbe4f0153"
+      },
+      {
+        "name": "production-update-tools",
+        "status": "passed",
+        "total": 18,
+        "failed": 0,
+        "original_report_sha256": "75d4c7ac2120e9925e44010a263bc8d9323f4afb0e2bbe75816577beb4583893"
+      }
+    ]
+  },
+  "prepared_package": "prepared",
+  "binary_packaging": {
+    "status": "pending",
+    "build_id": "T06-20261115-signing-recovery-prod-01",
+    "source_snapshot_id": "sha256:a7699603f7e068739b4adf5a2db7508cd3bedc247c36086315604fe7c6d15a2e",
+    "native_tests": "not_run",
+    "uploaded": false
+  },
+  "signing_identity": {
+    "path": "artifacts/signing-recovery-20261115/publication/PUBLIC-SIGNING-IDENTITY.json",
+    "key_id": "autumnos-release-20261115-v2",
+    "root_version": 1,
+    "public_trust_sha256": "7609941f0705632b4353d350282388b18a2901a18c03a95d2677de82b40180dc",
+    "challenge_status": "passed"
+  },
+  "formal_native": "not_run",
+  "formal_GUI": "not_run",
+  "full_isolation": "not_completed",
+  "windows10_11": "paused_by_user_not_run",
+  "ordinary_third_party_required_boundaries": "remain_fail_closed_until_verified",
+  "signature_and_release": "pending_separate_real_asset_binding_sign_verify_and_root_publication",
+  "old_plus_v1_0_0_tag_commit_to_preserve": "f8aac024717984914ce26ce0744201f8b5e934cc",
+  "old_SDK03_evidence": "Historical b776 candidate only; never transferred to new v2 bytes",
+  "raw_logs_Data_private_keys_tokens_process_IDs_or_account_namespaces_included": false
+}
