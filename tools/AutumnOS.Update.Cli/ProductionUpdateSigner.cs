@@ -13,7 +13,7 @@ internal sealed record ProductionSignerInfo(string KeyId, string PublicKeySha256
 
 /// <summary>Publisher-side update-manifest signing, not Windows Authenticode or a client trust override.</summary>
 [SupportedOSPlatform("windows")]
-internal static class ProductionUpdateSigner
+internal static partial class ProductionUpdateSigner
 {
     internal const string PrivateFileName = "signing-key.dpapi";
     internal const string MetadataFileName = "public-trust.json";
@@ -40,8 +40,8 @@ internal static class ProductionUpdateSigner
             // Win32 CreateDirectory is atomic and fails for an existing leaf. The
             // private DACL is attached at creation, before any key bytes are written.
             CreatePrivateDirectory(directory);
-            WriteNew(Path.Combine(directory, MetadataFileName), publicBytes);
-            WriteNew(Path.Combine(directory, PrivateFileName), encrypted);
+            WritePrivateNew(Path.Combine(directory, MetadataFileName), publicBytes);
+            WritePrivateNew(Path.Combine(directory, PrivateFileName), encrypted);
             CheckPrivateAccess(directory, isDirectory: true);
             CheckPrivateAccess(Path.Combine(directory, PrivateFileName), isDirectory: false);
             // If this last operation fails, retain the protected key and local
@@ -189,6 +189,33 @@ internal static class ProductionUpdateSigner
         UpdatePaths.EnsureNoReparsePoints(path);
         using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough);
         stream.Write(bytes); stream.Flush(true);
+    }
+
+    private static void WritePrivateNew(string path, byte[] bytes)
+    {
+        UpdatePaths.EnsureNoReparsePoints(path);
+        var current = WindowsIdentity.GetCurrent().User!;
+        var acl = new FileSecurity();
+        acl.SetOwner(current);
+        acl.SetAccessRuleProtection(true, false);
+        acl.AddAccessRule(new FileSystemAccessRule(current, FileSystemRights.FullControl, AccessControlType.Allow));
+        bool created = false;
+        try
+        {
+            using (var stream = new FileInfo(path).Create(FileMode.CreateNew, FileSystemRights.FullControl,
+                FileShare.None, 4096, FileOptions.WriteThrough, acl))
+            {
+                created = true;
+                stream.Write(bytes);
+                stream.Flush(true);
+            }
+            CheckPrivateAccess(path, isDirectory: false);
+        }
+        catch
+        {
+            if (created) RemoveOwnedFile(path);
+            throw;
+        }
     }
 
     private static void CheckPrivateAccess(string path, bool isDirectory)

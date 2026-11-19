@@ -12,7 +12,8 @@ $arguments = @('/nologo', '/utf8output', '/target:exe', '/main:PreparationTests'
     "/out:$testExecutable", '/reference:System.dll', '/reference:System.Core.dll',
     "/reference:$(Join-Path $framework 'System.IO.Compression.dll')", "/reference:$(Join-Path $framework 'System.Runtime.Serialization.dll')",
     '/reference:System.Windows.Forms.dll', '/reference:System.Drawing.dll',
-    (Join-Path $projectRoot 'src/AutumnOS.SingleFile/Program.cs'), (Join-Path $PSScriptRoot 'PreparationTests.cs'))
+    (Join-Path $projectRoot 'src/AutumnOS.SingleFile/Program.cs'), (Join-Path $projectRoot 'src/AutumnOS.SingleFile/StartupFailure.cs'),
+    (Join-Path $projectRoot 'src/AutumnOS.SingleFile/BundleFooter.cs'), (Join-Path $PSScriptRoot 'PreparationTests.cs'))
 & $compiler @arguments 2>&1 | Tee-Object -FilePath (Join-Path $reportRoot 'compile.log')
 if ($LASTEXITCODE -ne 0) { throw 'Preparation test compilation failed.' }
 if ($CompileOnly) {

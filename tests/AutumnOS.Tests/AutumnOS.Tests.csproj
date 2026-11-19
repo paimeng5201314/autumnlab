@@ -17,6 +17,8 @@
     <Compile Include="../../src/AutumnOS.Shell/PreviewAuthorityRouter.cs" Link="Runtime/PreviewAuthorityRouter.cs" />
     <Compile Include="../../src/AutumnOS.Shell/NativeDeploymentIdentity.cs" Link="NativeHost/NativeDeploymentIdentity.cs" />
     <Compile Include="../../tools/AutumnOS.Update.Cli/ProductionUpdateSigner.cs" Link="Update/ProductionUpdateSigner.cs" />
+    <Compile Include="../../tools/AutumnOS.Update.Cli/ProductionUpdateSigner.Recovery.cs" Link="Update/ProductionUpdateSigner.Recovery.cs" />
+    <Compile Include="../../tools/AutumnOS.Update.Cli/ProductionUpdateSigner.LocalProvision.cs" Link="Update/ProductionUpdateSigner.LocalProvision.cs" />
     <Compile Include="../../src/AutumnOS.SingleFile/StartupFailure.cs" Link="Startup/StartupFailure.cs" />
     <Compile Include="../../src/AutumnOS.SingleFile/BundleFooter.cs" Link="Startup/BundleFooter.cs" />
     <Compile Include="../../src/AutumnOS.Setup/SetupTransaction.cs" Link="Setup/SetupTransaction.cs" />

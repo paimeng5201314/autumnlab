@@ -11,7 +11,7 @@ $PSNativeCommandUseErrorActionPreference = $false
 Set-StrictMode -Version Latest
 
 # Publication is a separate job: the standard-user build never receives this token.
-if ($env:GITHUB_ACTIONS -ne 'true' -or $env:GITHUB_REPOSITORY -ne 'paimeng5201314/autumnlab' -or
+if ($env:GITHUB_ACTIONS -ne 'true' -or $env:GITHUB_REPOSITORY -ne 'paimeng5201314/autumnOS' -or
     $env:GITHUB_SHA -notmatch '^[a-f0-9]{40}$' -or $env:GITHUB_RUN_ID -notmatch '^[1-9][0-9]*$' -or
     $env:GITHUB_RUN_ATTEMPT -notmatch '^[1-9][0-9]*$' -or
     $env:GITHUB_REF -notlike 'refs/heads/codex/update-first-login-*' -or -not $env:GH_TOKEN) {

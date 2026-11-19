@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param([string]$BuildId = ('T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,6)),
-    [string]$BuildVersion, [string]$ReleaseLabel, [string]$ProductionUpdateTrustFile, [string]$TestUpdateTrustFile, [string]$TestUpdateFeedFile, [switch]$UpdateHealthFault, [switch]$LocalIsolationAcceptance, [switch]$TemporaryPlatformAcceptance)
+    [string]$BuildVersion, [string]$ReleaseLabel, [ValidateRange(0,9223372036854775807)][long]$UpdateSequence = 0,
+    [string]$ProductionUpdateTrustFile, [string]$TestUpdateTrustFile, [string]$TestUpdateFeedFile, [switch]$UpdateHealthFault, [switch]$LocalIsolationAcceptance, [switch]$TemporaryPlatformAcceptance)
 . "$PSScriptRoot/Common.ps1"
 if(-not $ProductionUpdateTrustFile -and -not $TestUpdateTrustFile){
     $defaultUpdateTrust=Join-Path $ProjectRoot 'build/update-trust.production.json'
@@ -20,7 +21,8 @@ $report = [ordered]@{ build_id=$BuildId; task_id=$BuildId.Split('-')[0]; source_
 try {
     if($ProductionUpdateTrustFile -and $TestUpdateTrustFile){throw 'Production and test trust roots cannot coexist.'}
     $extraInputs=@($ProductionUpdateTrustFile,$TestUpdateTrustFile,$TestUpdateFeedFile|Where-Object {$_})
-    $properties=@()
+    $properties=@("-p:AutumnUpdateSequence=$($UpdateSequence.ToString([cultureinfo]::InvariantCulture))")
+    $report.update_sequence=$UpdateSequence
     if($TemporaryPlatformAcceptance -and (!$LocalIsolationAcceptance -or !$BuildVersion -or $TestUpdateTrustFile -or $ReleaseLabel -notmatch 'platform-test')){
         throw 'Temporary platform acceptance requires a private isolation acceptance build, explicit version, normal trust and platform-test release label.'
     }
@@ -80,9 +82,11 @@ try {
     $assembly.GetCustomAttributesData() | Where-Object { $_.AttributeType.Name -eq 'AssemblyMetadataAttribute' } | ForEach-Object {
         $metadata[$_.ConstructorArguments[0].Value] = $_.ConstructorArguments[1].Value
     }
-    if ($metadata.BuildId -ne $BuildId -or $metadata.SourceSnapshotId -ne $snapshot) {
+    if ($metadata.BuildId -ne $BuildId -or $metadata.SourceSnapshotId -ne $snapshot -or
+        $metadata.UpdateSequence -cne $UpdateSequence.ToString([cultureinfo]::InvariantCulture) -or
+        $metadata.SemanticVersion -cne $version) {
         $report.status = 'failed'
-        throw 'Output binary does not match the requested build ID and source snapshot.'
+        throw 'Output binary does not match the requested version, update sequence, build ID or source snapshot.'
     }
     Get-ChildItem -LiteralPath (Join-Path $ProjectRoot (Split-Path $report.output_path)) -File -Recurse | Where-Object { $_.FullName -notmatch '[\\/]AutumnOS_Data[\\/]' } | ForEach-Object {
         [ordered]@{ path=[IO.Path]::GetRelativePath($ProjectRoot,$_.FullName).Replace('\','/'); sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }

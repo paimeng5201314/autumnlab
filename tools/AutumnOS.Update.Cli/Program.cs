@@ -9,7 +9,7 @@ using AutumnOS.Store;
 
 try
 {
-    if (args.Length == 0) throw new ArgumentException("命令：keygen-test、init-production、export-production-public、inventory、prepare、prepare-draft、bind-release、sign、sign-production、verify。参数格式：--名称 值。");
+    if (args.Length == 0) throw new ArgumentException("命令：keygen-test、init-production、export-production-public、provision-production、backup-production、restore-production、restore-local、inventory、prepare、prepare-draft、bind-release、sign、sign-production、verify。参数格式：--名称 值。");
     var values = new Dictionary<string, string>(StringComparer.Ordinal);
     for (int i = 1; i < args.Length; i += 2)
         if (i + 1 >= args.Length || !args[i].StartsWith("--") || !values.TryAdd(args[i][2..], args[i + 1])) throw new ArgumentException("Invalid arguments.");
@@ -51,6 +51,28 @@ try
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException();
         AllowOnly("private-directory", "public-output");
         Console.WriteLine(JsonSerializer.Serialize(ProductionUpdateSigner.ExportPublic(Get("private-directory"), Get("public-output"))));
+    }
+    else if (args[0] == "provision-production")
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException();
+        AllowOnly("key-id", "private-directory", "restore-directory", "backup", "recovery-code", "public-output");
+        Console.WriteLine(JsonSerializer.Serialize(ProductionUpdateSigner.ProvisionLocal(Get("key-id"),
+            Get("private-directory"), Get("restore-directory"), Get("backup"), Get("recovery-code"), Get("public-output"))));
+    }
+    else if (args[0] == "restore-local")
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException();
+        AllowOnly("private-directory", "backup", "trust", "key-id", "recovery-code");
+        Console.WriteLine(JsonSerializer.Serialize(ProductionUpdateSigner.RestoreLocal(Get("backup"),
+            Get("private-directory"), Get("trust"), Get("key-id"), Get("recovery-code"))));
+    }
+    else if (args[0] is "backup-production" or "restore-production")
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException();
+        AllowOnly("private-directory", "backup", "trust", "key-id");
+        var info = ProductionUpdateSigner.RunRecoveryCommand(args[0] == "backup-production",
+            Get("private-directory"), Get("backup"), Get("trust"), Get("key-id"));
+        Console.WriteLine(JsonSerializer.Serialize(info));
     }
     else if (args[0] is "prepare" or "prepare-draft")
     {

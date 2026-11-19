@@ -14,6 +14,8 @@ namespace AutumnOS.SingleFile
     {
         internal const string PayloadSha256 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
         internal const string BuildId = "preparation-test-only";
+        internal const string SourceSnapshotId = "preparation-test-only";
+        internal const long UpdateSequence = 93;
     }
 }
 
@@ -68,6 +70,17 @@ internal static class PreparationTests
         try
         {
             string report = Path.GetFullPath(args[0]);
+            string receiptDir = Directory.CreateDirectory(Path.Combine(report, "seed-receipt")).FullName;
+            string receiptPath = Path.Combine(receiptDir, "autumn.install.json");
+            string seed = "{\"schemaVersion\":1,\"buildId\":\"preparation-test-only\",\"sequence\":93}";
+            File.WriteAllText(receiptPath, seed);
+            Check(Call("ReadReceipt", receiptDir) != null, "portable_seed_matches_compiled_revision");
+            File.WriteAllText(receiptPath, seed.Replace("93", "92"));
+            Rejected(delegate { Call("ReadReceipt", receiptDir); }, "PORTABLE_RECEIPT_INVALID");
+            File.WriteAllText(receiptPath, seed.Replace(",\"sequence\":93", ""));
+            Rejected(delegate { Call("ReadReceipt", receiptDir); }, "PORTABLE_RECEIPT_INVALID");
+            File.WriteAllText(receiptPath, seed.Replace("preparation-test-only", "updated-elsewhere").Replace("93", "94"));
+            Check(Call("ReadReceipt", receiptDir) != null, "portable_updated_build_uses_its_own_revision");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Control.CheckForIllegalCrossThreadCalls = true;

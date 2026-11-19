@@ -12,7 +12,7 @@ foreach ($folder in @('src','tests','build','scripts','docs','samples','sdk','to
         Get-ChildItem -LiteralPath $root -File -Recurse | Where-Object {
             $_.FullName -notmatch '[\\/](bin|obj|AutumnOS_Data|artifacts|\.tools)[\\/]' -and
             $_.Extension -notin @('.pfx','.p12','.key','.pem','.pk8','.dpapi','.snk','.log','.binlog') -and
-            $_.Name -notmatch '^(\.env($|\.)|secrets\.json$|credentials\.json$)'
+            $_.Name -notmatch '^(\.env($|\.)|secrets\.json$|credentials\.json$|recovery-code\.txt$)'
         } | ForEach-Object { $paths.Add($_.FullName) }
     }
 }
@@ -25,7 +25,7 @@ $entries = @($paths | Sort-Object -Unique | ForEach-Object {
 } | Sort-Object { $_.path })
 foreach($inputPath in $AdditionalInputs) {
     $item=Get-Item -LiteralPath $inputPath
-    if($item.Extension -notin @('.json','.txt') -or $item.Length -gt 65536 -or (Get-Content -LiteralPath $item.FullName -Raw) -match 'PRIVATE KEY|privateKey|refresh_token|access_token'){throw 'Only bounded public build inputs may enter a source snapshot.'}
+    if($item.Name -ieq 'recovery-code.txt' -or $item.Extension -notin @('.json','.txt') -or $item.Length -gt 65536 -or (Get-Content -LiteralPath $item.FullName -Raw) -match 'PRIVATE KEY|privateKey|refresh_token|access_token'){throw 'Only bounded public build inputs may enter a source snapshot.'}
     $entries += [ordered]@{path=('build-inputs/'+$item.Name);bytes=$item.Length;sha256=(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
 }
 $entries=@($entries|Sort-Object { $_.path })

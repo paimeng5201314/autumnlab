@@ -11,7 +11,7 @@ public sealed record UpdateFailureDiagnostic(string TransactionId, string Phase,
 
 public static class UpdateTransaction
 {
-    public const string UpdaterVersion = "1.1.0";
+    public const string UpdaterVersion = UpdateRevisionPolicy.ProtocolVersion;
     public static UpdateFailureDiagnostic? LastFailure { get; private set; }
     private sealed class ApplyContext { internal string Phase = "inventory"; internal string? File; internal bool Recorded; }
     private static string JournalPath(string root) => Path.Combine(UpdateFiles.Work(root), "journal.json");
@@ -46,8 +46,8 @@ public static class UpdateTransaction
                 return "UPDATE_UPDATER_TOO_OLD";
             // Protocol 1.1 is the first release profile that can read first-run v2.
             // Restoring an old onboarding file would incorrectly repeat setup/logout.
-            if (rollback && minimum!.CompareTo(updater) < 0) return "UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED";
-            if (minimum!.CompareTo(updater) < 0)
+            if (rollback && minimum!.CompareTo(SemanticVersion.Parse("1.1.0")) < 0) return "UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED";
+            if (minimum!.CompareTo(SemanticVersion.Parse("1.1.0")) < 0)
             {
                 string firstRun = Path.Combine(UpdateFiles.DataRoot(root), "Config", "first-run.json");
                 UpdatePaths.EnsureNoReparsePoints(firstRun);
@@ -136,8 +136,8 @@ public static class UpdateTransaction
         if (security.FailedBuilds.Contains(manifest.BuildId, StringComparer.Ordinal)) throw new IOException("UPDATE_FAILED_BUILD_BLOCKED");
         var installed = UpdateFiles.ReadInstalled(root);
         if (installed.BuildId != offer.CurrentBuildId || installed.Version != offer.CurrentVersion) throw new IOException("UPDATE_CURRENT_BUILD_MISMATCH");
-        if (!SemanticVersion.TryParse(manifest.Version, out var target) || !SemanticVersion.TryParse(installed.Version, out var current) ||
-            (offer.RollbackAuthorization is null ? target!.CompareTo(current) <= 0 : target!.CompareTo(current) >= 0)) throw new IOException("UPDATE_DOWNGRADE_FORBIDDEN");
+        if (UpdateRevisionPolicy.CheckOrder(manifest, installed.Version, installed.BuildId, installed.Sequence, offer.RollbackAuthorization is not null) is { } orderError)
+            throw new IOException(orderError);
         if (!SemanticVersion.TryParse(manifest.MinimumUpdaterVersion, out var minimum) || !SemanticVersion.TryParse(UpdaterVersion, out var updater) || minimum!.CompareTo(updater) > 0) throw new IOException("UPDATE_UPDATER_TOO_OLD");
         if (GetCompatibility(root, manifest, offer.RollbackAuthorization is not null) is { } compatibilityError) throw new IOException(compatibilityError);
         if (offer.TargetIdentity is { } identity && (identity.Repository != manifest.Repository || identity.ReleaseId != manifest.Payload.ReleaseId ||
@@ -145,18 +145,25 @@ public static class UpdateTransaction
             identity.Asset != manifest.Payload.Asset || identity.Bytes != manifest.Payload.Bytes || identity.Sha256 != manifest.Payload.Sha256 || identity.ManifestSha256 != offer.ManifestSha256))
             throw new IOException("UPDATE_HANDOFF_TARGET_CHANGED");
         string policyPath = Path.Combine(UpdateFiles.DataRoot(root), "Updates", "state.json");
+        bool sameRevisionTrain = manifest.Version == installed.Version;
         UpdatePaths.EnsureNoReparsePoints(policyPath);
         if (File.Exists(policyPath))
         {
             if (new FileInfo(policyPath).Length > 128 * 1024) throw new IOException("UPDATE_POLICY_INVALID");
             using var policy = JsonDocument.Parse(File.ReadAllBytes(policyPath));
+            if (sameRevisionTrain && (offer.TargetIdentity is null || manifest.Sequence != security.HighestSequence ||
+                security.ManifestSha256 != offer.ManifestSha256 || !policy.RootElement.TryGetProperty("pendingManifestSha256", out var pending) ||
+                pending.ValueKind != JsonValueKind.String || pending.GetString() != offer.ManifestSha256 ||
+                !policy.RootElement.TryGetProperty("pendingFromBuildId", out var from) || from.GetString() != installed.BuildId)) throw new IOException("UPDATE_SEQUENCE_REUSED");
             if (manifest.Channel == "meta" && (!policy.RootElement.TryGetProperty("preview", out var enabled) || enabled.ValueKind != JsonValueKind.True)) throw new IOException("UPDATE_PREVIEW_DISABLED");
             if (policy.RootElement.TryGetProperty("retryAfterUtc", out var retry) && retry.ValueKind == JsonValueKind.String &&
                 retry.TryGetDateTimeOffset(out var after) && after > DateTimeOffset.UtcNow) throw new IOException("UPDATE_RATE_LIMITED");
         }
+        else if (sameRevisionTrain) throw new IOException("UPDATE_CONSENT_REQUIRED");
         else if (manifest.Channel == "meta") throw new IOException("UPDATE_PREVIEW_DISABLED");
         UpdateApplySourceGuard.VerifyDefaultAsync(manifest, offer.TargetIdentity?.Tag ?? offer.RollbackAuthorization?.ReleaseTag ?? manifest.ReleaseTag ?? manifest.Channel + "-v" + manifest.Version,
-            CancellationToken.None, offer.ManifestSha256, new StoreNetworkSettingsService(UpdateFiles.DataRoot(root)).Load()).GetAwaiter().GetResult();
+            CancellationToken.None, offer.ManifestSha256, new StoreNetworkSettingsService(UpdateFiles.DataRoot(root)).Load(),
+            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(signed))).GetAwaiter().GetResult();
         foreach (var file in manifest.Files) _ = UpdateFiles.Managed(root, file.Path);
         foreach (var path in manifest.RemoveFiles) _ = UpdateFiles.Managed(root, path);
         UpdatePayload.VerifyAsync(Path.Combine(tx, "payload.zip"), manifest, CancellationToken.None).GetAwaiter().GetResult();
@@ -258,7 +265,7 @@ public static class UpdateTransaction
             }
             foreach (var path in removals) { context.Phase = "remove"; context.File = path; File.Delete(UpdateFiles.Managed(root, path)); }
             context.Phase = "receipt"; context.File = UpdateFiles.ReceiptName;
-            UpdateFiles.Write(Path.Combine(root, UpdateFiles.ReceiptName), new InstalledBuild(1, manifest.Version, manifest.BuildId, next, manifest.Data.SchemaVersion));
+            UpdateFiles.Write(Path.Combine(root, UpdateFiles.ReceiptName), new InstalledBuild(1, manifest.Version, manifest.BuildId, next, manifest.Data.SchemaVersion, manifest.Sequence));
             context.Phase = "journal-health"; context.File = null;
             UpdateFiles.Write(JournalPath(root), journal with { Phase = "health" });
         }

@@ -193,6 +193,51 @@ foreach ($property in @('-p:TestUpdateTrustFile=C:/synthetic-test.json',
         Assert-Rejected { Assert-ProductionUpdateBuild $b } $productionRejected
     }
 }
+Test-Case 'staging.share_validated_bytes_and_reject_writes_until_zip_closed' {
+    $dir=Join-Path ([IO.Path]::GetTempPath()) ('Autumn-stage-'+[guid]::NewGuid().ToString('N'))
+    $null=[IO.Directory]::CreateDirectory($dir)
+    $source=Join-Path $dir 'source.bin';$stage=Join-Path $dir 'staged.bin';$archive=Join-Path $dir 'packed.zip'
+    $leases=[Collections.Generic.List[IO.FileStream]]::new()
+    try {
+        [IO.File]::WriteAllText($source,'frozen')
+        $entry=@{bytes=6;sha256=(Get-FileHash -LiteralPath $source).Hash.ToLowerInvariant()}
+        $originalAttributes=(Get-Item -LiteralPath $source).Attributes
+        Add-VerifiedStagingLink -Source $source -Target $stage -Entry $entry -ReadLeases $leases
+        foreach($path in @($source,$stage)){
+            $rejected=$false
+            try {[IO.File]::WriteAllText($path,'changed')}catch [IO.IOException] {$rejected=$true}
+            Assert-True $rejected 'Source and staging must both refuse mutation.'
+        }
+        $zip=[IO.Compression.ZipFile]::Open($archive,[IO.Compression.ZipArchiveMode]::Create)
+        try {$null=[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip,$stage,'payload.bin')}finally{$zip.Dispose()}
+        $zip=[IO.Compression.ZipFile]::OpenRead($archive)
+        try {
+            $record=$zip.GetEntry('payload.bin')
+            $stream=$record.Open()
+            try {$digest=[Convert]::ToHexStringLower([Security.Cryptography.SHA256]::HashData($stream))}finally{$stream.Dispose()}
+            Assert-True ($record.Length -eq 6 -and $digest -ceq $entry.sha256 -and ($record.ExternalAttributes -band [int][IO.FileAttributes]::ReparsePoint) -eq 0) 'Archive must independently contain regular file bytes.'
+        } finally {$zip.Dispose()}
+        Assert-True ((Get-Item -LiteralPath $source).Attributes -eq $originalAttributes) 'Archiving changed the original attributes.'
+    } finally {
+        foreach($lease in $leases){$lease.Dispose()}
+        foreach($path in @($stage,$source,$archive)){[IO.File]::Delete($path)}
+        [IO.Directory]::Delete($dir,$false)
+    }
+}
+Test-Case 'staging.share_rejects_unfrozen_source' {
+    $dir=Join-Path ([IO.Path]::GetTempPath()) ('Autumn-stage-'+[guid]::NewGuid().ToString('N'))
+    $null=[IO.Directory]::CreateDirectory($dir)
+    $source=Join-Path $dir 'source.bin';$stage=Join-Path $dir 'staged.bin'
+    $leases=[Collections.Generic.List[IO.FileStream]]::new()
+    try {
+        [IO.File]::WriteAllText($source,'changed')
+        Assert-Rejected {Add-VerifiedStagingLink -Source $source -Target $stage -Entry @{bytes=7;sha256=('0'*64)} -ReadLeases $leases} 'Shared staging input differs from frozen delivery.'
+    } finally {
+        foreach($lease in $leases){$lease.Dispose()}
+        foreach($path in @($stage,$source)){[IO.File]::Delete($path)}
+        [IO.Directory]::Delete($dir,$false)
+    }
+}
 Test-Case 'helpers.source_bytes_remain_stable_during_run' {
     foreach($inputRecord in $helperInputs){
         $path=Join-Path $projectRoot $inputRecord.path

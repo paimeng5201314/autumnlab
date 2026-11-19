@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "purpose": "production",
+  "keys": [
+    {
+      "keyId": "autumnos-release-20261115-v2",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA2RPRbC9d3caZbhNn/CSg\n/7pm1L0cQhitDyJOWLQYCTj4yOhNMjP1W70NYdBei8pEVw2HRSfWwgDpCIVsHzVE\ndbUQAis18Mqj\u002BRsUJ/oZ2u9D8Cl1RxC4FiXA1/wqRsRNVPTqUrEiSYOYlXH5L/NK\n652F/utHhB0V/iYSzN\u002BIk9T8n0FBbNphjbirm07UbCOXYNB59gE5IuVYD1RiYUEG\nuyGA11Yt7cieqPFyzUEe9wYZXMqD5agD32E43swUt0kTxEgLEqA\u002BxSQczJMPxN9e\n5Z3Bhwv1G\u002BHaNPpGCfeoDZ612SQCGzBHpKIj2MWZp6PAA6z0dVXbaGMvQ3MZEIX\u002B\nbK/84lMr/9oDdmMT3rkCO9CLjuEJjIzKTTgz2Hd/NdONtn9QpTX4YDx4zK3HjTmT\n2jivXI92k/A3NTE\u002BxbOJe8Q0t95RQIo0ootYIYdQTuhCvVPm98OUK1d2MfG7dEVz\n1c8f5lOT5ZVCefi41YDQYwgWmKj67kJ2QMrgmP96ebWJAgMBAAE=\n-----END PUBLIC KEY-----",
+      "revoked": false
+    }
+  ]
+}

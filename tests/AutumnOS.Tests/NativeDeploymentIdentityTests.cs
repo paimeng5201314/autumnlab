@@ -16,12 +16,21 @@ internal static class NativeDeploymentIdentityTests
             var installed = new InstalledBuild(1, "1.0.0", "owned-build",
                 [new("AutumnOS.Client.exe", 1, new string('a', 64)),
                     new("NativeHost/AutumnOS.NativeHost.Windows.exe", 2, new string('b', 64)),
-                    new("WebView2Runtime/msedgewebview2.exe", 3, new string('c', 64))], 1);
+                    new("WebView2Runtime/msedgewebview2.exe", 3, new string('c', 64))], 1, 93);
             byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(installed, UpdateFiles.Json);
             using var json = JsonDocument.Parse(bytes);
             if (json.RootElement.GetProperty("dataSchemaVersion").GetInt32() != 1)
                 throw new InvalidOperationException("The real updater receipt must exercise its dataSchemaVersion field.");
-            NativeDeploymentIdentity.ValidateReceipt(bytes, "owned-build", "1.0.0");
+            NativeDeploymentIdentity.ValidateReceipt(bytes, "owned-build", "1.0.0", 93);
+        });
+        yield return ("native.installation.receipt_revision_binds_to_the_running_build", () =>
+        {
+            string WithSequence(string value) => Receipt.Replace("\"files\":", "\"sequence\":" + value + ",\"files\":");
+            NativeDeploymentIdentity.ValidateReceipt(Encoding.UTF8.GetBytes(Receipt), "owned-build", "1.0.0", 0);
+            Reject(Receipt, 93);
+            Reject(WithSequence("94"), 93);
+            foreach (string malformed in new[] { "-1", "null", "true", "\"93\"", "93.5", "9223372036854775808", "93,\"sequence\":93" })
+                Reject(WithSequence(malformed), 93);
         });
         yield return ("native.installation.unsupported_or_untyped_data_schema_is_rejected", () =>
         {
@@ -48,9 +57,9 @@ internal static class NativeDeploymentIdentityTests
     }
     private const string Receipt = """{"schemaVersion":1,"version":"1.0.0","buildId":"owned-build","files":[{}]}""";
     private static void Validate(string json) => NativeDeploymentIdentity.ValidateReceipt(Encoding.UTF8.GetBytes(json), "owned-build", "1.0.0");
-    private static void Reject(string json)
+    private static void Reject(string json, long? sequence = null)
     {
-        try { Validate(json); } catch (IOException) { return; }
+        try { NativeDeploymentIdentity.ValidateReceipt(Encoding.UTF8.GetBytes(json), "owned-build", "1.0.0", sequence); } catch (IOException) { return; }
         throw new InvalidOperationException("Invalid deployment identity was accepted.");
     }
 }

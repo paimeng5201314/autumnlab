@@ -1,17 +1,19 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using AutumnOS.Store;
+using AutumnOS.Contracts;
 
 namespace AutumnOS.Update;
 
 /// <summary>Public main-program updates. Discovery never grants download or restart consent.</summary>
 public sealed class UpdateService : IDisposable, IAsyncDisposable
 {
-    public const string Repository = "paimeng5201314/autumnlab";
-    public const string UpdaterVersion = "1.1.0";
+    public const string Repository = AutumnOS.Contracts.BrandInfo.UpdateRepository;
+    public const string UpdaterVersion = UpdateRevisionPolicy.ProtocolVersion;
     private readonly object gate = new();
     private readonly SemaphoreSlim operation = new(1, 1);
     private readonly string dataRoot, statePath, stagedPath, currentBuildId, programDirectory;
+    private readonly long installedSequence;
     private readonly UpdateMetadataClient metadata;
     private readonly IDownloadService downloads;
     private readonly UpdateTrustStore trust;
@@ -44,9 +46,11 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
         { ownedTransport = transport as IDisposable, ownedDownloads = downloads };
     }
     public UpdateService(string dataRoot, string currentVersion, string currentBuildId, IGitHubTransport transport,
-        IDownloadService downloads, UpdateTrustStore? trust = null, Func<DateTimeOffset>? clock = null, Func<string, IDisposable>? enterCriticalOperation = null, string? programDirectory = null, Func<UpdateManifest, bool, string?>? compatibilityCheck = null)
+        IDownloadService downloads, UpdateTrustStore? trust = null, Func<DateTimeOffset>? clock = null, Func<string, IDisposable>? enterCriticalOperation = null, string? programDirectory = null, Func<UpdateManifest, bool, string?>? compatibilityCheck = null, long? installedSequence = null)
     {
         _ = SemanticVersion.Parse(currentVersion);
+        this.installedSequence = installedSequence ?? (currentBuildId == BrandInfo.BuildId && currentVersion == BrandInfo.Version ? BrandInfo.UpdateSequence : 0);
+        if (this.installedSequence < 0) throw new ArgumentOutOfRangeException(nameof(installedSequence));
         this.dataRoot = Path.GetFullPath(dataRoot); this.currentBuildId = currentBuildId;
         this.downloads = downloads; this.trust = trust ?? UpdateTrustStore.FromEmbedded(); this.clock = clock ?? (() => DateTimeOffset.UtcNow);
         this.enterCriticalOperation = enterCriticalOperation; this.compatibilityCheck = compatibilityCheck;
@@ -161,7 +165,7 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
                 }
                 if (!ended) throw new UpdateException("UPDATE_RELEASE_LIST_INCOMPLETE");
             }
-            var selected = candidates.OrderByDescending(c => SemanticVersion.Parse(c.Manifest.Version)).FirstOrDefault();
+            var selected = candidates.OrderByDescending(c => SemanticVersion.Parse(c.Manifest.Version)).ThenByDescending(c => c.Manifest.Sequence).FirstOrDefault();
             if (!preview && SemanticVersion.Parse(snapshot.CurrentVersion).IsPrerelease && selected is null) warnings.Add("UPDATE_PREVIEW_STOPPED_KEEP_CURRENT");
             lock (gate)
             {
@@ -229,8 +233,8 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
             var assets = release.GetProperty("assets").EnumerateArray().ToArray();
             var descriptor = Asset(assets, "autumn.update.json", tag, "UPDATE_MANIFEST_MISSING");
             var signatureAsset = Asset(assets, "autumn.update.sig", tag, "UPDATE_SIGNATURE_MISSING");
-            byte[] bytes = await metadata.GetAsync(descriptor.Url, GitHubRequestKind.Asset, UpdateManifestCodec.MaximumManifestBytes, token).ConfigureAwait(false);
-            byte[] signature = await metadata.GetAsync(signatureAsset.Url, GitHubRequestKind.Asset, 16 * 1024, token).ConfigureAwait(false);
+            byte[] bytes = await metadata.GetAsync(descriptor.Url, GitHubRequestKind.Asset, UpdateManifestCodec.MaximumManifestBytes, token, descriptor.Id).ConfigureAwait(false);
+            byte[] signature = await metadata.GetAsync(signatureAsset.Url, GitHubRequestKind.Asset, 16 * 1024, token, signatureAsset.Id).ConfigureAwait(false);
             if (descriptor.Bytes != bytes.Length || signatureAsset.Bytes != signature.Length) throw new UpdateException("UPDATE_ASSET_SIZE_MISMATCH");
             // Historical discovery verifies identity but grants no replay exemption. Consent and install enforce the ledger.
             var manifest = UpdateSignature.Verify(bytes, signature, trust, SecurityTime());
@@ -317,10 +321,10 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
             {
                 if (captured != generation || consent != approved) throw new UpdateException("UPDATE_CHANNEL_CHANGED");
                 StagedUpdate staged = new(candidate, manifestPath, signaturePath, payloadPath, approved, rollbackAuthorization);
+                WriteAtomic(stagedPath, new PendingState(currentBuildId, snapshot.CurrentVersion, staged));
                 SaveState(persistent with { HighestSequence = Math.Max(persistent.HighestSequence, manifest.Sequence),
                     HighestDigest = manifest.Sequence >= persistent.HighestSequence ? Digest(candidate.ManifestBytes) : persistent.HighestDigest,
-                    LastTrustedUtc = clock() > persistent.LastTrustedUtc ? clock() : persistent.LastTrustedUtc, PendingManifestSha256 = Digest(candidate.ManifestBytes) });
-                WriteAtomic(stagedPath, new PendingState(currentBuildId, snapshot.CurrentVersion, staged));
+                    LastTrustedUtc = clock() > persistent.LastTrustedUtc ? clock() : persistent.LastTrustedUtc, PendingManifestSha256 = Digest(candidate.ManifestBytes), PendingFromBuildId = currentBuildId }, staging: true);
                 snapshot = snapshot with { State = UpdateState.Staged, Staged = staged, ErrorCode = null };
             }
             Notify();
@@ -398,7 +402,10 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
             using var receipt = JsonDocument.Parse(File.ReadAllBytes(receiptPath));
             if (receipt.RootElement.GetProperty("buildId").GetString() != currentBuildId || receipt.RootElement.GetProperty("version").GetString() != snapshot.CurrentVersion) return;
             bool pin = value.TryGetProperty("pinAfterSuccess", out var pinned) && pinned.GetBoolean();
-            SaveState(persistent with { PinnedVersion = pin ? snapshot.CurrentVersion : null, ReconciledTransactionId = transaction.GetString() });
+            bool consumed = value.TryGetProperty("manifestSha256", out var committedDigest) &&
+                committedDigest.GetString() == persistent.PendingManifestSha256;
+            SaveState(persistent with { PinnedVersion = pin ? snapshot.CurrentVersion : null, ReconciledTransactionId = transaction.GetString(),
+                PendingManifestSha256 = consumed ? null : persistent.PendingManifestSha256, PendingFromBuildId = consumed ? null : persistent.PendingFromBuildId });
             snapshot = snapshot with { PinnedVersion = persistent.PinnedVersion, ShouldPrompt = ShouldPrompt(snapshot.Candidate) };
         }
         Notify();
@@ -428,11 +435,12 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
             !IsOfficialAssetUrl(candidate.PayloadUrl.AbsoluteUri, candidate.Tag, manifest.Payload.Asset)) throw new UpdateException("UPDATE_ASSET_IDENTITY_MISMATCH");
         if (manifest.Channel == "meta" && !persistent.Preview) throw new UpdateException("UPDATE_PREVIEW_DISABLED");
         if (SemanticVersion.Parse(UpdaterVersion).CompareTo(SemanticVersion.Parse(manifest.MinimumUpdaterVersion)) < 0) throw new UpdateException("UPDATE_UPDATER_TOO_OLD");
-        int compare = SemanticVersion.Parse(manifest.Version).CompareTo(SemanticVersion.Parse(snapshot.CurrentVersion));
-        if (compare == 0) throw new UpdateException("UPDATE_CURRENT_VERSION");
-        if (mode == UpdateSelectionMode.Upgrade && compare < 0) throw new UpdateException("UPDATE_UPGRADE_REQUIRES_NEWER");
+        if (UpdateRevisionPolicy.CheckOrder(manifest, snapshot.CurrentVersion, currentBuildId, installedSequence, mode == UpdateSelectionMode.Rollback) is { } orderError)
+            throw new UpdateException(orderError);
+        if (manifest.Version == snapshot.CurrentVersion && manifest.Sequence == security.HighestSequence &&
+            (security.ManifestSha256 != Digest(candidate.ManifestBytes) || persistent.HighestDigest != security.ManifestSha256 || persistent.PendingFromBuildId != currentBuildId))
+            throw new UpdateException("UPDATE_SEQUENCE_REUSED");
         if (mode == UpdateSelectionMode.Rollback && SemanticVersion.Parse(manifest.MinimumUpdaterVersion).CompareTo(SemanticVersion.Parse("1.1.0")) < 0) throw new UpdateException("UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED");
-        if (mode == UpdateSelectionMode.Rollback && compare > 0) throw new UpdateException("UPDATE_ROLLBACK_REQUIRES_OLDER");
         if (manifest.BuildId == currentBuildId || persistent.FailedBuildIds.Contains(manifest.BuildId)) throw new UpdateException("UPDATE_CANDIDATE_PREVIOUSLY_FAILED_OR_CURRENT");
         CheckAccepted(manifest, candidate.ManifestBytes, mode == UpdateSelectionMode.Rollback);
         if (compatibilityCheck?.Invoke(manifest, mode == UpdateSelectionMode.Rollback) is { } compatibilityError) throw new UpdateException(compatibilityError);
@@ -489,13 +497,21 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
             saved.FailedBuildIds.Any(id => !UpdateManifestCodec.Identifier(id)) || saved.PinnedVersion is not null && !SemanticVersion.TryParse(saved.PinnedVersion, out _) || saved.PendingManifestSha256 is not null && !UpdateManifestCodec.Hash(saved.PendingManifestSha256)) throw new UpdateException("UPDATE_STATE_INVALID");
         return saved;
     }
-    private void SaveState(PersistentState value)
+    private void SaveState(PersistentState value, bool staging = false)
     {
+        if (staging)
+        {
+            // Preserve the prior floor first. The new policy atomically binds this
+            // sequence to its source build, consent and already-durable staging
+            // record. A restart merges that policy even if final ledger I/O failed.
+            _ = UpdateSecurityLedgerStore.LoadAndMerge(programDirectory, dataRoot);
+            WriteAtomic(statePath, value); persistent = value; policyExists = true;
+        }
         // Merge both the prior on-disk policy and this intent before its bounded UI
         // history can overwrite either. The stable ledger serializes other services.
         _ = UpdateSecurityLedgerStore.RecordPolicy(programDirectory, dataRoot, value.HighestSequence,
             value.HighestDigest, value.LastTrustedUtc, value.FailedBuildIds);
-        WriteAtomic(statePath, value); persistent = value; policyExists = true;
+        if (!staging) { WriteAtomic(statePath, value); persistent = value; policyExists = true; }
     }
     private void WriteAtomic<T>(string path, T value)
     {
@@ -614,6 +630,6 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
         if (failures.Count != 0) throw new AggregateException("Update shutdown failed.", failures);
     }
     private sealed record PersistentState(int SchemaVersion, bool Preview, long HighestSequence, string? HighestDigest, DateTimeOffset LastTrustedUtc, IReadOnlyList<string> FailedBuildIds,
-        string? PinnedVersion = null, DateTimeOffset? LastSuccessfulCheckUtc = null, DateTimeOffset? RetryAfterUtc = null, string? ReconciledTransactionId = null, string? PendingManifestSha256 = null);
+        string? PinnedVersion = null, DateTimeOffset? LastSuccessfulCheckUtc = null, DateTimeOffset? RetryAfterUtc = null, string? ReconciledTransactionId = null, string? PendingManifestSha256 = null, string? PendingFromBuildId = null);
     private sealed record PendingState(string FromBuildId, string FromVersion, StagedUpdate Staged);
 }

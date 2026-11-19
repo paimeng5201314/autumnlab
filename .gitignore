@@ -18,4 +18,5 @@ artifacts/
 .env.*
 credentials.json
 secrets.json
+recovery-code.txt
 *.lnk

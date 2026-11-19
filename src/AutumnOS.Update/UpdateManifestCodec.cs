@@ -49,7 +49,7 @@ public static class UpdateManifestCodec
     public static void Validate(UpdateManifest m)
     {
         if (m.SchemaVersion != 1) throw new UpdateException("UPDATE_SCHEMA_UNSUPPORTED");
-        if (m.ProductId != "cn.labchronicles.autumnos" || m.Repository != "paimeng5201314/autumnlab") throw new UpdateException("UPDATE_PRODUCT_SOURCE_MISMATCH");
+        if (m.ProductId != "cn.labchronicles.autumnos" || m.Repository != UpdateService.Repository) throw new UpdateException("UPDATE_PRODUCT_SOURCE_MISMATCH");
         if (m.ReleaseTag is not null && (m.ReleaseTag.Length is < 1 or > 200 || m.ReleaseTag.Any(c => char.IsControl(c) || c is '/' or '\\')))
             throw new UpdateException("UPDATE_RELEASE_TAG_INVALID");
         if (!SemanticVersion.TryParse(m.Version, out var version) || m.Channel is not ("plus" or "meta") ||

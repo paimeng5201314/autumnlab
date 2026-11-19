@@ -206,7 +206,7 @@ public static class UpdateSecurityLedgerStore
 
     private static void ValidateReceipt(LegacyReceipt receipt)
     {
-        if (receipt is null || receipt.SchemaVersion != 1 || receipt.DataSchemaVersion != 1 || !UpdateManifestCodec.Identifier(receipt.BuildId) ||
+        if (receipt is null || receipt.SchemaVersion != 1 || receipt.Sequence < 0 || receipt.DataSchemaVersion != 1 || !UpdateManifestCodec.Identifier(receipt.BuildId) ||
             !SemanticVersion.TryParse(receipt.Version, out _) || receipt.Files is null || receipt.Files.Length is < 3 or > 20000)
             throw new UpdateException("UPDATE_SECURITY_LEGACY_BINDING_INVALID");
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -270,9 +270,9 @@ public static class UpdateSecurityLedgerStore
     private sealed record CanonicalLedger(int SchemaVersion, long HighestSequence, string[] FailedBuilds, string ManifestSha256, string? MinimumVersion, DateTimeOffset LastTrustedUtc);
     private sealed record LegacyLedger(long HighestSequence, string[] FailedBuilds, string ManifestSha256 = "", string? MinimumVersion = null);
     private sealed record LegacyPolicy(int SchemaVersion, bool Preview, long HighestSequence, string? HighestDigest, DateTimeOffset LastTrustedUtc, string[] FailedBuildIds,
-        string? PinnedVersion = null, DateTimeOffset? LastSuccessfulCheckUtc = null, DateTimeOffset? RetryAfterUtc = null, string? ReconciledTransactionId = null, string? PendingManifestSha256 = null);
+        string? PinnedVersion = null, DateTimeOffset? LastSuccessfulCheckUtc = null, DateTimeOffset? RetryAfterUtc = null, string? ReconciledTransactionId = null, string? PendingManifestSha256 = null, string? PendingFromBuildId = null);
     private sealed record LegacyFile(string Path, long Bytes, string Sha256);
-    private sealed record LegacyReceipt(int SchemaVersion, string Version, string BuildId, LegacyFile[] Files, int DataSchemaVersion = 1);
+    private sealed record LegacyReceipt(int SchemaVersion, string Version, string BuildId, LegacyFile[] Files, int DataSchemaVersion = 1, long Sequence = 0);
     private sealed record LegacyEntry(int SchemaVersion, string SeedSha256, string ProductDirectory, string BuildId, string Version);
     private sealed record LegacyJournal(int SchemaVersion, string TransactionId, string Root, string Phase, string FromBuildId, string ToBuildId,
         LegacyReceipt Previous, LegacyFile[] NextFiles, string[] Touched, string? ErrorCode = null, int ChildPid = 0, long ChildStartUtcTicks = 0,

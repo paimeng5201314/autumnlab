@@ -32,7 +32,7 @@ internal static class UpdateRollbackTests
         using var rsa = RSA.Create(3072); var trust = new UpdateTrustStore(new(1, 1, "local-test", [new("fixture", rsa.ExportSubjectPublicKeyInfoPem())]));
         var m = Manifest("1.0.0", "A", 10, [Entry("AutumnOS.Client.exe", "A")]);
         byte[] bytes = UpdateManifestCodec.Serialize(m), signature = UpdateSignature.Create(bytes, rsa, "fixture", 1);
-        var candidate = new UpdateCandidate(1, "plus-v1.0.0", "", m, new Uri("https://github.com/paimeng5201314/autumnlab/releases/download/plus-v1.0.0/payload.zip"), 1, bytes, signature);
+        var candidate = new UpdateCandidate(1, "plus-v1.0.0", "", m, new Uri("https://github.com/paimeng5201314/autumnOS/releases/download/plus-v1.0.0/payload.zip"), 1, bytes, signature);
         var now = DateTimeOffset.UtcNow; var consent = UpdateRollbackAuthorization.Create(candidate, "B", "1.1.0", now);
         Reject(() => UpdateSignature.Verify(bytes, signature, trust, now, 20));
         Assert(UpdateSignature.VerifyForRollback(bytes, signature, trust, now, 20, consent, "B", "1.1.0").BuildId == "A");
@@ -59,7 +59,7 @@ internal static class UpdateRollbackTests
         var rollback = Stage(root, a.Version, a.BuildId, 10);
         using var rsa = RSA.Create(3072);
         byte[] bytes = UpdateManifestCodec.Serialize(rollback.Manifest), signature = UpdateSignature.Create(bytes, rsa, "fixture", 1);
-        var candidate = new UpdateCandidate(1, "plus-v" + a.Version, "", rollback.Manifest, new Uri("https://github.com/paimeng5201314/autumnlab/releases/download/A/payload.zip"), 1, bytes, signature);
+        var candidate = new UpdateCandidate(1, "plus-v" + a.Version, "", rollback.Manifest, new Uri("https://github.com/paimeng5201314/autumnOS/releases/download/A/payload.zip"), 1, bytes, signature);
         var consent = UpdateRollbackAuthorization.Create(candidate, "B", "1.1.0", DateTimeOffset.UtcNow);
         UpdateSignature.VerifyForRollback(bytes, signature, new(new(1, 1, "local-test", [new("fixture", rsa.ExportSubjectPublicKeyInfoPem())])), DateTimeOffset.UtcNow, 20, consent, "B", "1.1.0");
         Assert(UpdateTransaction.GetCompatibility(root, rollback.Manifest, true) is null);
@@ -121,7 +121,7 @@ internal static class UpdateRollbackTests
         Assert(UpdateTransaction.GetCompatibility(root, target, true) is null);
         Assert(UpdateTransaction.GetCompatibility(root, target with { MinimumUpdaterVersion = "1.0.0" }, true) == "UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED");
         Assert(UpdateTransaction.GetCompatibility(root, target with { Data = new(2, 1, false) }, true) == "UPDATE_DATA_MIGRATION_UNSUPPORTED");
-        UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), new UpdateSecurityState(30, [], "", "1.0.1"));
+        UpdateFiles.Write(Path.Combine(UpdateFiles.Work(root), "security.json"), new UpdateSecurityState(30, [], "", "1.0.9"));
         Assert(UpdateTransaction.GetCompatibility(root, target, true) == "UPDATE_MINIMUM_SECURITY_VERSION");
     });
 
@@ -154,15 +154,22 @@ internal static class UpdateRollbackTests
         feed.MetadataBytes = UpdateManifestCodec.Serialize(manifest with { BuildId = "replaced" });
         Reject(Verify); Assert(feed.MetadataCalls == 3);
         feed.MetadataBytes = approved;
-        string official = "https://github.com/paimeng5201314/autumnlab/releases/download/plus-v1.0.0%2Bbuild.2/autumn.update.json";
-        foreach (string invalid in new[] { official.Replace("/autumnlab/", "/fork/"), official + "?download=1", official + "#fragment",
+        string official = "https://github.com/paimeng5201314/autumnOS/releases/download/plus-v1.0.0%2Bbuild.2/autumn.update.json";
+        foreach (string invalid in new[] { official.Replace("/autumnOS/", "/fork/"), official.Replace("/autumnOS/", "/autumnlab/"), official + "?download=1", official + "#fragment",
             official.Replace("github.com/", "github.com.evil.invalid/"), official.Replace("%2B", "%252B"),
             official.Replace("autumn.update.json", "payload.zip"), official.Replace("https://", "https://user@") })
         {
+            Assert(invalid != official);
             feed.MetadataUrlOverride = invalid;
             Reject(Verify);
             Assert(feed.MetadataCalls == 3); // Invalid source is rejected before any asset request.
         }
+        feed.MetadataUrlOverride = null;
+        string signatureDigest = Convert.ToHexStringLower(SHA256.HashData(feed.SignatureBytes));
+        void CheckPair() => UpdateApplySourceGuard.VerifyAsync(manifest, feed.Tag, feed, CancellationToken.None, digest, signatureDigest).GetAwaiter().GetResult();
+        CheckPair();
+        feed.SignatureBytes[0] ^= 1;
+        Reject(CheckPair);
     }
 
     private sealed class GuardFeed : IGitHubTransport
@@ -170,22 +177,25 @@ internal static class UpdateRollbackTests
         internal bool Draft, Preview; internal string Tag = "plus-v1.0.0"; internal long AssetId = 1, Size = 1;
         internal int Calls, MetadataCalls; internal HttpStatusCode Status = HttpStatusCode.OK;
         internal bool EscapeTag; internal byte[]? MetadataBytes; internal string? MetadataUrlOverride;
+        internal byte[] SignatureBytes = [0x75, 0x63];
         public Task<HttpResponseMessage> SendAsync(Uri url, GitHubRequestKind kind, IReadOnlyDictionary<string, string>? headers, CancellationToken cancellationToken)
         {
             Calls++;
             if (kind == GitHubRequestKind.Asset)
             {
-                Assert(MetadataBytes is not null && url.AbsoluteUri == "https://github.com/paimeng5201314/autumnlab/releases/download/" + Uri.EscapeDataString(Tag) + "/autumn.update.json");
+                if (url.AbsoluteUri == "https://github.com/paimeng5201314/autumnOS/releases/download/" + Uri.EscapeDataString(Tag) + "/autumn.update.sig")
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(SignatureBytes) });
+                Assert(MetadataBytes is not null && url.AbsoluteUri == "https://github.com/paimeng5201314/autumnOS/releases/download/" + Uri.EscapeDataString(Tag) + "/autumn.update.json");
                 MetadataCalls++;
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(MetadataBytes!) });
             }
-            Assert(url.AbsoluteUri == "https://api.github.com/repos/paimeng5201314/autumnlab/releases/1" && kind == GitHubRequestKind.Api);
-            string prefix = "https://github.com/paimeng5201314/autumnlab/releases/download/" + (EscapeTag ? Uri.EscapeDataString(Tag) : Tag) + "/";
+            Assert(url.AbsoluteUri == "https://api.github.com/repos/paimeng5201314/autumnOS/releases/1" && kind == GitHubRequestKind.Api);
+            string prefix = "https://github.com/paimeng5201314/autumnOS/releases/download/" + (EscapeTag ? Uri.EscapeDataString(Tag) : Tag) + "/";
             var assets = new List<object> { new { id = AssetId, name = "payload.zip", size = Size, digest = "sha256:" + new string('a', 64), browser_download_url = prefix + "payload.zip" } };
             if (MetadataBytes is not null)
             {
                 assets.Add(new { id = 2, name = "autumn.update.json", size = MetadataBytes.Length, browser_download_url = MetadataUrlOverride ?? prefix + "autumn.update.json" });
-                assets.Add(new { id = 3, name = "autumn.update.sig", size = 1, browser_download_url = prefix + "autumn.update.sig" });
+                assets.Add(new { id = 3, name = "autumn.update.sig", size = SignatureBytes.Length, browser_download_url = prefix + "autumn.update.sig" });
             }
             return Task.FromResult(new HttpResponseMessage(Status) { Content = new StringContent(JsonSerializer.Serialize(new { id = 1, tag_name = Tag, draft = Draft, prerelease = Preview,
                 assets })) });

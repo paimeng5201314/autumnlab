@@ -15,6 +15,66 @@ internal static class ProductionUpdateSignerTests
 {
     internal static IEnumerable<(string Name, Action Run)> Cases()
     {
+        yield return ("production_signer.local_recovery_rejects_colocated_unlock_file_before_creating_keys", () => InScope(root =>
+        {
+            Reject(() => ProductionUpdateSigner.ProvisionLocal("fixture-key", Path.Combine(root, "primary"),
+                Path.Combine(root, "restored"), Path.Combine(root, "backup", "fixture.encrypted.pk8"),
+                Path.Combine(root, "code", "recovery-code.txt"), Path.Combine(root, "candidate.json")),
+                "UPDATE_SIGNER_RECOVERY_STORAGE_NOT_SEPARATE");
+            Check(!Directory.EnumerateFileSystemEntries(root).Any(), "Rejected storage layout must leave all destinations unused.");
+        }));
+        yield return ("production_signer.recovery_restores_same_identity_after_primary_unavailable", () => InScope(root =>
+        {
+            var fixture = Init(root);
+            string backup = Path.Combine(root, "fixture.encrypted.pk8");
+            string passphrase = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            ProductionUpdateSigner.Backup(fixture.Private, backup, fixture.Trust, fixture.Info.KeyId, passphrase);
+            File.Delete(Path.Combine(fixture.Private, ProductionUpdateSigner.PrivateFileName));
+            string recovered = Path.Combine(root, "recovered");
+            var info = ProductionUpdateSigner.Restore(backup, recovered, fixture.Trust, fixture.Info.KeyId, passphrase);
+            Check(info == fixture.Info, "A restore must keep the published identity.");
+            string source = Directory.CreateDirectory(Path.Combine(root, "release-files")).FullName;
+            File.WriteAllText(Path.Combine(source, "AutumnOS.Client.exe"), "synthetic managed file for update verification");
+            string payload = Path.Combine(root, "owned-payload.zip");
+            System.IO.Compression.ZipFile.CreateFromDirectory(source, payload);
+            byte[] archive = File.ReadAllBytes(payload);
+            var template = UpdateManifestCodec.Parse(Manifest(info.KeyId));
+            byte[] manifest = UpdateManifestCodec.Serialize(template with
+            {
+                Payload = template.Payload with { Bytes = archive.Length, Sha256 = Convert.ToHexStringLower(SHA256.HashData(archive)) },
+                Files = UpdatePayload.CreateFileList(source)
+            });
+            byte[] signature = ProductionUpdateSigner.Sign(manifest, recovered, fixture.Trust);
+            var verified = UpdateSignature.Verify(manifest, signature, fixture.Trust, DateTimeOffset.UtcNow);
+            Check(verified.KeyId == info.KeyId, "The original trust root must verify a signature from the restored identity.");
+            UpdatePayload.VerifyAsync(payload, verified).GetAwaiter().GetResult();
+            Reject(() => UpdateSignature.Verify([.. manifest, (byte)' '], signature, fixture.Trust, DateTimeOffset.UtcNow), "UPDATE_SIGNATURE_INVALID");
+            archive[0] ^= 1;
+            File.WriteAllBytes(payload, archive);
+            Reject(() => UpdatePayload.VerifyAsync(payload, verified).GetAwaiter().GetResult(), "UPDATE_PAYLOAD_HASH_MISMATCH");
+        }));
+        yield return ("production_signer.recovery_rejects_wrong_secret_wrong_root_damage_and_replacement", () => InScope(root =>
+        {
+            var fixture = Init(root);
+            string backup = Path.Combine(root, "fixture.encrypted.pk8"), destination = Path.Combine(root, "uncreated");
+            string password = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            ProductionUpdateSigner.Backup(fixture.Private, backup, fixture.Trust, fixture.Info.KeyId, password);
+            byte[] original = File.ReadAllBytes(backup);
+            using var otherKey = RSA.Create(3072);
+            var otherTrust = new UpdateTrustStore(new(1, 1, "production", [new(fixture.Info.KeyId, otherKey.ExportSubjectPublicKeyInfoPem())]));
+            MustRefuse(() => ProductionUpdateSigner.Restore(backup, destination, otherTrust, fixture.Info.KeyId, password));
+            MustRefuse(() => ProductionUpdateSigner.Restore(backup, destination, fixture.Trust, "not-the-bound-id", password));
+            MustRefuse(() => ProductionUpdateSigner.Restore(backup, destination, fixture.Trust, fixture.Info.KeyId, password + "wrong"));
+            Check(!Directory.Exists(destination), "Rejection must not initialize a replacement signer.");
+            MustRefuse(() => ProductionUpdateSigner.Backup(fixture.Private, backup, fixture.Trust, fixture.Info.KeyId, password));
+            Check(original.SequenceEqual(File.ReadAllBytes(backup)), "An existing backup must remain unchanged.");
+            MustRefuse(() => ProductionUpdateSigner.Restore(backup, fixture.Private, fixture.Trust, fixture.Info.KeyId, password));
+            byte[] before = Manifest(fixture.Info.KeyId);
+            _ = UpdateSignature.Verify(before, ProductionUpdateSigner.Sign(before, fixture.Private, fixture.Trust), fixture.Trust, DateTimeOffset.UtcNow);
+            File.WriteAllBytes(backup, original[..(original.Length / 2)]);
+            MustRefuse(() => ProductionUpdateSigner.Restore(backup, destination, fixture.Trust, fixture.Info.KeyId, password));
+            Check(!Directory.Exists(destination), "Malformed input must leave no usable identity.");
+        }));
         yield return ("production_signer.dpapi_public_root_and_manifest_signature_roundtrip", () => InScope(root =>
         {
             var f = Init(root);
@@ -162,7 +222,7 @@ internal static class ProductionUpdateSignerTests
     private static byte[] Manifest(string keyId)
     {
         var now = DateTimeOffset.UtcNow;
-        return UpdateManifestCodec.Serialize(new(1, "plus", "1.0.1", "T06-signing-fixture", "win-x64", "1.1.0", 1,
+        return UpdateManifestCodec.Serialize(new(1, "plus", "3.4.8", "T06-signing-fixture", "win-x64", "1.1.0", 1,
             now, now.AddDays(1), keyId, 1, new("owned-payload.zip", 1, new string('a', 64), 101, 102),
             [new("AutumnOS.Client.exe", 1, new string('b', 64))], [], new(1, 1, true)));
     }
@@ -171,6 +231,12 @@ internal static class ProductionUpdateSignerTests
         try { action(); }
         catch (UpdateException error) when (error.Code == code) { return; }
         throw new InvalidOperationException("Expected fixed signer failure: " + code);
+    }
+    private static void MustRefuse(Action action)
+    {
+        try { action(); }
+        catch (Exception error) when (error is UpdateException or CryptographicException or IOException) { return; }
+        throw new InvalidOperationException("Unsafe signer recovery operation was not rejected.");
     }
     private static void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
     private static void RestoreAccess(DirectoryInfo directory, DirectorySecurity original)

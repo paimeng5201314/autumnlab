@@ -2,7 +2,7 @@
 param([Parameter(Mandatory)][string]$BuildId,
     [Parameter(Mandatory)][ValidateSet('plus','meta')][string]$Channel,
     [Parameter(Mandatory)][string]$ReleaseTag,
-    [Parameter(Mandatory)][ValidateRange(1,[long]::MaxValue)][long]$Sequence)
+    [Parameter(Mandatory)][ValidateRange(1,[long]::MaxValue)][long]$Sequence,[switch]$ShareVerifiedInputs)
 . "$PSScriptRoot/Common.ps1"
 . "$PSScriptRoot/UpdatePreparationFiles.ps1"
 if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$'){throw 'Tracked T06 build required.'}
@@ -10,6 +10,8 @@ $evidence=Join-Path $ProjectRoot "artifacts/builds/$BuildId"
 $build=Get-Content -LiteralPath (Join-Path $evidence 'build-result.json') -Raw|ConvertFrom-Json
 Assert-ProductionUpdateBuild -Build $build
 $package=Get-Content -LiteralPath (Join-Path $evidence 'package-prepared.json') -Raw|ConvertFrom-Json
+if($build.update_sequence -isnot [long] -or $build.update_sequence -ne $Sequence -or $package.update_sequence -ne $Sequence -or
+    $build.release_label -cne $ReleaseTag){throw 'The requested sequence and release tag must match the factory build and package.'}
 $tests=Get-Content -LiteralPath (Join-Path $evidence 'tests.json') -Raw|ConvertFrom-Json
 if($build.status -ne 'passed' -or $build.test_build -or $tests.status -ne 'passed' -or $package.status -cne 'prepared' -or
     $package.build_id -cne $BuildId -or $tests.build_id -cne $BuildId -or
@@ -25,6 +27,8 @@ $verification=Join-Path $evidence ('before-update-preparation-'+[Guid]::NewGuid(
 $snapshot=& "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory $verification -AdditionalInputs @($build.additional_inputs)
 if($snapshot -cne $build.source_snapshot_id){throw 'Source changed after build.'}
 $source=Split-Path $package.executable -Parent
+$receipt=Get-Content -LiteralPath (Join-Path $source 'autumn.install.json') -Raw|ConvertFrom-Json
+if($receipt.sequence -isnot [long] -or $receipt.sequence -ne $Sequence -or $receipt.buildId -cne $BuildId -or $receipt.version -cne $build.version){throw 'Installed build receipt must carry the exact production revision.'}
 $files=@(Get-Content -LiteralPath (Join-Path $evidence 'delivery-hashes.json') -Raw|ConvertFrom-Json)
 foreach($file in $files){
     if([IO.Path]::IsPathRooted($file.path) -or $file.path.Contains('\') -or $file.path.Contains(':') -or
@@ -46,6 +50,8 @@ for($cursor=[IO.Path]::GetFullPath($source);$cursor;$cursor=[IO.Path]::GetDirect
 Assert-UpdatePreparationFileTable -ExpectedFiles $files -ActualFiles @(Get-PlainDeliveryFiles $source)
 $staging=Join-Path $verification 'verified-payload-input'
 New-Item -ItemType Directory -Path $staging|Out-Null
+$readLeases=[Collections.Generic.List[IO.FileStream]]::new()
+try {
 foreach($file in $files){
     $path=[IO.Path]::GetFullPath((Join-Path $source $file.path))
     if(-not $path.StartsWith([IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($source))+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw 'Source path escape.'}
@@ -56,7 +62,11 @@ foreach($file in $files){
     $target=[IO.Path]::GetFullPath((Join-Path $staging $file.path))
     if(-not $target.StartsWith([IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($staging))+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw 'Staging path escape.'}
     New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent)|Out-Null
-    Copy-Item -LiteralPath $path -Destination $target
+    if($ShareVerifiedInputs){
+        Add-VerifiedStagingLink -Source $path -Target $target -Entry $file -ReadLeases $readLeases
+    }else{
+        Copy-Item -LiteralPath $path -Destination $target
+    }
     if((Get-Item -LiteralPath $target).Length -ne $file.bytes -or (Get-FileHash -LiteralPath $target).Hash.ToLowerInvariant() -cne $file.sha256){throw 'Staged package changed.'}
 }
 Push-Location $ProjectRoot
@@ -76,7 +86,7 @@ $metadata=@{}
 foreach($attribute in $updateAssembly.GetCustomAttributesData()){
     if($attribute.AttributeType.Name -eq 'AssemblyMetadataAttribute'){$metadata[$attribute.ConstructorArguments[0].Value]=$attribute.ConstructorArguments[1].Value}
 }
-if($metadata.BuildId -cne $BuildId -or $metadata.SourceSnapshotId -cne $snapshot){throw 'Update policy assembly identity mismatch.'}
+if($metadata.BuildId -cne $BuildId -or $metadata.SourceSnapshotId -cne $snapshot -or $metadata.UpdateSequence -cne [string]$Sequence){throw 'Update policy assembly identity/sequence mismatch.'}
 $isExcluded=$updateAssembly.GetType('AutumnOS.Update.UpdatePaths',$true).GetMethod('IsStableOrPrivate')
 $expectedManaged=@($files|Where-Object {-not $isExcluded.Invoke($null,@([string]$_.path))})
 Assert-UpdatePreparationFileTable -ExpectedFiles $expectedManaged -ActualFiles @($draft.files)
@@ -86,5 +96,7 @@ $report=[ordered]@{status='prepared_unbound_unsigned';build_id=$BuildId;source_s
     release_id='not_assigned';asset_id='not_assigned';signature='not_created';payload_verification='passed';delivery_file_table_verification='passed';managed_files=$expectedManaged.Count;
     GUI_upgrade='not_run';public_release=$false;uploaded=$false;private_key_included=$false;
     next_step='After separately authorized release upload, bind real release/asset IDs, sign-production, verify and publish metadata. Do not upload the draft as autumn.update.json.'}
+$report.shared_verified_staging_inputs=[bool]$ShareVerifiedInputs
 $report|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $output 'preparation.json') -Encoding utf8NoBOM
 $report|ConvertTo-Json -Depth 6
+} finally {foreach($lease in $readLeases){$lease.Dispose()}}

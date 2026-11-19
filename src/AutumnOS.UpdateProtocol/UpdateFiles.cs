@@ -7,7 +7,7 @@ using AutumnOS.Update;
 namespace AutumnOS.UpdateProtocol;
 
 public sealed record InstalledFile(string Path, long Bytes, string Sha256);
-public sealed record InstalledBuild(int SchemaVersion, string Version, string BuildId, InstalledFile[] Files, int DataSchemaVersion = 1);
+public sealed record InstalledBuild(int SchemaVersion, string Version, string BuildId, InstalledFile[] Files, int DataSchemaVersion = 1, long Sequence = 0);
 public sealed record HandoffRecord(int SchemaVersion, string TransactionId, string Root, string DataRoot, int ParentPid, long ParentStartUtcTicks,
     string CurrentBuildId, string CurrentVersion, string ManifestSha256, DateTimeOffset ExpiresUtc,
     UpdateRollbackAuthorization? RollbackAuthorization = null, bool PinAfterSuccess = false, UpdateTargetIdentity? TargetIdentity = null);
@@ -78,7 +78,7 @@ public static class UpdateFiles
     }
     public static void ValidateInstalled(string root, InstalledBuild receipt)
     {
-        if (receipt.SchemaVersion != 1 || receipt.Files.Length is < 3 or > 20000 || string.IsNullOrWhiteSpace(receipt.BuildId)) throw new IOException("UPDATE_INSTALL_RECEIPT_INVALID");
+        if (receipt.SchemaVersion != 1 || receipt.Sequence < 0 || receipt.Files.Length is < 3 or > 20000 || string.IsNullOrWhiteSpace(receipt.BuildId)) throw new IOException("UPDATE_INSTALL_RECEIPT_INVALID");
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var file in receipt.Files)
         {

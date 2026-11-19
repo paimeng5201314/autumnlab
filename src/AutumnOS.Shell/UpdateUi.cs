@@ -58,7 +58,7 @@ public sealed partial class MainWindow
         cancelUpdateButton = ActionButton("取消当前操作", "DeferSystemUpdate", (_, _) => CancelSystemUpdateOperation());
         foreach (var button in new[] { checkUpdateButton, downloadUpdateButton, selectUpgradeButton, selectRollbackButton, restoreUpdateChannelButton, restartUpdateButton, cancelUpdateButton }) actions.Children.Add(button);
         UpdateContent.Children.Add(actions);
-        UpdateContent.Children.Add(Paragraph("官方更新源：paimeng5201314/autumnlab。游客也可检查、选择和安装允许的版本。运行中的游戏或应用需要先保存并正常退出。"));
+        UpdateContent.Children.Add(Paragraph($"官方更新源：{UpdateService.Repository}。游客也可检查、选择和安装允许的版本。运行中的游戏或应用需要先保存并正常退出。"));
         previewUpdates.Toggled += OnUpdateSettingsChanged;
         updateTimer.Tick += async (_, _) => await TickSystemUpdateAsync();
     }
@@ -289,7 +289,7 @@ public sealed partial class MainWindow
         foreach (string warning in s.Warnings) AddReason(warning);
         updateStatus.Text = string.Join("\n", lines);
         AppendUpdateRecoveryStatus();
-        updateCandidate.Text = s.Candidate is { } candidate ? $"可用版本 {candidate.Manifest.Version} · {ReleaseChannel(candidate)}\n{candidate.Tag} · {candidate.Manifest.Payload.Bytes:N0} 字节" : "没有已验证的可安装候选。";
+        updateCandidate.Text = s.Candidate is { } candidate ? $"可用版本 {candidate.Manifest.Version} · {ReleaseChannel(candidate)}\n构建 {candidate.Manifest.BuildId} · 修订 {candidate.Manifest.Sequence}\n{candidate.Tag} · {candidate.Manifest.Payload.Bytes:N0} 字节" : "没有已验证的可安装候选。";
         updatePin.Text = s.PinnedVersion is { } pinned ? $"已固定版本：{pinned}。每次启动仍检查，但不弹出常规升级提醒。" : "正在跟随更新渠道。";
         updateProgress.Value = s.TotalBytes > 0 ? Math.Min(100, 100d * s.BytesReceived / s.TotalBytes) : 0;
         bool available = !updateBusy && !updateCommitBusy && !updateDialogOpen;
@@ -374,7 +374,8 @@ public sealed partial class MainWindow
         "UPDATE_PRODUCTION_TRUST_NOT_CONFIGURED" => "此构建缺少正式更新验证公钥；可查看发行记录，暂不能验证或安装更新。",
         "UPDATE_PREVIEW_DISABLED" or "UPDATE_PREVIEW_NOT_ALLOWED" => "需要先开启并保存“接受预览版邀请”。",
         "UPDATE_VERSION_NOT_COMPARABLE" or "UPDATE_VERSION_INVALID" => "此历史版本没有可靠的可比较版本，暂不能安装。",
-        "UPDATE_CURRENT_VERSION" or "UPDATE_CANDIDATE_CURRENT" => "当前已安装，不能重复安装同一版本。",
+        "UPDATE_CURRENT_VERSION" or "UPDATE_CANDIDATE_CURRENT" => "当前安装已是此构建，或缺少比较同版本修订的记录。",
+        "UPDATE_REVISION_PROTOCOL_REQUIRED" => "同版本修订需要签名发行标记及支持修订比较的更新协议。",
         "UPDATE_NOT_UPGRADE" or "UPDATE_UPGRADE_REQUIRES_NEWER" or "UPDATE_DOWNGRADE_REJECTED" => "更新目标必须高于当前版本。低版本请使用回滚入口。",
         "UPDATE_NOT_ROLLBACK" or "UPDATE_ROLLBACK_REQUIRES_OLDER" => "回滚目标必须低于当前版本。",
         "UPDATE_ASSET_MISSING_OR_AMBIGUOUS" => "官方发行记录中的更新资产缺失或不唯一，暂不能安装。",

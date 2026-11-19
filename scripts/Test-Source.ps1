@@ -56,7 +56,7 @@ try {
     Check 'Provided public values retained' ($config.Logto.ClientId -eq 'tjck5m8ohjkw272y42adv' -and $config.Logto.Authority -eq 'https://account.labchronicles.cn/oidc')
     Check 'PKCE public client contract' ($config.Logto.UsePkce -and $config.Logto.PkceMethod -eq 'S256' -and $config.Logto.ClientAuthenticationMethod -eq 'none')
     $baseline=Get-Content -LiteralPath (Join-Path $projectRoot 'autumnos-spec/docs/04-store-and-updates.md') -Raw
-    foreach($literal in @('autumnos-app','pm','sq','.autumn','plus','meta','paimeng5201314/autumnlab')) { Check "Retained product contract: $literal" ($baseline.Contains($literal)) }
+    foreach($literal in @('autumnos-app','pm','sq','.autumn','plus','meta','paimeng5201314/autumnOS')) { Check "Retained product contract: $literal" ($baseline.Contains($literal)) }
     $privateHeader='-----BEGIN ' + '(RSA |EC |OPENSSH )?PRIVATE KEY-----'
     $credentialPattern='gh[pousr]' + '_[A-Za-z0-9]{30,}'
     foreach($file in ($files | Where-Object Extension -in @('.cs','.json','.ps1','.props','.csproj','.xaml','.js','.ts','.cjs','.html'))) {

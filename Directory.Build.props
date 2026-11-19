@@ -22,6 +22,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <BuildId Condition="'$(BuildId)' == ''">local-untracked</BuildId>
     <SourceSnapshotId Condition="'$(SourceSnapshotId)' == ''">not_recorded</SourceSnapshotId>
+    <AutumnUpdateSequence Condition="'$(AutumnUpdateSequence)' == ''">0</AutumnUpdateSequence>
     <AutumnPlatformAcceptance Condition="'$(AutumnPlatformAcceptance)' == ''">false</AutumnPlatformAcceptance>
     <DefineConstants Condition="'$(AutumnPlatformAcceptance)' == 'true'">$(DefineConstants);AUTUMN_PLATFORM_ACCEPTANCE</DefineConstants>
   </PropertyGroup>
@@ -31,6 +32,7 @@
     <AssemblyMetadata Include="BuildId" Value="$(BuildId)" />
     <AssemblyMetadata Include="SourceSnapshotId" Value="$(SourceSnapshotId)" />
     <AssemblyMetadata Include="SemanticVersion" Value="$(AutumnVersion)" />
+    <AssemblyMetadata Include="UpdateSequence" Value="$(AutumnUpdateSequence)" />
     <AssemblyMetadata Include="TemporaryPlatformAcceptance" Value="$(AutumnPlatformAcceptance)" />
   </ItemGroup>
 </Project>

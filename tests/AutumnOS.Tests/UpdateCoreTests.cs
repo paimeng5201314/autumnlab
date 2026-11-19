@@ -89,6 +89,8 @@ internal static class UpdateCoreTests
         yield return ("update.product_channel_architecture_migration_binding", () => Run(async f =>
         {
             var m = f.Add("1.1.0").Manifest;
+            Check(m.Repository == "paimeng5201314/autumnOS");
+            Reject(() => UpdateManifestCodec.Serialize(m with { Repository = "paimeng5201314/autumnlab" }));
             foreach (var invalid in new[] { m with { ProductId = "foreign" }, m with { Repository = "evil/repo" }, m with { Channel = "meta" }, m with { TargetRid = "win-arm64" },
                 m with { Data = new(2, 1, false) }, m with { Payload = m.Payload with { ReleaseId = 0 } } }) Reject(() => UpdateManifestCodec.Serialize(invalid));
             await Task.CompletedTask;
@@ -166,6 +168,70 @@ internal static class UpdateCoreTests
             f.Add("1.1.0"); using var service = f.Service(); await service.CheckAsync(false);
             Check(service.Snapshot.CheckComplete && service.Snapshot.Candidate?.Manifest.Version == "1.1.0" && service.Snapshot.LastSuccessfulCheckUtc == Now);
             Check(service.Snapshot.LastReleaseMetadataUtc == Now && service.Snapshot.ReleasesExamined == 1);
+        }));
+        yield return ("update.same_tag_new_revision_changes_asset_identity_and_invalidates_old_consent", () => Run(async f =>
+        {
+            const string version = "4.3.0", tag = "stable-product";
+            var old = f.Add(version, 42, tagOverride: tag, minimumUpdater: UpdateRevisionPolicy.ProtocolVersion, releaseId: 501, buildId: "first-revision");
+            using var service = f.Service(currentVersion: version, installedSequence: 41);
+            await service.CheckAsync(false);
+            var previous = service.Snapshot.Candidate!;
+            service.ConfirmTarget(previous);
+            f.Clear();
+            f.Add(version, 43, tagOverride: tag, minimumUpdater: UpdateRevisionPolicy.ProtocolVersion, releaseId: 501, buildId: "next-revision");
+            f.ConditionalResponses = true; f.ConditionalAssetsOnly = true;
+            await service.DownloadAndStageAsync();
+            Check(service.Snapshot.ErrorCode == "UPDATE_CONSENT_TARGET_CHANGED" && f.Downloads.Snapshot().Count == 0);
+            await service.CheckAsync(false);
+            var replacement = service.Snapshot.Candidate!;
+            Check(replacement.Tag == previous.Tag && replacement.ReleaseId == previous.ReleaseId && replacement.AssetId != previous.AssetId &&
+                replacement.Manifest.Sequence == 43 && replacement.Manifest.BuildId == "next-revision");
+            f.Clear();
+            f.Add(version, 44, tagOverride: tag, minimumUpdater: UpdateRevisionPolicy.ProtocolVersion, releaseId: 501, buildId: "third-revision", signatureOverride: old.Signature);
+            await service.CheckAsync(false);
+            Check(service.Snapshot.Candidate is null && service.Snapshot.ErrorCode == "UPDATE_SIGNATURE_INVALID");
+        }));
+        yield return ("update.same_version_staging_resumes_exact_consent_but_other_sources_cannot_replay_it", () => Run(async f =>
+        {
+            const string version = "4.3.0";
+            f.Add(version, 42, tagOverride: "stable-product", minimumUpdater: UpdateRevisionPolicy.ProtocolVersion, buildId: "signed-next");
+            using (var service = f.Service(currentVersion: version, installedSequence: 41))
+            {
+                await service.CheckAsync(false); service.ConfirmTarget(service.Snapshot.Candidate!);
+                await service.DownloadAndStageAsync();
+                Check(service.Snapshot.State == UpdateState.Staged);
+            }
+            using (var resumed = f.Service(currentVersion: version, installedSequence: 41))
+            {
+                Check((await resumed.ValidateStagedForCommitAsync()).Candidate.Manifest.Sequence == 42);
+                resumed.CancelConsent();
+                await resumed.CheckAsync(false);
+                Check(resumed.Snapshot.Staged is null && resumed.Snapshot.State == UpdateState.Available);
+            }
+            using (var other = f.Service(currentVersion: version, installedSequence: 41, installedBuild: "different-source"))
+            {
+                await other.CheckAsync(false);
+                Check(other.Snapshot.Candidate is null && other.Snapshot.ErrorCode == "UPDATE_SEQUENCE_REUSED");
+            }
+            using var current = f.Service(currentVersion: version, installedSequence: 42, installedBuild: "signed-next");
+            await current.CheckAsync(false);
+            Check(current.Snapshot.Candidate is null && current.Snapshot.CheckComplete && current.Snapshot.State == UpdateState.NoCompatibleUpdate);
+        }));
+        yield return ("update.signed_revision_requires_an_installed_floor_new_sequence_and_trusted_root", () => Run(async f =>
+        {
+            const string version = "4.3.0";
+            f.Add(version, 42, tagOverride: "stable-product", minimumUpdater: UpdateRevisionPolicy.ProtocolVersion);
+            foreach (var (floor, reason) in new[] { (0, "UPDATE_CURRENT_VERSION"), (42, "UPDATE_SEQUENCE_REUSED"), (43, "UPDATE_METADATA_REPLAY") })
+            {
+                using var client = f.Service(currentVersion: version, installedSequence: floor);
+                var history = await client.LoadHistoryAsync(UpdateSelectionMode.Upgrade, true);
+                Check(history.Items.Single().DisabledReason == reason);
+            }
+            using var oldKey = RSA.Create(3072);
+            var differentRoot = new UpdateTrustStore(new(1, 1, "production", [new("test-key", oldKey.ExportSubjectPublicKeyInfoPem())]));
+            using var oldRoot = f.Service(differentRoot, "old-root-data", version, 41);
+            await oldRoot.CheckAsync(false);
+            Check(oldRoot.Snapshot.Candidate is null && oldRoot.Snapshot.ErrorCode == "UPDATE_SIGNATURE_INVALID");
         }));
         yield return ("update.preview_metadata_success_requires_every_release_page", () => Run(async f =>
         {
@@ -378,7 +444,7 @@ internal static class UpdateCoreTests
         }));
         yield return ("update.host_download_profile_does_not_relax_community_autumn_limit", () =>
         {
-            var request = new DownloadRequest("cn.labchronicles.autumnos", "1.1.0", new("https://github.com/paimeng5201314/autumnlab/releases/download/plus-v1.1.0/payload.zip"), 21L * 1024 * 1024, new string('a', 64), 1, 1, 1);
+            var request = new DownloadRequest("cn.labchronicles.autumnos", "1.1.0", new("https://github.com/paimeng5201314/autumnOS/releases/download/plus-v1.1.0/payload.zip"), 21L * 1024 * 1024, new string('a', 64), 1, 1, 1);
             try { DownloadService.ValidateRequest(request); throw new InvalidOperationException("Community profile accepted host payload."); } catch (ArgumentException) { }
         });
     }
@@ -399,18 +465,18 @@ internal static class UpdateCoreTests
         public DownloadService Downloads { get; }
         public DateTimeOffset CurrentTime = Now;
         public int DelayMilliseconds, NotModifiedResponses, FailReleasePage;
-        public bool ConditionalResponses, Offline, RateLimited;
+        public bool ConditionalResponses, ConditionalAssetsOnly, Offline, RateLimited;
         public Fixture() { Directory.CreateDirectory(Root); Downloads = new(Root, this, () => new(), hostUpdate: true); }
         public void Clear() { Releases.Clear(); Assets.Clear(); }
-        public UpdateService Service(UpdateTrustStore? trust = null, string dataSuffix = "data", string currentVersion = "1.0.0") => new(Path.Combine(Root, dataSuffix), currentVersion, "build-a", this, Downloads, trust ?? Trust(), () => CurrentTime);
-        public Signed Add(string version, long sequence = 1, string fault = "", string? tagOverride = null, string minimumUpdater = "1.0.0")
+        public UpdateService Service(UpdateTrustStore? trust = null, string dataSuffix = "data", string currentVersion = "1.0.0", long installedSequence = 0, string installedBuild = "build-a") => new(Path.Combine(Root, dataSuffix), currentVersion, installedBuild, this, Downloads, trust ?? Trust(), () => CurrentTime, installedSequence: installedSequence);
+        public Signed Add(string version, long sequence = 1, string fault = "", string? tagOverride = null, string minimumUpdater = "1.0.0", long? releaseId = null, string? buildId = null, byte[]? signatureOverride = null)
         {
             string channel = SemanticVersion.Parse(version).IsPrerelease ? "meta" : "plus", tag = tagOverride ?? channel + "-v" + version;
             byte[] file = Encoding.UTF8.GetBytes("isolated unit bytes; never executable"), zip;
             using (MemoryStream memory = new()) { using (ZipArchive archive = new(memory, ZipArchiveMode.Create, true)) { var entry = archive.CreateEntry("AutumnOS.Client.exe"); using var output = entry.Open(); output.Write(file); } zip = memory.ToArray(); }
-            var manifest = new UpdateManifest(1, channel, version, "unit-build-" + version.Replace('+', '-'), "win-x64", minimumUpdater, sequence, Now.AddMinutes(-5), Now.AddDays(7), "test-key", 1,
-                new("payload.zip", zip.Length, Hash(zip), sequence, sequence * 10 + 3), [new("AutumnOS.Client.exe", file.Length, Hash(file))], [], new(1, 1, true), ReleaseTag: tagOverride);
-            byte[] bytes = UpdateManifestCodec.Serialize(manifest), signature = UpdateSignature.Create(bytes, SigningKey.Value, "test-key", 1);
+            var manifest = new UpdateManifest(1, channel, version, buildId ?? "unit-build-" + version.Replace('+', '-'), "win-x64", minimumUpdater, sequence, Now.AddMinutes(-5), Now.AddDays(7), "test-key", 1,
+                new("payload.zip", zip.Length, Hash(zip), releaseId ?? sequence, sequence * 10 + 3), [new("AutumnOS.Client.exe", file.Length, Hash(file))], [], new(1, 1, true), ReleaseTag: tagOverride);
+            byte[] bytes = UpdateManifestCodec.Serialize(manifest), signature = signatureOverride ?? UpdateSignature.Create(bytes, SigningKey.Value, "test-key", 1);
             Assets[tag + "/autumn.update.json"] = bytes; Assets[tag + "/autumn.update.sig"] = signature; Assets[tag + "/payload.zip"] = zip;
             object Asset(string name, byte[] content, long id) => new { id, name, size = content.Length + (fault == "size" && name == "payload.zip" ? 1 : 0), browser_download_url = "https://github.com/" + (fault == "source" ? "foreign/repo" : UpdateService.Repository) + "/releases/download/" + tag + "/" + name };
             var assets = new[] { Asset("autumn.update.json", bytes, sequence * 10 + 1), Asset("autumn.update.sig", signature, sequence * 10 + 2), Asset("payload.zip", zip, sequence * 10 + 3) };
@@ -426,7 +492,7 @@ internal static class UpdateCoreTests
                 Assets[tag + "/AutumnOS.exe"] = executable; Assets[tag + "/SHA256SUMS"] = sums;
                 releaseAssets = [Asset("AutumnOS.exe", executable, sequence * 10 + 4), Asset("SHA256SUMS", sums, sequence * 10 + 5)];
             }
-            Releases.Add(new { id = sequence + (fault == "release-id" ? 1 : 0), draft = false, tag_name = tag, prerelease = fault == "prerelease" || channel == "meta", published_at = "2020-01-01T00:00:00Z", body = "unit metadata", assets = releaseAssets });
+            Releases.Add(new { id = (releaseId ?? sequence) + (fault == "release-id" ? 1 : 0), draft = false, tag_name = tag, prerelease = fault == "prerelease" || channel == "meta", published_at = "2020-01-01T00:00:00Z", body = "unit metadata", assets = releaseAssets });
             return new(manifest, bytes, signature, zip);
         }
         public string SavePayload(Signed signed) { string path = Path.Combine(Root, "payload.zip"); File.WriteAllBytes(path, signed.Zip); return path; }
@@ -436,7 +502,7 @@ internal static class UpdateCoreTests
             if (DelayMilliseconds > 0) await Task.Delay(DelayMilliseconds, cancellationToken);
             if (Offline) throw new HttpRequestException("isolated offline");
             if (RateLimited) { var limit = new HttpResponseMessage(HttpStatusCode.TooManyRequests); limit.Headers.RetryAfter = new(TimeSpan.FromMinutes(2)); return limit; }
-            if (ConditionalResponses && headers?.ContainsKey("If-None-Match") == true) { NotModifiedResponses++; return new HttpResponseMessage(HttpStatusCode.NotModified); }
+            if (ConditionalResponses && (!ConditionalAssetsOnly || kind == GitHubRequestKind.Asset) && headers?.ContainsKey("If-None-Match") == true) { NotModifiedResponses++; return new HttpResponseMessage(HttpStatusCode.NotModified); }
             if (kind == GitHubRequestKind.Api)
             {
                 var values = Releases.Select(x => JsonSerializer.SerializeToElement(x)).ToArray();

@@ -78,7 +78,7 @@ $inventory=@(Get-ChildItem -LiteralPath $candidate -Recurse -File|ForEach-Object
 $archivePath=Join-Path $output "AutumnOS-$($build.version)-code-check.zip"
 $archive=[IO.Compression.ZipFile]::Open($archivePath,[IO.Compression.ZipArchiveMode]::Create)
 try{foreach($entry in $inventory){
-    if($entry.path -match '(^|/)(AutumnOS_Data|\.autumnos-update)(/|$)|\.(pk8|pem|key|pfx|p12|snk|dpapi)$'){throw 'Private data cannot enter handoff.'}
+    if($entry.path -match '(^|/)(AutumnOS_Data|\.autumnos-update)(/|$)|(^|/)recovery-code\.txt$|\.(pk8|pem|key|pfx|p12|snk|dpapi)$'){throw 'Private data cannot enter handoff.'}
     $null=[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,(Join-Path $candidate $entry.path),$entry.path,[IO.Compression.CompressionLevel]::Optimal)
 }}finally{$archive.Dispose()}
 $extracted=Join-Path $output 'extracted'

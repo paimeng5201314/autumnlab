@@ -247,10 +247,7 @@ namespace AutumnOS.SingleFile
                 if (journal.Phase != "committed" && journal.Phase != "rolledBack" && journal.Phase != "aborted") return;
                 // The pinned independent bootstrap revalidates and performs recovery; a partial directory is never launched directly.
             }
-            string receiptPath = Path.Combine(product, "autumn.install.json"); Plain(receiptPath);
-            if (new FileInfo(receiptPath).Length > 8 * 1024 * 1024) throw new IOException("PORTABLE_RECEIPT_INVALID");
-            Receipt receipt;
-            using (var stream = File.OpenRead(receiptPath)) receipt = (Receipt)new DataContractJsonSerializer(typeof(Receipt)).ReadObject(stream);
+            Receipt receipt = ReadReceipt(product);
             if (receipt.Schema != 1 || string.IsNullOrEmpty(receipt.BuildId) || receipt.Files == null || receipt.Files.Length < 3 || receipt.Files.Length > 20000) throw new IOException("PORTABLE_RECEIPT_INVALID");
             // A successful signed update is preserved. Never seed the old payload over a different installed build.
             if (receipt.BuildId == BundleIdentity.BuildId)
@@ -299,10 +296,23 @@ namespace AutumnOS.SingleFile
                 using (var input = File.OpenRead(journalPath)) journal = (Journal)new DataContractJsonSerializer(typeof(Journal)).ReadObject(input);
                 if (journal.Phase != "committed" && journal.Phase != "rolledBack" && journal.Phase != "aborted") return;
             }
-            Receipt receipt;
-            using (var input = File.OpenRead(Path.Combine(product, "autumn.install.json"))) receipt = (Receipt)new DataContractJsonSerializer(typeof(Receipt)).ReadObject(input);
+            Receipt receipt = ReadReceipt(product);
             if (binding == null ? receipt.BuildId != BundleIdentity.BuildId : receipt.BuildId != binding.BuildId)
                 throw new IOException("PORTABLE_ENTRY_BINDING_INVALID");
+        }
+
+        private static Receipt ReadReceipt(string product)
+        {
+            string path = Path.Combine(product, "autumn.install.json"); Plain(path);
+            using (var file = File.OpenRead(path))
+            {
+                if (file.Length < 1 || file.Length > 8 * 1024 * 1024) throw new IOException("PORTABLE_RECEIPT_INVALID");
+                var receipt = (Receipt)new DataContractJsonSerializer(typeof(Receipt)).ReadObject(file);
+                if (receipt == null || receipt.Sequence < 0 ||
+                    (receipt.BuildId == BundleIdentity.BuildId && receipt.Sequence != BundleIdentity.UpdateSequence))
+                    throw new IOException("PORTABLE_RECEIPT_INVALID");
+                return receipt;
+            }
         }
 
         private static string Resolve(string root, string relative)
@@ -629,6 +639,7 @@ namespace AutumnOS.SingleFile
         {
             [DataMember(Name = "schemaVersion")] public int Schema = 0;
             [DataMember(Name = "buildId")] public string BuildId = null;
+            [DataMember(Name = "sequence")] public long Sequence = 0;
             [DataMember(Name = "files")] public ReceiptFile[] Files = null;
         }
         [DataContract] private sealed class ReceiptFile

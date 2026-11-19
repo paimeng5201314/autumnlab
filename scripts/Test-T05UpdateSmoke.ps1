@@ -293,7 +293,7 @@ function Publish-T05SignedFixture([string]$PayloadDirectory){
     Assert-T05PlainPath $PayloadDirectory
     $manifestPath=Join-Path $PayloadDirectory 'autumn.update.json'
     $manifest=Read-T05Json $manifestPath
-    if($manifest.repository -ne 'paimeng5201314/autumnlab' -or $manifest.channel -ne 'plus' -or $manifest.version -notmatch '^\d+\.\d+\.\d+(\+[0-9A-Za-z.-]+)?$' -or
+    if($manifest.repository -ne 'paimeng5201314/autumnOS' -or $manifest.channel -ne 'plus' -or $manifest.version -notmatch '^\d+\.\d+\.\d+(\+[0-9A-Za-z.-]+)?$' -or
         $manifest.payload.asset -notmatch '^[A-Za-z0-9][A-Za-z0-9._+-]{0,199}$' -or $manifest.payload.asset -in @('autumn.update.json','autumn.update.sig')){throw 'A default-plus fixture with a valid signed manifest is required.'}
     $tag=$manifest.channel+'-v'+$manifest.version
     $tagDirectory=Join-Path $FeedDirectory $tag;Assert-T05PlainPath $tagDirectory
@@ -307,7 +307,7 @@ function Publish-T05SignedFixture([string]$PayloadDirectory){
         elseif(-not [string]::Equals($source,$target,[StringComparison]::OrdinalIgnoreCase)){Copy-Item -LiteralPath $source -Destination $target}
         $assetId=if($name -eq $manifest.payload.asset){[long]$manifest.payload.assetId}else{[long]$manifest.payload.assetId+1+$assetIndex}
         if($assetId -le 0){throw 'Fixture asset ID overflow.'};$assetIndex++
-        $assets.Add([ordered]@{id=$assetId;name=$name;size=(Get-Item -LiteralPath $source).Length;browser_download_url="https://github.com/paimeng5201314/autumnlab/releases/download/$tag/$name"})
+        $assets.Add([ordered]@{id=$assetId;name=$name;size=(Get-Item -LiteralPath $source).Length;browser_download_url="https://github.com/paimeng5201314/autumnOS/releases/download/$tag/$name"})
     }
     Add-SmokeCheck ($scenario.name+'_supplied_payload_bytes_match_signed_manifest') ((Get-T05Hash (Join-Path $PayloadDirectory $manifest.payload.asset)) -eq $manifest.payload.sha256 -and
         (Get-Item -LiteralPath (Join-Path $PayloadDirectory $manifest.payload.asset)).Length -eq $manifest.payload.bytes)

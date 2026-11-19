@@ -11,15 +11,16 @@ namespace AutumnOS.Update;
 internal sealed class UpdateMetadataClient(string directory, IGitHubTransport transport, Func<DateTimeOffset> clock,
     Func<DateTimeOffset?> blockedUntil, Action<DateTimeOffset> block)
 {
-    private sealed record Entry(string Url, string? ETag, string? LastModified, byte[] Bytes, string Digest);
-    public async Task<byte[]> GetAsync(Uri uri, GitHubRequestKind kind, int maximum, CancellationToken token)
+    private sealed record Entry(string Url, string? ETag, string? LastModified, byte[] Bytes, string Digest, long AssetId = 0);
+    public async Task<byte[]> GetAsync(Uri uri, GitHubRequestKind kind, int maximum, CancellationToken token, long assetId = 0)
     {
         if (blockedUntil() is { } until && until > clock()) throw new UpdateException("UPDATE_RATE_LIMITED");
-        string path = Path.Combine(directory, Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(uri.AbsoluteUri))) + ".json");
-        Entry? previous = Read(path, uri, maximum);
+        string cacheKey = assetId > 0 ? uri.AbsoluteUri + "#" + assetId.ToString(System.Globalization.CultureInfo.InvariantCulture) : uri.AbsoluteUri;
+        string path = Path.Combine(directory, Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(cacheKey))) + ".json");
+        Entry? previous = Read(path, uri, maximum, assetId);
         Dictionary<string, string> headers = new() { ["Accept"] = kind == GitHubRequestKind.Api ? "application/vnd.github+json" : "application/octet-stream", ["X-GitHub-Api-Version"] = "2022-11-28" };
         if (previous?.ETag is { } etag && EntityTagHeaderValue.TryParse(etag, out _)) headers["If-None-Match"] = etag;
-        else if (previous?.LastModified is { } modified && DateTimeOffset.TryParse(modified, out _)) headers["If-Modified-Since"] = modified;
+        // Release assets can be replaced within the one-second HTTP date resolution.
         for (int attempt = 0; ; attempt++)
         {
             using var bounded = CancellationTokenSource.CreateLinkedTokenSource(token); bounded.CancelAfter(TimeSpan.FromSeconds(20));
@@ -42,7 +43,7 @@ internal sealed class UpdateMetadataClient(string directory, IGitHubTransport tr
                 { if (output.Length + read > maximum) throw new UpdateException("UPDATE_RESPONSE_TOO_LARGE"); output.Write(buffer, 0, read); }
                 byte[] bytes = output.ToArray();
                 if (bytes.Length == 0 || response.Content.Headers.ContentLength is long length && length != bytes.Length) throw new UpdateException("UPDATE_RESPONSE_INVALID");
-                Write(path, new(uri.AbsoluteUri, response.Headers.ETag?.ToString(), response.Content.Headers.LastModified?.ToString("R"), bytes, Hash(bytes)));
+                Write(path, new(uri.AbsoluteUri, response.Headers.ETag?.ToString(), response.Content.Headers.LastModified?.ToString("R"), bytes, Hash(bytes), assetId));
                 return bytes;
             }
             catch (OperationCanceledException) when (!token.IsCancellationRequested) { throw new UpdateException("UPDATE_TIMEOUT"); }
@@ -58,7 +59,7 @@ internal sealed class UpdateMetadataClient(string directory, IGitHubTransport tr
             try { until = DateTimeOffset.FromUnixTimeSeconds(unix); } catch (ArgumentOutOfRangeException) { }
         return until < now.AddSeconds(1) ? now.AddSeconds(1) : until;
     }
-    private Entry? Read(string path, Uri uri, int maximum)
+    private Entry? Read(string path, Uri uri, int maximum, long assetId)
     {
         try
         {
@@ -67,7 +68,7 @@ internal sealed class UpdateMetadataClient(string directory, IGitHubTransport tr
             var item = JsonSerializer.Deserialize<Entry>(File.ReadAllBytes(path));
             // The cache is disposable, including syntactically valid but incomplete JSON.
             // Never let a damaged cache bypass a fresh request or fault startup checking.
-            return item is not null && item.Url == uri.AbsoluteUri && item.Bytes is { Length: > 0 } bytes &&
+            return item is not null && item.Url == uri.AbsoluteUri && item.AssetId == assetId && item.Bytes is { Length: > 0 } bytes &&
                 bytes.Length <= maximum && item.Digest == Hash(bytes) ? item : null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or UpdateException) { return null; }

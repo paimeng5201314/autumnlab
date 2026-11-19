@@ -79,7 +79,7 @@ Source $snapshot
 设置 > 系统更新。每次启动检查，确认后才下载；预览默认关，安装必须主动重启确认。
 正式公钥未配置时拒绝安装；普通退出和下次启动不会应用待安装版本。
 本目录包含 .NET / Windows App SDK / 固定 WebView2 Runtime。没有安装系统组件。
-本地更新演练仅在明确标识的独立构建启用；生产来源固定 paimeng5201314/autumnlab。
+本地更新演练仅在明确标识的独立构建启用；生产来源固定 paimeng5201314/autumnOS。
 完整 T03 收尾、安装版及系统兼容矩阵尚未验收，实际验证结果见对应构建与发行说明。
 "@ | Set-Content -LiteralPath (Join-Path $destination 'READ-ME.txt') -Encoding utf8
         if($build.temporary_platform_acceptance){
@@ -89,7 +89,7 @@ Source $snapshot
         $inventory=Join-Path $run 'managed-files.json'
         Invoke-Dotnet -Arguments @('tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.Cli.dll','inventory','--source',$destination,'--output',$inventory) -LogPath (Join-Path $run 'inventory.log')
         $managed=@(Get-Content -LiteralPath $inventory -Raw|ConvertFrom-Json)
-        [ordered]@{schemaVersion=1;version=$build.version;buildId=$buildId;files=$managed}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $destination 'autumn.install.json') -Encoding utf8NoBOM
+        [ordered]@{schemaVersion=1;version=$build.version;buildId=$buildId;sequence=[long]$build.update_sequence;files=$managed}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $destination 'autumn.install.json') -Encoding utf8NoBOM
         $delivery=@(Get-ChildItem -LiteralPath $destination -Recurse -File|ForEach-Object {[ordered]@{path=[IO.Path]::GetRelativePath($destination,$_.FullName).Replace('\','/');bytes=$_.Length;sha256=(Get-FileHash -LiteralPath $_.FullName).Hash.ToLowerInvariant()}})
         $delivery|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $evidence 'delivery-hashes.json') -Encoding utf8
     }
@@ -100,6 +100,7 @@ Source $snapshot
     foreach($file in $delivery){if((Get-FileHash -LiteralPath (Join-Path $destination $file.path)).Hash.ToLowerInvariant() -ne $file.sha256){throw 'Frozen delivery bytes changed.'}}
     $report=[ordered]@{status='prepared';build_id=$buildId;source_snapshot_id=$snapshot;executable=$exe;executable_sha256=(Get-FileHash -LiteralPath $exe).Hash.ToLowerInvariant();test_build=$build.test_build;native_tests='not_run';zip='not_created';setup='not_created';public_release=$false;authenticode='not_signed';fixed_webview2='154.0.4258.53'}
     $report.temporary_platform_acceptance=[bool]$build.temporary_platform_acceptance
+    $report.update_sequence=[long]$build.update_sequence
     $report|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'package-prepared.json') -Encoding utf8
     if($Stage -eq 'Prepare'){$report|ConvertTo-Json;return}
     foreach($name in @('tests','sdk-tests','sample-tests','native-client-tests','server-http-tests','t04-tools-tests')){

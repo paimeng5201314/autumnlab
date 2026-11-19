@@ -1,7 +1,8 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$BuildId)
+param([Parameter(Mandatory)][string]$BuildId,[switch]$ShareVerifiedInputs)
 . "$PSScriptRoot/Common.ps1"
 . "$PSScriptRoot/SingleFilePayloadFiles.ps1"
+. "$PSScriptRoot/UpdatePreparationFiles.ps1"
 $ErrorActionPreference='Stop'
 $buildRoot=Join-Path $ProjectRoot "artifacts/builds/$BuildId"
 $build=Get-Content -LiteralPath (Join-Path $buildRoot 'build-result.json') -Raw|ConvertFrom-Json
@@ -22,14 +23,20 @@ $discard=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 foreach($item in $plan.Removed){$null=$discard.Add($item.path)}
 $sourceDirectory=Split-Path $prepared.executable -Parent
 $removed=@();$copied=@()
+$readLeases=[Collections.Generic.List[IO.FileStream]]::new()
+try {
 foreach($file in $delivery){
-    if($file.path -match '(^|/)(AutumnOS_Data|bin|obj|node_modules|\.autumnos-update)(/|$)|\.(pk8|pem|key|pfx|p12|snk|dpapi|log|binlog|tmp)$'){throw 'Private/generated content in tracked delivery.'}
+    if($file.path -match '(^|/)(AutumnOS_Data|bin|obj|node_modules|\.autumnos-update)(/|$)|(^|/)recovery-code\.txt$|\.(pk8|pem|key|pfx|p12|snk|dpapi|log|binlog|tmp)$'){throw 'Private/generated content in tracked delivery.'}
     $source=Join-Path $sourceDirectory $file.path
     for($cursor=[IO.Path]::GetFullPath($source);$cursor;$cursor=[IO.Path]::GetDirectoryName($cursor)){if((Get-Item -LiteralPath $cursor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Redirected packaging input.'}}
     if((Get-FileHash -LiteralPath $source).Hash.ToLowerInvariant() -ne $file.sha256){throw 'Prepared bytes changed.'}
     if($discard.Contains($file.path)){$removed+=,[ordered]@{path=$file.path;bytes=$file.bytes;sha256=$file.sha256;reason='debug_symbols_not_in_native_trust_catalog'};continue}
     $target=Join-Path $staging $file.path;New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent)|Out-Null
-    Copy-Item -LiteralPath $source -Destination $target
+    if($ShareVerifiedInputs -and $file.path -notin @('READ-ME.txt','autumn.install.json')){
+        Add-VerifiedStagingLink -Source $source -Target $target -Entry $file -ReadLeases $readLeases
+    }else{
+        Copy-Item -LiteralPath $source -Destination $target
+    }
     $copied+=,$file
 }
 @'
@@ -47,7 +54,7 @@ Lab Chronicles AutumnOS · 制作人：派蒙
 $inventoryPath=Join-Path $run 'managed-files.json'
 Invoke-Dotnet -Arguments @('tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.Cli.dll','inventory','--source',$staging,'--output',$inventoryPath) -LogPath (Join-Path $run 'inventory.log')
 $managed=@(Get-Content -LiteralPath $inventoryPath -Raw|ConvertFrom-Json)
-[ordered]@{schemaVersion=1;version=$build.version;buildId=$BuildId;files=$managed}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $staging 'autumn.install.json') -Encoding utf8NoBOM
+[ordered]@{schemaVersion=1;version=$build.version;buildId=$BuildId;sequence=[long]$build.update_sequence;files=$managed}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $staging 'autumn.install.json') -Encoding utf8NoBOM
 $files=@(Get-ChildItem -LiteralPath $staging -Recurse -File|ForEach-Object {[ordered]@{path=[IO.Path]::GetRelativePath($staging,$_.FullName).Replace('\','/');bytes=$_.Length;sha256=(Get-FileHash -LiteralPath $_.FullName).Hash.ToLowerInvariant()}}|Sort-Object path)
 $index=Join-Path $run 'bundle-inventory.txt'
 ($files|ForEach-Object {"$($_.sha256)`t$($_.bytes)`t$($_.path)"})|Set-Content -LiteralPath $index -Encoding utf8NoBOM
@@ -65,8 +72,7 @@ try{if($zip.Entries.Count -ne $seen.Count){throw 'Blob count mismatch.'};foreach
 $payloadHash=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
 $metadata=Join-Path $run 'BundleIdentity.cs'
 $label=if($build.release_label){$build.release_label}else{$build.version}
-[xml]$brand=Get-Content -LiteralPath (Join-Path $ProjectRoot 'build/Brand.props') -Raw
-$fileVersion=[string]$brand.Project.PropertyGroup.AutumnFileVersion
+$fileVersion=(Get-Item -LiteralPath (Join-Path $sourceDirectory 'AutumnOS.Client.dll')).VersionInfo.FileVersion
 if($fileVersion -notmatch '^\d+\.\d+\.\d+\.\d+$' -or @($fileVersion.Split('.')|Where-Object {[int]$_ -gt 65535}).Count){throw 'Invalid numeric Windows file version.'}
 foreach($value in @($label,$BuildId,$build.source_snapshot_id)){if($value -match '["\\\r\n]'){throw 'Unsafe build metadata.'}}
 @"
@@ -84,6 +90,7 @@ namespace AutumnOS.SingleFile { internal static class BundleIdentity {
 internal const string PayloadSha256 = "$payloadHash";
 internal const string BuildId = "$BuildId";
 internal const string SourceSnapshotId = "$($build.source_snapshot_id)";
+internal const long UpdateSequence = $([long]$build.update_sequence)L;
 } }
 "@|Set-Content -LiteralPath $metadata -Encoding utf8NoBOM
 $framework=Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319'
@@ -106,5 +113,8 @@ if((Get-Item -LiteralPath $executable).VersionInfo.ProductVersion -ne $label){th
 $files|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $run 'delivery-hashes.json') -Encoding utf8NoBOM
 [ordered]@{status='passed';removed=$removed;removed_count=$removed.Count;removed_bytes=($removed|ForEach-Object {[long]$_.bytes}|Measure-Object -Sum).Sum;catalogued_native_files_retained=$plan.RequiredNativeFiles;deduplicated_embedded_copies=$files.Count-$seen.Count;unique_blobs=$seen.Count;runtime_paths_retained=$files.Count;runtime_trimmed=$false;licenses_retained=$true;old_files_deleted=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $run 'cleanup.json') -Encoding utf8NoBOM
 $report=[ordered]@{status='prepared';build_id=$BuildId;source_snapshot_id=$snapshot;release_label=$label;version=$build.version;executable=$executable;executable_sha256=(Get-FileHash -LiteralPath $executable).Hash.ToLowerInvariant();bytes=(Get-Item -LiteralPath $executable).Length;delivery_files=1;data_folder='AutumnOS_Data';program_relative_path=('AutumnOS_Data/System/Product-'+$payloadHash.Substring(0,20));payload_sha256=$payloadHash;logical_files=$files.Count;unique_blobs=$seen.Count;native_tests='not_run';setup='not_created_pending_native_acceptance';public_release=$false;authenticode='not_signed';production_trust=$(if(@($build.build_properties|Where-Object {$_ -like '-p:ProductionUpdateTrustFile=*'}).Count){'embedded_public_root_requires_signed_release'}else{'unconfigured_signed_install_disabled'});compiler=$compiler;compiler_sha256=(Get-FileHash -LiteralPath $compiler).Hash.ToLowerInvariant();compiler_version=(Get-Item -LiteralPath $compiler).VersionInfo.FileVersion;evidence=$run;inbox_framework='Windows .NET Framework 4.x';net10_winappsdk_webview2='embedded_self_contained_no_global_install'}
+$report.shared_verified_staging_inputs=[bool]$ShareVerifiedInputs
+$report.update_sequence=[long]$build.update_sequence
 $report|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $buildRoot 'package-single-file.json') -Encoding utf8NoBOM
 $report|ConvertTo-Json -Depth 6
+} finally {foreach($lease in $readLeases){$lease.Dispose()}}

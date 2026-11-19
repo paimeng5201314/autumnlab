@@ -5,7 +5,7 @@
     <AutumnProducer>派蒙</AutumnProducer>
     <AutumnProducerCredit>制作人：派蒙</AutumnProducerCredit>
     <AutumnVersion Condition="'$(AutumnVersion)' == ''">1.0.0</AutumnVersion>
-    <AutumnReleaseLabel Condition="'$(AutumnReleaseLabel)' == '' and '$(AutumnVersion)' == '1.0.0' and '$(TestUpdateTrustFile)' == ''">plus-v1.0.0</AutumnReleaseLabel>
-    <AutumnFileVersion>1.0.0.0</AutumnFileVersion>
+    <AutumnReleaseLabel Condition="'$(AutumnReleaseLabel)' == '' and '$(AutumnVersion)' == '1.0.0' and '$(TestUpdateTrustFile)' == ''">plus-v1.0.0-20261115</AutumnReleaseLabel>
+    <AutumnFileVersion>$([System.Text.RegularExpressions.Regex]::Match('$(AutumnVersion)', '^[0-9]+\.[0-9]+\.[0-9]+').Value).0</AutumnFileVersion>
   </PropertyGroup>
 </Project>

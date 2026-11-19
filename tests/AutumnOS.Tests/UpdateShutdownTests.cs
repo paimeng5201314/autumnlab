@@ -232,7 +232,7 @@ internal static class UpdateShutdownTests
                 new("payload.zip", zip.Length, Hash(zip), 1, 13), [new("AutumnOS.Client.exe", file.Length, Hash(file))], [], new(1, 1, true));
             byte[] bytes = UpdateManifestCodec.Serialize(manifest), signature = UpdateSignature.Create(bytes, Key.Value, "shutdown-test", 1);
             const string tag = "plus-v1.1.0";
-            const string prefix = "https://github.com/paimeng5201314/autumnlab/releases/download/" + tag + "/";
+            const string prefix = "https://github.com/paimeng5201314/autumnOS/releases/download/" + tag + "/";
             Candidate = new(1, tag, "Synthetic fixture", manifest, new(prefix + "payload.zip"), 13, bytes, signature);
             object Asset(string name, long id, byte[] content) => new { id, name, size = content.Length, browser_download_url = prefix + name };
             var release = new { id = 1L, tag_name = tag, name = "Fixture", body = "Synthetic", draft = false, prerelease = false,

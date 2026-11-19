@@ -326,7 +326,7 @@ public sealed class DownloadService : IDownloadService, IDisposable, IAsyncDispo
             request.RepositoryId <= 0 || request.ReleaseId <= 0 || request.AssetId <= 0 ||
             request.Url is null || !request.Url.IsAbsoluteUri || !request.Url.AbsolutePath.EndsWith(hostUpdate ? ".zip" : ".autumn", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("DOWNLOAD_REQUEST_INVALID");
         GitHubTransport.ValidateSource(request.Url, GitHubRequestKind.Asset);
-        if (hostUpdate && (request.AppId != "cn.labchronicles.autumnos" || !request.Url.AbsolutePath.StartsWith("/paimeng5201314/autumnlab/releases/download/", StringComparison.Ordinal)))
+        if (hostUpdate && (request.AppId != "cn.labchronicles.autumnos" || !request.Url.AbsolutePath.StartsWith("/" + AutumnOS.Contracts.BrandInfo.UpdateRepository + "/releases/download/", StringComparison.Ordinal)))
             throw new ArgumentException("DOWNLOAD_UPDATE_SOURCE_INVALID");
     }
 

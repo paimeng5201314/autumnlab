@@ -53,7 +53,7 @@ internal static class MigrationSecurityTests
 
     private static void Conflict() => WithFixture(f =>
     {
-        string a = f.Seed('a', "A", "1.0.0"), b = f.Seed('b', "B", "1.0.1"), next = f.Seed('c', "C", "1.1.0");
+        string a = f.Seed('a', "A", "1.0.0"), b = f.Seed('b', "B", "1.0.9"), next = f.Seed('c', "C", "1.1.0");
         f.Ledger(a, 10, Hash('a')); f.Ledger(b, 10, Hash('b'));
         Reject(() => UpdateSecurityLedgerStore.LoadAndMerge(next), "UPDATE_SECURITY_SEQUENCE_CONFLICT");
         Assert(!File.Exists(f.Canonical));
@@ -67,7 +67,7 @@ internal static class MigrationSecurityTests
 
     private static void FailureLimit() => WithFixture(f =>
     {
-        string a = f.Seed('a', "A", "1.0.0"), b = f.Seed('b', "B", "1.0.1"), next = f.Seed('c', "C", "1.1.0");
+        string a = f.Seed('a', "A", "1.0.0"), b = f.Seed('b', "B", "1.0.9"), next = f.Seed('c', "C", "1.1.0");
         f.Ledger(a, 1, Hash('a'), failed: Enumerable.Range(0, 4096).Select(i => "bad-" + i).ToArray());
         f.Ledger(b, 2, Hash('b'), failed: ["one-more"]);
         Reject(() => UpdateSecurityLedgerStore.LoadAndMerge(next), "UPDATE_SECURITY_FAILED_BUILDS_LIMIT");
@@ -127,7 +127,7 @@ internal static class MigrationSecurityTests
                     case "seed": File.WriteAllText(Path.Combine(old, ".autumnos-single-file-seed"), Hash('c')); break;
                     case "marker": File.WriteAllText(Path.Combine(old, "autumn.portable"), "wrong"); break;
                     case "entry-build": File.WriteAllText(entry, File.ReadAllText(entry).Replace("\"A\"", "\"other\"")); break;
-                    case "entry-version": File.WriteAllText(entry, File.ReadAllText(entry).Replace("1.0.0", "1.0.1")); break;
+                    case "entry-version": File.WriteAllText(entry, File.ReadAllText(entry).Replace("1.0.0", "1.0.9")); break;
                     case "receipt-schema": File.WriteAllText(receipt, File.ReadAllText(receipt).Replace("\"dataSchemaVersion\": 1", "\"dataSchemaVersion\": 2")); break;
                     case "receipt-version": File.WriteAllText(receipt, File.ReadAllText(receipt).Replace("1.0.0", "nonsense")); break;
                     case "unknown-ledger": File.WriteAllText(ledger, File.ReadAllText(ledger).Replace("\"highestSequence\"", "\"HighestSequence\"")); break;
@@ -177,7 +177,7 @@ internal static class MigrationSecurityTests
 
     private static void ConcurrentRecords() => WithFixture(f =>
     {
-        string a = f.Seed('a', "A", "1.0.0"), b = f.Seed('b', "B", "1.0.1");
+        string a = f.Seed('a', "A", "1.0.0"), b = f.Seed('b', "B", "1.0.9");
         Task.WhenAll(Enumerable.Range(1, 8).Select(i => Task.Run(() =>
             UpdateSecurityLedgerStore.Record(i % 2 == 0 ? a : b, i, i.ToString("x64"), DateTimeOffset.UtcNow, "bad-" + i))))
             .GetAwaiter().GetResult();

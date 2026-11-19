@@ -245,7 +245,7 @@ public sealed partial class MainWindow
     }
 
     private static string UpdateTargetDescription(UpdateCandidate candidate, UpdateSelectionMode mode) =>
-        $"当前版本：{BrandInfo.DisplayVersion}\n目标版本：{candidate.Manifest.Version} · {ReleaseChannel(candidate)}\n发布时间：{FormatUpdateDate(candidate.PublishedAtUtc)}\n安装包：{candidate.Manifest.Payload.Bytes:N0} 字节 · {candidate.Manifest.TargetRid}\n官方仓库：{candidate.Manifest.Repository}\n发行标记：{candidate.Tag}\n" +
+        $"当前版本：{BrandInfo.DisplayVersion} · {BrandInfo.BuildId}\n目标版本：{candidate.Manifest.Version} · {ReleaseChannel(candidate)}\n目标构建：{candidate.Manifest.BuildId} · 修订 {candidate.Manifest.Sequence}\n发布时间：{FormatUpdateDate(candidate.PublishedAtUtc)}\n安装包：{candidate.Manifest.Payload.Bytes:N0} 字节 · {candidate.Manifest.TargetRid}\n官方仓库：{candidate.Manifest.Repository}\n发行标记：{candidate.Tag}\n" +
         (ReleaseChannel(candidate) == "预览版" ? "预览版可能不稳定，请先保存工作。\n" : "") +
         (mode == UpdateSelectionMode.Rollback ? "回滚前会备份当前程序状态并再次核对数据兼容性。\n" : "") +
         "确认仅授权下载这个目标。验证完成后仍需你选择重启安装。\n\n发布说明";

@@ -38,7 +38,7 @@ internal sealed record NativePayloadCatalog(int SchemaVersion, string BuildId, s
             if (receipt.Length is < 1 or > NativeDeploymentIdentity.MaximumReceiptBytes)
                 throw new PackageException("RUNTIME_NATIVE_INSTALLATION_IDENTITY_INVALID");
             var bytes = new byte[(int)receipt.Length]; receipt.ReadExactly(bytes);
-            NativeDeploymentIdentity.ValidateReceipt(bytes, BrandInfo.BuildId, BrandInfo.Version);
+            NativeDeploymentIdentity.ValidateReceipt(bytes, BrandInfo.BuildId, BrandInfo.Version, BrandInfo.UpdateSequence);
         }
         var version = new OsVersion { Size = Marshal.SizeOf<OsVersion>(), ServicePack = "" };
         if (RtlGetVersion(ref version) != 0 || !NativePlatformPolicy.IsVersionAllowed(version.ProductType, version.Build) ||

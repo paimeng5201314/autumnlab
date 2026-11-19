@@ -8,7 +8,7 @@ internal static class NativeDeploymentIdentity
 {
     internal const int MaximumReceiptBytes = 4 * 1024 * 1024;
 
-    internal static void ValidateReceipt(byte[] bytes, string buildId, string version)
+    internal static void ValidateReceipt(byte[] bytes, string buildId, string version, long? installedSequence = null)
     {
         if (bytes.Length is < 1 or > MaximumReceiptBytes) throw Invalid();
         using var json = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 8 });
@@ -16,7 +16,7 @@ internal static class NativeDeploymentIdentity
         if (root.ValueKind != JsonValueKind.Object) throw Invalid();
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in root.EnumerateObject())
-            if (!names.Add(property.Name) || property.Name is not ("schemaVersion" or "version" or "buildId" or "files" or "dataSchemaVersion")) throw Invalid();
+            if (!names.Add(property.Name) || property.Name is not ("schemaVersion" or "version" or "buildId" or "files" or "dataSchemaVersion" or "sequence")) throw Invalid();
         if (!new[] { "schemaVersion", "version", "buildId", "files" }.All(names.Contains) ||
             root.GetProperty("schemaVersion").ValueKind != JsonValueKind.Number ||
             !root.GetProperty("schemaVersion").TryGetInt32(out int schema) || schema != 1 ||
@@ -26,6 +26,10 @@ internal static class NativeDeploymentIdentity
             throw Invalid();
         if (root.TryGetProperty("dataSchemaVersion", out var dataSchema) &&
             (dataSchema.ValueKind != JsonValueKind.Number || !dataSchema.TryGetInt32(out int dataVersion) || dataVersion != 1)) throw Invalid();
+        long sequence = 0; // Legacy packages did not record a revision.
+        if (root.TryGetProperty("sequence", out var revision) &&
+            (revision.ValueKind != JsonValueKind.Number || !revision.TryGetInt64(out sequence) || sequence < 0)) throw Invalid();
+        if (installedSequence is long expected && sequence != expected) throw Invalid();
     }
 
     private static IOException Invalid() => new("RUNTIME_NATIVE_INSTALLATION_IDENTITY_INVALID");

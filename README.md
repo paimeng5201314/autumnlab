@@ -1,28 +1,68 @@
 # Lab Chronicles AutumnOS
 
-**制作人：派蒙。用户入口：AutumnOS.exe。**
+**制作人：派蒙**
 
-AutumnOS 是 C# / .NET10 / WinUI3 原生 Windows 工程，包含内部 Web/WASM `.autumn` 应用、iPad式桌面、账号权限与数据、GitHub 商店和安全更新。它不支持任意 Windows EXE 导入。
+### 下载与签名更新
 
-当前生产构建 `T06-20261115-signing-recovery-prod-01` / 版本 `1.0.0` / 拟发布标签 `plus-v1.0.0-20261115`，实际源码 `sha256:a7699603f7e068739b4adf5a2db7508cd3bedc247c36086315604fe7c6d15a2e`。在原受控身份无法恢复后，按所有者授权换用全新生产公钥 `autumnos-release-20261115-v2`，重新冻结和构建测试打包；没有用新根签旧包。当前 Build 与九组自动报告全部通过，具体计数和原报告摘要见 [当前摘要](artifacts/signing-recovery-20261115/publication/PUBLIC-REKEY-BUILD-AND-TESTS.json)。
+普通用户从 [AutumnOS 正式发行页](https://github.com/paimeng5201314/autumnOS/releases/latest) 下载完整的 `AutumnOS.exe`。从使用旧签名根的 1.0.0 首次迁移时，先正常退出游戏与启动器，保留原目录中的 `AutumnOS_Data`，再运行内置 v3 公钥的新版本。设置中的官方更新源为 `paimeng5201314/autumnOS`。客户端会校验更新清单的签名、版本、序号和载荷内容，下载后由用户选择重启安装。
 
-SDK 0.4 / 协议1 已实现 `network.getStatus/request`、声明域授权和有界网络代理；运行时已有退出/Job/STA/fence证据与关闭异常独立清理；桌面修复窄屏滚动/排列、拖放和两行名称。SDK03 历史限定原生/GUI只属于其自身冻结构件。本轮正式 native/GUI 为 not_run，完整隔离仍未完成，Win10/11 由用户暂停；普通第三方 required_boundaries 未验证时仍拒绝。详情与迁移限制见 [发布状态](PUBLICATION_STATUS.md)。
+维护者可查阅[签名和恢复说明](docs/production-update-signing.md)。下文按日期保留历史工程记录。
 
-## 本地构建
+2026-11-13 当前状态：v1.0.0 仍在修复和验收，尚未发布。qa05 与 prod02 来自同一冻结源码 `sha256:2ef7fc047da53d825194e7453a2bd3fa2291d5b6e42dff9687e01f4e4cddd300`，各自 Release 构建、1,223 项 C# 与其余八组自动检查通过。qa05 在 Server 20348 普通 Medium 桌面实测完整单 EXE 跨种子迁移、适配游戏启动及最大化、旧存档读取、新进度写入、冷启动读回、返回桌面与继续游戏、两实例正常关闭和双租约释放；限定的原生正常关闭、浏览器失败、原根进程停滞、断管四项也通过。prod02 保留正式 Windows 平台门禁，不能把 qa05 的原生结果转记到正式二进制。新更新公钥已生成，跨版本安全账本接续已实现；旧客户端不会自动信任新公钥，需完整 EXE 迁移。qa03 先前的间歇关闭失败根因仍未定位，SDK 网络接口、完整隔离矩阵、Windows 10/11、真实账号、安装器及签名更新/失败回退尚未完成。准确结果见 [AUTUMNOS_PROGRESS.md](AUTUMNOS_PROGRESS.md)及[迁移说明](docs/release-v1-migration.md)；以下日期段为历史记录。
 
-PowerShell7；固定 SDK10.0.401，使用项目 `.tools/dotnet` 和锁文件，不修改系统 PATH。缺项按 [本地工作方式](LOCAL_WORKFLOW.md) 检查。构建使用全新唯一 ID，生产公钥只含公开数据：
+2026-10-24 工作方式更新：先交付代码修复、自动核验和独立测试包，真实窗口/新进程隔离检测由派蒙执行。入口、范围和步骤见[实测说明](docs/isolation-manual-verification.md)。代码核验包由 `Package-CodeHandoff.ps1` 独立生成，原生验收保持 `not_run`，不绕过正式打包门禁或覆盖根入口。
+
+2026-10-18 隔离修复进行中：根入口和真实数据仍保留原样。当前源码已补网络策略、文档失效及SDK响应检查，但真实剪贴板copy/cut隔离失败；所有外部安装包及开发预览在创建浏览器前拒绝，提示 `RUNTIME_CLIPBOARD_BOUNDARY_UNAVAILABLE`。开启开发模式、修改包声明或报告不能解除。安装和存档保留，ChemLeap普通模式运行尚未达标。`artifacts/isolation-20261018/`中的中间EXE用于自有探针诊断，不能当作第三方放行版本；实际结果见[隔离模型](docs/runtime-isolation.md)和[进度](AUTUMNOS_PROGRESS.md)。
+
+这是本地 C# / .NET 10 / WinUI 3 原生 Windows 工程，目前处于 T06 本地联调。2026-10-17 本轮合入主程序更新与回滚逻辑，改造原生准备界面、多语言欢迎、手写品牌、独立账号页和游戏快捷键；没有上传或发布。旧阶段缺项及完整发行验收继续保留。实现与复现方法见 [本轮说明](docs/local-refresh-20261017.md)，实际构建 ID、哈希和测试结果见 [AUTUMNOS_PROGRESS.md](AUTUMNOS_PROGRESS.md)。
+
+## 本地构建与运行
+
+在工程根用 PowerShell 7 执行。项目内 SDK 已获授权安装，位于 `.tools/dotnet`，不修改系统 PATH。首次恢复需要连接微软/NuGet 官方源；后续锁定依赖。
 
 ```powershell
 ./scripts/Get-Environment.ps1
-$buildId = 'T06-local-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,6)
-./scripts/Build.ps1 -BuildId $buildId -BuildVersion '1.0.0' -ReleaseLabel 'plus-v1.0.0-20261115' -ProductionUpdateTrustFile (Join-Path (Get-Location).Path 'build/update-trust.production.json')
-./scripts/Test.ps1
+./scripts/Restore.ps1 -Locked
+./scripts/Test-Source.ps1
+$buildId = 'T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
+./scripts/Build.ps1 -BuildId $buildId -BuildVersion 0.5.1 -ReleaseLabel plus0.0.4-20261017
+./scripts/Test.ps1 -ProbeLogto
 ./scripts/Package-T05.ps1 -Stage Prepare
 ./scripts/Package-SingleFile.ps1 -BuildId $buildId
+./scripts/Test-SingleFileSmoke.ps1 -BuildId $buildId -ReportDirectory "artifacts/reports/$buildId-single-file"
 ```
 
-Test 和 Package-T05 读取 `artifacts/latest-build.txt`，执行前确认对应本次 ID。完整入口在 `artifacts/single-file/<build-id>/AutumnOS.exe`，会在入口旁保留/展开 AutumnOS_Data；目录版必须带齐 DLL 与资源。源码/SDK打包不等于产品GUI通过，附件最终状态由实际发布记录说明。
+单文件交付位于 `artifacts/single-file/<build-id>/AutumnOS.exe`，可单独复制；首次运行在旁边展开唯一的 `AutumnOS_Data`。搬迁已有存档时同时保留该数据目录。`artifacts/packages/` 内的目录版仍需保留 DLL 和资源，不能只复制其小型入口 EXE。`artifacts/latest-build.txt` 指向最近通过的构建 ID；构建/测试日志、源文件清单和 SHA-256 位于 `artifacts/builds/<build-id>/`。原生验证脚本只清理自己启动的进程，测试前正常关闭其他 AutumnOS 窗口。
 
-SDK JS/类型/Schema 在 [sdk](sdk)，CLI 在 [tools](tools)，示例在 [samples](samples)。网络与权限合同见 [SDK网络](docs/sdk-network.md)、[接口](autumnos-spec/docs/03-interfaces.md) 和 [开发文档](autumnos-spec/docs/06-developer-docs.md)。独立 SDK 含完整自包含 CLI，preview/debug 仍需完整运行宿主；真实 Logto Native 类型、回调及浏览器往返未证实，公开配置不需要 Client Secret。
+若 NuGet 传输反复 EOF，可运行 `./scripts/Cache-OfficialPackages.ps1` 从同一官方源按锁文件下载并验证签名与 NuGet 内容哈希，再重试恢复；不关闭 TLS 校验。缺少项目内 SDK 时，先取得安装授权，再执行 `./scripts/Install-LocalSdk.ps1`。现有锁文件不可为绕过失败而删除。
 
-旧客户端不自动信任新根，迁移必须使用新完整入口并保留用户数据/安全账本。未签名草稿不用于无人值守更新；更新 RSA 签名与 Authenticode 分别核验。商店只读发现 GitHub topic/Release，不建设认可名单。当前源码公开不宣称全部 T01–T06 或完整隔离完成。规范与历史在 [autumnos-spec](autumnos-spec)、[工程记录](AUTUMNOS_PROGRESS.md)；许可见 [LICENSE](LICENSE)，第三方版权保持原样。
+早期 `Build-ProtocolPeer.ps1` / `Package.ps1` 跨版本协议回归仍保留，不能替代上面的当前单文件验证。构建必须来自真实源码，失败保留报告，不修改元数据冒充版本。安装包按用户既有指示暂缓；正式签名、系统兼容矩阵和完整 T06 验收仍以进度中未完成项为准。本地脚本不上传或公开发布。
+
+`Test-DeliveredLauncher.ps1` 还会直接在最终交付路径执行 EXE、从另一工作目录二次启动并正常退出自启主进程，核对原 PID/HWND 及构建身份。此步骤在 ZIP 前完成；实际启动生成的 `AutumnOS_Data` 留在本地目录，打 ZIP 明确排除它，不删除数据。
+
+## 当前行为
+
+- 默认普通 WinUI 窗口，可最大化，显示集中品牌与关于信息。
+- 同一 Windows 用户、同一登录会话内，参与 v1 启动协议的发行副本共用一个主实例。再次启动只召回原窗口；最小化恢复，已有页面、最大化状态和游戏实例保持不变，后台游戏不会自动切回前台。先启动副本继续使用自己的版本与数据目录；转发进程不初始化另一套数据。关闭按钮仍正常退出，没有新增托盘或开机自启。
+- 协调超时或权限失败时本次启动退出，不能因此另开主窗口；Windows 拒绝前台激活时请求任务栏提醒。历史包未实现协议，不在自动协调范围内；普通用户与提权启动混用可能被拒绝。详情、退出码和更新维护边界见 [单实例 ADR](docs/adr-0003-launcher-single-instance.md)。
+- 每次检查实际入口旁 `AutumnOS_Data`，只创建缺失目录；中文/空格路径可用，工作目录不影响数据位置。只读或路径冲突返回可恢复错误。
+- 首启为原生资源准备 → 多语言 hello → 手写 autumnOS → 个性化 → 可选账号 → 桌面。账号可取消、重试或跳过；完成后重启直达桌面。已有记录、损坏记录和未来版本记录不会被无声重置。
+- 游戏内容铺满视口，Esc 返回桌面并保留同一实例和未保存输入；Ctrl+Shift+Q 请求结束并保留确认，F6 在桌面打开多任务。原生输入桥只对当前窗口及当前游戏的实际 WebView 进程生效，不记录键盘文本。
+- 主程序每次实际启动检查更新。关闭预览以 GitHub Latest 稳定版为自动候选，开启后同时考虑预览；更新前展示对应发布说明，明确确认后下载，再主动重启安装。设置可指定版本或兼容回滚、固定版本；正式可信公钥和签名资产未配置时拒绝安装。
+- 桌面包括实际时钟、应用图标网格、Dock 和图标上的“运行中”标记。元素配对图标只在真实安装记录及资源验证成功后出现；未运行时单击打开，返回桌面保持同一会话，双击后台图标打开“继续游戏 / 结束游戏”操作面板。继续恢复同一实例；确认结束后清除状态，下次单击新建实例。左键按住 600 ms 或右键菜单提供相同操作，超过 8 DIP 移动取消长按；Shift+F10 等价，Escape 关闭。
+- 设置继续使用双栏；新增账号、应用权限与数据页，通知页面接入真实授权通知、角标、去重与静音。主题 light/dark/system 与三套原创壁纸保留；控制中心未接通项目仍如实说明。Windows 减少动态效果与当前主题/DPI 通过 SDK 同步。
+- 公开 Logto 配置直接复制自 `autumnos-spec/config/logto.public.json`；账号使用系统浏览器 PKCE、独占回环与受保护凭据。Native 类型及登录回调已由派蒙确认，退出回调尚待确认。真实认证验收以进度和报告为准，公开发现校验始终不代表已登录。
+- 构建脚本从 `samples/element-pairs` 与 SDK JS 确定性生成包，单独 `dotnet build` 前可运行 `./scripts/New-SamplePackage.ps1`。新版样例 0.3.0 保留同 appId 的 0.1.0/0.2.0 文件和游客存档，加入默认折叠的资料/权限、私有文件和桌面扩展真实示例。
+- SDK/宿主没有累计 4096 次封顶；16 并发、32 KiB、滚动每分钟 120 次，以及宿主完成后 10 分钟、2048 容量的去重保留。超过窗口的手动重放可能再次执行，详见 SDK 合同。
+- 普通第三方包及开发预览均因缺少完整剪贴板边界而拒绝执行；有限校验、打包和已实现的脱敏调试接口保留，开发模式不能绕过。拒绝原生 EXE/DLL、越界路径、未知权限和坏包；没有认可名单。
+- 数据按账号与应用来源隔离；权限持久保存并可撤销。诊断中可检查真实存档/配置备份并明确恢复，保留原记录；SDK 文件只通过系统选择器与有期限的能力句柄访问。
+
+## 数据、规范与协作
+
+`AutumnOS_Data` 含 Apps、Packages、Downloads、Cache、AppData、Saves、Screenshots、Config、Logs、Runtime、Temp、Updates。日志采用固定事件与错误码，不接收任意异常、令牌或用户文本。数据不会进入源快照和开发包。
+
+工作规范位于 `autumnos-spec/`；原始解压包与 ZIP 完整保留。未建立 Git，没有远端仓库或云端 CI 依赖。SDK、NuGet 与产品的只读联网能力不代表源码上传授权。
+
+完整范围保留：内部 `.autumn` 应用、iPad 风格桌面、GitHub 发现 `topic:autumnos-app`、自标分类 `autumn-app-pm` / `autumn-app-sq`、版本筛选、代理、`paimeng5201314/autumnlab` 的稳定/预览安全更新、完整 SDK 与开发文档。没有认可名单；分类不授予安全信任。
+
+文档入口：[架构](docs/architecture.md)、[数据基础](docs/data-foundation.md)、[Logto 配置](docs/logto-configuration.md)、[依赖与许可](docs/dependencies.md)。没有从历史远端取回或伪造项目 LICENSE；现有开工包文件原样保留，公开分发许可仍待项目所有者确定。
