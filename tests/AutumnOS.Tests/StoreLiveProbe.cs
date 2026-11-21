@@ -15,7 +15,7 @@ internal static class StoreLiveProbe
         string cache = Path.Combine(Path.GetDirectoryName(path)!, Path.GetFileNameWithoutExtension(path) + "-public-cache");
         using GitHubTransport transport = new(() => new StoreNetworkSettings());
         ObservedTransport observed = new(transport);
-        GitHubStoreCatalog catalog = new(cache, BrandInfo.Version, "0.3.0", observed);
+        GitHubStoreCatalog catalog = new(cache, BrandInfo.Version, BrandInfo.Version, observed);
         using CancellationTokenSource budget = new(TimeSpan.FromSeconds(90));
         List<object> details = [];
         CatalogPage? page = null; string? failure = null; DateTimeOffset? retryAfter = null;

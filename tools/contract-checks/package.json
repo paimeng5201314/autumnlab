@@ -1,6 +1,6 @@
 {
   "name": "autumnos-local-contract-checks",
-  "version": "0.5.1",
+  "version": "1.0.1",
   "private": true,
   "description": "Local developer contract verification; no product runtime dependency",
   "license": "UNLICENSED",

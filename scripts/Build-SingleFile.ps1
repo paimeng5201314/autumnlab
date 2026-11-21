@@ -1,14 +1,20 @@
 #requires -Version 7.6
 [CmdletBinding()]
 param(
-    [string]$BuildId = ('T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0, 6)),
-    [string]$BuildVersion = '0.5.1-local.6',
-    [string]$ReleaseLabel = 'meta0.0.3-20261011',
+    [string]$BuildId,
+    [string]$BuildVersion,
+    [string]$ReleaseLabel,
+    [string]$Channel,
     [switch]$CheckPrerequisitesOnly,
     [switch]$SkipNativeSmoke
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
+$buildIdentity = & "$PSScriptRoot/Get-ProductBuildIdentity.ps1" -BuildVersion $BuildVersion -BuildId $BuildId -ReleaseLabel $ReleaseLabel -Channel $Channel
+$BuildVersion = $buildIdentity.Version
+$ReleaseLabel = $buildIdentity.DisplayVersion
+$BuildId = $buildIdentity.BuildId
+$Channel = $buildIdentity.Channel
 $pipelineScripts = $PSScriptRoot
 $checks = [Collections.Generic.List[object]]::new()
 function Add-Prerequisite([string]$Name, [bool]$Passed, [string]$Detail) {
@@ -47,14 +53,11 @@ $activeProducts = @(Get-Process -Name AutumnOS,AutumnOS.Client -ErrorAction Sile
 Add-Prerequisite 'no existing product instance' ($activeProducts.Count -eq 0) 'Save your work and close existing AutumnOS instances before invoking the pipeline; this script does not close them.'
 foreach ($process in $activeProducts) { $process.Dispose() }
 
-Add-Prerequisite 'build identity' ($BuildId -match '^T06-[A-Za-z0-9][A-Za-z0-9_.-]{0,86}$') 'Use a unique T06 build ID; existing outputs and failure evidence are retained.'
-Add-Prerequisite 'build version' ($BuildVersion -match '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$') 'Specify a semantic build version, for example 0.5.1-local.5.'
-Add-Prerequisite 'release label' ($ReleaseLabel -match '^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$') 'The display label is independent of the build version.'
 foreach ($relative in @("artifacts/builds/$BuildId", "artifacts/single-file/$BuildId", "artifacts/build-pipelines/$BuildId")) {
     Add-Prerequisite ('new output: ' + $relative) (-not (Test-Path -LiteralPath (Join-Path $projectRoot $relative))) 'Choose another BuildId if this path already exists.'
 }
 foreach ($relative in @(
-    'global.json', 'NuGet.Config', 'AutumnOS.slnx', 'docs/versions/0.5.1/README.md',
+    'global.json', 'NuGet.Config', 'AutumnOS.slnx', 'docs/developer/README.md',
     'scripts/Install-LocalSdk.ps1', 'scripts/Get-Environment.ps1', 'scripts/New-SourceSnapshot.ps1',
     'scripts/Build.ps1', 'scripts/Test.ps1', 'scripts/Cache-WebViewRuntime.ps1',
     'scripts/Package-T05.ps1', 'scripts/Package-DeveloperKit.ps1', 'scripts/Package-SingleFile.ps1',
@@ -91,7 +94,7 @@ $pipelineDirectory = Join-Path $projectRoot "artifacts/build-pipelines/$BuildId"
 New-Item -ItemType Directory -Path $pipelineDirectory | Out-Null
 $summaryPath = Join-Path $pipelineDirectory 'pipeline.json'
 $report = [ordered]@{
-    status='running'; build_id=$BuildId; version=$BuildVersion; release_label=$ReleaseLabel
+    status='running'; build_id=$BuildId; version=$BuildVersion; release_label=$ReleaseLabel; release_tag=$Channel; channel=$Channel
     started_utc=[DateTimeOffset]::UtcNow.ToString('o'); prerequisite_checks=$checks; stages=@()
     source_snapshot_id=$null; executable=$null; executable_sha256=$null; native_smoke='not_run'
     native_tests=$(if ($SkipNativeSmoke) { 'not_run_ci_no_interactive_desktop' } else { 'not_run' })
@@ -135,7 +138,7 @@ try {
     Invoke-PipelineStage 'restore-locked-contract-tools' { & (Join-Path $projectRoot 'tools/contract-checks/restore-tools.ps1') -NodePath $node.Source }
     Invoke-PipelineStage 'cache-verified-webview' { & "$pipelineScripts/Cache-WebViewRuntime.ps1" }
     Invoke-PipelineStage 'build' {
-        & "$pipelineScripts/Build.ps1" -BuildId $BuildId -BuildVersion $BuildVersion -ReleaseLabel $ReleaseLabel
+        & "$pipelineScripts/Build.ps1" -BuildId $BuildId -BuildVersion $BuildVersion -ReleaseLabel $ReleaseLabel -Channel $Channel
         $build = Get-Content -LiteralPath "artifacts/builds/$BuildId/build-result.json" -Raw | ConvertFrom-Json
         if ($build.status -ne 'passed' -or $build.source_snapshot_id -ne $report.source_snapshot_id) {
             throw 'The build must use the exact source captured before dependency setup.'
@@ -162,7 +165,7 @@ try {
     $after = & "$pipelineScripts/New-SourceSnapshot.ps1" -OutputDirectory (Join-Path $pipelineDirectory 'source-after') -AdditionalInputs $publicInputs
     if ($after -ne $report.source_snapshot_id) { throw 'Source changed during the pipeline; preserve outputs and use a new build ID after review.' }
     $package = Get-Content -LiteralPath "artifacts/builds/$BuildId/package-single-file.json" -Raw | ConvertFrom-Json
-    if ($package.version -ne $BuildVersion -or $package.release_label -ne $ReleaseLabel -or
+    if ($package.version -cne $BuildVersion -or $package.release_label -cne $ReleaseLabel -or $package.release_tag -cne $Channel -or $package.channel -cne $Channel -or
         (Get-FileHash -LiteralPath $package.executable -Algorithm SHA256).Hash.ToLowerInvariant() -ne $package.executable_sha256) {
         throw 'Final executable version or digest does not match its packaging report.'
     }

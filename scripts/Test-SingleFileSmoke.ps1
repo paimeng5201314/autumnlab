@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string]$BuildId,[Parameter(Mandatory)][string]$ReportDirectory,[switch]$InPlace,[switch]$ExtractedHandoff)
 $ErrorActionPreference='Stop';$projectRoot=Split-Path $PSScriptRoot -Parent
-if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$' -or ($InPlace -and $ExtractedHandoff)){throw 'Use a tracked T06 build and one test location mode.'}
+if($BuildId -notmatch '^(?:v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}|T06-[A-Za-z0-9_.-]{1,85})$' -or ($InPlace -and $ExtractedHandoff)){throw 'Use a tracked T06 build and one test location mode.'}
 . "$PSScriptRoot/Smoke-NativeAppInput.ps1"
 . "$PSScriptRoot/T06-NativeHelpers.ps1"
 $helperAst=Import-T06Functions (Join-Path $PSScriptRoot 'Test-DesktopInteractionSmoke.ps1')
@@ -86,8 +86,9 @@ function Start-SmokeProduct([string]$WorkingDirectory){
             $preparation=[pscustomobject]@{Process=$entry;Handle=$entry.MainWindowHandle;Element=$preparationElement}
             $script:preparationWindowCaptured=$true
             $null=Save-SmokeScreenshot $preparation '00-real-native-preparation'
-            $preparationBounds=$preparationElement.Current.BoundingRectangle
-            Add-SmokeCheck 'real_preparation_uses_app_size_native_window' ($preparationBounds.Width -ge 720 -and $preparationBounds.Height -ge 440)
+            $geometry=Measure-AutumnPreparationWindow $entry $entry.MainWindowHandle
+            $report.preparation_geometry=$geometry
+            Add-SmokeCheck 'real_preparation_uses_responsive_client_size' ($geometry.width -eq $geometry.expected_width -and $geometry.height -eq $geometry.expected_height)
         }
         $candidates=@(Get-CimInstance Win32_Process -Filter "ParentProcessId=$($entry.Id)"|Where-Object {[string]::Equals($_.ExecutablePath,$innerPath,[StringComparison]::OrdinalIgnoreCase) -and $_.CreationDate.ToUniversalTime() -ge $started})
         if($candidates.Count -gt 1){throw 'Multiple inner bootstrap children.'}
@@ -124,8 +125,22 @@ try{
     $first=Start-SmokeProduct $working
     Assert-OneDataFolder 'first_start'
     Add-SmokeCheck 'working_directory_receives_no_data' (!(Test-Path -LiteralPath (Join-Path $working 'AutumnOS_Data')))
-    Add-SmokeCheck 'normal_runtime_contains_no_pdb' (@(Get-ChildItem -LiteralPath $programDirectory -File -Recurse -Filter '*.pdb').Count -eq 0)
     $manifest=Get-Content -LiteralPath (Join-Path $package.evidence 'delivery-hashes.json') -Raw|ConvertFrom-Json
+    $nativeTable=Get-Content -LiteralPath (Join-Path $projectRoot "artifacts/builds/$BuildId/native-payload-table.json") -Raw|ConvertFrom-Json
+    $expectedPdb=[Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+    foreach($group in @(@('NativeHost','host'),@('WebView2Runtime','runtime'))){
+        foreach($item in @($nativeTable.($group[1])|Where-Object path -Like '*.pdb')){
+            $expectedPdb.Add(($group[0]+'/'+$item.path), $item.sha256)
+        }
+    }
+    $extractedPdb=@(Get-ChildItem -LiteralPath $programDirectory -File -Recurse -Filter '*.pdb')
+    foreach($file in $extractedPdb){
+        $relative=[IO.Path]::GetRelativePath($programDirectory,$file.FullName).Replace('\','/')
+        if(!$expectedPdb.ContainsKey($relative) -or (Get-FileHash -LiteralPath $file.FullName).Hash.ToLowerInvariant() -cne $expectedPdb[$relative]){
+            throw "Unexpected or modified PDB in extracted runtime: $relative"
+        }
+    }
+    Add-SmokeCheck 'exact_catalogued_native_pdb_set' ($expectedPdb.Count -eq $extractedPdb.Count)
     foreach($item in $manifest){if((Get-FileHash -LiteralPath (Join-Path $programDirectory $item.path)).Hash.ToLowerInvariant() -ne $item.sha256){throw "Extracted file mismatch: $($item.path)"}}
     Add-SmokeCheck 'all_embedded_files_match_frozen_delivery' $true
     $report.verified_extracted_files=$manifest.Count

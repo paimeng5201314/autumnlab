@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:autumnos:schema:message:1",
-  "title": "AutumnOS SDK protocol 1 · SDK 0.4 network extension",
+  "title": "AutumnOS SDK protocol 1 · network extension",
   "description": "Requests and complete success responses are at most 32768 UTF-8 bytes, JSON depth 32, no duplicate keys. Before saves.write/preferences.set commit, the host serializes the full read response with a 64-character requestId; RESPONSE_TOO_LARGE rejects values that cannot be read back. Budgets count actual JSON escaping and UTF-8 bytes, not string length, and are enforced by the host in addition to this schema. Identity is host-bound, never a request property. Apply the method-specific parameter/result definitions in addition to the envelope.",
   "oneOf": [
     {

@@ -6,7 +6,7 @@
 
 名称 Lab Chronicles AutumnOS；系统界面主标题可用 AutumnOS，副标题 Lab Chronicles，独立展示“制作人：派蒙”。Windows 原生客户端以 AutumnOS.exe 为入口，默认普通窗口，可最大化，提供全屏切换但不强制全屏。
 
-兼容目标为 Windows 10 22H2 与 Windows 11 的 x64。必须记录实际测试过的系统构建号；运行兼容目标不等于为系统本身提供安全支持。
+兼容目标包括 x64 的 Windows 10 22H2、Windows 11 和 Windows Server 2022（build 20348，安装桌面体验）。在服务器上，用户从普通交互式桌面启动 AutumnOS 及其内部应用。实际测试的版本、角色和运行路径分别记录在构建验收中。
 
 同时交付便携 ZIP 和安装 EXE。双击程序即可启动，不要求用户自行安装 .NET；发行工程分别处理 .NET、Windows App SDK 与 WebView2 Runtime。WinUI 3 自包含目录允许携带 DLL，不强求单一物理文件。[S1][S2][S3]
 

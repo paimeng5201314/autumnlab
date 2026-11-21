@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "appId": "cn.labchronicles.elementpairs",
   "name": "元素配对",
-  "version": "0.3.0",
+  "version": "1.0.1",
   "runtime": "web",
   "entry": "index.html",
   "permissions": ["saves", "identity.profile", "storage", "files.open", "files.save", "notifications", "shortcuts", "widgets", "links"],

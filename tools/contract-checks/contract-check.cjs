@@ -14,7 +14,7 @@ if (fs.existsSync(reportPath)) throw new Error("Existing evidence preserved; cho
 const sdkDir = path.join(root, kit ? "SDK" : "sdk"), schemaDir = path.join(root, kit ? "Schemas" : "schemas");
 const testDir = path.join(root, kit ? "Tests/contracts" : "tests/contracts");
 const templateDir = path.join(root, kit ? "Templates" : "samples");
-const docsDir = path.join(root, kit ? "Docs/0.5.1" : "docs/versions/0.5.1");
+
 const toolsDir = path.join(root, kit ? "Tools/contract-checks" : "tools/contract-checks");
 const backendDir = path.join(root, kit ? "BackendIdentity/server" : "samples/server-identity");
 const nativeDir = path.join(root, kit ? "BackendIdentity/client" : "samples/native-identity-client");
@@ -47,7 +47,13 @@ async function main() {
   const ts = localRequire("typescript"), Ajv = localRequire("ajv/dist/2020"), addFormats = localRequire("ajv-formats"), SwaggerParser = localRequire("@apidevtools/swagger-parser");
   report.tools = { node: process.version, nodePath: process.execPath, typescript: ts.version, ajv: localRequire("ajv/package.json").version,
     ajvFormats: localRequire("ajv-formats/package.json").version, swaggerParser: localRequire("@apidevtools/swagger-parser/package.json").version };
+  const manifestKit = kit ? json(path.join(root, "kit.json")) : null;
+  const productVersion = kit ? manifestKit.productVersion : read(path.join(root, "build/Brand.props")).match(/<AutumnVersion\b[^>]*>([^<]+)<\/AutumnVersion>/)?.[1];
+  check("product has canonical numeric version", /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(productVersion));
+  const docsDir = path.join(root, kit ? "Docs/v" + productVersion : "docs/developer");
   const packageFile = json(path.join(toolsDir, "package.json")), lock = json(path.join(toolsDir, "package-lock.json"));
+  check("contract tools match product and lock", [packageFile.version, lock.version, lock.packages[""].version].every(version => version === productVersion));
+  if (kit) check("delivered SDK metadata matches product", manifestKit.sdkVersion === productVersion && manifestKit.protocol === 1);
   for (const [name, version] of Object.entries(packageFile.dependencies)) check("fixed dependency " + name, localRequire(name + "/package.json").version === version && lock.packages["node_modules/" + name].version === version);
   for (const [name, value] of Object.entries(lock.packages)) if (name) check("locked official integrity " + name, value.resolved.startsWith("https://registry.npmjs.org/") && /^sha512-/.test(value.integrity));
   const types = read(path.join(sdkDir, "autumn-sdk.d.ts"));
@@ -56,7 +62,7 @@ async function main() {
   const baseline = json(path.join(testDir, "public-api-baseline.json"));
   check("public declaration contract unchanged", declarations === baseline.declarations);
   const runtimeJs = read(path.join(sdkDir, "autumn-sdk.js"));
-  check("SDK version and protocol agree", baseline.sdkVersion === "0.4.0" && baseline.protocolVersion === 1 && runtimeJs.includes('version: "0.4.0", protocolVersion: 1'));
+  check("SDK version and protocol agree", baseline.sdkVersion === productVersion && baseline.protocolVersion === 1 && runtimeJs.includes('version: "' + productVersion + '", protocolVersion: 1'));
   const compiled = cp.spawnSync(process.execPath, [localRequire.resolve("typescript/bin/tsc"), "--project", path.join(testDir, "tsconfig.json"), "--pretty", "false"], { encoding: "utf8", windowsHide: true, timeout: 60000 });
   report.typescript = { exitCode: compiled.status, stdout: compiled.stdout, stderr: compiled.stderr, negativeFixtures: (read(path.join(testDir, "sdk-types.ts")).match(/@ts-expect-error/g) || []).length };
   check("actual TypeScript strict compilation with negative cases", compiled.status === 0, compiled.stdout || compiled.stderr || "");
@@ -127,11 +133,14 @@ async function main() {
   schemaCheck("developer trace cannot contain payload", schemas.developer.validate, { ...developerResponse, trace: [{ ...developerResponse.trace[0], payload: "private-input" }] }, false);
   for (const name of ["hello-app", "identity-app", "save-game", "desktop-extension"]) {
     const directory = path.join(templateDir, name), manifest = json(path.join(directory, "manifest.json"));
+    check(name + " official template matches product", manifest.version === productVersion);
     schemaCheck(name + " manifest", schemas.manifest.validate, manifest);
     schemaCheck(name + " unknown manifest authority denied", schemas.manifest.validate, { ...manifest, execute: "arbitrary.exe" }, false);
     check(name + " entry exists", fs.existsSync(path.join(directory, manifest.entry)));
     for (const file of fs.readdirSync(directory).filter(x => x.endsWith(".js"))) { const p = path.join(directory, file); read(p); const syntax = cp.spawnSync(process.execPath, ["--check", p], { encoding: "utf8", windowsHide: true }); check(name + "/" + file + " JavaScript parses", syntax.status === 0, syntax.stderr); }
   }
+  const officialExample = kit ? "Examples/network-client/manifest.json" : "samples/element-pairs/manifest.json";
+  check("bundled example matches product", json(path.join(root, officialExample)).version === productVersion);
   const manifest = json(path.join(templateDir, "hello-app/manifest.json"));
   const networkManifest = { ...manifest, permissions: ["network"], networkDomains: ["api.github.com"] };
   schemaCheck("network package declares exact domains", schemas.manifest.validate, networkManifest);
@@ -154,12 +163,13 @@ async function main() {
   const api = json(path.join(backendDir, "openapi.json"));
   const parsedApi = await SwaggerParser.validate(structuredClone(api), { resolve: { external: false } });
   check("OpenAPI 3.1 actual parser validation", parsedApi.openapi === "3.1.0");
+  check("official backend example version matches product", parsedApi.info.version === productVersion);
   const apiExamples = { Health: { service: "AutumnOS independent identity example", producer: "派蒙", status: "configured", real_provider_verified: false }, Player: { subject: "fixture-subject", issuer: "https://fixture.invalid/oidc", clientId: "fixture-client" }, Challenge: { challenge: "a".repeat(43), expiresIn: 60 }, Confirmation: { accepted: true, effect: "test confirmation only; no score or game state modified" }, InvalidCredential: { error: "INVALID_CREDENTIAL" }, InsufficientScope: { error: "INSUFFICIENT_SCOPE" }, KeysUnavailable: { error: "KEYS_UNAVAILABLE" }, CapacityReached: { error: "CAPACITY_REACHED" }, ChallengeRejected: { error: "INVALID_OR_REPLAYED_CHALLENGE" } };
   for (const [name, example] of Object.entries(apiExamples)) { const validator = ajv.compile(api.components.schemas[name]); schemaCheck("OpenAPI " + name + " actual body contract", validator, example); schemaCheck("OpenAPI " + name + " extra secret field rejected", validator, { ...example, accessToken: "fixture-not-real" }, false); }
   for (const [route, verbs] of Object.entries(api.paths)) for (const [verb, operation] of Object.entries(verbs)) check("OpenAPI operation and status mapping " + verb + " " + route, !!operation.operationId && !!operation.responses["200"] && (route === "/health" || !!operation.responses["401"]));
   const pages = ["README.md", "product.md", "architecture.md", "core-development.md", "design.md", "first-app.md", "packages.md", "identity-permissions.md", "sdk-reference.md", "data.md", "server.md", "desktop-extension.md", "network.md", "app-publishing.md", "host-publishing.md", "troubleshooting.md", "collaboration.md"];
   for (const name of pages) {
-    const file = path.join(docsDir, name), content = read(file); check("substantive versioned page " + name, content.length >= 400 && /0\.5\.1/.test(content) && !/^\s*(TODO|稍后补充)\s*$/m.test(content));
+    const file = path.join(docsDir, name), content = read(file); check("substantive versioned page " + name, content.length >= 400 && content.includes("v" + productVersion) && !/^\s*(TODO|稍后补充)\s*$/m.test(content));
     for (const match of content.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) { const link = match[1].split("#")[0]; if (!link || /^[a-z]+:/i.test(link)) continue; check("documentation local link " + name + " -> " + link, fs.existsSync(path.resolve(path.dirname(file), decodeURIComponent(link)))); }
   }
   const saveModel = require(path.join(templateDir, "save-game/save-model.js"));

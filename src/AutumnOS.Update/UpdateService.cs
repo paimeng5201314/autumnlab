@@ -13,7 +13,7 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
     private readonly object gate = new();
     private readonly SemaphoreSlim operation = new(1, 1);
     private readonly string dataRoot, statePath, stagedPath, currentBuildId, programDirectory;
-    private readonly long installedSequence;
+    private readonly long installedSequence, installedSecuritySequence;
     private readonly UpdateMetadataClient metadata;
     private readonly IDownloadService downloads;
     private readonly UpdateTrustStore trust;
@@ -46,10 +46,13 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
         { ownedTransport = transport as IDisposable, ownedDownloads = downloads };
     }
     public UpdateService(string dataRoot, string currentVersion, string currentBuildId, IGitHubTransport transport,
-        IDownloadService downloads, UpdateTrustStore? trust = null, Func<DateTimeOffset>? clock = null, Func<string, IDisposable>? enterCriticalOperation = null, string? programDirectory = null, Func<UpdateManifest, bool, string?>? compatibilityCheck = null, long? installedSequence = null)
+        IDownloadService downloads, UpdateTrustStore? trust = null, Func<DateTimeOffset>? clock = null, Func<string, IDisposable>? enterCriticalOperation = null, string? programDirectory = null, Func<UpdateManifest, bool, string?>? compatibilityCheck = null, long? installedSequence = null, long? installedSecuritySequence = null)
     {
         _ = SemanticVersion.Parse(currentVersion);
-        this.installedSequence = installedSequence ?? (currentBuildId == BrandInfo.BuildId && currentVersion == BrandInfo.Version ? BrandInfo.UpdateSequence : 0);
+        bool runningBuild = currentBuildId == BrandInfo.BuildId && currentVersion == BrandInfo.Version;
+        this.installedSequence = installedSequence ?? (runningBuild ? BrandInfo.UpdateSequence : 0);
+        this.installedSecuritySequence = installedSecuritySequence ?? (runningBuild ? BrandInfo.SecuritySequence : this.installedSequence);
+        if (this.installedSecuritySequence < 0) throw new ArgumentOutOfRangeException(nameof(installedSecuritySequence));
         if (this.installedSequence < 0) throw new ArgumentOutOfRangeException(nameof(installedSequence));
         this.dataRoot = Path.GetFullPath(dataRoot); this.currentBuildId = currentBuildId;
         this.downloads = downloads; this.trust = trust ?? UpdateTrustStore.FromEmbedded(); this.clock = clock ?? (() => DateTimeOffset.UtcNow);
@@ -71,13 +74,13 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
         {
             ThrowIfClosing();
             if (policyExists && persistent.Preview == enabled) return;
-            bool blockPending = !enabled && (consentCandidate?.Manifest.Channel == "meta" || snapshot.Staged?.Candidate.Manifest.Channel == "meta" ||
-                persistent.PendingManifestSha256 is not null && snapshot.Candidate?.Manifest.Channel == "meta");
+            bool blockPending = !enabled && (consentCandidate?.Manifest.IsPreview == true || snapshot.Staged?.Candidate.Manifest.IsPreview == true ||
+                persistent.PendingManifestSha256 is not null && snapshot.Candidate?.Manifest.IsPreview == true);
             SaveState(persistent with { Preview = enabled, PendingManifestSha256 = blockPending ? null : persistent.PendingManifestSha256 }); generation++;
             if (blockPending) { consent = null; consentCandidate = null; rollbackAuthorization = null; }
             snapshot = snapshot with { Channel = enabled ? "meta" : "plus", PreviewEnabled = enabled,
                 State = blockPending ? UpdateState.Idle : snapshot.State, Staged = blockPending ? null : snapshot.Staged,
-                Candidate = !enabled && snapshot.Candidate?.Manifest.Channel == "meta" ? null : snapshot.Candidate,
+                Candidate = !enabled && snapshot.Candidate?.Manifest.IsPreview == true ? null : snapshot.Candidate,
                 ErrorCode = blockPending ? "UPDATE_PREVIEW_PLAN_CANCELLED" : null, CheckComplete = false, ShouldPrompt = false,
                 LastReleaseMetadataUtc = null, ReleasesExamined = 0 };
             if (blockPending) try { DeletePending(); } catch (Exception ex) when (Handled(ex)) { snapshot = snapshot with { ErrorCode = "UPDATE_PREVIEW_PLAN_CANCELLED_PENDING_CLEANUP" }; }
@@ -238,7 +241,7 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
             if (descriptor.Bytes != bytes.Length || signatureAsset.Bytes != signature.Length) throw new UpdateException("UPDATE_ASSET_SIZE_MISMATCH");
             // Historical discovery verifies identity but grants no replay exemption. Consent and install enforce the ledger.
             var manifest = UpdateSignature.Verify(bytes, signature, trust, SecurityTime());
-            if (manifest.Payload.ReleaseId != id || (manifest.Channel == "meta") != preview || !TagMatches(manifest, tag)) throw new UpdateException("UPDATE_RELEASE_MANIFEST_MISMATCH");
+            if (manifest.Payload.ReleaseId != id || manifest.IsPreview != preview || !TagMatches(manifest, tag)) throw new UpdateException("UPDATE_RELEASE_MANIFEST_MISMATCH");
             var payload = Asset(assets, manifest.Payload.Asset, tag, "UPDATE_PAYLOAD_MISSING");
             if (payload.Id != manifest.Payload.AssetId || payload.Bytes != manifest.Payload.Bytes) throw new UpdateException("UPDATE_ASSET_IDENTITY_MISMATCH");
             var candidate = new UpdateCandidate(id, tag, notes, manifest, payload.Url, payload.Id, bytes, signature, published, name);
@@ -322,8 +325,8 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
                 if (captured != generation || consent != approved) throw new UpdateException("UPDATE_CHANNEL_CHANGED");
                 StagedUpdate staged = new(candidate, manifestPath, signaturePath, payloadPath, approved, rollbackAuthorization);
                 WriteAtomic(stagedPath, new PendingState(currentBuildId, snapshot.CurrentVersion, staged));
-                SaveState(persistent with { HighestSequence = Math.Max(persistent.HighestSequence, manifest.Sequence),
-                    HighestDigest = manifest.Sequence >= persistent.HighestSequence ? Digest(candidate.ManifestBytes) : persistent.HighestDigest,
+                SaveState(persistent with { HighestSequence = Math.Max(persistent.HighestSequence, manifest.EffectiveSecuritySequence),
+                    HighestDigest = manifest.EffectiveSecuritySequence >= persistent.HighestSequence ? Digest(candidate.ManifestBytes) : persistent.HighestDigest,
                     LastTrustedUtc = clock() > persistent.LastTrustedUtc ? clock() : persistent.LastTrustedUtc, PendingManifestSha256 = Digest(candidate.ManifestBytes), PendingFromBuildId = currentBuildId }, staging: true);
                 snapshot = snapshot with { State = UpdateState.Staged, Staged = staged, ErrorCode = null };
             }
@@ -433,11 +436,11 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
         if (!TagMatches(manifest, candidate.Tag) || !UpdateManifestCodec.Serialize(manifest).AsSpan().SequenceEqual(UpdateManifestCodec.Serialize(candidate.Manifest))) throw new UpdateException("UPDATE_RELEASE_MANIFEST_MISMATCH");
         if (candidate.ReleaseId != manifest.Payload.ReleaseId || candidate.AssetId != manifest.Payload.AssetId ||
             !IsOfficialAssetUrl(candidate.PayloadUrl.AbsoluteUri, candidate.Tag, manifest.Payload.Asset)) throw new UpdateException("UPDATE_ASSET_IDENTITY_MISMATCH");
-        if (manifest.Channel == "meta" && !persistent.Preview) throw new UpdateException("UPDATE_PREVIEW_DISABLED");
+        if (manifest.IsPreview && !persistent.Preview) throw new UpdateException("UPDATE_PREVIEW_DISABLED");
         if (SemanticVersion.Parse(UpdaterVersion).CompareTo(SemanticVersion.Parse(manifest.MinimumUpdaterVersion)) < 0) throw new UpdateException("UPDATE_UPDATER_TOO_OLD");
-        if (UpdateRevisionPolicy.CheckOrder(manifest, snapshot.CurrentVersion, currentBuildId, installedSequence, mode == UpdateSelectionMode.Rollback) is { } orderError)
+        if (UpdateRevisionPolicy.CheckOrder(manifest, snapshot.CurrentVersion, currentBuildId, installedSequence, mode == UpdateSelectionMode.Rollback, installedSecuritySequence) is { } orderError)
             throw new UpdateException(orderError);
-        if (manifest.Version == snapshot.CurrentVersion && manifest.Sequence == security.HighestSequence &&
+        if (manifest.Version == snapshot.CurrentVersion && manifest.EffectiveSecuritySequence == security.HighestSequence &&
             (security.ManifestSha256 != Digest(candidate.ManifestBytes) || persistent.HighestDigest != security.ManifestSha256 || persistent.PendingFromBuildId != currentBuildId))
             throw new UpdateException("UPDATE_SEQUENCE_REUSED");
         if (mode == UpdateSelectionMode.Rollback && SemanticVersion.Parse(manifest.MinimumUpdaterVersion).CompareTo(SemanticVersion.Parse("1.1.0")) < 0) throw new UpdateException("UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED");
@@ -449,10 +452,10 @@ public sealed class UpdateService : IDisposable, IAsyncDisposable
     private void CheckClock() => _ = SecurityTime();
     private void CheckAccepted(UpdateManifest manifest, byte[] bytes, bool rollback)
     {
-        if (manifest.Sequence == persistent.HighestSequence && persistent.HighestDigest is not null && Digest(bytes) != persistent.HighestDigest) throw new UpdateException("UPDATE_SEQUENCE_REUSED");
+        if (manifest.EffectiveSecuritySequence == persistent.HighestSequence && persistent.HighestDigest is not null && Digest(bytes) != persistent.HighestDigest) throw new UpdateException("UPDATE_SEQUENCE_REUSED");
         var ledger = UpdateSecurityLedgerStore.LoadAndMerge(programDirectory, dataRoot);
-        if (!rollback && manifest.Sequence < ledger.HighestSequence) throw new UpdateException("UPDATE_METADATA_REPLAY");
-        if (manifest.Sequence == ledger.HighestSequence && ledger.ManifestSha256.Length != 0 && ledger.ManifestSha256 != Digest(bytes)) throw new UpdateException("UPDATE_SEQUENCE_REUSED");
+        if (!rollback && manifest.EffectiveSecuritySequence < ledger.HighestSequence) throw new UpdateException("UPDATE_METADATA_REPLAY");
+        if (manifest.EffectiveSecuritySequence == ledger.HighestSequence && ledger.ManifestSha256.Length != 0 && ledger.ManifestSha256 != Digest(bytes)) throw new UpdateException("UPDATE_SEQUENCE_REUSED");
         if (ledger.MinimumVersion is { } minimum && SemanticVersion.Parse(manifest.Version).CompareTo(SemanticVersion.Parse(minimum)) < 0) throw new UpdateException("UPDATE_MINIMUM_SECURITY_VERSION");
         if (ledger.FailedBuilds.Contains(manifest.BuildId)) throw new UpdateException("UPDATE_CANDIDATE_PREVIOUSLY_FAILED_OR_CURRENT");
     }

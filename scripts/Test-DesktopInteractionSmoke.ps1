@@ -1142,7 +1142,7 @@ namespace AutumnDesktopInteractionSmoke {
     Add-SmokeCheck 'diagnostics_does_not_repeat_completed_initialization' (-not (Find-SmokeElement $first.Element 'InitializeButton').Current.IsEnabled)
     Add-SmokeCheck 'diagnostics_keeps_real_checkpoint_and_configuration' (-not [string]::IsNullOrWhiteSpace((Find-SmokeElement $first.Element 'CheckpointText').Current.Name) -and
         -not [string]::IsNullOrWhiteSpace((Find-SmokeElement $first.Element 'ConfigurationText').Current.Name)) 'Retained real accessible values; diagnostics scrolls when the developer mode section pushes configuration below the fold.'
-    if($report.build_id.StartsWith('T06-')){
+    if($report.build_id -match '^(?:v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}|T06-[A-Za-z0-9_.-]{1,85})$'){
         Add-SmokeCheck 'diagnostics_exposes_real_local_support_export' ($null -ne (Find-SmokeElement $first.Element 'SupportExportButton'))
         Invoke-SmokeButton $first.Element 'SupportExportButton'
         $null=Wait-SmokeCondition {Find-SmokeNamedElement $first.Element '选择保存位置' ([Windows.Automation.ControlType]::Button)} 'native diagnostic export consent'

@@ -7,7 +7,8 @@ try {
     $buildId=(Get-Content artifacts/latest-build.txt -Raw).Trim()
     $evidence=Join-Path $ProjectRoot "artifacts/builds/$buildId"
     $build=Get-Content (Join-Path $evidence 'build-result.json') -Raw|ConvertFrom-Json
-    if($build.status -ne 'passed' -or $buildId -notmatch '^T0[56]-'){throw 'Matching successful T05/T06 build required.'}
+    if($build.status -ne 'passed' -or $build.build_id -cne $buildId -or $build.task_id -cnotin @('T05','T06') -or
+        $buildId -cnotmatch '^(?:T0[56]-[A-Za-z0-9_.-]+|v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8})$'){throw 'Matching successful build required.'}
     $run=Join-Path $evidence ('package-t05-'+[Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $run | Out-Null
     $snapshot=& "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory $run -AdditionalInputs @($build.additional_inputs)
@@ -66,7 +67,7 @@ try {
             Copy-Item -LiteralPath $license.FullName -Destination (Join-Path $licenses ($package.Name+'-'+$version.Name+'-'+$license.Name))
         }}}
         Copy-Item -LiteralPath '.tools/dotnet/LICENSE.txt','.tools/dotnet/ThirdPartyNotices.txt','docs/dependencies.md' -Destination $licenses
-        if($buildId.StartsWith('T06-')){
+        if($build.task_id -eq 'T06'){
             & "$PSScriptRoot/Package-DeveloperKit.ps1" -Destination (Join-Path $destination 'Developer') -EvidenceDirectory $run -Build $build
         }
         @"
@@ -89,7 +90,9 @@ Source $snapshot
         $inventory=Join-Path $run 'managed-files.json'
         Invoke-Dotnet -Arguments @('tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.Cli.dll','inventory','--source',$destination,'--output',$inventory) -LogPath (Join-Path $run 'inventory.log')
         $managed=@(Get-Content -LiteralPath $inventory -Raw|ConvertFrom-Json)
-        [ordered]@{schemaVersion=1;version=$build.version;buildId=$buildId;sequence=[long]$build.update_sequence;files=$managed}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $destination 'autumn.install.json') -Encoding utf8NoBOM
+        $installed = [ordered]@{schemaVersion=1;version=$build.version;buildId=$buildId;sequence=[long]$build.update_sequence;files=$managed}
+        if ($build.security_sequence -gt 0) { $installed.securitySequence = [long]$build.security_sequence }
+        $installed | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $destination 'autumn.install.json') -Encoding utf8NoBOM
         $delivery=@(Get-ChildItem -LiteralPath $destination -Recurse -File|ForEach-Object {[ordered]@{path=[IO.Path]::GetRelativePath($destination,$_.FullName).Replace('\','/');bytes=$_.Length;sha256=(Get-FileHash -LiteralPath $_.FullName).Hash.ToLowerInvariant()}})
         $delivery|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $evidence 'delivery-hashes.json') -Encoding utf8
     }
@@ -101,13 +104,16 @@ Source $snapshot
     $report=[ordered]@{status='prepared';build_id=$buildId;source_snapshot_id=$snapshot;executable=$exe;executable_sha256=(Get-FileHash -LiteralPath $exe).Hash.ToLowerInvariant();test_build=$build.test_build;native_tests='not_run';zip='not_created';setup='not_created';public_release=$false;authenticode='not_signed';fixed_webview2='154.0.4258.53'}
     $report.temporary_platform_acceptance=[bool]$build.temporary_platform_acceptance
     $report.update_sequence=[long]$build.update_sequence
+    $report.security_sequence=[long]$build.security_sequence
+    $report.release_tag=$build.release_tag
+    $report.channel=$build.channel
     $report|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'package-prepared.json') -Encoding utf8
     if($Stage -eq 'Prepare'){$report|ConvertTo-Json;return}
     foreach($name in @('tests','sdk-tests','sample-tests','native-client-tests','server-http-tests','t04-tools-tests')){
         $test=Get-Content (Join-Path $evidence "$name.json") -Raw|ConvertFrom-Json
         if($test.status -ne 'passed' -or $test.build_id -ne $buildId -or $test.source_snapshot_id -ne $snapshot){throw "Passing current build tests required: $name"}
     }
-    if($buildId.StartsWith('T06-')){
+    if($build.task_id -eq 'T06'){
         $contracts=Get-Content (Join-Path $evidence 'machine-contracts.json') -Raw|ConvertFrom-Json
         if($contracts.status -ne 'passed' -or $contracts.build_id -ne $buildId -or $contracts.source_snapshot_id -ne $snapshot){throw 'Passing actual T06 machine contract checks required.'}
     }

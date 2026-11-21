@@ -1,12 +1,14 @@
 #requires -Version 7.4
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^T06-[A-Za-z0-9_.-]{1,85}$')][string]$BuildId,
-    [ValidateSet('Preflight','ServerNegative','ClientTrial')][string]$Stage='Preflight',
+    [Parameter(Mandatory)][ValidatePattern('^(?:v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}|T06-[A-Za-z0-9_.-]{1,85})$')][string]$BuildId,
+    [ValidateSet('Preflight','UnsupportedTarget','DesktopTrial','ServerNegative','ClientTrial')][string]$Stage='Preflight',
     [ValidateRange(15,180)][int]$WindowTimeoutSeconds=60,
     [ValidateRange(30,300)][int]$DownloadTimeoutSeconds=120
 )
 $ErrorActionPreference='Stop'
+if ($Stage -eq 'ClientTrial') { $Stage='DesktopTrial' }
+if ($Stage -eq 'ServerNegative') { $Stage='UnsupportedTarget' }
 $workspace=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $evidence=Join-Path $workspace "artifacts/builds/$BuildId"
 $ReportDirectory=Join-Path $evidence ('native-store-'+[Guid]::NewGuid().ToString('N'))
@@ -26,7 +28,7 @@ $script:initialPointerPosition=$null
 $report=[ordered]@{
     schema_version=1;scope='ordinary_public_store_ChemLeap_first_frame_and_original_group_exit';mode=$Stage;status='failed';
     build_id=$BuildId;source_snapshot_id=$null;tested_executable=$null;process_ids=@();bootstrap_process_ids=@()
-    package_verified='not_run';store_install='not_run';open_attempt='not_run';expected_server_rejection='not_run'
+    package_verified='not_run';store_install='not_run';open_attempt='not_run';expected_platform_rejection='not_run'
     native_first_frame='not_run';operator_gameplay='not_run';physical_keyboard_ime='not_run';native_group_retirement='not_run'
     clipboard_matrix='not_run';network_receiver_matrix='not_run';account_matrix='not_run';complete_isolation=$false
     cleanup='not_run';checks=$checks;screenshots=$screenshots;input_actions=$inputActions;window_geometry=$windowGeometry
@@ -95,15 +97,20 @@ try {
     $report.catalog_sha256=$embeddedHash
     $report.package_verified='passed'
     $os=Get-CimInstance Win32_OperatingSystem
-    $report.os=[ordered]@{build=[int]$os.BuildNumber;product_type=[int]$os.ProductType;x64=[Environment]::Is64BitProcess;interactive=[Environment]::UserInteractive}
+    $nativeX64=[Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq 'X64' -and
+        [Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'X64'
+    $installationType=Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name InstallationType -ErrorAction SilentlyContinue
+    $target=& (Join-Path $PSScriptRoot 'Test-NativeDesktopTarget.ps1') -ProductType $os.ProductType -BuildNumber $os.BuildNumber -InstallationType $installationType
+    $report.os=[ordered]@{build=[int]$os.BuildNumber;product_type=[int]$os.ProductType;installation_type=$installationType;x64=$nativeX64;interactive=[Environment]::UserInteractive;target_version=$target}
     if ($Stage -eq 'Preflight') {$report.status='preflight_passed';return}
-    if (!$IsWindows -or ![Environment]::UserInteractive -or ![Environment]::Is64BitProcess) {throw 'Interactive x64 Windows session required.'}
+    if (!$IsWindows -or ![Environment]::UserInteractive -or !$nativeX64) {throw 'Interactive native x64 Windows session required.'}
     if (@(Get-CimInstance Win32_Process | Where-Object {$_.Name -in @('AutumnOS.exe','AutumnOS.Client.exe','AutumnOS.Updater.exe','AutumnOS.NativeHost.Windows.exe')}).Count) {throw 'Existing AutumnOS instance detected. No existing process will be controlled.'}
-    if ($Stage -eq 'ServerNegative') {
-        if ([int]$os.ProductType -ne 3 -or [int]$os.BuildNumber -ne 20348) {throw 'Server negative mode requires Windows Server build 20348.'}
-    }else{
-        $principal=[Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
-        if ([int]$os.ProductType -ne 1 -or [int]$os.BuildNumber -lt 19045 -or $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {throw 'Client trial requires a standard-user Windows 10 22H2/11 desktop.'}
+    $principal=[Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
+    if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'Run desktop acceptance as an ordinary Windows account.' }
+    if ($Stage -eq 'UnsupportedTarget') {
+        if ($target) {throw 'Negative acceptance requires an excluded Windows version or product type.'}
+    }elseif (!$target){
+        throw 'Desktop trial requires a supported Windows client or Windows Server 2022 Desktop Experience.'
     }
     . (Join-Path $PSScriptRoot 'Smoke-NativeAppInput.ps1')
     $desktopRuntime=Join-Path $workspace '.tools/dotnet/shared/Microsoft.WindowsDesktop.App/10.0.12'
@@ -145,7 +152,7 @@ try {
     $icon='InstalledApp-'+$appId
     $null=Wait-SmokeCondition {Visible $icon} 'installed desktop app'
     if (@(Target-Events).Count) {throw 'Unexpected prior run in fresh test data.'}
-    if ($Stage -eq 'ClientTrial') {
+    if ($Stage -eq 'DesktopTrial') {
         $phrase="ALLOW ONE AUTUMNOS NATIVE TRIAL $BuildId $embeddedHash"
         Write-Host "The next action opens this verified game through the private native host. It may create one NETONLY LSA session, a fresh private station/desktop and AppContainer profile. Test installation: $stageDirectory"
         if ((Read-Host "To run once, type $phrase") -cne $phrase) {throw 'Specific operator authorization was not supplied.'}
@@ -156,13 +163,13 @@ try {
     $report.open_attempt='dispatch_requested_outcome_unknown'
     Invoke-SmokePointer $product $icon 'single_click'
     $report.open_attempt='input_dispatched'
-    if ($Stage -eq 'ServerNegative') {
+    if ($Stage -eq 'UnsupportedTarget') {
         $failure=Wait-SmokeCondition {@(Target-Events | Where-Object eventName -eq 'startup_failed') | Select-Object -First 1} 'recorded startup rejection' 35
         Match-Expected ($failure.startupFailure.stage -eq 'required_boundaries' -and $failure.startupFailure.code -eq 'RUNTIME_NATIVE_DESKTOP_REQUIRED' -and
-            $null -eq $failure.nativeHost -and $failure.browserCleanup.environmentCreationAttempted -eq $false -and $failure.browserCleanup.controllerCreationAttempted -eq $false) 'exact server gate before native creation'
+            $null -eq $failure.nativeHost -and $failure.browserCleanup.environmentCreationAttempted -eq $false -and $failure.browserCleanup.controllerCreationAttempted -eq $false) 'exact unsupported platform gate before native creation'
         $instance=$failure.instanceId
-        $report.expected_server_rejection='passed'
-        Assert-Image '01-server-rejection'
+        $report.expected_platform_rejection='passed'
+        Assert-Image '01-platform-rejection'
     }else{
         $foreground=Wait-SmokeCondition {
             $all=@(Target-Events)
@@ -185,7 +192,7 @@ try {
     }
     $retired=Wait-SmokeCondition {@(Target-Events|Where-Object {$_.eventName -eq 'closed' -and $_.instanceId -eq $instance -and
         !$_.blocksMaintenance -and !$_.browserCleanup.holdsRuntimeLease -and !$_.browserCleanup.holdsMaintenanceLease})|Select-Object -Last 1} 'original instance closure and release of both leases' 90
-    if ($Stage -eq 'ClientTrial'){
+    if ($Stage -eq 'DesktopTrial'){
         Match-Expected ($retired.nativeHost.ResourcesRetired -and $retired.nativeHost.OriginalProcessExited -and $retired.nativeHost.OriginalThreadExited -and
             $retired.nativeHost.OriginalJobEmpty -and $retired.nativeHost.AllObservedOriginalProcessHandlesSignaled) 'original handle group retired'
         $report.native_group_retirement='passed'
@@ -193,7 +200,7 @@ try {
         Match-Expected (@(Target-Events | Where-Object { $_.nativeHost -or $_.eventName -in @('native_first_frame','navigation_completed','native_endpoint_registered') }).Count -eq 0) 'rejected instance has no remote endpoint or frame'
     }
     Close-SmokeProduct $product
-    $report.status=if($Stage -eq 'ServerNegative'){'passed_expected_rejection'}else{'passed_native_first_frame_and_exit'}
+    $report.status=if($Stage -eq 'UnsupportedTarget'){'passed_expected_rejection'}else{'passed_native_first_frame_and_exit'}
 }catch{
     $report.failure=$_.Exception.Message
     $report.failure_stack=$_.ScriptStackTrace

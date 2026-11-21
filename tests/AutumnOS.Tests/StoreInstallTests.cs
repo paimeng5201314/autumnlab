@@ -25,6 +25,8 @@ internal static class StoreInstallTests
         yield return ("store_install.disk_full_keeps_previous_registry_bytes", DiskFull);
         yield return ("store_install.commit_survives_missing_receipt", AfterCommit);
         yield return ("store_install.bundle_adoption_does_not_override_selection_or_uninstall", Bundle);
+        yield return ("store_install.bundled_upgrade_preserves_pin_tombstone_and_saves", BundledUpgrade);
+        yield return ("store_install.bundled_refresh_skips_foreign_source_with_same_id", BundledSourceConflict);
         yield return ("store_install.downgrade_checks_all_accounts_and_backups_exact_bytes", Downgrade);
         yield return ("store_install.downgrade_incompatible_or_corrupt_save_is_blocked", BadSave);
         yield return ("store_install.absent_save_guard_fails_closed", NoSaveGuard);
@@ -163,6 +165,28 @@ internal static class StoreInstallTests
         Assert(adopted.Package.HostSource == "bundled:test.store", "bundled source binding changed");
         Assert(service.RegisterExisting(old)!.Package.DirectoryPath == old.DirectoryPath, "duplicate adoption changed path");
         service.Uninstall("test.store"); Assert(service.RegisterExisting(old) is null, "bundled application resurrected after uninstall");
+    });
+    private static void BundledUpgrade() => InTemp(root =>
+    {
+        var service = Service(root);
+        string old = Package(root), updated = Package(root, "1.0.1");
+        service.PrepareBundled(old, "test.store", "1.0.0");
+        string save = Save(root, "guest", 1);
+        var bytes = File.ReadAllBytes(save);
+        service.SetVersionPolicy("test.store", true, false);
+        Assert(service.PrepareBundled(updated, "test.store", "1.0.1")!.Manifest.Version == "1.0.0", "bundled upgrade ignored pin");
+        service.SetVersionPolicy("test.store", false, false);
+        Assert(service.PrepareBundled(updated, "test.store", "1.0.1")!.Manifest.Version == "1.0.1", "bundled package did not upgrade");
+        Assert(File.ReadAllBytes(save).SequenceEqual(bytes), "bundled upgrade changed save");
+        service.Uninstall("test.store");
+        Assert(service.PrepareBundled(updated, "test.store", "1.0.1") is null, "bundled upgrade resurrected uninstall");
+    });
+    private static void BundledSourceConflict() => InTemp(root =>
+    {
+        var service = Service(root);
+        var local = service.Install(Package(root), sourceConfirmed: true);
+        Assert(service.PrepareBundled(Package(root, "1.0.1"), "test.store", "1.0.1") is null, "unrelated local app selected as a bundled app");
+        Assert(service.Find("test.store")?.Package.PackageSha256 == local.Package.PackageSha256, "bundled refresh changed third-party content");
     });
     private static void Downgrade() => InTemp(root =>
     {

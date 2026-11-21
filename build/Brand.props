@@ -4,8 +4,11 @@
     <AutumnDisplayName>AutumnOS</AutumnDisplayName>
     <AutumnProducer>派蒙</AutumnProducer>
     <AutumnProducerCredit>制作人：派蒙</AutumnProducerCredit>
-    <AutumnVersion Condition="'$(AutumnVersion)' == ''">1.0.0</AutumnVersion>
-    <AutumnReleaseLabel Condition="'$(AutumnReleaseLabel)' == '' and '$(AutumnVersion)' == '1.0.0' and '$(TestUpdateTrustFile)' == ''">plus-v1.0.0-20261115</AutumnReleaseLabel>
+    <AutumnVersion Condition="'$(AutumnVersion)' == ''">1.0.1</AutumnVersion>
+    <AutumnReleaseLabel Condition="'$(AutumnReleaseLabel)' == ''">v$(AutumnVersion)</AutumnReleaseLabel>
+    <AutumnChannel Condition="'$(AutumnChannel)' == ''">v$(AutumnVersion)</AutumnChannel>
+    <AutumnUpdateSequence Condition="'$(AutumnUpdateSequence)' == ''">1</AutumnUpdateSequence>
+    <AutumnSecuritySequence Condition="'$(AutumnSecuritySequence)' == ''">7</AutumnSecuritySequence>
     <AutumnFileVersion>$([System.Text.RegularExpressions.Regex]::Match('$(AutumnVersion)', '^[0-9]+\.[0-9]+\.[0-9]+').Value).0</AutumnFileVersion>
   </PropertyGroup>
 </Project>

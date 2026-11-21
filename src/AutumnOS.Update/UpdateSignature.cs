@@ -95,7 +95,7 @@ public static class UpdateSignature
         // Only explicit consent for these exact signed bytes and this installed source
         // grants a sequence exception. Normal discovery/apply never changes its floor.
         authorization?.Validate(manifest, manifestBytes, currentBuildId!, currentVersion!, now);
-        if (manifest.Sequence < minSequence && authorization is null) throw new UpdateException("UPDATE_METADATA_REPLAY");
+        if (manifest.EffectiveSecuritySequence < minSequence && authorization is null) throw new UpdateException("UPDATE_METADATA_REPLAY");
         return manifest;
     }
 }

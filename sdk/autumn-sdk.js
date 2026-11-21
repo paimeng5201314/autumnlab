@@ -1,4 +1,4 @@
-/* Lab Chronicles AutumnOS SDK 0.4.0 · 制作人：派蒙. No external dependencies. */
+/* Lab Chronicles AutumnOS SDK v1.0.1 · 制作人：派蒙. No external dependencies. */
 (function (root) {
   "use strict";
   const MAX_PENDING = 16, MAX_BYTES = 32768, MAX_PER_MINUTE = 120, RATE_WINDOW_MS = 60000;
@@ -164,7 +164,7 @@
   if (bridge) bridge.addEventListener("message", receive);
   root.addEventListener("pagehide", dispose, { once: true });
   root.autumn = Object.freeze({
-    version: "0.4.0", protocolVersion: 1, request,
+    version: "1.0.1", protocolVersion: 1, request,
     onLifecycle(listener) {
       if (typeof listener !== "function") throw new TypeError("A lifecycle listener is required.");
       if (ended) return () => {};

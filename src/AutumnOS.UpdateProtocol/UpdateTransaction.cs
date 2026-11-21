@@ -44,6 +44,10 @@ public static class UpdateTransaction
         {
             if (!SemanticVersion.TryParse(manifest.MinimumUpdaterVersion, out var minimum) || !SemanticVersion.TryParse(UpdaterVersion, out var updater) || minimum!.CompareTo(updater) > 0)
                 return "UPDATE_UPDATER_TOO_OLD";
+            // A v1 target cannot read a recovery journal containing a v2 release's installation receipt.
+            if (rollback && manifest.SchemaVersion == 1 && File.Exists(Path.Combine(root, UpdateFiles.ReceiptName)) &&
+                UpdateFiles.ReadInstalled(root).SecuritySequence.HasValue)
+                return "UPDATE_LEGACY_FULL_ENTRY_REQUIRED";
             // Protocol 1.1 is the first release profile that can read first-run v2.
             // Restoring an old onboarding file would incorrectly repeat setup/logout.
             if (rollback && minimum!.CompareTo(SemanticVersion.Parse("1.1.0")) < 0) return "UPDATE_ROLLBACK_PROTOCOL_UNSUPPORTED";
@@ -112,7 +116,7 @@ public static class UpdateTransaction
                 UpdateFiles.Write(Path.Combine(tx, "result.json"), new { outcome = "committed", buildId = manifest.BuildId, coreHealthVerified = true, warning = "UPDATE_FINAL_ACK_UNCERTAIN" });
                 return;
             }
-            RecordFailure(root, manifest.BuildId, manifest.Sequence, offer.ManifestSha256);
+            RecordFailure(root, manifest.BuildId, manifest.EffectiveSecuritySequence, offer.ManifestSha256);
             using var rollbackBusiness = UpdateMutexLease.AcquireBusiness(TimeSpan.FromSeconds(15));
             // rootLease may have been released after a core health acknowledgement.
             rootLease.Dispose();
@@ -132,11 +136,11 @@ public static class UpdateTransaction
         var manifest = offer.RollbackAuthorization is { } authorization
             ? UpdateSignature.VerifyForRollback(bytes, signed, UpdateTrustStore.FromEmbedded(), verificationTime, security.HighestSequence, authorization, offer.CurrentBuildId, offer.CurrentVersion)
             : UpdateSignature.Verify(bytes, signed, UpdateTrustStore.FromEmbedded(), verificationTime, security.HighestSequence);
-        if (manifest.Sequence == security.HighestSequence && security.ManifestSha256.Length != 0 && security.ManifestSha256 != offer.ManifestSha256) throw new IOException("UPDATE_SEQUENCE_CONTENT_CONFLICT");
+        if (manifest.EffectiveSecuritySequence == security.HighestSequence && security.ManifestSha256.Length != 0 && security.ManifestSha256 != offer.ManifestSha256) throw new IOException("UPDATE_SEQUENCE_CONTENT_CONFLICT");
         if (security.FailedBuilds.Contains(manifest.BuildId, StringComparer.Ordinal)) throw new IOException("UPDATE_FAILED_BUILD_BLOCKED");
         var installed = UpdateFiles.ReadInstalled(root);
         if (installed.BuildId != offer.CurrentBuildId || installed.Version != offer.CurrentVersion) throw new IOException("UPDATE_CURRENT_BUILD_MISMATCH");
-        if (UpdateRevisionPolicy.CheckOrder(manifest, installed.Version, installed.BuildId, installed.Sequence, offer.RollbackAuthorization is not null) is { } orderError)
+        if (UpdateRevisionPolicy.CheckOrder(manifest, installed.Version, installed.BuildId, installed.Sequence, offer.RollbackAuthorization is not null, installed.SecuritySequence) is { } orderError)
             throw new IOException(orderError);
         if (!SemanticVersion.TryParse(manifest.MinimumUpdaterVersion, out var minimum) || !SemanticVersion.TryParse(UpdaterVersion, out var updater) || minimum!.CompareTo(updater) > 0) throw new IOException("UPDATE_UPDATER_TOO_OLD");
         if (GetCompatibility(root, manifest, offer.RollbackAuthorization is not null) is { } compatibilityError) throw new IOException(compatibilityError);
@@ -151,16 +155,16 @@ public static class UpdateTransaction
         {
             if (new FileInfo(policyPath).Length > 128 * 1024) throw new IOException("UPDATE_POLICY_INVALID");
             using var policy = JsonDocument.Parse(File.ReadAllBytes(policyPath));
-            if (sameRevisionTrain && (offer.TargetIdentity is null || manifest.Sequence != security.HighestSequence ||
+            if (sameRevisionTrain && (offer.TargetIdentity is null || manifest.EffectiveSecuritySequence != security.HighestSequence ||
                 security.ManifestSha256 != offer.ManifestSha256 || !policy.RootElement.TryGetProperty("pendingManifestSha256", out var pending) ||
                 pending.ValueKind != JsonValueKind.String || pending.GetString() != offer.ManifestSha256 ||
                 !policy.RootElement.TryGetProperty("pendingFromBuildId", out var from) || from.GetString() != installed.BuildId)) throw new IOException("UPDATE_SEQUENCE_REUSED");
-            if (manifest.Channel == "meta" && (!policy.RootElement.TryGetProperty("preview", out var enabled) || enabled.ValueKind != JsonValueKind.True)) throw new IOException("UPDATE_PREVIEW_DISABLED");
+            if (manifest.IsPreview && (!policy.RootElement.TryGetProperty("preview", out var enabled) || enabled.ValueKind != JsonValueKind.True)) throw new IOException("UPDATE_PREVIEW_DISABLED");
             if (policy.RootElement.TryGetProperty("retryAfterUtc", out var retry) && retry.ValueKind == JsonValueKind.String &&
                 retry.TryGetDateTimeOffset(out var after) && after > DateTimeOffset.UtcNow) throw new IOException("UPDATE_RATE_LIMITED");
         }
         else if (sameRevisionTrain) throw new IOException("UPDATE_CONSENT_REQUIRED");
-        else if (manifest.Channel == "meta") throw new IOException("UPDATE_PREVIEW_DISABLED");
+        else if (manifest.IsPreview) throw new IOException("UPDATE_PREVIEW_DISABLED");
         UpdateApplySourceGuard.VerifyDefaultAsync(manifest, offer.TargetIdentity?.Tag ?? offer.RollbackAuthorization?.ReleaseTag ?? manifest.ReleaseTag ?? manifest.Channel + "-v" + manifest.Version,
             CancellationToken.None, offer.ManifestSha256, new StoreNetworkSettingsService(UpdateFiles.DataRoot(root)).Load(),
             Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(signed))).GetAwaiter().GetResult();
@@ -265,7 +269,7 @@ public static class UpdateTransaction
             }
             foreach (var path in removals) { context.Phase = "remove"; context.File = path; File.Delete(UpdateFiles.Managed(root, path)); }
             context.Phase = "receipt"; context.File = UpdateFiles.ReceiptName;
-            UpdateFiles.Write(Path.Combine(root, UpdateFiles.ReceiptName), new InstalledBuild(1, manifest.Version, manifest.BuildId, next, manifest.Data.SchemaVersion, manifest.Sequence));
+            UpdateFiles.Write(Path.Combine(root, UpdateFiles.ReceiptName), new InstalledBuild(1, manifest.Version, manifest.BuildId, next, manifest.Data.SchemaVersion, manifest.Sequence, manifest.SecuritySequence));
             context.Phase = "journal-health"; context.File = null;
             UpdateFiles.Write(JournalPath(root), journal with { Phase = "health" });
         }
@@ -278,7 +282,7 @@ public static class UpdateTransaction
                 UpdateFiles.Write(JournalPath(root), journal with { Phase = "aborted", ErrorCode = "UPDATE_FILES_BUSY" });
                 throw new IOException("UPDATE_APPLY_ABORTED_FILES_BUSY", error);
             }
-            RecordFailure(root, manifest.BuildId, manifest.Sequence, offer.ManifestSha256);
+            RecordFailure(root, manifest.BuildId, manifest.EffectiveSecuritySequence, offer.ManifestSha256);
             Restore(root, "UPDATE_APPLY_FAILED");
             // Tell the independent entry to reopen the restored old version from its
             // original stable entry; a completed rollback must not leave a silent void.
@@ -361,7 +365,7 @@ public static class UpdateTransaction
                 throw new IOException("UPDATE_HEALTH_BUILD_MISMATCH");
             foreach (var file in manifest.Files)
                 if (!UpdateFiles.Matches(UpdateFiles.Managed(root, file.Path), new(file.Path, file.Bytes, file.Sha256))) throw new IOException("UPDATE_HEALTH_FILES_CHANGED");
-            _ = UpdateSecurityLedgerStore.Record(root, manifest.Sequence, UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")), DateTimeOffset.UtcNow);
+            _ = UpdateSecurityLedgerStore.Record(root, manifest.EffectiveSecuritySequence, UpdateFiles.Hash(Path.Combine(tx, "autumn.update.json")), DateTimeOffset.UtcNow);
             PortableEntryBinding.Commit(root, manifest.BuildId, manifest.Version);
             UpdateFiles.Write(JournalPath(root), journal with { Phase = "committed" });
             committed = true;

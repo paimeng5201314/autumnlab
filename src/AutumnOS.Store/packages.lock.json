@@ -8,13 +8,13 @@
       "autumnos.packages": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[1.0.0, )"
+          "AutumnOS.Contracts": "[1.0.1, )"
         }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[1.0.0, )"
+          "AutumnOS.Contracts": "[1.0.1, )"
         }
       }
     },

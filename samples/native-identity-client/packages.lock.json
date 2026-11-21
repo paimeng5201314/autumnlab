@@ -54,7 +54,7 @@
       "autumnos.identity": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[0.3.0-t03-checkpoint, )",
+          "AutumnOS.Contracts": "[1.0.1, )",
           "Duende.IdentityModel.OidcClient": "[7.1.0, )",
           "Microsoft.IdentityModel.JsonWebTokens": "[8.23.0, )",
           "System.Security.Cryptography.ProtectedData": "[10.0.0, )"

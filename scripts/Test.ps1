@@ -48,7 +48,7 @@ try {
     [ordered]@{build_id=$buildId;source_snapshot_id=$snapshot;status=$(if($sdkExit -eq 0){'passed'}else{'failed'});exit_code=$sdkExit;node=(& $node.Source --version)} |
         ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'sdk-tests.json') -Encoding utf8
     if ($sdkExit -ne 0) { throw 'SDK contract tests failed; see sdk-tests.json.' }
-    if($buildId.StartsWith('T06-')){
+    if($build.task_id -eq 'T06'){
         $contractsPath=Join-Path $attemptDirectory 'machine-contracts.json'
         & $node.Source (Join-Path $ProjectRoot 'tools/contract-checks/contract-check.cjs') --report $contractsPath 2>&1 |
             Tee-Object -FilePath (Join-Path $attemptDirectory 'machine-contracts.log') | Out-Host
@@ -79,11 +79,11 @@ try {
         ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'native-client-tests.json') -Encoding utf8
     & "$PSScriptRoot/Test-ServerIdentitySample.ps1" -ReportPath (Join-Path $attemptDirectory 'server-http-tests.json') -BuildId $buildId -SourceSnapshotId $snapshot
     Copy-Item -LiteralPath (Join-Path $attemptDirectory 'server-http-tests.json') -Destination (Join-Path $directory 'server-http-tests.json')
-    if ($buildId.StartsWith('T04-') -or $buildId.StartsWith('T05-') -or $buildId.StartsWith('T06-')) {
+    if ($build.task_id -in @('T04','T05','T06')) {
         & "$PSScriptRoot/Test-T04DeveloperTools.ps1" -BuildId $buildId -ReportDirectory (Join-Path $attemptDirectory 't04-tools')
         Copy-Item -LiteralPath (Join-Path $attemptDirectory 't04-tools/report.json') -Destination (Join-Path $directory 't04-tools-tests.json')
     }
-    if ($buildId.StartsWith('T06-')) {
+    if ($build.task_id -eq 'T06') {
         $productionToolsReport = Join-Path $attemptDirectory 'production-update-tools.json'
         & "$PSScriptRoot/Test-ProductionUpdateTools.ps1" -BuildId $buildId -SourceSnapshotId $snapshot -ReportPath $productionToolsReport
         Copy-Item -LiteralPath $productionToolsReport -Destination (Join-Path $directory 'production-update-tools.json')

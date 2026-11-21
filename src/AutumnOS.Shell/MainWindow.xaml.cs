@@ -226,13 +226,9 @@ public sealed partial class MainWindow : Window
             // Install returns only after a real installation record and every resource
             // have been committed/verified. Desktop entries come from that result.
             if (applicationInstaller is null) throw new PackageException("PACKAGE_REGISTRY_UNAVAILABLE");
-            if (!applicationInstaller.HasRegistration("cn.labchronicles.elementpairs"))
-            {
-                var bundled = await Task.Run(() => PackageInstaller.Install(Path.Combine(AppContext.BaseDirectory, "Samples", "element-pairs.autumn"), installationRoot.Directories["Apps"], lifetime.Token), lifetime.Token);
-                if (bundled.Manifest.AppId != "cn.labchronicles.elementpairs") throw new PackageException("PACKAGE_APP_ID_INVALID");
-                applicationInstaller.RegisterExisting(bundled);
-            }
-            installedSample = applicationInstaller.Find("cn.labchronicles.elementpairs")?.Package;
+            installedSample = await Task.Run(() => applicationInstaller.PrepareBundled(
+                Path.Combine(AppContext.BaseDirectory, "Samples", "element-pairs.autumn"), "cn.labchronicles.elementpairs",
+                BrandInfo.Version, lifetime.Token), lifetime.Token);
             DesktopError.IsOpen = false;
             BuildAppEntries();
             RefreshPermissionsUi();

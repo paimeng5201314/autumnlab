@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:autumnos:schema:developer-host-pipe:1",
   "title": "AutumnOS host developer pipe protocol 1",
-  "description": "Dedicated Windows current-user development IPC, not an application SDK method. Four-byte little-endian UTF-8 frame length; maximum 65536 bytes, JSON depth 8, duplicate and unknown fields rejected by runtime. Host root, current-user ACL, server process path, archive hash and native consent require runtime verification. SDK remains 0.3.0, application protocol 1. Test simulation never authenticates a real provider or modifies live account credentials.",
+  "description": "Dedicated Windows current-user development IPC, not an application SDK method. Four-byte little-endian UTF-8 frame length; maximum 65536 bytes, JSON depth 8, duplicate and unknown fields rejected by runtime. Host root, current-user ACL, server process path, archive hash and native consent require runtime verification. Application messages use protocol 1. Test simulation never authenticates a real provider or modifies live account credentials.",
   "oneOf": [
     {
       "$ref": "#/$defs/request"

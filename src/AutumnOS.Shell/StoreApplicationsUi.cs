@@ -149,7 +149,7 @@ public sealed partial class MainWindow
         finally { localInstallBusy = false; aboutOpen = false; }
     }
 
-    private bool IsManagedRunning(string appId) => appId == "cn.labchronicles.elementpairs" ? HasLiveGame : managedApplications.TryGetValue(appId, out var running) && running.Host.Session.Instance.BlocksMaintenance;
+    private bool IsManagedRunning(string appId) => installedSample?.Manifest.AppId == appId ? HasLiveGame : managedApplications.TryGetValue(appId, out var running) && running.Host.Session.Instance.BlocksMaintenance;
     private void BackgroundManagedApps() { foreach (var app in managedApplications.Values) app.Host.Background(); }
     private void CloseManagedApplications() { foreach (var app in managedApplications.Values) app.Host.Dispose(); managedApplications.Clear(); managedContent.Children.Clear(); UpdateManagedBadges(); }
     private void InitializeManagedAppUi()
@@ -163,7 +163,7 @@ public sealed partial class MainWindow
     private async Task OpenInstalledApplicationAsync(string appId)
     {
         if (shutdownRequested || lifetime.IsCancellationRequested) return;
-        if (appId == "cn.labchronicles.elementpairs") { OnSample(StorePanel, new RoutedEventArgs()); return; }
+        if (installedSample?.Manifest.AppId == appId) { OnSample(StorePanel, new RoutedEventArgs()); return; }
         if (launching || accountOperation || aboutOpen || permissionService is null || CurrentIdentity.State == IdentitySessionState.SigningIn || applicationInstaller?.Find(appId) is not { } installed) return;
         if (!HasSupportedApplicationSource(installed))
         {
@@ -223,7 +223,7 @@ public sealed partial class MainWindow
     private void AddManagedDesktopEntries()
     {
         int cell = 6;
-        foreach (var app in applicationInstaller?.GetInstalled().Where(app => app.AppId != "cn.labchronicles.elementpairs") ?? [])
+        foreach (var app in applicationInstaller?.GetInstalled().Where(app => app.AppId != installedSample?.Manifest.AppId) ?? [])
         {
             while (AppGrid.RowDefinitions.Count <= cell / 3) AppGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var button = AppButton(app.Package.Manifest.Name, "managed", "InstalledApp-" + app.AppId, false, OnManagedIconClick);

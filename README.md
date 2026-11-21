@@ -2,6 +2,10 @@
 
 **制作人：派蒙**
 
+当前本地工程采用 [1.0.1 版本清单](docs/versioning.md)。从上一代更新格式迁移时使用完整便携 EXE，并保留原目录的 `AutumnOS_Data`。本地构建和公开发行分别记录在进度与交付收据中。
+
+Windows Server 2022 用户请选择 x64 桌面体验，在普通用户的交互式桌面启动程序。操作系统内部版本是 20348，可通过 `winver` 核对。[运行条件](docs/developer/product.md)
+
 ### 下载与签名更新
 
 普通用户从 [AutumnOS 正式发行页](https://github.com/paimeng5201314/autumnOS/releases/latest) 下载完整的 `AutumnOS.exe`。从使用旧签名根的 1.0.0 首次迁移时，先正常退出游戏与启动器，保留原目录中的 `AutumnOS_Data`，再运行内置 v3 公钥的新版本。设置中的官方更新源为 `paimeng5201314/autumnOS`。客户端会校验更新清单的签名、版本、序号和载荷内容，下载后由用户选择重启安装。
@@ -24,8 +28,8 @@
 ./scripts/Get-Environment.ps1
 ./scripts/Restore.ps1 -Locked
 ./scripts/Test-Source.ps1
-$buildId = 'T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
-./scripts/Build.ps1 -BuildId $buildId -BuildVersion 0.5.1 -ReleaseLabel plus0.0.4-20261017
+$buildId = (./scripts/Get-ProductBuildIdentity.ps1).BuildId
+./scripts/Build.ps1 -BuildId $buildId
 ./scripts/Test.ps1 -ProbeLogto
 ./scripts/Package-T05.ps1 -Stage Prepare
 ./scripts/Package-SingleFile.ps1 -BuildId $buildId

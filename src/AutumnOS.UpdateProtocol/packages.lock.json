@@ -11,27 +11,27 @@
       "autumnos.packages": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[1.0.0, )"
+          "AutumnOS.Contracts": "[1.0.1, )"
         }
       },
       "autumnos.storage": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[1.0.0, )"
+          "AutumnOS.Contracts": "[1.0.1, )"
         }
       },
       "autumnos.store": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Contracts": "[1.0.0, )",
-          "AutumnOS.Packages": "[1.0.0, )",
-          "AutumnOS.Storage": "[1.0.0, )"
+          "AutumnOS.Contracts": "[1.0.1, )",
+          "AutumnOS.Packages": "[1.0.1, )",
+          "AutumnOS.Storage": "[1.0.1, )"
         }
       },
       "autumnos.update": {
         "type": "Project",
         "dependencies": {
-          "AutumnOS.Store": "[1.0.0, )"
+          "AutumnOS.Store": "[1.0.1, )"
         }
       }
     },

@@ -11,18 +11,17 @@
     <Authors>$(AutumnProducer)</Authors>
     <Description>$(AutumnProducerCredit)</Description>
     <Version>$(AutumnVersion)</Version>
-    <AutumnReleaseLabel Condition="'$(AutumnReleaseLabel)' == ''">$(AutumnVersion)</AutumnReleaseLabel>
     <InformationalVersion>$(AutumnReleaseLabel)</InformationalVersion>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <AssemblyVersion>$(AutumnFileVersion)</AssemblyVersion>
     <FileVersion>$(AutumnFileVersion)</FileVersion>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <OutputPath>bin\x64\$(Configuration)\</OutputPath>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <BuildId Condition="'$(BuildId)' == ''">local-untracked</BuildId>
+    <BuildId Condition="'$(BuildId)' == ''">v$(AutumnVersion)-$([System.DateTime]::Now.ToString('yyyyMMdd'))</BuildId>
     <SourceSnapshotId Condition="'$(SourceSnapshotId)' == ''">not_recorded</SourceSnapshotId>
-    <AutumnUpdateSequence Condition="'$(AutumnUpdateSequence)' == ''">0</AutumnUpdateSequence>
     <AutumnPlatformAcceptance Condition="'$(AutumnPlatformAcceptance)' == ''">false</AutumnPlatformAcceptance>
     <DefineConstants Condition="'$(AutumnPlatformAcceptance)' == 'true'">$(DefineConstants);AUTUMN_PLATFORM_ACCEPTANCE</DefineConstants>
   </PropertyGroup>
@@ -33,6 +32,8 @@
     <AssemblyMetadata Include="SourceSnapshotId" Value="$(SourceSnapshotId)" />
     <AssemblyMetadata Include="SemanticVersion" Value="$(AutumnVersion)" />
     <AssemblyMetadata Include="UpdateSequence" Value="$(AutumnUpdateSequence)" />
+    <AssemblyMetadata Include="SecuritySequence" Value="$(AutumnSecuritySequence)" />
+    <AssemblyMetadata Include="ReleaseChannel" Value="$(AutumnChannel)" />
     <AssemblyMetadata Include="TemporaryPlatformAcceptance" Value="$(AutumnPlatformAcceptance)" />
   </ItemGroup>
 </Project>

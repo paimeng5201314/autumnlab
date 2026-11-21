@@ -87,6 +87,8 @@ namespace AutumnSmokeInput {
     [DllImport("user32.dll")] [return:MarshalAs(UnmanagedType.Bool)] public static extern bool GetGUIThreadInfo(uint thread,ref GUITHREADINFO info);
     [DllImport("user32.dll")] public static extern IntPtr MonitorFromWindow(IntPtr h,uint flags);
     [DllImport("user32.dll")] [return:MarshalAs(UnmanagedType.Bool)] public static extern bool GetMonitorInfo(IntPtr monitor,ref MONITORINFO info);
+    [DllImport("user32.dll")] public static extern IntPtr GetWindowDpiAwarenessContext(IntPtr h);
+    [DllImport("user32.dll")] public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr h);
     [DllImport("user32.dll")] [return:MarshalAs(UnmanagedType.Bool)] public static extern bool IsIconic(IntPtr h);
     [DllImport("user32.dll")] [return:MarshalAs(UnmanagedType.Bool)] public static extern bool IsZoomed(IntPtr h);
     [DllImport("user32.dll")] [return:MarshalAs(UnmanagedType.Bool)] public static extern bool ShowWindow(IntPtr h,int command);
@@ -152,6 +154,35 @@ function Wait-AutumnOwnedPointerIdle([Diagnostics.Process]$Process,[IntPtr]$Hand
     throw ('Owned pointer input did not settle within 3 seconds: '+($last|ConvertTo-Json -Compress))
 }
 
+function Measure-AutumnPreparationWindow([Diagnostics.Process]$Process,[IntPtr]$Handle) {
+    $owner=0u
+    if (![AutumnSmokeInput.Native]::GetWindowThreadProcessId($Handle,[ref]$owner) -or $owner -ne $Process.Id -or $Process.HasExited) {
+        throw 'Preparation window owner changed.'
+    }
+    $context=[AutumnSmokeInput.Native]::GetWindowDpiAwarenessContext($Handle)
+    $previous=[AutumnSmokeInput.Native]::SetThreadDpiAwarenessContext($context)
+    if ($previous -eq [IntPtr]::Zero) { throw 'Cannot read preparation geometry in its DPI context.' }
+    try {
+        $client=[AutumnSmokeInput.Native+RECT]::new()
+        $outer=[AutumnSmokeInput.Native+RECT]::new()
+        $monitor=[AutumnSmokeInput.Native+MONITORINFO]::new()
+        $monitor.cbSize=[Runtime.InteropServices.Marshal]::SizeOf($monitor)
+        if (![AutumnSmokeInput.Native]::GetClientRect($Handle,[ref]$client) -or
+            ![AutumnSmokeInput.Native]::GetWindowRect($Handle,[ref]$outer) -or
+            ![AutumnSmokeInput.Native]::GetMonitorInfo([AutumnSmokeInput.Native]::MonitorFromWindow($Handle,2),[ref]$monitor)) {
+            throw 'Unable to measure the preparation window and its display.'
+        }
+        $w=$client.Right-$client.Left; $h=$client.Bottom-$client.Top
+        $workW=$monitor.rcWork.Right-$monitor.rcWork.Left; $workH=$monitor.rcWork.Bottom-$monitor.rcWork.Top
+        $frameW=$outer.Right-$outer.Left-$w; $frameH=$outer.Bottom-$outer.Top-$h
+        # The preparation form sets a minimum outer size and explicit client
+        # margins. Use the live non-client frame for this desktop and theme.
+        $expectedW=[Math]::Max(600-$frameW,[Math]::Min(1164,$workW-60))
+        $expectedH=[Math]::Max(520-$frameH,[Math]::Min(740,$workH-80))
+        return [pscustomobject]@{width=$w;height=$h;expected_width=$expectedW;expected_height=$expectedH;
+            work_width=$workW;work_height=$workH;frame_width=$frameW;frame_height=$frameH}
+    } finally { [void][AutumnSmokeInput.Native]::SetThreadDpiAwarenessContext($previous) }
+}
 function Ensure-AutumnOwnedWindowWorkArea([Diagnostics.Process]$Process,[IntPtr]$Handle) {
     $null=Assert-AutumnOwnedNativeWindow $Process $Handle
     Wait-AutumnOwnedPointerIdle $Process $Handle

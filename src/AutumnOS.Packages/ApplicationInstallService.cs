@@ -68,6 +68,30 @@ public sealed class ApplicationInstallService
         }
     }
 
+    public InstalledPackage? PrepareBundled(string archive, string appId, string version, CancellationToken cancellationToken = default)
+    {
+        bool registered = HasRegistration(appId);
+        var selected = Find(appId);
+        if (registered && selected is not { Source.Kind: "bundled" }) return null;
+        if (selected is not null && (selected.PinnedVersion is not null ||
+            CompareVersions(selected.Package.Manifest.Version, version) >= 0)) return selected.Package;
+
+        using FileStream pinned = new(archive, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var inspection = PackageInstaller.Inspect(archive, cancellationToken);
+        var m = inspection.Manifest;
+        if (m.AppId != appId || m.Version != version) throw new PackageException("PACKAGE_BUNDLED_IDENTITY_MISMATCH");
+        if (!registered)
+        {
+            var adopted = RegisterExisting(PackageInstaller.Install(archive, appsDirectory, cancellationToken));
+            return adopted is { Source.Kind: "bundled" } ? adopted.Package : null;
+        }
+
+        var expected = new ExpectedPackageIdentity(new("bundled"), appId, version, m.Runtime, m.Entry, m.Permissions,
+            inspection.Sha256, pinned.Length, m.SaveFormatVersion);
+        var updated = Install(archive, expected, InstallIntent.RefreshBundled, cancellationToken: cancellationToken);
+        return updated is { IsInstalled: true, Source.Kind: "bundled" } ? updated.Package : null;
+    }
+
     public InstalledApplication Install(string packagePath, ExpectedPackageIdentity? expected = null,
         InstallIntent intent = InstallIntent.InstallOrUpdate, bool sourceConfirmed = false,
         bool downgradeConfirmed = false, CancellationToken cancellationToken = default)
@@ -88,6 +112,12 @@ public sealed class ApplicationInstallService
                 cancellationToken.ThrowIfCancellationRequested();
                 Registry registry = Read(); string appId = inspection.Manifest.AppId;
                 InstalledApplication? old = registry.Applications.SingleOrDefault(a => a.AppId == appId);
+                if (intent == InstallIntent.RefreshBundled)
+                {
+                    if (source.Kind != "bundled" || old is null) throw new PackageException("APP_NOT_INSTALLED");
+                    if (!old.IsInstalled || old.Source.Kind != "bundled" || old.PinnedVersion is not null ||
+                        CompareVersions(old.Package.Manifest.Version, inspection.Manifest.Version) >= 0) return old;
+                }
                 if (old is not null && (old.Source.Binding(appId) != source.Binding(appId) || old.Source.SigningKeyFingerprint != source.SigningKeyFingerprint))
                     throw new PackageException("PACKAGE_SOURCE_CONFLICT");
                 if (source.SigningKeyFingerprint is not null) throw new PackageException("PACKAGE_SIGNATURE_UNSUPPORTED");

@@ -1,21 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:autumnos:autumn.update:1",
-  "title": "AutumnOS signed update manifest v1",
+  "$id": "urn:autumnos:autumn.update",
+  "title": "AutumnOS signed update manifest",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "channel", "version", "buildId", "targetRid", "minimumUpdaterVersion", "sequence", "issuedAtUtc", "expiresAtUtc", "keyId", "trustRootVersion", "payload", "files", "removeFiles", "data", "productId", "repository"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "enum": [1, 2] },
     "productId": { "const": "cn.labchronicles.autumnos" },
     "repository": { "const": "paimeng5201314/autumnOS" },
-    "channel": { "enum": ["plus", "meta"] },
+    "channel": { "type": "string" },
     "version": { "$ref": "#/$defs/semver" },
     "releaseTag": { "type": ["string", "null"], "minLength": 1, "maxLength": 200, "pattern": "^[^\\u0000-\\u001f\\u007f/\\\\]+$", "description": "Optional exact signed GitHub Release tag. Required for opaque historical-style tag mappings; never inferred from display names or dates." },
     "buildId": { "$ref": "#/$defs/identifier" },
     "targetRid": { "const": "win-x64" },
     "minimumUpdaterVersion": { "$ref": "#/$defs/semver" },
-    "sequence": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807, "description": "Signed release sequence. A different build of the exact same version must advance the installed revision and requires updater protocol 1.2 or later." },
+    "sequence": { "$ref": "#/$defs/sequence", "description": "Signed revision. Schema 2 restarts at 1 for each new product version." },
+    "securitySequence": { "$ref": "#/$defs/sequence", "description": "Global anti-replay sequence across all versions and channels. A new signed update must advance the last published value." },
     "issuedAtUtc": { "type": "string", "format": "date-time" },
     "expiresAtUtc": { "type": "string", "format": "date-time" },
     "keyId": { "$ref": "#/$defs/identifier" },
@@ -39,7 +40,26 @@
       "properties": { "schemaVersion": { "const": 1 }, "minimumReadableVersion": { "const": 1 }, "rollbackCompatible": { "const": true } }
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 1 } } },
+      "then": { "properties": { "channel": { "enum": ["plus", "meta"] }, "securitySequence": false } },
+      "else": {
+        "required": ["securitySequence", "releaseTag"],
+        "properties": {
+          "securitySequence": { "$ref": "#/$defs/sequence" },
+          "version": { "$ref": "#/$defs/productVersion" },
+          "channel": { "$ref": "#/$defs/versionTag" },
+          "releaseTag": { "$ref": "#/$defs/versionTag" }
+        },
+        "description": "The verifier binds releaseTag exactly to channel and its numeric suffix to version, and requires minimumUpdaterVersion >= 1.3.0."
+      }
+    }
+  ],
   "$defs": {
+    "sequence": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807 },
+    "productVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+    "versionTag": { "type": "string", "pattern": "^(meta)?v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
     "identifier": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9_.-]+$" },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "semver": { "type": "string", "minLength": 5, "maxLength": 128, "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$" },

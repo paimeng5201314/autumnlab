@@ -11,7 +11,13 @@ public sealed record UpdateManifest(int SchemaVersion, string Channel, string Ve
     string TargetRid, string MinimumUpdaterVersion, long Sequence, DateTimeOffset IssuedAtUtc,
     DateTimeOffset ExpiresAtUtc, string KeyId, int TrustRootVersion, UpdatePayloadDescriptor Payload,
     IReadOnlyList<UpdateFile> Files, IReadOnlyList<string> RemoveFiles, UpdateDataCompatibility Data,
-    [property: JsonRequired] string ProductId = "cn.labchronicles.autumnos", [property: JsonRequired] string Repository = UpdateService.Repository, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ReleaseTag = null);
+    [property: JsonRequired] string ProductId = "cn.labchronicles.autumnos", [property: JsonRequired] string Repository = UpdateService.Repository, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ReleaseTag = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? SecuritySequence = null)
+{
+    [JsonIgnore] public long EffectiveSecuritySequence => SecuritySequence ?? Sequence;
+    [JsonIgnore] public bool IsPreview => SchemaVersion == 1 ? Channel == "meta" : Channel == "metav" + Version;
+    [JsonIgnore] public string DisplayVersion => SchemaVersion == 2 ? "v" + Version : Version;
+}
 public sealed record UpdateSignatureEnvelope(int SchemaVersion, string Algorithm, string KeyId, int TrustRootVersion, string Signature);
 public sealed record UpdateTrustKey(string KeyId, string PublicKeyPem, bool Revoked = false);
 public sealed record UpdateTrustDocument(int SchemaVersion, int Version, string Purpose, IReadOnlyList<UpdateTrustKey> Keys);

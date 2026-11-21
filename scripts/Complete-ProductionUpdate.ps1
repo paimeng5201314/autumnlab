@@ -14,10 +14,11 @@ Existing outputs and failed attempts are preserved.
 #>
 [CmdletBinding(DefaultParameterSetName='Check')]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^T06-[A-Za-z0-9_-][A-Za-z0-9_.-]{0,84}[A-Za-z0-9_-]$')][string]$BuildId,
+    [Parameter(Mandatory)][ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}$')][string]$BuildId,
     [Parameter(Mandatory)][ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$')][string]$ReleaseTag,
     [Parameter(Mandatory)][ValidateLength(5,128)][string]$PreviousVersion,
     [Parameter(Mandatory)][ValidateRange(0,[long]::MaxValue)][long]$PreviousSequence,
+    [Parameter(Mandatory)][ValidateRange(0,9223372036854775806)][long]$PreviousSecuritySequence,
     [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$')][string]$PreviousBuildId,
     [Parameter(Mandatory,ParameterSetName='Check')][switch]$ValidateOnly,
     [Parameter(Mandatory,ParameterSetName='Sign')][string]$PrivateDirectory
@@ -58,10 +59,11 @@ function Assert-ReleaseTime($Manifest, [DateTimeOffset]$Now) {
 function Assert-UpgradeOrder($Manifest, $SemVerType, [string]$InstalledVersion, [long]$HighestSequence, [string]$InstalledBuildId) {
     $target = $SemVerType::Parse($Manifest.version)
     $comparison = $target.CompareTo($SemVerType::Parse($InstalledVersion))
-    if ($comparison -lt 0 -or $Manifest.sequence -isnot [long] -or
-        $Manifest.sequence -le $HighestSequence -or $Manifest.channel -cnotin @('plus','meta') -or
-        $target.IsPrerelease -ne ($Manifest.channel -ceq 'meta')) {
-        throw 'Expected the same or a newer semantic version and a strictly increasing sequence in the release channel.'
+    if ($comparison -lt 0 -or $Manifest.sequence -isnot [long] -or $Manifest.sequence -lt 1 -or
+        $Manifest.securitySequence -isnot [long] -or $Manifest.securitySequence -le $PreviousSecuritySequence -or
+        $Manifest.channel -cnotin @(('v'+$Manifest.version),('metav'+$Manifest.version)) -or
+        $Manifest.releaseTag -cne $Manifest.channel -or ($comparison -eq 0 -and $Manifest.sequence -le $HighestSequence)) {
+        throw 'Release identity, product revision or signed security counter is invalid.'
     }
     if ($InstalledBuildId -and $Manifest.buildId -ceq $InstalledBuildId) { throw 'The target must be a different product build.' }
     if ($comparison -eq 0 -and ($Manifest.version -cne $InstalledVersion -or $HighestSequence -le 0 -or -not $InstalledBuildId -or
@@ -101,7 +103,7 @@ function Get-ReleaseBinding($Manifest) {
     if ($release.id -isnot [long] -or $release.id -le 0 -or $release.tag_name -cne $ReleaseTag -or
         $release.url -cne "$releaseApi/$($release.id)" -or ($release.html_url -creplace '%2[bB]|\+','%2B') -cne "$webRelease/tag/$tag" -or
         $release.draft -isnot [bool] -or $release.draft -or $release.prerelease -isnot [bool] -or
-        $release.prerelease -ne ($Manifest.channel -ceq 'meta') -or [string]::IsNullOrWhiteSpace($release.published_at) -or
+        $release.prerelease -ne ($Manifest.channel -ceq ('metav'+$Manifest.version)) -or [string]::IsNullOrWhiteSpace($release.published_at) -or
         [DateTimeOffset]::Parse($release.published_at, [cultureinfo]::InvariantCulture) -gt [DateTimeOffset]::UtcNow.AddMinutes(5)) {
         throw 'The requested official release must be published with the exact tag and channel.'
     }
@@ -130,7 +132,7 @@ $sourceId = $build.source_snapshot_id
 Assert-ProductionUpdateBuild $build
 Assert-BuildIdentity $build 'passed'
 if ($sourceId -cnotmatch '^sha256:[0-9a-f]{64}$' -or $build.rid -cne 'win-x64' -or $build.configuration -cne 'Release' -or
-    $build.release_label -cne $ReleaseTag) { throw 'Expected an ordinary win-x64 Release build with this release label.' }
+    $build.release_label -cne ('v'+$build.version) -or $build.release_tag -cne $ReleaseTag -or $build.channel -cne $ReleaseTag) { throw 'Expected an ordinary win-x64 Release build with this release identity.' }
 $snapshot = Read-Record (Join-Path $evidence 'source-snapshot.json')
 $canonical = ($snapshot.files | ForEach-Object { "$($_.sha256)  $($_.path)" }) -join "`n"
 $computedSnapshot = [Convert]::ToHexStringLower([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($canonical)))
@@ -153,7 +155,8 @@ $prep = Read-Record (Join-Path $prepared 'preparation.json')
 Assert-BuildIdentity $prep 'prepared_unbound_unsigned'
 if ($prep.tag -cne $ReleaseTag -or $prep.payload_verification -cne 'passed' -or $prep.delivery_file_table_verification -cne 'passed' -or
     $prep.release_id -cne 'not_assigned' -or $prep.asset_id -cne 'not_assigned' -or $prep.signature -cne 'not_created' -or
-    $build.update_sequence -isnot [long] -or $build.update_sequence -le 0 -or $build.update_sequence -ne $prep.sequence) {
+    $build.update_sequence -isnot [long] -or $build.update_sequence -le 0 -or $build.update_sequence -ne $prep.sequence -or
+    $build.security_sequence -isnot [long] -or $build.security_sequence -ne $prep.security_sequence) {
     throw 'A complete unbound Prepare-ProductionUpdate report is required.'
 }
 $trust = Join-Path $ProjectRoot 'build/update-trust.production.json'
@@ -206,7 +209,7 @@ try {
                 $identity[$attribute.ConstructorArguments[0].Value] = $attribute.ConstructorArguments[1].Value
             }
         }
-        if ($identity.BuildId -cne $BuildId -or $identity.SourceSnapshotId -cne $sourceId -or $identity.UpdateSequence -cne [string]$build.update_sequence) { throw 'Tested binary has a different embedded build identity.' }
+        if ($identity.BuildId -cne $BuildId -or $identity.SourceSnapshotId -cne $sourceId -or $identity.UpdateSequence -cne [string]$build.update_sequence -or $identity.SecuritySequence -cne [string]$build.security_sequence) { throw 'Tested binary has a different embedded build identity.' }
         if ($item.Name -ceq $policyName) { $policy = $assembly }
         if ($item.Name -ceq $storeName) { $semVer = $assembly.GetType('AutumnOS.Store.SemanticVersion',$true) }
     }
@@ -227,7 +230,8 @@ try {
     Hold-Input $payloadPath
     if ($prep.draft -ine $draftPath -or $prep.payload -ine $payloadPath -or $draft.repository -cne $repository -or
         $draft.buildId -cne $BuildId -or $draft.releaseTag -cne $ReleaseTag -or $draft.version -cne $build.version -or
-        $draft.channel -cne $prep.channel -or $draft.sequence -ne $prep.sequence -or $draft.keyId -cne $public.keys[0].keyId -or
+        $draft.schemaVersion -ne 2 -or $draft.channel -cne $prep.channel -or $draft.sequence -ne $prep.sequence -or
+        $draft.securitySequence -ne $prep.security_sequence -or $draft.keyId -cne $public.keys[0].keyId -or
         $draft.trustRootVersion -ne $public.version -or $draft.payload.releaseId -ne 0 -or $draft.payload.assetId -ne 0 -or
         $draft.payload.asset -cne $payloadName -or $draft.payload.sha256 -cne $prep.payload_sha256 -or
         $draft.payload.bytes -ne (Get-Item -LiteralPath $payloadPath).Length -or $draft.payload.sha256 -cne (Get-Sha $payloadPath) -or
@@ -260,14 +264,14 @@ try {
     if ($bound.status -cne 'bound' -or $bound.ReleaseId -ne $remote.release_id -or $bound.AssetId -ne $remote.asset_id -or
         $bound.ReleaseTag -cne $ReleaseTag -or $bound.Sha256 -cne $draft.payload.sha256) { throw 'Bound metadata differs from the checked release asset.' }
     $result = [ordered]@{status='inputs_verified_unsigned';build_id=$BuildId;source_snapshot_id=$sourceId;tag=$ReleaseTag;version=$draft.version
-        sequence=$draft.sequence;previous_version=$PreviousVersion;previous_sequence=$PreviousSequence;previous_build_id=$PreviousBuildId;release_id=$remote.release_id;asset_id=$remote.asset_id
+        sequence=$draft.sequence;security_sequence=$draft.securitySequence;previous_version=$PreviousVersion;previous_sequence=$PreviousSequence;previous_security_sequence=$PreviousSecuritySequence;previous_build_id=$PreviousBuildId;release_id=$remote.release_id;asset_id=$remote.asset_id
         payload_sha256=$draft.payload.sha256;production_trust_sha256=$trustHash;test_reports=$testNames;manifest_sha256=(Get-Sha $manifest);uploaded=$false}
     if ($sign) {
         Invoke-ReleaseTool @('sign-production','--manifest',$manifest,'--private-directory',$PrivateDirectory,'--trust',$trust,'--output',$signature)
         Hold-Input $signature
         $signatureHandle = $held[$held.Count-1]
         $verified = Invoke-ReleaseTool @('verify','--manifest',$manifest,'--signature',$signature,'--trust',$trust,'--payload',$payloadPath,
-            '--minimum-sequence',[string]($PreviousSequence+1))
+            '--minimum-sequence',[string]($PreviousSecuritySequence+1))
         if ($verified.status -cne 'passed' -or $verified.trust_purpose -cne 'production' -or $verified.BuildId -cne $BuildId -or
             $verified.ReleaseTag -cne $ReleaseTag -or $verified.ReleaseId -ne $remote.release_id -or $verified.AssetId -ne $remote.asset_id -or
             $verified.Version -cne $draft.version) { throw 'Final production signature verification or binding failed.' }

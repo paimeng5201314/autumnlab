@@ -308,8 +308,9 @@ namespace AutumnOS.SingleFile
             {
                 if (file.Length < 1 || file.Length > 8 * 1024 * 1024) throw new IOException("PORTABLE_RECEIPT_INVALID");
                 var receipt = (Receipt)new DataContractJsonSerializer(typeof(Receipt)).ReadObject(file);
-                if (receipt == null || receipt.Sequence < 0 ||
-                    (receipt.BuildId == BundleIdentity.BuildId && receipt.Sequence != BundleIdentity.UpdateSequence))
+                if (receipt == null || receipt.Sequence < 0 || receipt.SecuritySequence < 0 ||
+                    (receipt.BuildId == BundleIdentity.BuildId && (receipt.Sequence != BundleIdentity.UpdateSequence ||
+                        (receipt.SecuritySequence ?? receipt.Sequence) != BundleIdentity.SecuritySequence)))
                     throw new IOException("PORTABLE_RECEIPT_INVALID");
                 return receipt;
             }
@@ -640,6 +641,7 @@ namespace AutumnOS.SingleFile
             [DataMember(Name = "schemaVersion")] public int Schema = 0;
             [DataMember(Name = "buildId")] public string BuildId = null;
             [DataMember(Name = "sequence")] public long Sequence = 0;
+            [DataMember(Name = "securitySequence")] public long? SecuritySequence = null;
             [DataMember(Name = "files")] public ReceiptFile[] Files = null;
         }
         [DataContract] private sealed class ReceiptFile

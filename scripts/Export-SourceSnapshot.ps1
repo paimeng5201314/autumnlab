@@ -2,7 +2,7 @@
 param([Parameter(Mandatory)][string]$BuildId,[Parameter(Mandatory)][string]$OutputPath)
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
-if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$'){throw 'Tracked T06 build required.'}
+if($BuildId -notmatch '^(?:v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}|T06-[A-Za-z0-9_.-]{1,85})$'){throw 'Tracked T06 build required.'}
 $evidence=Join-Path $root "artifacts/builds/$BuildId"
 $build=Get-Content -LiteralPath (Join-Path $evidence 'build-result.json') -Raw|ConvertFrom-Json
 $snapshot=Get-Content -LiteralPath (Join-Path $evidence 'source-snapshot.json') -Raw|ConvertFrom-Json

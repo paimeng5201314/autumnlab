@@ -1,9 +1,10 @@
 #requires -Version 7.6
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^T06-[A-Za-z0-9][A-Za-z0-9_.-]{0,86}$')][string]$BuildId,
+    [Parameter(Mandatory)][string]$BuildId,
     [Parameter(Mandatory)][string]$BuildVersion,
-    [Parameter(Mandatory)][string]$ReleaseLabel
+    [Parameter(Mandatory)][string]$ReleaseLabel,
+    [Parameter(Mandatory)][string]$Channel
 )
 $ErrorActionPreference = 'Stop'
 if (-not [OperatingSystem]::IsWindows() -or $env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
@@ -16,6 +17,7 @@ try {
     }
 } finally { $identity.Dispose() }
 $repo = Split-Path $PSScriptRoot -Parent
+$null = & "$PSScriptRoot/Get-ProductBuildIdentity.ps1" -BuildVersion $BuildVersion -BuildId $BuildId -ReleaseLabel $ReleaseLabel -Channel $Channel
 $dotnet = Join-Path $repo '.tools/dotnet/dotnet.exe'
 $pwshAssembly = Join-Path $repo '.tools/pwsh-ci/.store/powershell/7.6.6/powershell/7.6.6/tools/net10.0/any/win/pwsh.dll'
 $node = Get-Command node -CommandType Application -ErrorAction Stop | Select-Object -First 1
@@ -29,7 +31,7 @@ $stdoutPath = Join-Path $evidence 'stdout.log'
 $stderrPath = Join-Path $evidence 'stderr.log'
 $bootstrap = Join-Path $evidence 'run-build.ps1'
 @'
-param([string]$Repo,[string]$ExpectedSid,[string]$BuildId,[string]$BuildVersion,[string]$ReleaseLabel)
+param([string]$Repo,[string]$ExpectedSid,[string]$BuildId,[string]$BuildVersion,[string]$ReleaseLabel,[string]$Channel)
 $ErrorActionPreference='Stop'
 try {
     $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
@@ -60,7 +62,7 @@ try {
     $env:HOMEPATH=$profilePath.Substring([IO.Path]::GetPathRoot($profilePath).Length - 1)
     Write-Output 'Standard-user Windows profile and known folders verified after credentialed logon.'
     Set-Location -LiteralPath $Repo
-    & (Join-Path $Repo 'scripts/Build-SingleFile.ps1') -BuildId $BuildId -BuildVersion $BuildVersion -ReleaseLabel $ReleaseLabel -SkipNativeSmoke
+    & (Join-Path $Repo 'scripts/Build-SingleFile.ps1') -BuildId $BuildId -BuildVersion $BuildVersion -ReleaseLabel $ReleaseLabel -Channel $Channel -SkipNativeSmoke
     exit 0
 } catch {
     [Console]::Error.WriteLine($_.Exception.Message)
@@ -122,7 +124,7 @@ try {
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
     foreach ($argument in @($pwshAssembly, '-NoLogo', '-NoProfile', '-NonInteractive', '-File', $bootstrap,
-        '-Repo', $repo, '-ExpectedSid', $sid, '-BuildId', $BuildId, '-BuildVersion', $BuildVersion, '-ReleaseLabel', $ReleaseLabel)) {
+        '-Repo', $repo, '-ExpectedSid', $sid, '-BuildId', $BuildId, '-BuildVersion', $BuildVersion, '-ReleaseLabel', $ReleaseLabel, '-Channel', $Channel)) {
         $start.ArgumentList.Add($argument)
     }
     # A credentialed child must not inherit runner-admin TEMP/USERPROFILE or authentication

@@ -39,7 +39,7 @@ public static class UpdateApplySourceGuard
             using var json = JsonDocument.Parse(bytes.ToArray()); var release = json.RootElement;
             if (release.GetProperty("draft").GetBoolean()) throw new UpdateException("UPDATE_TARGET_WITHDRAWN");
             if (release.GetProperty("id").GetInt64() != manifest.Payload.ReleaseId || release.GetProperty("tag_name").GetString() != tag ||
-                release.GetProperty("prerelease").GetBoolean() != (manifest.Channel == "meta")) throw new UpdateException("UPDATE_TARGET_CHANGED");
+                release.GetProperty("prerelease").GetBoolean() != manifest.IsPreview) throw new UpdateException("UPDATE_TARGET_CHANGED");
             var assets = release.GetProperty("assets").EnumerateArray().Where(a => a.GetProperty("id").GetInt64() == manifest.Payload.AssetId || a.GetProperty("name").GetString() == manifest.Payload.Asset).ToArray();
             if (assets.Length != 1 || assets[0].GetProperty("id").GetInt64() != manifest.Payload.AssetId || assets[0].GetProperty("name").GetString() != manifest.Payload.Asset || assets[0].GetProperty("size").GetInt64() != manifest.Payload.Bytes)
                 throw new UpdateException("UPDATE_TARGET_ASSET_CHANGED");

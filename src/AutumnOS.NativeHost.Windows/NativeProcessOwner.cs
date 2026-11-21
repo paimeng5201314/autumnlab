@@ -236,22 +236,9 @@ public sealed class NativeProcessOwner
 
     public static void RequireSupportedDesktop()
     {
-        var os = new WindowsVersion { Size = Marshal.SizeOf<WindowsVersion>(), ServicePack = "" };
-        if (!OperatingSystem.IsWindows() || !Environment.Is64BitProcess || !Environment.UserInteractive ||
-            RtlGetVersion(ref os) != 0 || !NativePlatformPolicy.IsVersionAllowed(os.ProductType, os.Build))
+        if (!NativePlatformPolicy.IsCurrentDesktopAllowed())
             throw new PlatformNotSupportedException("NATIVE_WINDOWS_CLIENT_DESKTOP_REQUIRED");
     }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct WindowsVersion
-    {
-        internal int Size, Major, Minor, Build, Platform;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] internal string ServicePack;
-        internal ushort ServicePackMajor, ServicePackMinor, SuiteMask;
-        internal byte ProductType, Reserved;
-    }
-    [DllImport("ntdll.dll", ExactSpelling = true)]
-    private static extern int RtlGetVersion(ref WindowsVersion version);
 
     private void ValidateCurrentParent()
     {

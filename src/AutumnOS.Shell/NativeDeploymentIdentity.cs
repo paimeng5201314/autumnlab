@@ -8,7 +8,7 @@ internal static class NativeDeploymentIdentity
 {
     internal const int MaximumReceiptBytes = 4 * 1024 * 1024;
 
-    internal static void ValidateReceipt(byte[] bytes, string buildId, string version, long? installedSequence = null)
+    internal static void ValidateReceipt(byte[] bytes, string buildId, string version, long? installedSequence = null, long? installedSecuritySequence = null)
     {
         if (bytes.Length is < 1 or > MaximumReceiptBytes) throw Invalid();
         using var json = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 8 });
@@ -16,7 +16,7 @@ internal static class NativeDeploymentIdentity
         if (root.ValueKind != JsonValueKind.Object) throw Invalid();
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in root.EnumerateObject())
-            if (!names.Add(property.Name) || property.Name is not ("schemaVersion" or "version" or "buildId" or "files" or "dataSchemaVersion" or "sequence")) throw Invalid();
+            if (!names.Add(property.Name) || property.Name is not ("schemaVersion" or "version" or "buildId" or "files" or "dataSchemaVersion" or "sequence" or "securitySequence")) throw Invalid();
         if (!new[] { "schemaVersion", "version", "buildId", "files" }.All(names.Contains) ||
             root.GetProperty("schemaVersion").ValueKind != JsonValueKind.Number ||
             !root.GetProperty("schemaVersion").TryGetInt32(out int schema) || schema != 1 ||
@@ -30,6 +30,10 @@ internal static class NativeDeploymentIdentity
         if (root.TryGetProperty("sequence", out var revision) &&
             (revision.ValueKind != JsonValueKind.Number || !revision.TryGetInt64(out sequence) || sequence < 0)) throw Invalid();
         if (installedSequence is long expected && sequence != expected) throw Invalid();
+        long securitySequence = sequence;
+        if (root.TryGetProperty("securitySequence", out var security) &&
+            (security.ValueKind != JsonValueKind.Number || !security.TryGetInt64(out securitySequence) || securitySequence <= 0)) throw Invalid();
+        if (installedSecuritySequence is long expectedSecurity && securitySequence != expectedSecurity) throw Invalid();
     }
 
     private static IOException Invalid() => new("RUNTIME_NATIVE_INSTALLATION_IDENTITY_INVALID");

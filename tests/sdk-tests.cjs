@@ -232,8 +232,9 @@ test("T03 schema and TypeScript cover the same method and event names", () => {
   assert.deepEqual(messages.$defs.profile.required, ["appScopedUserId", "displayName", "avatarUrl", "isCached"]);
 });
 
-test("SDK 0.4 network status reports only OS link availability", async () => {
-  const f = fixture(); assert.equal(f.sdk.version, "0.4.0"); assert.equal(f.sdk.protocolVersion, 1);
+test("SDK network status reports only OS link availability", async () => {
+  const f = fixture(); const branding = fs.readFileSync(path.join(__dirname, "../build/Brand.props"), "utf8");
+  assert.equal(f.sdk.version, branding.match(/<AutumnVersion\b[^>]*>([^<]+)<\/AutumnVersion>/)[1]); assert.equal(f.sdk.protocolVersion, 1);
   const p = f.sdk.request("network.getStatus"); f.ok(0, { available: true, internetAccess: "unknown" });
   assert.equal((await p).internetAccess, "unknown");
   const invalid = f.sdk.request("network.getStatus"); f.ok(1, { available: true, internetAccess: "verified" });

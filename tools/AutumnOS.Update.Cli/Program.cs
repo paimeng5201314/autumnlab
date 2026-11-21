@@ -77,7 +77,7 @@ try
     else if (args[0] is "prepare" or "prepare-draft")
     {
         bool draft = args[0] == "prepare-draft";
-        AllowOnly("source", "output", "version", "build-id", "channel", "sequence", "valid-days", "key-id", "root-version", "release-id", "asset-id", "release-tag", "minimum-updater-version", "previous-manifest");
+        AllowOnly("source", "output", "version", "build-id", "channel", "sequence", "security-sequence", "valid-days", "key-id", "root-version", "release-id", "asset-id", "release-tag", "minimum-updater-version", "previous-manifest");
         if (draft && (values.ContainsKey("release-id") || values.ContainsKey("asset-id"))) throw new ArgumentException("Drafts cannot claim GitHub asset identities.");
         string source = Path.GetFullPath(Get("source")), output = Path.GetFullPath(Get("output"));
         if (Directory.Exists(output)) throw new IOException("Output already exists; previous materials preserved.");
@@ -89,10 +89,15 @@ try
         string asset = "AutumnOS-" + Get("version").Replace('+', '_') + "-win-x64-payload.zip";
         var now = DateTimeOffset.UtcNow;
         // Validate all caller-controlled identity fields before constructing any output file.
-        var manifest = new UpdateManifest(1, Get("channel"), Get("version"), Get("build-id"), "win-x64", Optional("minimum-updater-version", UpdateService.UpdaterVersion), long.Parse(Get("sequence")), now,
+        string channel = Get("channel");
+        bool legacy = channel is "plus" or "meta";
+        if (legacy && values.ContainsKey("security-sequence"))
+            throw new ArgumentException("Legacy manifests use a single sequence.");
+        long? securitySequence = legacy ? null : long.Parse(Get("security-sequence"), System.Globalization.CultureInfo.InvariantCulture);
+        var manifest = new UpdateManifest(legacy ? 1 : 2, channel, Get("version"), Get("build-id"), "win-x64", Optional("minimum-updater-version", UpdateService.UpdaterVersion), long.Parse(Get("sequence")), now,
             now.AddDays(int.Parse(Optional("valid-days", "7"))), Get("key-id"), int.Parse(Optional("root-version", "1")),
             new(asset, 1, new string('0', 64), draft ? 1 : long.Parse(Get("release-id")), draft ? 1 : long.Parse(Get("asset-id"))), files, removed, new(1, 1, true),
-            ReleaseTag: values.GetValueOrDefault("release-tag"));
+            ReleaseTag: values.GetValueOrDefault("release-tag"), SecuritySequence: securitySequence);
         UpdateManifestCodec.Validate(manifest);
         UpdatePaths.EnsureNoReparsePoints(output); Directory.CreateDirectory(output);
         string payload = Path.Combine(output, asset);
@@ -186,7 +191,7 @@ try
         var manifest = UpdateSignature.Verify(File.ReadAllBytes(Get("manifest")), File.ReadAllBytes(Get("signature")), trust, DateTimeOffset.UtcNow, long.Parse(Optional("minimum-sequence", "0")));
         await UpdatePayload.VerifyAsync(Get("payload"), manifest);
         Console.WriteLine(JsonSerializer.Serialize(new { status = "passed", manifest.Version, manifest.BuildId, manifest.ReleaseTag,
-            manifest.MinimumUpdaterVersion, manifest.Payload.ReleaseId, manifest.Payload.AssetId, trust_purpose = trust.Document.Purpose }));
+            manifest.MinimumUpdaterVersion, manifest.Sequence, manifest.SecuritySequence, manifest.Payload.ReleaseId, manifest.Payload.AssetId, trust_purpose = trust.Document.Purpose }));
     }
     else throw new ArgumentException("Unknown command.");
     return 0;

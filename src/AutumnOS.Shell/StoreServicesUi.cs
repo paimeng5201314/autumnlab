@@ -46,7 +46,7 @@ public sealed partial class MainWindow
                 if (lifetime.IsCancellationRequested) return;
                 if (changed.Application is { IsInstalled: true } app) ObserveStoreInstall(app);
                 else observedStoreInstalls.Remove(changed.AppId);
-                installedSample = applicationInstaller.Find("cn.labchronicles.elementpairs")?.Package;
+                installedSample = applicationInstaller.Find("cn.labchronicles.elementpairs") is { Source.Kind: "bundled" } sample ? sample.Package : null;
                 BuildAppEntries(); RefreshPermissionsUi();
                 if (storeSection == "installed") RenderInstalledApplications();
             });
@@ -76,7 +76,7 @@ public sealed partial class MainWindow
         try
         {
             nextInstaller = new(dataRoot, nextDownloads, applicationInstaller!, test);
-            nextCatalog = new GitHubStoreCatalog(Path.Combine(dataRoot, "Cache", "GitHubStore"), BrandInfo.Version, "0.4.0", transport);
+            nextCatalog = new GitHubStoreCatalog(Path.Combine(dataRoot, "Cache", "GitHubStore"), BrandInfo.Version, BrandInfo.Version, transport);
         }
         catch { nextDownloads.Dispose(); throw; }
         storeQuery?.Cancel(); storeRevision++; RetireStoreDownloads(); approvedDownloadInstalls.Clear();

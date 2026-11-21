@@ -15,15 +15,15 @@ public static class BrandInfo
     public static string Version => Metadata("SemanticVersion");
     public static string DisplayVersion => Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
     public static string BuildId => Metadata("BuildId");
-    public static long UpdateSequence
+    public static string ReleaseChannel => Metadata("ReleaseChannel");
+    public static long UpdateSequence => Sequence("UpdateSequence") ?? 0;
+    public static long SecuritySequence => Sequence("SecuritySequence") ?? UpdateSequence;
+    private static long? Sequence(string key)
     {
-        get
-        {
-            string? value = Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().SingleOrDefault(x => x.Key == "UpdateSequence")?.Value;
-            if (value is null) return 0; // Historical builds did not declare a revision.
-            return long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var sequence)
-                ? sequence : throw new InvalidDataException("UPDATE_BUILD_SEQUENCE_INVALID");
-        }
+        string? value = Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().SingleOrDefault(x => x.Key == key)?.Value;
+        if (value is null) return null;
+        return long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var sequence)
+            ? sequence : throw new InvalidDataException("UPDATE_BUILD_SEQUENCE_INVALID");
     }
     public static string SourceSnapshotId => Metadata("SourceSnapshotId");
     private static string Metadata(string key) => Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().Single(x => x.Key == key).Value!;

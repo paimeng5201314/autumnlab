@@ -210,6 +210,48 @@ try {
     $rejected = Invoke-FixtureTool @('verify','--manifest',$changedManifestPath,'--signature',$signature,'--trust',$public,'--payload',$payload) 2
     Assert-Case 'verification_rejects_modified_signed_manifest_bytes' ($rejected.ErrorCode -ceq 'UPDATE_SIGNATURE_INVALID')
 
+    $phase = 'versioned_channel_signing'
+    foreach ($releaseFixture in @(
+        @{version='1.0.1';channel='v1.0.1';security=7},
+        @{version='1.0.2';channel='metav1.0.2';security=8}
+    )) {
+        $tag = $releaseFixture.channel
+        $floor = [string]$releaseFixture.security
+        $versionedDirectory = Join-Path $fixture $tag
+        $draftResult = (Invoke-FixtureTool @('prepare-draft','--source',$source,'--output',$versionedDirectory,'--version',$releaseFixture.version,
+            '--build-id',('owned-'+$tag),'--channel',$tag,'--release-tag',$tag,'--sequence','1','--security-sequence',$floor,'--key-id',$keyId)).Text | ConvertFrom-Json
+        $versionedDraft = Join-Path $versionedDirectory 'autumn.update.draft.json'
+        $versionedManifest = Join-Path $versionedDirectory 'autumn.update.json'
+        $versionedSignature = Join-Path $versionedDirectory 'autumn.update.sig'
+        $versionedPayload = [string]$draftResult.payload
+        $invalidBinding = Join-Path $versionedDirectory 'must-not-bind-other-tag.json'
+        $mismatch = Invoke-FixtureTool @('bind-release','--manifest',$versionedDraft,'--payload',$versionedPayload,'--output',$invalidBinding,
+            '--release-id','910002','--asset-id','920002','--release-tag','v9.9.9') 2
+        Assert-Case ($tag+'.requires_exact_signed_channel_and_tag') ($mismatch.ErrorCode -ceq 'UPDATE_CHANNEL_VERSION_MISMATCH' -and -not (Test-Path -LiteralPath $invalidBinding))
+        $null = Invoke-FixtureTool @('bind-release','--manifest',$versionedDraft,'--payload',$versionedPayload,'--output',$versionedManifest,
+            '--release-id','910002','--asset-id','920002','--release-tag',$tag)
+        $null = Invoke-FixtureTool @('sign-production','--manifest',$versionedManifest,'--private-directory',$privateDirectory,'--trust',$public,'--output',$versionedSignature)
+        $verifyArgs = @('verify','--manifest',$versionedManifest,'--signature',$versionedSignature,'--trust',$public,'--payload',$versionedPayload)
+        $confirmed = (Invoke-FixtureTool ($verifyArgs + @('--minimum-sequence',$floor))).Text | ConvertFrom-Json
+        $signed = Get-Content -LiteralPath $versionedManifest -Raw | ConvertFrom-Json
+        Assert-Case ($tag+'.verifies_revision_one_at_the_global_floor') ($confirmed.status -ceq 'passed' -and $confirmed.Version -ceq $releaseFixture.version -and
+            $signed.schemaVersion -eq 2 -and $signed.releaseTag -ceq $tag -and $signed.channel -ceq $tag -and
+            $confirmed.Sequence -eq 1 -and $confirmed.SecuritySequence -eq $releaseFixture.security -and $confirmed.MinimumUpdaterVersion -ceq '1.3.0')
+        $replay = Invoke-FixtureTool ($verifyArgs + @('--minimum-sequence',[string]($releaseFixture.security+1))) 2
+        Assert-Case ($tag+'.rejects_replay_below_global_floor') ($replay.ErrorCode -ceq 'UPDATE_METADATA_REPLAY')
+        $signedBytes = [IO.File]::ReadAllText($versionedManifest)
+        foreach ($field in @('sequence','securitySequence')) {
+            $oldValue = if ($field -ceq 'sequence') { '1' } else { $floor }
+            $fieldPattern = '"' + $field + '": ' + $oldValue + '(?=\s*[,}])'
+            $pattern = [regex]::new($fieldPattern)
+            if ($pattern.Matches($signedBytes).Count -ne 1) { throw "Missing signed fixture field $field." }
+            $tampered = Join-Path $versionedDirectory ('tampered-'+$field+'.json')
+            [IO.File]::WriteAllText($tampered,$pattern.Replace($signedBytes,('"'+$field+'": 99')),[Text.UTF8Encoding]::new($false))
+            $rejectedTampering = Invoke-FixtureTool @('verify','--manifest',$tampered,'--signature',$versionedSignature,'--trust',$public,'--payload',$versionedPayload) 2
+            Assert-Case ($tag+'.authenticates_'+$field) ($rejectedTampering.ErrorCode -ceq 'UPDATE_SIGNATURE_INVALID')
+        }
+    }
+
     $phase = 'prepared_file_table'
     $expectedFiles = @($binding.files)
     function Copy-OwnedFileTable {
@@ -286,7 +328,7 @@ try {
         kind='real_local_update_CLI_synthetic_inert_payload_and_owned_DPAPI_key'
         total=$checks.Count;failed=@($checks|Where-Object status -eq 'failed').Count;results=$checks;commands=$commands
         tool_assemblies=$assemblies;fixture_directory=$fixture;private_key_material_recorded=$false;private_fixture_cleanup=$cleanup
-        identifiers='910001/920001 are synthetic test identities, never contacted or published'
+        identifiers='910001/920001 and 910002/920002 are synthetic test identities, never contacted or published'
         live_github='not_run';GUI='not_run';Windows_Authenticode='not_run';real_production_key_used=$false;uploaded=$false
     } | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $ReportPath -Encoding utf8NoBOM
     Pop-Location

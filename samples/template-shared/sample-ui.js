@@ -54,7 +54,7 @@
       on("appearance.changed", value => { appearanceRevision++; appearance = value; paint(); });
       try {
         capabilities = await request("platform.getCapabilities");
-        text("capabilities", "SDK " + sdk.version + " / 协议 " + capabilities.protocolVersion + " / " + capabilities.accountMode + " / " + capabilities.capabilities.join(", "));
+        text("capabilities", "SDK v" + sdk.version + " / 协议 " + capabilities.protocolVersion + " / " + capabilities.accountMode + " / " + capabilities.capabilities.join(", "));
         const before = revision, current = await request("lifecycle.getState");
         if (before === revision) lifecycle(current.state);
         const beforeAppearance = appearanceRevision;

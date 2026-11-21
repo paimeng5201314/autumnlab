@@ -71,7 +71,7 @@
         "X06"
       ],
       "conditions": [
-        "目标win-x64及Windows 10 22H2/Windows 11",
+        "目标 win-x64，支持 Windows 10 22H2、Windows 11 与 Windows Server 2022 桌面体验（build 20348）",
         "锁定依赖",
         "记录实际系统和SDK版本"
       ],

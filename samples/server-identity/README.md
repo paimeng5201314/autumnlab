@@ -16,7 +16,7 @@ Lab Chronicles AutumnOS · 制作人：派蒙。仅本地运行，没有预设�
 
 ## 从交付套件启动
 
-适用 AutumnOS 0.5.1：交付目录 `Developer/BackendIdentity/server/` 包含自包含 `AutumnOS.ServerIdentity.Sample.exe` 与全部相邻运行时文件，不依赖工作区或预装 .NET SDK。先按交付 `Developer/BackendIdentity/client/README.md` 建立并填写仅含真实公开登记值的 `config.local.json`，再在 server 目录的独立 PowerShell 中运行：
+适用 AutumnOS v1.0.1：交付目录 `Developer/BackendIdentity/server/` 包含自包含 `AutumnOS.ServerIdentity.Sample.exe` 与全部相邻运行时文件，不依赖工作区或预装 .NET SDK。先按交付 `Developer/BackendIdentity/client/README.md` 建立并填写仅含真实公开登记值的 `config.local.json`，再在 server 目录的独立 PowerShell 中运行：
 
 ```powershell
 $config = Get-Content -LiteralPath ../client/config.local.json -Raw | ConvertFrom-Json

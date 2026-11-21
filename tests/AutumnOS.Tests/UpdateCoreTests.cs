@@ -14,6 +14,42 @@ internal static class UpdateCoreTests
     private static readonly DateTimeOffset Now = new(2026, 10, 2, 0, 0, 0, TimeSpan.Zero);
     internal static IEnumerable<(string Name, Action Run)> Cases()
     {
+        yield return ("update.versioned_release_preserves_global_watermark_across_restart", () => Run(async f =>
+        {
+            var release = f.Add("1.0.1", 1, minimumUpdater: "1.3.0", securitySequence: 7);
+            using (var client = f.Service(installedSequence: 6))
+            {
+                await client.CheckAsync(false);
+                var candidate = client.Snapshot.Candidate ?? throw new InvalidOperationException(client.Snapshot.ErrorCode);
+                Check(candidate.Tag == "v1.0.1" && candidate.Manifest.DisplayVersion == "v1.0.1" && candidate.Manifest.Sequence == 1);
+                client.ConfirmTarget(candidate);
+                await client.DownloadAndStageAsync();
+                Check(client.Snapshot.Staged?.Candidate.Manifest.EffectiveSecuritySequence == 7);
+            }
+            using (var resumed = f.Service(installedSequence: 6))
+                Check((await resumed.ValidateStagedForCommitAsync()).Candidate.Manifest.SecuritySequence == 7);
+            Reject(() => UpdateSignature.Verify(release.Bytes, release.Signature, Trust(), Now, 8), "UPDATE_METADATA_REPLAY");
+            Check(UpdateRevisionPolicy.CheckOrder(release.Manifest, "1.0.0", "old-build", 6, false, 7) == "UPDATE_SEQUENCE_REUSED");
+            Check(UpdateRevisionPolicy.CheckOrder(release.Manifest with { SecuritySequence = 8 }, "1.0.1", "other-build", 1, false, 7) == "UPDATE_SEQUENCE_REUSED");
+            Check(UpdateRevisionPolicy.CheckOrder(release.Manifest with { Sequence = 2, SecuritySequence = 8 }, "1.0.1", "other-build", 1, false, 7) is null);
+        }));
+        yield return ("update.versioned_release_binds_preview_channel_tag_and_security_fields", () => Run(async f =>
+        {
+            var preview = f.Add("1.0.2", 1, minimumUpdater: "1.3.0", securitySequence: 8, preview: true).Manifest;
+            using var client = f.Service(installedSequence: 6);
+            await client.CheckAsync(false);
+            Check(client.Snapshot.Candidate is null);
+            await client.CheckAsync(true);
+            Check(client.Snapshot.Candidate?.Tag == "metav1.0.2" && preview.IsPreview && preview.DisplayVersion == "v1.0.2");
+            client.SetPreviewEnabled(false);
+            Check(client.Snapshot.Candidate is null);
+            foreach (var invalid in new[] {
+                preview with { ReleaseTag = "v1.0.2" }, preview with { Channel = "meta" },
+                preview with { Version = "1.0.3" }, preview with { Version = "1.0.2-rc.1", ReleaseTag = "metav1.0.2-rc.1", Channel = "metav1.0.2-rc.1" },
+                preview with { SecuritySequence = null }, preview with { SecuritySequence = 0 }, preview with { MinimumUpdaterVersion = "1.2.0" },
+                preview with { SchemaVersion = 1, Channel = "plus" } })
+                Reject(() => UpdateManifestCodec.Serialize(invalid));
+        }));
         yield return ("update.signature_raw_bytes_pss_roundtrip", () => Run(async f =>
         {
             var pair = f.Add("1.1.0"); Check(UpdateSignature.Verify(pair.Bytes, pair.Signature, Trust(), Now).Version == "1.1.0");
@@ -469,13 +505,18 @@ internal static class UpdateCoreTests
         public Fixture() { Directory.CreateDirectory(Root); Downloads = new(Root, this, () => new(), hostUpdate: true); }
         public void Clear() { Releases.Clear(); Assets.Clear(); }
         public UpdateService Service(UpdateTrustStore? trust = null, string dataSuffix = "data", string currentVersion = "1.0.0", long installedSequence = 0, string installedBuild = "build-a") => new(Path.Combine(Root, dataSuffix), currentVersion, installedBuild, this, Downloads, trust ?? Trust(), () => CurrentTime, installedSequence: installedSequence);
-        public Signed Add(string version, long sequence = 1, string fault = "", string? tagOverride = null, string minimumUpdater = "1.0.0", long? releaseId = null, string? buildId = null, byte[]? signatureOverride = null)
+        public Signed Add(string version, long sequence = 1, string fault = "", string? tagOverride = null, string minimumUpdater = "1.0.0", long? releaseId = null, string? buildId = null, byte[]? signatureOverride = null, long? securitySequence = null, bool preview = false)
         {
             string channel = SemanticVersion.Parse(version).IsPrerelease ? "meta" : "plus", tag = tagOverride ?? channel + "-v" + version;
+            if (securitySequence.HasValue)
+            {
+                channel = (preview ? "metav" : "v") + version;
+                tag = tagOverride ?? channel;
+            }
             byte[] file = Encoding.UTF8.GetBytes("isolated unit bytes; never executable"), zip;
             using (MemoryStream memory = new()) { using (ZipArchive archive = new(memory, ZipArchiveMode.Create, true)) { var entry = archive.CreateEntry("AutumnOS.Client.exe"); using var output = entry.Open(); output.Write(file); } zip = memory.ToArray(); }
-            var manifest = new UpdateManifest(1, channel, version, buildId ?? "unit-build-" + version.Replace('+', '-'), "win-x64", minimumUpdater, sequence, Now.AddMinutes(-5), Now.AddDays(7), "test-key", 1,
-                new("payload.zip", zip.Length, Hash(zip), releaseId ?? sequence, sequence * 10 + 3), [new("AutumnOS.Client.exe", file.Length, Hash(file))], [], new(1, 1, true), ReleaseTag: tagOverride);
+            var manifest = new UpdateManifest(securitySequence.HasValue ? 2 : 1, channel, version, buildId ?? "unit-build-" + version.Replace('+', '-'), "win-x64", minimumUpdater, sequence, Now.AddMinutes(-5), Now.AddDays(7), "test-key", 1,
+                new("payload.zip", zip.Length, Hash(zip), releaseId ?? sequence, sequence * 10 + 3), [new("AutumnOS.Client.exe", file.Length, Hash(file))], [], new(1, 1, true), ReleaseTag: securitySequence.HasValue ? tag : tagOverride, SecuritySequence: securitySequence);
             byte[] bytes = UpdateManifestCodec.Serialize(manifest), signature = signatureOverride ?? UpdateSignature.Create(bytes, SigningKey.Value, "test-key", 1);
             Assets[tag + "/autumn.update.json"] = bytes; Assets[tag + "/autumn.update.sig"] = signature; Assets[tag + "/payload.zip"] = zip;
             object Asset(string name, byte[] content, long id) => new { id, name, size = content.Length + (fault == "size" && name == "payload.zip" ? 1 : 0), browser_download_url = "https://github.com/" + (fault == "source" ? "foreign/repo" : UpdateService.Repository) + "/releases/download/" + tag + "/" + name };
@@ -492,7 +533,7 @@ internal static class UpdateCoreTests
                 Assets[tag + "/AutumnOS.exe"] = executable; Assets[tag + "/SHA256SUMS"] = sums;
                 releaseAssets = [Asset("AutumnOS.exe", executable, sequence * 10 + 4), Asset("SHA256SUMS", sums, sequence * 10 + 5)];
             }
-            Releases.Add(new { id = (releaseId ?? sequence) + (fault == "release-id" ? 1 : 0), draft = false, tag_name = tag, prerelease = fault == "prerelease" || channel == "meta", published_at = "2020-01-01T00:00:00Z", body = "unit metadata", assets = releaseAssets });
+            Releases.Add(new { id = (releaseId ?? sequence) + (fault == "release-id" ? 1 : 0), draft = false, tag_name = tag, prerelease = fault == "prerelease" || manifest.IsPreview, published_at = "2020-01-01T00:00:00Z", body = "unit metadata", assets = releaseAssets });
             return new(manifest, bytes, signature, zip);
         }
         public string SavePayload(Signed signed) { string path = Path.Combine(Root, "payload.zip"); File.WriteAllBytes(path, signed.Zip); return path; }

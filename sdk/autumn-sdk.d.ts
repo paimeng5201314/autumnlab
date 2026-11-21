@@ -1,4 +1,4 @@
-/** AutumnOS SDK 0.4.0 · 制作人：派蒙. Protocol 1 remains compatible with T01/T02. */
+/** AutumnOS SDK v1.0.1 · 制作人：派蒙. Protocol 1 remains compatible with T01/T02. */
 export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 export type LifecycleState = "starting" | "foreground" | "background" | "suspended" | "closing" | "closed" | "crashed";
 export interface AutumnError {
@@ -106,7 +106,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 export interface AutumnSdk {
-  readonly version: "0.4.0"; readonly protocolVersion: 1;
+  readonly version: "1.0.1"; readonly protocolVersion: 1;
   request<M extends keyof SdkMethods>(method: M, params: SdkMethods[M]["params"], options?: RequestOptions): Promise<SdkMethods[M]["result"]>;
   request(method: "platform.getCapabilities", params?: Record<string, never>, options?: RequestOptions): Promise<Capabilities>;
   request(method: "lifecycle.getState", params?: Record<string, never>, options?: RequestOptions): Promise<LifecycleSnapshot>;

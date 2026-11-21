@@ -1,6 +1,6 @@
 # backend-identity：复用独立身份服务器
 
-适用 AutumnOS 0.5.1 系列，SDK 0.3.0、应用消息协议 1；制作人：派蒙。这是第五类样例的入口，不复制两套会漂移的身份实现。
+适用 AutumnOS 和 SDK v1.0.1、应用消息协议 1；制作人：派蒙。这是第五类样例的入口，不复制两套会漂移的身份实现。
 
 实际服务器在 `samples/server-identity/`，机器合同是其中的 `openapi.json`；实际系统浏览器/PKCE调用方在 `samples/native-identity-client/`。开发者包的对应位置为 `BackendIdentity/server/`、`BackendIdentity/client/`，源码位于 `BackendIdentity/Sources/`。它们是独立进程示例，不能装进.autumn、由应用启动EXE或假装SDK已经提供服务端委托凭据。
 
@@ -12,4 +12,4 @@
 
 正例：实际登记完成后，在系统浏览器授权，客户端通过 Authorization 请求 `/v1/me`，然后获取并消费一次挑战。负例由已有 `ServerIdentityTests` 的临时 RSA/ECDSA fixture验证裸ID、伪造签名、过期、错误audience/client、缺scope、跨账号/重复/过期挑战。合同工具另外使用真实 JSON Schema/OpenAPI验证器校验响应正反例。这些是受控测试，不算真实Logto联调或外部新人验收。
 
-完整版本入口位于开发者包 `Docs/0.5.1/README.md`；干净目录复现按其中 `first-app.md` 执行。无独立登记时前四个内部样例仍可使用游客数据运行；identity资料成功支路及真实后端往返分别记 blocked/not_run。
+完整版本入口位于开发者包 `Docs/v1.0.1/README.md`；干净目录复现按其中 `first-app.md` 执行。无独立登记时前四个内部样例仍可使用游客数据运行；identity资料成功支路及真实后端往返分别记 blocked/not_run。

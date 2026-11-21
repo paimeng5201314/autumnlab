@@ -1,8 +1,8 @@
-# SDK 0.4 网络接口
+# SDK v1.0.1 网络接口
 
 制作人：派蒙。协议仍为1。本文说明当前实现合同；实际执行结果按构建ID记录，不代表完整隔离或Win10/11验收通过。
 
-`platform.getCapabilities().capabilities` 包含 `network` 时，宿主提供以下接口。旧 SDK 0.3 和旧宿主未实现这些接口，应用必须检测能力。`networkSandboxVerified` 仍只表示当前浏览器实例的原生网络策略证明，与SDK代理或互联网可达性分别判断。
+`platform.getCapabilities().capabilities` 包含 `network` 时，宿主提供以下接口。应用应检测宿主实际提供的能力。`networkSandboxVerified` 仍只表示当前浏览器实例的原生网络策略证明，与SDK代理或互联网可达性分别判断。
 
 ## 清单与授权
 

@@ -7,7 +7,7 @@ Both modes write a new report under artifacts/builds/<BuildId>. No save contents
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^T06-[A-Za-z0-9_.-]{1,85}$')][string]$BuildId,
+    [Parameter(Mandatory)][ValidatePattern('^(?:v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}|T06-[A-Za-z0-9_.-]{1,85})$')][string]$BuildId,
     [ValidateSet('CaptureAfterSave','Verify')][string]$Mode='Verify',
     [ValidatePattern('^[a-f0-9]{32}$')][string]$CheckpointId
 )
@@ -100,7 +100,8 @@ try {
     $os=Get-CimInstance Win32_OperatingSystem
     $report.os_build=[int]$os.BuildNumber
     $report.os_product_type=[int]$os.ProductType
-    if($os.ProductType -ne 1 -or [int]$os.BuildNumber -lt 19045){$report.reason='TARGET_CLIENT_EVIDENCE_REQUIRED';return}
+    $report.installation_type=Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name InstallationType -ErrorAction SilentlyContinue
+    if(!(& (Join-Path $PSScriptRoot 'Test-NativeDesktopTarget.ps1') -ProductType $os.ProductType -BuildNumber $os.BuildNumber -InstallationType $report.installation_type)){$report.reason='TARGET_DESKTOP_EVIDENCE_REQUIRED';return}
     $data=Plain (Join-Path $root 'AutumnOS_Data')
     $log=Plain (Join-Path $data 'Logs/runtime-events.jsonl')
     if(!(Test-Path -LiteralPath $log -PathType Leaf)){$report.reason='NO_RUNTIME_EVENTS';return}
@@ -145,7 +146,7 @@ try {
             $trialPath=Plain (Join-Path $directory.FullName 'acceptance.json')
             if(!(Test-Path -LiteralPath $trialPath -PathType Leaf)){continue}
             $trial=JsonRecord $trialPath
-            if($trial.mode -ne 'ClientTrial' -or $trial.build_id -cne $BuildId -or $trial.source_snapshot_id -cne $build.source_snapshot_id -or
+            if($trial.mode -notin @('DesktopTrial','ClientTrial') -or $trial.build_id -cne $BuildId -or $trial.source_snapshot_id -cne $build.source_snapshot_id -or
                 $trial.tested_executable -ne $prepared.executable -or $trial.native_first_frame -ne 'passed' -or
                 !@($trial.runtime_evidence|Where-Object {$_.instanceId -eq $first -and $_.packageSha256 -ceq $packageSha -and $_.eventName -eq 'native_first_frame'}).Count){continue}
             $png=Bytes (Join-Path $directory.FullName '01-private-first-frame.png') 33554432

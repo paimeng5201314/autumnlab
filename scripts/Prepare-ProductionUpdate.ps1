@@ -1,17 +1,19 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string]$BuildId,
-    [Parameter(Mandatory)][ValidateSet('plus','meta')][string]$Channel,
+    [Parameter(Mandatory)][string]$Channel,
     [Parameter(Mandatory)][string]$ReleaseTag,
     [Parameter(Mandatory)][ValidateRange(1,[long]::MaxValue)][long]$Sequence,[switch]$ShareVerifiedInputs)
 . "$PSScriptRoot/Common.ps1"
 . "$PSScriptRoot/UpdatePreparationFiles.ps1"
-if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$'){throw 'Tracked T06 build required.'}
+if($BuildId -cnotmatch '^v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)-[0-9]{8}$'){throw 'Expected vX.Y.Z-yyyyMMdd.'}
 $evidence=Join-Path $ProjectRoot "artifacts/builds/$BuildId"
 $build=Get-Content -LiteralPath (Join-Path $evidence 'build-result.json') -Raw|ConvertFrom-Json
 Assert-ProductionUpdateBuild -Build $build
 $package=Get-Content -LiteralPath (Join-Path $evidence 'package-prepared.json') -Raw|ConvertFrom-Json
 if($build.update_sequence -isnot [long] -or $build.update_sequence -ne $Sequence -or $package.update_sequence -ne $Sequence -or
-    $build.release_label -cne $ReleaseTag){throw 'The requested sequence and release tag must match the factory build and package.'}
+    $build.release_label -cne ('v'+$build.version) -or $ReleaseTag -cnotin @(('v'+$build.version),('metav'+$build.version)) -or
+    $Channel -cne $ReleaseTag -or $build.channel -cne $Channel -or $build.release_tag -cne $ReleaseTag -or
+    $build.security_sequence -isnot [long] -or $build.security_sequence -le 0 -or $package.security_sequence -ne $build.security_sequence){throw 'Release identity and both sequence fields must match the factory build and package.'}
 $tests=Get-Content -LiteralPath (Join-Path $evidence 'tests.json') -Raw|ConvertFrom-Json
 if($build.status -ne 'passed' -or $build.test_build -or $tests.status -ne 'passed' -or $package.status -cne 'prepared' -or
     $package.build_id -cne $BuildId -or $tests.build_id -cne $BuildId -or
@@ -28,7 +30,7 @@ $snapshot=& "$PSScriptRoot/New-SourceSnapshot.ps1" -OutputDirectory $verificatio
 if($snapshot -cne $build.source_snapshot_id){throw 'Source changed after build.'}
 $source=Split-Path $package.executable -Parent
 $receipt=Get-Content -LiteralPath (Join-Path $source 'autumn.install.json') -Raw|ConvertFrom-Json
-if($receipt.sequence -isnot [long] -or $receipt.sequence -ne $Sequence -or $receipt.buildId -cne $BuildId -or $receipt.version -cne $build.version){throw 'Installed build receipt must carry the exact production revision.'}
+if($receipt.sequence -isnot [long] -or $receipt.sequence -ne $Sequence -or $receipt.securitySequence -ne $build.security_sequence -or $receipt.buildId -cne $BuildId -or $receipt.version -cne $build.version){throw 'Installed build receipt must carry the exact production revision.'}
 $files=@(Get-Content -LiteralPath (Join-Path $evidence 'delivery-hashes.json') -Raw|ConvertFrom-Json)
 foreach($file in $files){
     if([IO.Path]::IsPathRooted($file.path) -or $file.path.Contains('\') -or $file.path.Contains(':') -or
@@ -73,7 +75,7 @@ Push-Location $ProjectRoot
 try{
     Invoke-Dotnet -Arguments @('tools/AutumnOS.Update.Cli/bin/x64/Release/net10.0/win-x64/AutumnOS.Update.Cli.dll','prepare-draft',
         '--source',$staging,'--output',$output,'--version',$build.version,'--build-id',$BuildId,'--channel',$Channel,
-        '--sequence',"$Sequence",'--key-id',$trust.keys[0].keyId,'--root-version',"$($trust.version)",'--release-tag',$ReleaseTag) -LogPath (Join-Path $verification 'prepare.log')
+        '--sequence',"$Sequence",'--security-sequence',"$($build.security_sequence)",'--key-id',$trust.keys[0].keyId,'--root-version',"$($trust.version)",'--release-tag',$ReleaseTag) -LogPath (Join-Path $verification 'prepare.log')
 }finally{Pop-Location}
 $draft=Get-Content -LiteralPath (Join-Path $output 'autumn.update.draft.json') -Raw|ConvertFrom-Json
 if($draft.payload.releaseId -ne 0 -or $draft.payload.assetId -ne 0 -or (Test-Path -LiteralPath (Join-Path $output 'autumn.update.sig'))){throw 'Draft must not claim published or signed status.'}
@@ -86,17 +88,18 @@ $metadata=@{}
 foreach($attribute in $updateAssembly.GetCustomAttributesData()){
     if($attribute.AttributeType.Name -eq 'AssemblyMetadataAttribute'){$metadata[$attribute.ConstructorArguments[0].Value]=$attribute.ConstructorArguments[1].Value}
 }
-if($metadata.BuildId -cne $BuildId -or $metadata.SourceSnapshotId -cne $snapshot -or $metadata.UpdateSequence -cne [string]$Sequence){throw 'Update policy assembly identity/sequence mismatch.'}
+if($metadata.BuildId -cne $BuildId -or $metadata.SourceSnapshotId -cne $snapshot -or $metadata.UpdateSequence -cne [string]$Sequence -or $metadata.SecuritySequence -cne [string]$build.security_sequence){throw 'Update policy assembly identity/sequence mismatch.'}
 $isExcluded=$updateAssembly.GetType('AutumnOS.Update.UpdatePaths',$true).GetMethod('IsStableOrPrivate')
 $expectedManaged=@($files|Where-Object {-not $isExcluded.Invoke($null,@([string]$_.path))})
 Assert-UpdatePreparationFileTable -ExpectedFiles $expectedManaged -ActualFiles @($draft.files)
-$report=[ordered]@{status='prepared_unbound_unsigned';build_id=$BuildId;source_snapshot_id=$snapshot;channel=$Channel;tag=$ReleaseTag;sequence=$Sequence;
+$report=[ordered]@{status='prepared_unbound_unsigned';build_id=$BuildId;source_snapshot_id=$snapshot;channel=$Channel;tag=$ReleaseTag;sequence=$Sequence;security_sequence=$build.security_sequence;
     production_public_key_id=$trust.keys[0].keyId;production_trust_sha256=(Get-FileHash -LiteralPath $trustFile).Hash.ToLowerInvariant();
     draft=(Join-Path $output 'autumn.update.draft.json');payload=(Join-Path $output $draft.payload.asset);payload_sha256=$draft.payload.sha256;
     release_id='not_assigned';asset_id='not_assigned';signature='not_created';payload_verification='passed';delivery_file_table_verification='passed';managed_files=$expectedManaged.Count;
     GUI_upgrade='not_run';public_release=$false;uploaded=$false;private_key_included=$false;
     next_step='After separately authorized release upload, bind real release/asset IDs, sign-production, verify and publish metadata. Do not upload the draft as autumn.update.json.'}
 $report.shared_verified_staging_inputs=[bool]$ShareVerifiedInputs
+$report.github_release = & "$PSScriptRoot/Get-GitHubReleaseMetadata.ps1" -Version $build.version -Channel $Channel
 $report|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $output 'preparation.json') -Encoding utf8NoBOM
 $report|ConvertTo-Json -Depth 6
 } finally {foreach($lease in $readLeases){$lease.Dispose()}}

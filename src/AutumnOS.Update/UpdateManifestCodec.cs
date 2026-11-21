@@ -21,7 +21,16 @@ public static class UpdateManifestCodec
     public static byte[] Serialize(UpdateManifest manifest)
     { Validate(manifest); return JsonSerializer.SerializeToUtf8Bytes(manifest, JsonOptions); }
     public static UpdateManifest Parse(byte[] bytes)
-    { var manifest = ParseStrict<UpdateManifest>(bytes, MaximumManifestBytes); Validate(manifest); return manifest; }
+    {
+        var manifest = ParseStrict<UpdateManifest>(bytes, MaximumManifestBytes);
+        Validate(manifest);
+        if (manifest.SchemaVersion == 1)
+        {
+            using var document = JsonDocument.Parse(bytes);
+            if (document.RootElement.TryGetProperty("securitySequence", out _)) throw new UpdateException("UPDATE_METADATA_INVALID");
+        }
+        return manifest;
+    }
     public static T ParseStrict<T>(byte[] bytes, int maximum)
     {
         if (bytes.Length == 0 || bytes.Length > maximum || bytes.AsSpan().StartsWith(new byte[] { 0xef, 0xbb, 0xbf }))
@@ -48,13 +57,25 @@ public static class UpdateManifestCodec
     }
     public static void Validate(UpdateManifest m)
     {
-        if (m.SchemaVersion != 1) throw new UpdateException("UPDATE_SCHEMA_UNSUPPORTED");
+        if (m.SchemaVersion is not (1 or 2)) throw new UpdateException("UPDATE_SCHEMA_UNSUPPORTED");
         if (m.ProductId != "cn.labchronicles.autumnos" || m.Repository != UpdateService.Repository) throw new UpdateException("UPDATE_PRODUCT_SOURCE_MISMATCH");
         if (m.ReleaseTag is not null && (m.ReleaseTag.Length is < 1 or > 200 || m.ReleaseTag.Any(c => char.IsControl(c) || c is '/' or '\\')))
             throw new UpdateException("UPDATE_RELEASE_TAG_INVALID");
-        if (!SemanticVersion.TryParse(m.Version, out var version) || m.Channel is not ("plus" or "meta") ||
-            version!.IsPrerelease != (m.Channel == "meta")) throw new UpdateException("UPDATE_CHANNEL_VERSION_MISMATCH");
-        if (!SemanticVersion.TryParse(m.MinimumUpdaterVersion, out _) || m.TargetRid != "win-x64") throw new UpdateException("UPDATE_COMPATIBILITY_INVALID");
+        if (!SemanticVersion.TryParse(m.Version, out var version)) throw new UpdateException("UPDATE_CHANNEL_VERSION_MISMATCH");
+        if (!SemanticVersion.TryParse(m.MinimumUpdaterVersion, out var minimum) || m.TargetRid != "win-x64") throw new UpdateException("UPDATE_COMPATIBILITY_INVALID");
+        if (m.SchemaVersion == 1)
+        {
+            if (m.SecuritySequence.HasValue) throw new UpdateException("UPDATE_METADATA_INVALID");
+            if (m.Channel is not ("plus" or "meta") || version!.IsPrerelease != m.IsPreview) throw new UpdateException("UPDATE_CHANNEL_VERSION_MISMATCH");
+        }
+        else
+        {
+            if (m.SecuritySequence is null or < 1) throw new UpdateException("UPDATE_METADATA_INVALID");
+            if (version!.IsPrerelease || m.Version.Contains('+') || m.ReleaseTag != m.Channel || (m.Channel != "v" + m.Version && !m.IsPreview))
+                throw new UpdateException("UPDATE_CHANNEL_VERSION_MISMATCH");
+            if (minimum!.CompareTo(SemanticVersion.Parse(UpdateRevisionPolicy.SplitSequenceProtocolVersion)) < 0)
+                throw new UpdateException("UPDATE_COMPATIBILITY_INVALID");
+        }
         if (!Identifier(m.BuildId) || !Identifier(m.KeyId) || m.TrustRootVersion < 1 || m.Sequence < 1 ||
             m.IssuedAtUtc.Offset != TimeSpan.Zero || m.ExpiresAtUtc.Offset != TimeSpan.Zero ||
             m.ExpiresAtUtc <= m.IssuedAtUtc || m.ExpiresAtUtc - m.IssuedAtUtc > TimeSpan.FromDays(90)) throw new UpdateException("UPDATE_METADATA_INVALID");

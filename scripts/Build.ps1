@@ -1,28 +1,44 @@
 [CmdletBinding()]
-param([string]$BuildId = ('T06-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,6)),
-    [string]$BuildVersion, [string]$ReleaseLabel, [ValidateRange(0,9223372036854775807)][long]$UpdateSequence = 0,
+param([string]$BuildId, [string]$BuildVersion, [string]$ReleaseLabel, [string]$Channel,
+    [ValidateRange(0,9223372036854775807)][long]$UpdateSequence,
+    [ValidateRange(0,9223372036854775807)][long]$SecuritySequence,
     [string]$ProductionUpdateTrustFile, [string]$TestUpdateTrustFile, [string]$TestUpdateFeedFile, [switch]$UpdateHealthFault, [switch]$LocalIsolationAcceptance, [switch]$TemporaryPlatformAcceptance)
 . "$PSScriptRoot/Common.ps1"
 if(-not $ProductionUpdateTrustFile -and -not $TestUpdateTrustFile){
     $defaultUpdateTrust=Join-Path $ProjectRoot 'build/update-trust.production.json'
     if(Test-Path -LiteralPath $defaultUpdateTrust){$ProductionUpdateTrustFile=$defaultUpdateTrust}
 }
-[xml]$defaultBrand = Get-Content -LiteralPath (Join-Path $ProjectRoot 'build/Brand.props') -Raw
-if (-not $ReleaseLabel -and -not $TestUpdateTrustFile -and
-    (-not $BuildVersion -or $BuildVersion -eq $defaultBrand.SelectSingleNode('/Project/PropertyGroup/AutumnVersion').InnerText)) {
-    $ReleaseLabel = $defaultBrand.SelectSingleNode('/Project/PropertyGroup/AutumnReleaseLabel').InnerText
+$privateBuild = $TestUpdateTrustFile -or $LocalIsolationAcceptance
+if ($privateBuild) {
+    if (!$BuildId -or !$BuildVersion) { throw 'Supply an explicit build ID and version for the isolated test build.' }
+    if (!$ReleaseLabel) { $ReleaseLabel = $BuildVersion }
+    if (!$Channel) { $Channel = "v$BuildVersion" }
+    if (!$PSBoundParameters.ContainsKey('SecuritySequence')) { $SecuritySequence = $UpdateSequence }
+} else {
+    $identity = & "$PSScriptRoot/Get-ProductBuildIdentity.ps1" -BuildVersion $BuildVersion -BuildId $BuildId -ReleaseLabel $ReleaseLabel -Channel $Channel
+    $BuildVersion = $identity.Version
+    $ReleaseLabel = $identity.DisplayVersion
+    $BuildId = $identity.BuildId
+    $Channel = $identity.Channel
+    if (!$PSBoundParameters.ContainsKey('UpdateSequence')) { $UpdateSequence = $identity.UpdateSequence }
+    if (!$PSBoundParameters.ContainsKey('SecuritySequence')) { $SecuritySequence = $identity.SecuritySequence }
+    if ($UpdateSequence -lt 1 -or $SecuritySequence -lt 1) { throw 'Both production revision counters must be positive.' }
 }
 if ($BuildId -notmatch '^[A-Za-z0-9][A-Za-z0-9_.-]{0,90}$') { throw 'Invalid BuildId.' }
 Push-Location $ProjectRoot
 $reportDirectory = Join-Path $ProjectRoot "artifacts/builds/$BuildId"
 if (Test-Path -LiteralPath $reportDirectory) { Pop-Location; throw 'BuildId already exists. Use a new ID; previous evidence is immutable.' }
-New-Item -ItemType Directory -Force -Path $reportDirectory | Out-Null
-$report = [ordered]@{ build_id=$BuildId; task_id=$BuildId.Split('-')[0]; source_snapshot_id=$null; commit='not_applicable'; status='failed'; configuration='Release'; rid='win-x64'; sdk='10.0.401'; environment=[Environment]::OSVersion.VersionString; started_utc=[DateTimeOffset]::UtcNow.ToString('o'); product_tests='not_run'; output_path=$null }
+New-Item -ItemType Directory -Path $reportDirectory | Out-Null
+$report = [ordered]@{ build_id=$BuildId; task_id=$(if ($privateBuild) { $BuildId.Split('-')[0] } else { 'T06' }); source_snapshot_id=$null; commit='not_applicable'; status='failed'; configuration='Release'; rid='win-x64'; sdk='10.0.401'; environment=[Environment]::OSVersion.VersionString; started_utc=[DateTimeOffset]::UtcNow.ToString('o'); product_tests='not_run'; output_path=$null }
 try {
     if($ProductionUpdateTrustFile -and $TestUpdateTrustFile){throw 'Production and test trust roots cannot coexist.'}
     $extraInputs=@($ProductionUpdateTrustFile,$TestUpdateTrustFile,$TestUpdateFeedFile|Where-Object {$_})
-    $properties=@("-p:AutumnUpdateSequence=$($UpdateSequence.ToString([cultureinfo]::InvariantCulture))")
+    $properties=@("-p:AutumnUpdateSequence=$($UpdateSequence.ToString([cultureinfo]::InvariantCulture))",
+        "-p:AutumnSecuritySequence=$($SecuritySequence.ToString([cultureinfo]::InvariantCulture))", "-p:AutumnChannel=$Channel")
     $report.update_sequence=$UpdateSequence
+    $report.security_sequence=$SecuritySequence
+    $report.channel=$Channel
+    $report.release_tag=$Channel
     if($TemporaryPlatformAcceptance -and (!$LocalIsolationAcceptance -or !$BuildVersion -or $TestUpdateTrustFile -or $ReleaseLabel -notmatch 'platform-test')){
         throw 'Temporary platform acceptance requires a private isolation acceptance build, explicit version, normal trust and platform-test release label.'
     }
@@ -68,9 +84,7 @@ try {
     $report.status = 'passed'
     $report.output_path = 'src/AutumnOS.Shell/bin/x64/Release/net10.0-windows10.0.26100.0/win-x64/AutumnOS.Client.exe'
     $binaryDirectory = Join-Path $ProjectRoot (Split-Path $report.output_path)
-    [xml]$brand = Get-Content -LiteralPath 'build/Brand.props' -Raw
-    $version=if($BuildVersion){$BuildVersion}else{$brand.Project.PropertyGroup.AutumnVersion.InnerText}
-    if(-not $version){$version=[string]$brand.Project.PropertyGroup.AutumnVersion}
+    $version=$BuildVersion
     $report.version=$version
     $dependencyManifest = Get-Content -LiteralPath (Join-Path $binaryDirectory 'AutumnOS.Client.deps.json') -Raw | ConvertFrom-Json -AsHashtable
     if (-not $dependencyManifest.libraries.ContainsKey('AutumnOS.Client/' + $version)) {
@@ -84,7 +98,8 @@ try {
     }
     if ($metadata.BuildId -ne $BuildId -or $metadata.SourceSnapshotId -ne $snapshot -or
         $metadata.UpdateSequence -cne $UpdateSequence.ToString([cultureinfo]::InvariantCulture) -or
-        $metadata.SemanticVersion -cne $version) {
+        $metadata.SecuritySequence -cne $SecuritySequence.ToString([cultureinfo]::InvariantCulture) -or
+        $metadata.ReleaseChannel -cne $Channel -or $metadata.SemanticVersion -cne $version) {
         $report.status = 'failed'
         throw 'Output binary does not match the requested version, update sequence, build ID or source snapshot.'
     }

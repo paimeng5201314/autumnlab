@@ -7,7 +7,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
-if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$'){throw 'Tracked T06 build ID required.'}
+if($BuildId -notmatch '^(?:v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}|T06-[A-Za-z0-9_.-]{1,85})$'){throw 'Tracked T06 build ID required.'}
 $OutputDirectory=[IO.Path]::GetFullPath($OutputDirectory)
 if(Test-Path -LiteralPath $OutputDirectory){throw 'Review output already exists; previous review material is preserved.'}
 $buildRoot=Join-Path $root "artifacts/builds/$BuildId"

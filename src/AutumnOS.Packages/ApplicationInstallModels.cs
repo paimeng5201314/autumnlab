@@ -12,7 +12,7 @@ public sealed record PackageProvenance(long? ReleaseId = null, long? AssetId = n
     string? StoreContentSha = null, string? ReleaseCanonicalSha256 = null);
 public sealed record ExpectedPackageIdentity(PackageSource Source, string AppId, string Version, string Runtime,
     string Entry, string[] Permissions, string Sha256, long Bytes, int SaveFormatVersion = 1, PackageProvenance? Provenance = null);
-public enum InstallIntent { InstallOrUpdate, Repair, Downgrade }
+public enum InstallIntent { InstallOrUpdate, Repair, Downgrade, RefreshBundled }
 public sealed record InstalledApplication(string AppId, InstalledPackage Package, PackageSource Source,
     DateTimeOffset InstalledAt, string? PinnedVersion = null, bool AllowPreview = false, bool IsInstalled = true, PackageProvenance? Provenance = null);
 public sealed record ApplicationRegistryChange(string Kind, string AppId, InstalledApplication? Application);

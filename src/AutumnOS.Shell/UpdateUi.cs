@@ -24,7 +24,8 @@ public sealed partial class MainWindow
     private CancellationTokenSource? updateOperation;
     private ContentDialog? activeUpdateDialog;
     private bool loadingUpdateSettings, updateBusy, updateCommitBusy, updateDialogOpen, startupUpdateCheckFinished;
-    private string installedUpdateChannel = "渠道未验证（工程版本）";
+    private string installedUpdateChannel = BrandInfo.ReleaseChannel == "v" + BrandInfo.Version ? "稳定版" :
+        BrandInfo.ReleaseChannel == "metav" + BrandInfo.Version ? "预览版" : "渠道未验证（工程版本）";
     private bool installedUpdateChannelVerified;
     private DateTimeOffset nextInstalledChannelCheck;
     private readonly HashSet<WebAppHost> pendingResourceCleanup = [];
@@ -249,7 +250,7 @@ public sealed partial class MainWindow
     {
         if (updates is null || lifetime.IsCancellationRequested) return;
         var s = updates.Snapshot;
-        updateIdentity.Text = $"当前版本 {BrandInfo.DisplayVersion} · {installedUpdateChannel}\n构建 {BrandInfo.BuildId}\n更新渠道：{(s.PreviewEnabled ? "稳定版及预览版" : "稳定版")}" +
+        updateIdentity.Text = $"当前版本 {BrandInfo.DisplayVersion} · {installedUpdateChannel}\n发行渠道 {BrandInfo.ReleaseChannel} · 修订 {BrandInfo.UpdateSequence}\n构建 {BrandInfo.BuildId}\n更新渠道：{(s.PreviewEnabled ? "稳定版及预览版" : "稳定版")}" +
             (s.IsTestBuild ? "\n仅本地更新演练 · 测试信任根 / 隔离源" : "") +
             (s.LastCheckUtc is { } checkedAt ? $"\n上次检查 {checkedAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}" : "\n尚未检查") +
             (s.LastReleaseMetadataUtc is { } metadataAt ? $"\n上次读取发行记录 {metadataAt.ToLocalTime():yyyy-MM-dd HH:mm:ss} · {s.ReleasesExamined} 条" : "\n尚未成功读取发行记录") +
@@ -289,7 +290,7 @@ public sealed partial class MainWindow
         foreach (string warning in s.Warnings) AddReason(warning);
         updateStatus.Text = string.Join("\n", lines);
         AppendUpdateRecoveryStatus();
-        updateCandidate.Text = s.Candidate is { } candidate ? $"可用版本 {candidate.Manifest.Version} · {ReleaseChannel(candidate)}\n构建 {candidate.Manifest.BuildId} · 修订 {candidate.Manifest.Sequence}\n{candidate.Tag} · {candidate.Manifest.Payload.Bytes:N0} 字节" : "没有已验证的可安装候选。";
+        updateCandidate.Text = s.Candidate is { } candidate ? $"可用版本 {candidate.Manifest.DisplayVersion} · {ReleaseChannel(candidate)}\n构建 {candidate.Manifest.BuildId} · 修订 {candidate.Manifest.Sequence}\n{candidate.Tag} · {candidate.Manifest.Payload.Bytes:N0} 字节" : "没有已验证的可安装候选。";
         updatePin.Text = s.PinnedVersion is { } pinned ? $"已固定版本：{pinned}。每次启动仍检查，但不弹出常规升级提醒。" : "正在跟随更新渠道。";
         updateProgress.Value = s.TotalBytes > 0 ? Math.Min(100, 100d * s.BytesReceived / s.TotalBytes) : 0;
         bool available = !updateBusy && !updateCommitBusy && !updateDialogOpen;
@@ -324,7 +325,7 @@ public sealed partial class MainWindow
             if (AutumnOS.UpdateProtocol.UpdateFiles.Hash(manifestPath) != journal.ManifestSha256) return;
             var manifest = UpdateSignature.Verify(File.ReadAllBytes(manifestPath), File.ReadAllBytes(signaturePath), UpdateTrustStore.FromEmbedded(), DateTimeOffset.UtcNow);
             if (manifest.BuildId != BrandInfo.BuildId || manifest.Version != BrandInfo.Version) return;
-            installedUpdateChannel = manifest.Channel == "meta" ? "预览版" : "稳定版";
+            installedUpdateChannel = manifest.IsPreview ? "预览版" : "稳定版";
             installedUpdateChannelVerified = true;
             RenderUpdateState();
         }
@@ -360,7 +361,7 @@ public sealed partial class MainWindow
         updates?.Dispose();
     }
 
-    private static string ReleaseChannel(UpdateCandidate candidate) => candidate.Manifest.Channel == "meta" ? "预览版" : "稳定版";
+    private static string ReleaseChannel(UpdateCandidate candidate) => candidate.Manifest.IsPreview ? "预览版" : "稳定版";
     private static string SafeUpdateError(Exception error) => error switch
     {
         UpdateException update => UpdateReason(update.Code), DataStoreException storage => storage.Code,
@@ -409,6 +410,7 @@ public sealed partial class MainWindow
         "UPDATE_RELEASE_REMOVED" or "UPDATE_RELEASE_UNAVAILABLE" => "目标版本已撤回或不可用，请重新选择。",
         "UPDATE_ASSET_IDENTITY_MISMATCH" or "UPDATE_STAGED_METADATA_CHANGED" => "目标安装资产发生变化，需要重新检查并确认。",
         "UPDATE_METADATA_REPLAY" => "此版本未通过最低安全序列检查。",
+        "UPDATE_LEGACY_FULL_ENTRY_REQUIRED" => "目标版本使用旧更新协议。请退出程序、备份 AutumnOS_Data，并用该发行版的完整启动器手动切换。",
         "UPDATE_NO_COMPATIBLE_SIGNED_CANDIDATE" => "没有兼容且可信的候选；详情请查看版本列表。",
         "UPDATE_DATA_INCOMPATIBLE" or "UPDATE_ROLLBACK_DATA_INCOMPATIBLE" => "目标无法读取当前数据，且没有受支持的恢复路径。",
         "UPDATE_LATEST_NOT_FOUND" => "官方仓库尚未提供最新稳定发行版。",

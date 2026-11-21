@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "AutumnOS Independent Server Identity Example",
-    "version": "1.0.0",
-    "description": "制作人：派蒙。适用客户端0.5.1、SDK0.3.0。独立本地服务器，未声明生产部署或真实Logto登记通过。JWT验证签名、issuer、resource audience、client_id、iat/exp及scope；裸ID/宿主资料/宿主令牌不是凭据。请求不接受查询参数。所有响应Cache-Control:no-store、X-Content-Type-Options:nosniff。取消HTTP会取消密钥获取；不自动重试POST。"
+    "version": "1.0.1",
+    "description": "制作人：派蒙。适用客户端与 SDK v1.0.1。独立本地服务器，未声明生产部署或真实Logto登记通过。JWT验证签名、issuer、resource audience、client_id、iat/exp及scope；裸ID/宿主资料/宿主令牌不是凭据。请求不接受查询参数。所有响应Cache-Control:no-store、X-Content-Type-Options:nosniff。取消HTTP会取消密钥获取；不自动重试POST。"
   },
   "servers": [
     {

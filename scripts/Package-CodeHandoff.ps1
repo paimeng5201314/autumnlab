@@ -4,7 +4,7 @@ param([Parameter(Mandatory)][string]$BuildId,[string]$NativeSmokeReportPath)
 # An optional matching bundled-app smoke report cannot certify external-app isolation.
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path $PSScriptRoot -Parent
-if($BuildId -notmatch '^T06-[A-Za-z0-9_.-]+$'){throw 'Tracked T06 build required.'}
+if($BuildId -notmatch '^(?:v[0-9]+\.[0-9]+\.[0-9]+-[0-9]{8}|T06-[A-Za-z0-9_.-]{1,85})$'){throw 'Tracked T06 build required.'}
 $evidence=Join-Path $projectRoot "artifacts/builds/$BuildId"
 $build=Get-Content -LiteralPath (Join-Path $evidence 'build-result.json') -Raw|ConvertFrom-Json
 $single=Get-Content -LiteralPath (Join-Path $evidence 'package-single-file.json') -Raw|ConvertFrom-Json

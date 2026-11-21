@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text.Json;
 using AutumnOS.Contracts;
@@ -38,25 +37,13 @@ internal sealed record NativePayloadCatalog(int SchemaVersion, string BuildId, s
             if (receipt.Length is < 1 or > NativeDeploymentIdentity.MaximumReceiptBytes)
                 throw new PackageException("RUNTIME_NATIVE_INSTALLATION_IDENTITY_INVALID");
             var bytes = new byte[(int)receipt.Length]; receipt.ReadExactly(bytes);
-            NativeDeploymentIdentity.ValidateReceipt(bytes, BrandInfo.BuildId, BrandInfo.Version, BrandInfo.UpdateSequence);
+            NativeDeploymentIdentity.ValidateReceipt(bytes, BrandInfo.BuildId, BrandInfo.Version, BrandInfo.UpdateSequence, BrandInfo.SecuritySequence);
         }
-        var version = new OsVersion { Size = Marshal.SizeOf<OsVersion>(), ServicePack = "" };
-        if (RtlGetVersion(ref version) != 0 || !NativePlatformPolicy.IsVersionAllowed(version.ProductType, version.Build) ||
-            !Environment.UserInteractive || !Environment.Is64BitProcess)
+        if (!NativePlatformPolicy.IsCurrentDesktopAllowed())
             throw new PackageException("RUNTIME_NATIVE_DESKTOP_REQUIRED");
         using var user = WindowsIdentity.GetCurrent();
         if (user.User is null || user.Owner != user.User || new WindowsPrincipal(user).IsInRole(WindowsBuiltInRole.Administrator))
             throw new PackageException("RUNTIME_STANDARD_USER_REQUIRED");
         return table;
     }
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct OsVersion
-    {
-        internal int Size, Major, Minor, Build, Platform;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] internal string ServicePack;
-        internal ushort ServiceMajor, ServiceMinor, Suite;
-        internal byte ProductType, Reserved;
-    }
-    [DllImport("ntdll.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-    private static extern int RtlGetVersion(ref OsVersion version);
 }

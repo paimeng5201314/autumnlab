@@ -30,7 +30,7 @@ Schema 在 `config.schema.json`，运行时另校验关联字段、重复键与�
 
 ## 从交付的 Developer 目录执行
 
-适用 AutumnOS 0.5.1 的完整开发者套件。打开交付目录 `Developer/BackendIdentity/client/` 中的 PowerShell，保留相邻 DLL、运行时和 `config/logto.public.json`。这里的 `AutumnOS.NativeIdentity.Sample.exe` 已自包含，不需要工作区、`scripts/Common.ps1`、`$Dotnet` 或预装 .NET SDK。
+适用 AutumnOS v1.0.1 的完整开发者套件。打开交付目录 `Developer/BackendIdentity/client/` 中的 PowerShell，保留相邻 DLL、运行时和 `config/logto.public.json`。这里的 `AutumnOS.NativeIdentity.Sample.exe` 已自包含，不需要工作区、`scripts/Common.ps1`、`$Dotnet` 或预装 .NET SDK。
 
 先建立一个不存在的新公开配置文件，按上表填入已经登记的真实值。文件只含公开标识，空模板运行会被拒绝；本步骤不完成登记，也不请求任何秘密：
 

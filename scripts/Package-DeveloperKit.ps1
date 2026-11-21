@@ -35,8 +35,12 @@ try{
     }
     Copy-KitSource 'samples/template-shared' (Join-Path $Destination 'Templates/_shared')
     Copy-KitSource 'tests/fixtures/network-client' (Join-Path $Destination 'Examples/network-client')
+    $exampleManifest = Join-Path $Destination 'Examples/network-client/manifest.json'
+    $example = Get-Content -LiteralPath $exampleManifest -Raw | ConvertFrom-Json
+    $example.version = $Build.version
+    $example | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $exampleManifest -Encoding utf8NoBOM
     Copy-Item -LiteralPath 'sdk/autumn-sdk.js' -Destination (Join-Path $Destination 'Examples/network-client/autumn-sdk.js')
-    Copy-KitSource 'docs/versions/0.5.1' (Join-Path $Destination 'Docs/0.5.1')
+    Copy-KitSource 'docs/developer' (Join-Path $Destination "Docs/v$($Build.version)")
     Copy-Item -LiteralPath 'docs/runtime-isolation.md' -Destination (Join-Path $Destination 'runtime-isolation.md')
     Copy-Item -LiteralPath 'docs/sdk-network.md' -Destination (Join-Path $Destination 'sdk-network.md')
     Copy-KitSource 'tools/contract-checks' (Join-Path $Destination 'Tools/contract-checks')
@@ -53,10 +57,10 @@ try{
     }
     Copy-KitSource 'samples/backend-identity' (Join-Path $Destination 'BackendIdentity')
     foreach($required in @('AutumnOS.Developer.Cli.exe','coreclr.dll','SDK/autumn-sdk.js','SDK/autumn-sdk.d.ts','Templates/_shared/sample-ui.js',
-        'Docs/0.5.1/README.md','BackendIdentity/server/AutumnOS.ServerIdentity.Sample.exe','BackendIdentity/server/coreclr.dll','BackendIdentity/client/AutumnOS.NativeIdentity.Sample.exe','BackendIdentity/client/coreclr.dll')){
+        "Docs/v$($Build.version)/README.md",'BackendIdentity/server/AutumnOS.ServerIdentity.Sample.exe','BackendIdentity/server/coreclr.dll','BackendIdentity/client/AutumnOS.NativeIdentity.Sample.exe','BackendIdentity/client/coreclr.dll')){
         if(-not(Test-Path -LiteralPath (Join-Path $Destination $required) -PathType Leaf)){throw "Incomplete developer kit: $required"}
     }
-    [ordered]@{schemaVersion=1;productVersion=$Build.version;buildId=$Build.build_id;sourceSnapshotId=$Build.source_snapshot_id;sdkVersion='0.4.0';protocol=1;
+    [ordered]@{schemaVersion=1;productVersion=$Build.version;buildId=$Build.build_id;sourceSnapshotId=$Build.source_snapshot_id;sdkVersion=$Build.version;protocol=1;
         selfContainedCli=$true;backendRealLogto='not_run_registration_required';externalDeveloperAcceptance='not_run';producer='派蒙'}|
         ConvertTo-Json -Depth 4|Set-Content -LiteralPath (Join-Path $Destination 'kit.json') -Encoding utf8NoBOM
 }finally{Pop-Location}

@@ -131,7 +131,7 @@ foreach (var (name, run) in cases)
         Console.WriteLine($"FAIL {name}: {e.GetType().Name}: {e.Message}");
     }
 }
-var document = new { schema_version = 1, task_id = BrandInfo.BuildId.StartsWith("T06-", StringComparison.Ordinal) ? "T06" : "T05", source_snapshot_id = BrandInfo.SourceSnapshotId,
+var document = new { schema_version = 1, task_id = BrandInfo.BuildId.StartsWith("T05-", StringComparison.Ordinal) ? "T05" : "T06", source_snapshot_id = BrandInfo.SourceSnapshotId,
     build_id = BrandInfo.BuildId, executed_utc = DateTimeOffset.UtcNow, environment = Environment.OSVersion.VersionString,
     status = failed == 0 && results.Count > 0 ? "passed" : "failed", total = results.Count, failed, filters, filter = filters, results };
 var outputIndex = Array.IndexOf(args, "--report");
